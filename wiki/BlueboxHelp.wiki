@@ -3,7 +3,7 @@
 Many teams develop software that rely heavily on sending emails (for sign-up, social software notifications etc).
 Properly testing this software requires multiple "fake" email addesses to allow testing of the capabilities of the software from various points of view and roles
 Traditionally we either used Google Mail (which allowed random prefixes to be added to email addresses), or other services such as Mailinator
-However sending such emails from unreleased products, potentially containing trade secrets, non-public product information and other private information to the public internet is not feasible, and an IBM internal service was needed.
+However sending such emails from unreleased products, potentially containing trade secrets, non-public product information and other private information to the public internet is not feasible, and an internal service was needed.
 
 =How do I use it?=
 The easiest way : simply send an email to any address you like using the @bluebox.lotus.com domain
