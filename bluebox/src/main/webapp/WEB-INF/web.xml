@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+	<display-name>bluebox</display-name>
+
+	<!-- the main UI interface -->
+	<servlet>
+		<description></description>
+		<display-name>bluebox</display-name>
+		<servlet-name>bluebox</servlet-name>
+		<servlet-class>com.bluebox.BlueBoxServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>bluebox</servlet-name>
+		<url-pattern>/rest/*</url-pattern>
+	</servlet-mapping>
+
+	<!-- the Atom feed servlet -->
+	<servlet>
+		<servlet-name>atom</servlet-name>
+		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+		<init-param>
+			<param-name>javax.ws.rs.Application</param-name>
+			<param-value>com.bluebox.feed.ATOMApplication</param-value>
+		</init-param>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>atom</servlet-name>
+		<url-pattern>/atom/*</url-pattern>
+	</servlet-mapping>
+	
+	<!-- the file upload servlets -->
+	<servlet>
+		<servlet-name>ProgressServlet</servlet-name>
+		<servlet-class>com.bluebox.ProgressServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ProgressServlet</servlet-name>
+		<url-pattern>/progress</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>UploadServlet</servlet-name>
+		<servlet-class>com.bluebox.UploadServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>UploadServlet</servlet-name>
+		<url-pattern>/upload</url-pattern>
+	</servlet-mapping>
+	
+	<!-- specify manager role for the admin pages -->
+	<security-constraint>
+	        <web-resource-collection>
+	                <web-resource-name>BlueBoxAdmin</web-resource-name>
+	                <description> accessible by authenticated users of the tomcat role</description>
+	                <url-pattern>/app/admin.jsp</url-pattern>
+	                <url-pattern>/rest/admin/*</url-pattern>
+	                <http-method>GET</http-method>
+	                <http-method>POST</http-method>
+	                <http-method>PUT</http-method>
+	                <http-method>DELETE</http-method>
+	        </web-resource-collection>
+	        <auth-constraint>
+	                <description>These roles are allowed access</description>
+	                <role-name>tomcat</role-name>
+	        </auth-constraint>
+	</security-constraint>
+	<login-config>
+	  <auth-method>BASIC</auth-method>
+	  <realm-name>BlueBox Administration</realm-name>
+	</login-config>
+	
+	<security-role>
+	        <description>Only 'tomcat' role is allowed to access this web application</description>
+	        <role-name>tomcat</role-name>
+	</security-role>
+
+	<!-- Start page -->
+	<welcome-file-list>
+		<welcome-file>app/index.jsp</welcome-file>
+	</welcome-file-list>
+
+	<error-page>
+	   <exception-type>401</exception-type>
+	   <location>/app/error.jsp</location>
+	</error-page>
+	
+	<error-page>
+	   <exception-type>404</exception-type>
+	   <location>/app/error.jsp</location>
+	</error-page>	
+
+</web-app>

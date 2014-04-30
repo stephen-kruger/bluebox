@@ -1,0 +1,48 @@
+/* basic 3 col with header layout */
+.headerCol {
+ 	/*border-radius: 1em;*/        
+ 	background:#000;
+ 	width:100%;
+ 	border-bottom:3px solid #107bbb;
+}
+
+.colWrapper {
+	width: 100%;
+	display:table;
+	list-style-type:none;
+	margin:2em;
+}
+
+
+.leftCol {
+	display:table-cell;
+	text-align: left;
+	width:20%;
+	padding:2em;
+	vertical-align:top;
+}
+
+.rightCol {
+	display:table-cell;
+	padding:2em;
+}
+
+.centerCol {
+	display:table-cell;
+	width:60%;
+	height:100%;
+	text-align: center;
+}
+/* end basic layout */
+
+div {
+	border:0px solid black;
+}
+
+a {
+	text-decoration: none;
+}
+
+body {
+	font-family: 'Roboto', sans-serif;
+}

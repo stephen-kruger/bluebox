@@ -1,0 +1,40 @@
+Received: from beegees.swg.usma.xxx.com (beegees.swg.usma.xxx.com [9.32.141.26])
+        by ghvm352.tulip.com
+        with SMTP (BlueBox) id HIONNJVW
+        for cyy001@bluebox.tulip.com;
+        Wed, 03 Jul 2013 11:03:09 -0400 (EDT)
+Received: from acdmgr.acdev1.swg.usma.xxx.com ([10.1.13.14])
+          by beegees.swg.usma.xxx.com (Tulip Domino Release 8.5.3FP5)
+          with ESMTP id 2013070311022769-2513 ;
+          Wed, 3 Jul 2013 11:02:27 -0400 
+Received: from 127.0.0.1 (localhost.localdomain [127.0.0.1])
+	by acdmgr.acdev1.swg.usma.xxx.com (8.13.8/8.13.8) with SMTP id r63F392P012122
+	for cyy001@bluebox.tulip.com; Wed, 3 Jul 2013 15:03:09 GMT
+Date: Wed, 3 Jul 2013 15:03:09 GMT
+Message-Id: <201307031503.r63F392P012122@acdmgr.acdev1.swg.usma.xxx.com>
+To: cyy001@bluebox.tulip.com
+From: SmartCloud <no-reply@collabserv.com>
+Subject: Miki 002 updated has tagged your profile with: mytag
+X-Mailer: CakePHP Email Component
+MIME-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on BeeGees/Iris(Release 8.5.3FP5|June 26, 2013) at
+ 07/03/2013 11:02:27 AM,
+	Serialize by Router on BeeGees/Iris(Release 8.5.3FP5|June 26, 2013) at 07/03/2013
+ 11:02:27 AM,
+	Serialize complete at 07/03/2013 11:02:27 AM
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=UTF-8
+
+SGkgY3l5IDAwMSBjaGVuZywKIApNaWtpIDAwMiB1cGRhdGVkIGhhcyB0YWdnZWQgeW91ciBwcm9m
+aWxlIHdpdGg6IG15dGFnCiAKVGFnZ2luZyB5b3VyIG93biBwcm9maWxlIGFuZCBvdGhlciBwZW9w
+bGUncyBwcm9maWxlcyBtYWtlcyBpdCBlYXNpZXIgZm9yIHlvdSBhbmQgeW91ciBjb2xsZWFndWVz
+IHRvIGxvY2F0ZSBleHBlcnRpc2UgaW4geW91ciBvcmdhbml6YXRpb24uIElmIHlvdSBkaXNhZ3Jl
+ZSB3aXRoIGEgdGFnLCB5b3UgY2FuIHJlbW92ZSBpdCBmcm9tIHlvdXIgcHJvZmlsZS4KIApWaWV3
+IHRoZSB0aGUgdGFncyBvbiB5b3VyIHByb2ZpbGUgaGVyZToKaHR0cHM6Ly9hcHBzLmFjZGV2MS5z
+d2cudXNtYS5pYm0uY29tL2NvbnRhY3RzL3Byb2ZpbGVzL3ZpZXcvMjAwMDA1NTAKIApJQk0gU21h
+cnRDbG91ZCBmb3IgU29jaWFsIEJ1c2luZXNzIG9mZmljZXMgYXJlIGxvY2F0ZWQgYXQ6IDUgVGVj
+aG5vbG9neSBQYXJrIERyaXZlLCBXZXN0Zm9yZCwgTUEgMDE4ODYsIFVuaXRlZCBTdGF0ZXM=
+
+
+
+
