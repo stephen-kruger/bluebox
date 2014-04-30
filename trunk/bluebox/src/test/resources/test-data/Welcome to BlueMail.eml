@@ -1,0 +1,47 @@
+To: Stephen_Johnson/Ireland/XXX%XXXIE
+X-Notes-Item: bluemail;
+ type=501; name=bmTags
+X-Notes-Item: Memo;
+ name=Form
+From: "bluemail team" <bluemail@us.XXX.com>
+Subject: Welcome to BlueMail
+Importance: Normal
+X-Notes-Item: Sun, 24 Oct 2010 09:16:16 -0700;
+ type=400; name=ComposedDate
+X-Notes-Item: =?UTF-8?B?SGkgU3RlcGhlbiwgT24gYmVoYWxmIG9mIG91ciB0ZWFtLCB3ZWxjb21lIHRv?=
+ =?UTF-8?B?IGJsdWVtYWlsISBCZWxvdyBhcmUgc29tZSBkZXRhaWxzIGFib3V0IHRoZQ==?=
+ =?UTF-8?B?IGxhdGVzdCBmZWF0?=;
+ flags=6; name=$Abstract
+X-Notes-Item: A1876140:221C30D3-802577C6:0059718E;
+ type=4; name=$TUA
+X-Notes-Item: =?UTF-8?B?SGkgU3RlcGhlbiwgT24gYmVoYWxmIG9mIG91ciB0ZWFtLCB3ZWxjb21lIHRv?=
+ =?UTF-8?B?IGJsdWVtYWlsISBCZWxvdyBhcmUgc29tZSBkZXRhaWxzIGFib3V0IHRoZQ==?=
+ =?UTF-8?B?IGxhdGVzdCBmZWF0dXJlcyB3ZSd2ZSBhZGRlZCBhbmQgYXJl?=
+ =?UTF-8?B?IGNvbnRpbnVpbmcgdG8gZGV2ZWxvcC4gWW91ciBoZWxwIGFuZCBpbnB1dA==?=
+ =?UTF-8?B?IGlzIGEgdml0YWwgcGFydCB0byBvdXIgcHJvY2Vzcy4gUGxlYXNlIGVtYWls?=
+ =?UTF-8?B?IHVzIHlvdXIgc3VnZ2VzdGlvbnMgb3IgdXNlIHRoZSBmZWVkYmFjaw==?=
+ =?UTF-8?B?IGxpbmtzIHVuZGVyIHRoZSAiT3B0aW9ucyIgbWVudSBhYm92ZS4gS2V5?=
+ =?UTF-8?B?IGZlYXR1cmVzIGluY2x1ZGU6IHRocmVhZHMgIC0gbWVzc2FnZXMgaW4=?=
+ =?UTF-8?B?IHlvdXIgaW5ib3ggYXJlIGdhdGhlcmVkIGludG8gdGhyZWFkcyBtYWtpbmc=?=
+ =?UTF-8?B?IGl0IGVhc2llciB0byB0cmFjayBvbmdvaW5nIGNvbnZlcnNhdGlvbnMuIA==?=
+ =?UTF-8?B?bWVzc2FnZSB0YWdnaW5nICAtIHVzZSB0YWdzIGFzIGFuIGFsdGVybmF0aXZl?=
+ =?UTF-8?B?IG9yIGNvbXBsaW1lbnQgdG8gZm9sZGVycy4gc29ydGk=?=;
+ name=bluemailAbstract
+Date: Sun, 24 Oct 2010 09:16:16 -0700
+X-Notes-Item: Sun, 24 Oct 2010 09:16:16 -0700;
+ type=400; name=DeliveredDate
+X-Notes-Item: CN=Stephen Johnson/OU=Ireland/O=XXX;
+ type=501; flags=44; name=$UpdatedBy
+X-Notes-Item: Sun, 24 Oct 2010 17:16:57 +0100;
+ type=400; name=$Revisions
+X-Notes-Item: 1;
+ name=$NoteHasNativeMIME
+X-Notes-Item: Stephen Johnson/Ireland/XXX;
+ type=501; name=OriginalTo
+X-MIMETrack: Serialize by Notes Client on Stephen Johnson/Ireland/XXX(Release 8.5.2|August
+ 10, 2010) at 25/10/2010 15:33:11,
+	Serialize complete at 25/10/2010 15:33:11
+MIME-Version: 1.0
+Content-Type: text/html; charset=UTF-8
+
+<html><body style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666"><img src="https://xweb330.almaden.XXX.com:8443/BlueMailUI/img/welcome-message/Welcome-logo.png"><br><div style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666"; font-weight: bold">Hi Stephen,</div><br><div style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666">On behalf of our team, welcome to bluemail! Below are some details about the latest features we've added and are continuing to develop. Your help and input is a vital part to our process. Please email us your suggestions or use the feedback links under the "Options" menu above.</div><br><div style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666">Key features include:</div><br><div style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666"><span style="font-weight: bold">threads</span> - messages in your inbox are gathered into threads making it easier to track ongoing conversations.</div><br><div style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666"><span style="font-weight: bold">message tagging</span> - use tags as an alternative or compliment to folders.</div><br><div style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666"><span style="font-weight: bold">sorting, filtering, and search</span> - bluemail takes advantage of local caching techniques to allow you to sort and filter through your entire Notes inbox without causing a browser reload.</div><br><div style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666"><span style="font-weight: bold">Bluepages and <a href="http://fringe.tap.XXX.com">Fringe</a> integration</span> - quickly get information, tag, and connect to people in from your inbox.</div><br><br><div style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666">Sincerely, </div><div style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666">--The bluemail team</div><br><br><div style="font-size: 13px; font-family: Tahoma, Arial, Helvetica, sans-serif; color: #666666">Visit at: <a href="http://bluemail.almaden.XXX.com/">http://bluemail.almaden.XXX.com/</a></div></body></html>
