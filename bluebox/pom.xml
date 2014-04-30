@@ -225,4 +225,10 @@
 		</dependency>
 	</dependencies>
 
+	<scm>
+		<url>https://bluebox.googlecode.com/svn/trunk</url>
+	</scm>
+	<issueManagement>
+		<url>https://code.google.com/p/bluebox/issues/list</url>
+	</issueManagement>
 </project>
