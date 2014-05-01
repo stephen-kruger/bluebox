@@ -29,4 +29,4 @@
 <!--  load google web fonts  -->
 <link href='http://fonts.googleapis.com/css?family=Roboto:700,400&subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic' rel='stylesheet' type='text/css'>
 
-<link type="text/css" href="index.css" rel="stylesheet" />
+<link type="text/css" href="<%=request.getContextPath()%>/app/index.css" rel="stylesheet" />

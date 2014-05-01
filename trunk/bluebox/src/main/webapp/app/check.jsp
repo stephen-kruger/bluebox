@@ -50,7 +50,7 @@
 	function initTypeAhead() {
 		require(["dojox/data/QueryReadStore","dijit/form/ComboBox"], function (QueryReadStore,ComboBox) {
                var stateStore = new dojox.data.QueryReadStore({
-                   url: "../<%= JSONAutoCompleteHandler.JSON_ROOT %>"
+                   url: "<%=request.getContextPath()%>/<%= JSONAutoCompleteHandler.JSON_ROOT %>"
                });
                new dijit.form.ComboBox({
                    id: "<%= Inbox.EMAIL %>",
@@ -76,7 +76,7 @@
 </script>	
 
 <div class="checkboxContent">
-         <form id="checkemail" name="checkemail" action="inbox.jsp" method="get">
+         <form id="checkemail" name="checkemail" action="<%=request.getContextPath()%>/app/inbox.jsp" method="get">
             	<h2><%= checkResource.getString("header") %></h2>
            
             	<input id="<%= Inbox.EMAIL %>" name="<%= Inbox.EMAIL %>"/>

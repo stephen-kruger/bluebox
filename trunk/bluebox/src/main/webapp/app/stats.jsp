@@ -14,7 +14,7 @@
 <script>		
 	function loadRecent() {
 		require(["dojox/data/JsonRestStore"], function () {
-			var urlStr = "<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.RECENT_STAT %>";
+			var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.RECENT_STAT %>";
 			var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 			var queryResults = jStore.fetch({
 				  onComplete : 
@@ -28,7 +28,7 @@
 	function loadActive() {
 		try {
 			require(["dojox/data/JsonRestStore"], function () {
-				var urlStr = "<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.ACTIVE_STAT %>";
+				var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.ACTIVE_STAT %>";
 				var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 				var queryResults = jStore.fetch({
 					  onComplete : 
@@ -47,7 +47,7 @@
 	
 	function loadCombined() {
 		require(["dojox/data/JsonRestStore"], function () {
-			var urlStr = "../<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.COMBINED_STAT %>";
+			var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.COMBINED_STAT %>";
 			var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 			var queryResults = jStore.fetch({
 				  onComplete : 
@@ -70,13 +70,13 @@
 </script>
 	<div class="rightSideContent">	    	    
 		<h2><%= statsResource.getString("traffic_title") %></h2>
-		<p><span id="statsGlobalCount" style="white-space: nowrap;"><img src="../theme/images/loading.gif"></span></p>
+		<p><span id="statsGlobalCount" style="white-space: nowrap;"><img src="<%=request.getContextPath()%>/theme/images/loading.gif"></span></p>
 
 		<h2><%= statsResource.getString("active_title") %></h2>
-		<p><span id="stats_active" style="white-space: nowrap;"><img src="../theme/images/loading.gif"></span></p>
+		<p><span id="stats_active" style="white-space: nowrap;"><img src="<%=request.getContextPath()%>/theme/images/loading.gif"></span></p>
          
 		<h2><%= statsResource.getString("recent_title") %></h2>
-		<p><span id="stats_recent" style="white-space: normal;"><img src="../theme/images/loading.gif"></span></p>
+		<p><span id="stats_recent" style="white-space: normal;"><img src="<%=request.getContextPath()%>/theme/images/loading.gif"></span></p>
 		<div class="seperator"></div>
 		<br/>
 		<span style="color:lightGrey;"><%= footerResource.getString("title") %> V<%= BlueBoxServlet.VERSION %></span>
