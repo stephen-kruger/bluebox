@@ -126,7 +126,6 @@
 </style>
 
 <script type="text/javascript">		
-		
 			function selectMenu(id) {
 				document.getElementById(id).className = "menuselected";
 			}
@@ -134,7 +133,7 @@
 			// load the global stats
 			function loadGlobalMenu() {
 				require(["dojox/data/JsonRestStore"], function () {
-					var urlStr = "../<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.GLOBAL_STAT %>";
+					var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.GLOBAL_STAT %>";
 					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 					jStore.fetch({
 						  onComplete : 
@@ -173,20 +172,20 @@
 <div class="menu">
 	<div class="menu1">
 		<div class="logoBox">
-			<a class="menulink" href="index.jsp">
+			<a class="menulink" href="<%=request.getContextPath()%>/app/index.jsp">
 				<span class="logo"></span>
 				<span class="logoText"><%=menuResource.getString("title")%></span>
 			</a>
 		</div>
 	</div>
 	<div class="menu2">
-		<a id="inbox" class="menulink" href="inbox.jsp"><%= menuResource.getString("home") %><span id="statsMenuGlobalCount" class="badge">?</span></a>
-		<a id="errors" class="menulink" href="errors.jsp"><%= menuResource.getString("errors") %><span id="statsMenuErrorCount" class="badge">?</span></a>
-		<a id="upload" class="menulink" href="upload.jsp"><%= menuResource.getString("upload") %></a>
+		<a id="inbox" class="menulink" href="<%=request.getContextPath()%>/app/inbox.jsp"><%= menuResource.getString("home") %><span id="statsMenuGlobalCount" class="badge">?</span></a>
+		<a id="errors" class="menulink" href="<%=request.getContextPath()%>/app/errors.jsp"><%= menuResource.getString("errors") %><span id="statsMenuErrorCount" class="badge">?</span></a>
+		<a id="upload" class="menulink" href="<%=request.getContextPath()%>/app/upload.jsp"><%= menuResource.getString("upload") %></a>
 	</div>
 	<div class="menu3">
-		<a id="admin" class="menulink" href="admin.jsp"><%= menuResource.getString("admin") %></a>
-		<a class="helpIcon" href="help.jsp" id="help" onmouseover="dijit.Tooltip.defaultPosition=['below']">?</a>
+		<a id="admin" class="menulink" href="<%=request.getContextPath()%>/app/admin.jsp"><%= menuResource.getString("admin") %></a>
+		<a class="helpIcon" href="<%=request.getContextPath()%>/app/help.jsp" id="help" onmouseover="dijit.Tooltip.defaultPosition=['below']">?</a>
 		<div class="dijitHidden"><span data-dojo-type="dijit.Tooltip" data-dojo-props="connectId:'helpMenu'"><%= menuResource.getString("help") %></span></div>
 	</div>
 </div>

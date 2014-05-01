@@ -50,7 +50,7 @@
 				};
 				
 		    	var restStore = new dojox.data.JsonRestStore({ 
-					target: "../<%=JSONErrorHandler.JSON_ROOT%>/", 
+					target: "<%=request.getContextPath()%>/<%=JSONErrorHandler.JSON_ROOT%>/", 
 					parameters: [{}]
 				    });
 				var grid = new dojox.grid.EnhancedGrid({
@@ -86,7 +86,7 @@
 		
 		function loadError(uid) {
 			var xhrArgs = {
-					url: "../<%=JSONErrorHandler.JSON_DETAIL_ROOT%>/"+uid,
+					url: "<%=request.getContextPath()%>/<%=JSONErrorHandler.JSON_DETAIL_ROOT%>/"+uid,
 					handleAs: "text",
 					preventCache: false,
 					load: function(data) {

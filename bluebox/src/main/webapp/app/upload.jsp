@@ -15,10 +15,7 @@
 	<link href="<%=bbconfig.getString("dojo_base")%>/dojox/form/resources/UploaderFileList.css" rel="stylesheet" type="text/css" />
 	
 	<script>
-		//dojo.require("dijit.form.Button");
-		//dojo.require("dojox.form.Uploader");
-		//dojo.require("dojox.form.uploader.FileList");
-		require(["dojo/domReady!","dijit/form/Button",  "dojox/form/Uploader", "dojox/form/uploader/FileList"], function(Tooltip, parser){
+		require(["dojo/domReady!","dijit/form/Button",  "dojox/form/Uploader", "dojox/form/uploader/FileList"], function(domReady,Button,Uploader,FileList){
 			selectMenu("upload");
 		});
 	</script>
@@ -32,7 +29,7 @@
 			
 		<div class="centerCol">
 			<div>
-				<form method="post" action="../upload" id="myForm" enctype="multipart/form-data" >
+				<form method="post" action="<%=request.getContextPath()%>/upload" id="myForm" enctype="multipart/form-data" >
 				   <input name="uploadedfile" multiple="true" type="file" data-dojo-type="dojox.form.Uploader" label="<%= uploadResource.getString("uploadTitle") %>" id="uploader" />			   
 				   <input type="submit" label="<%= uploadResource.getString("title") %>" data-dojo-type="dijit.form.Button" />
 				</form>

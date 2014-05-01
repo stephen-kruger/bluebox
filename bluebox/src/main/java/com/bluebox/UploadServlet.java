@@ -2,28 +2,21 @@ package com.bluebox;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.mortbay.jetty.HttpStatus;
 
 public class UploadServlet extends HttpServlet {
 
@@ -89,98 +82,98 @@ public class UploadServlet extends HttpServlet {
 		catch (FileUploadException e) {
 			e.printStackTrace();
 		}
-		response.setStatus(HttpStatus.ORDINAL_200_OK);
+		response.setStatus(200);
 		response.flushBuffer();
 	}
 
-	public void doPostOld(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		response.setContentType("text/html");
-		PrintWriter out = response.getWriter();
-		printJSP(request,response,"/upload_response_header.jsp");
-		//		printHead(out);
-		boolean isMultipartContent = ServletFileUpload.isMultipartContent(request);
-		if (!isMultipartContent) {
-			out.println("You did not select any files to upload<br/>");
-			return;
-		}
+//	public void doPostOld(HttpServletRequest request, HttpServletResponse response) throws IOException {
+//		response.setContentType("text/html");
+//		PrintWriter out = response.getWriter();
+//		printJSP(request,response,"/upload_response_header.jsp");
+//		//		printHead(out);
+//		boolean isMultipartContent = ServletFileUpload.isMultipartContent(request);
+//		if (!isMultipartContent) {
+//			out.println("You did not select any files to upload<br/>");
+//			return;
+//		}
+//
+//		FileItemFactory factory = new DiskFileItemFactory();
+//		ServletFileUpload upload = new ServletFileUpload(factory);
+//		upload.setSizeMax(MAX_UPLOAD_IN_MEGS * 1024 * 1024);
+//
+//		TestProgressListener testProgressListener = new TestProgressListener();
+//		upload.setProgressListener(testProgressListener);
+//
+//		HttpSession session = request.getSession();
+//		session.setAttribute("testProgressListener", testProgressListener);
+//
+//		try {
+//			List<FileItem> fields = upload.parseRequest(request);
+//			Iterator<FileItem> it = fields.iterator();
+//			if (!it.hasNext()) {
+//				out.println("No fields found");
+//				return;
+//			}
+//			out.println("<table border=\"1\">");
+//			while (it.hasNext()) {
+//				out.println("<tr>");
+//				FileItem fileItem = it.next();
+//				boolean isFormField = fileItem.isFormField();
+//				if (isFormField) {
+//					//					out.println("<td>regular form field</td><td>Field name: " + fileItem.getFieldName() + "<br/>STRING: " + fileItem.getString());
+//					//					out.println("</td>");
+//					log.info("Ignoring form field "+fileItem.getName());
+//				} 
+//				else {
+//					String message;
+//					try {
+//						if (fileItem.getSize()>0) {
+//							log.info("Loading file "+fileItem.getName()+" with size "+fileItem.getSize());
+//							message = "<font color=\"green\">"+Utils.uploadEML(fileItem.getInputStream())+"</font>";
+//						}
+//						else {
+//							message = "<font color=\"blue\">No file was specified - ignoring</font>";
+//						}
+//					}
+//					catch (Throwable t) {
+//						message = "<font color=\"red\">Invalid email (no recipients?) - "+t.getMessage()+"</font>";
+//					}
+//					out.println("<td>"+fileItem.getFieldName()+"</td><td>" +
+//							"Name: <b>" + fileItem.getName() + "</b>" +
+//							"<br/>Content type: <b>" + fileItem.getContentType() + "</b>" +
+//							"<br/>Size (bytes): <b>" + fileItem.getSize() + "</b>" +
+//							//"<br/>Saved to: <b>" + fileItem.toString() + "</b>" +
+//							"<br/>Status: <b>" + message + "</b>"
+//							);
+//					out.println("</td>");
+//				}
+//				out.println("</tr>");
+//			}
+//			out.println("</table>");
+//			out.println("<br/>");
+//			//			out.println("<a href=\"/bluebox\">Click here to continue</a>");
+//			out.println("<a href=\"app/upload.jsp\" >Upload more</a>");
+//			out.println("<a href=\"/bluebox\" >Done</a>");
+//		} 
+//		catch (FileUploadException e) {
+//			out.println("Error: " + e.getMessage());
+//			e.printStackTrace();
+//		}
+//		//		printTail(out);
+//		printJSP(request,response,"/upload_response_footer.jsp");
+//
+//	}
 
-		FileItemFactory factory = new DiskFileItemFactory();
-		ServletFileUpload upload = new ServletFileUpload(factory);
-		upload.setSizeMax(MAX_UPLOAD_IN_MEGS * 1024 * 1024);
-
-		TestProgressListener testProgressListener = new TestProgressListener();
-		upload.setProgressListener(testProgressListener);
-
-		HttpSession session = request.getSession();
-		session.setAttribute("testProgressListener", testProgressListener);
-
-		try {
-			List<FileItem> fields = upload.parseRequest(request);
-			Iterator<FileItem> it = fields.iterator();
-			if (!it.hasNext()) {
-				out.println("No fields found");
-				return;
-			}
-			out.println("<table border=\"1\">");
-			while (it.hasNext()) {
-				out.println("<tr>");
-				FileItem fileItem = it.next();
-				boolean isFormField = fileItem.isFormField();
-				if (isFormField) {
-					//					out.println("<td>regular form field</td><td>Field name: " + fileItem.getFieldName() + "<br/>STRING: " + fileItem.getString());
-					//					out.println("</td>");
-					log.info("Ignoring form field "+fileItem.getName());
-				} 
-				else {
-					String message;
-					try {
-						if (fileItem.getSize()>0) {
-							log.info("Loading file "+fileItem.getName()+" with size "+fileItem.getSize());
-							message = "<font color=\"green\">"+Utils.uploadEML(fileItem.getInputStream())+"</font>";
-						}
-						else {
-							message = "<font color=\"blue\">No file was specified - ignoring</font>";
-						}
-					}
-					catch (Throwable t) {
-						message = "<font color=\"red\">Invalid email (no recipients?) - "+t.getMessage()+"</font>";
-					}
-					out.println("<td>"+fileItem.getFieldName()+"</td><td>" +
-							"Name: <b>" + fileItem.getName() + "</b>" +
-							"<br/>Content type: <b>" + fileItem.getContentType() + "</b>" +
-							"<br/>Size (bytes): <b>" + fileItem.getSize() + "</b>" +
-							//"<br/>Saved to: <b>" + fileItem.toString() + "</b>" +
-							"<br/>Status: <b>" + message + "</b>"
-							);
-					out.println("</td>");
-				}
-				out.println("</tr>");
-			}
-			out.println("</table>");
-			out.println("<br/>");
-			//			out.println("<a href=\"/bluebox\">Click here to continue</a>");
-			out.println("<a href=\"app/upload.jsp\" >Upload more</a>");
-			out.println("<a href=\"/bluebox\" >Done</a>");
-		} 
-		catch (FileUploadException e) {
-			out.println("Error: " + e.getMessage());
-			e.printStackTrace();
-		}
-		//		printTail(out);
-		printJSP(request,response,"/upload_response_footer.jsp");
-
-	}
-
-	private void printJSP(HttpServletRequest request, HttpServletResponse response, String jsp) throws IOException {
-		RequestDispatcher dispatcher;
-		dispatcher= getServletContext().getRequestDispatcher(jsp);
-		try {
-			dispatcher.include(request, response);
-		} catch (ServletException e) {
-			e.printStackTrace();
-			log.severe(e.getMessage());
-		}
-	}
+//	private void printJSP(HttpServletRequest request, HttpServletResponse response, String jsp) throws IOException {
+//		RequestDispatcher dispatcher;
+//		dispatcher= getServletContext().getRequestDispatcher(jsp);
+//		try {
+//			dispatcher.include(request, response);
+//		} catch (ServletException e) {
+//			e.printStackTrace();
+//			log.severe(e.getMessage());
+//		}
+//	}
 
 	//	private void printHead(PrintWriter out) {
 	//		//		out.print("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");

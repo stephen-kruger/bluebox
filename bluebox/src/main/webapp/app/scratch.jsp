@@ -118,7 +118,7 @@
 				alert("<%=inboxDetailsResource.getString("error.noselection")%>");
 			}
 			else {
-				var load = window.open("../<%=JSONRawMessageHandler.JSON_ROOT%>/"+currentUid,'','scrollbars=yes,menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+				var load = window.open("<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+currentUid,'','scrollbars=yes,menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
 			}
 		}
 		
@@ -128,7 +128,7 @@
 		
 		function getStore(email, state) {
 			try {
-				var urlStr = "../<%=JSONInboxHandler.JSON_ROOT%>/"+encodeURI(email)+"/"+state;
+				var urlStr = "<%=request.getContextPath()%>/<%=JSONInboxHandler.JSON_ROOT%>/"+encodeURI(email)+"/"+state;
 				 var store = new dojox.data.JsonRestStore({ 
 					    				target: urlStr, 
 					    				parameters: [{name: "state", type: "string", optional: true}]

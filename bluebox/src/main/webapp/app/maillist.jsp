@@ -162,7 +162,7 @@
 				
 		function deleteMail(uidList) {
 			if (currentUid) {
-				var delUrl = "../<%=JSONMessageHandler.JSON_ROOT%>/"+uidList;
+				var delUrl = "<%=request.getContextPath()%>/<%=JSONMessageHandler.JSON_ROOT%>/"+uidList;
 				var xhrArgs = {
 						url: delUrl,
 						handleAs: "text",
@@ -200,17 +200,17 @@
 				alert("<%=inboxDetailsResource.getString("error.noselection")%>");
 			}
 			else {
-				var load = window.open("../<%=JSONRawMessageHandler.JSON_ROOT%>/"+currentUid,'','scrollbars=yes,menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+				var load = window.open("<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+currentUid,'','scrollbars=yes,menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
 			}
 		}
 		
 		function atomFeed() {
-			window.open("../atom/inbox?email="+encodeURIComponent(currentEmail));
+			window.open("<%=request.getContextPath()%>/atom/inbox?email="+encodeURIComponent(currentEmail));
 		}
 		
 		function getStore(email, state) {
 			try {
-				var urlStr = "../<%=JSONInboxHandler.JSON_ROOT%>/"+encodeURI(email)+"/"+state;
+				var urlStr = "<%=request.getContextPath()%>/<%=JSONInboxHandler.JSON_ROOT%>/"+encodeURI(email)+"/"+state;
 				 var store = new dojox.data.JsonRestStore({ 
 					    				target: urlStr, 
 					    				parameters: [{name: "state", type: "string", optional: true}]
@@ -295,23 +295,23 @@
 			<div class="navcontainer">
 				<ul>
 					<li><a href="javascript:;" onclick="loadAll()"> <img
-							class="sixteenIcon" src="../theme/images/iconMail.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/theme/images/iconMail.png"
 							alt="<%=inboxDetailsResource.getString("allTooltip")%>" /><%=inboxDetailsResource.getString("all")%>
 					</a></li>
 					<li><a href="javascript:;" onclick="loadRaw()"> <img
-							class="sixteenIcon" src="../theme/images/download.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/theme/images/download.png"
 							alt="<%=inboxDetailsResource.getString("downloadTooltip")%>" /><%=inboxDetailsResource.getString("download")%></a>
 					</li>
 					<li><a href="javascript:;" onclick="refresh()"> <img
-							class="sixteenIcon" src="../theme/images/refresh.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/theme/images/refresh.png"
 							alt="<%=inboxDetailsResource.getString("refreshTooltip")%>" /><%=inboxDetailsResource.getString("refresh")%></a>
 					</li>
 					<li><a href="javascript:;" onclick="atomFeed()"> <img
-							class="sixteenIcon" src="../theme/images/rss.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/theme/images/rss.png"
 							alt="<%=inboxDetailsResource.getString("atomTooltip")%>" /><%=inboxDetailsResource.getString("atom")%></a>
 					</li>
 					<li><a href="javascript:;" onclick="deleteSelectedRows()">
-							<img class="sixteenIcon" src="../theme/images/inboxTrash.png"
+							<img class="sixteenIcon" src="<%=request.getContextPath()%>/theme/images/inboxTrash.png"
 							alt="<%=inboxDetailsResource.getString("deleteTooltip")%>" /><%=inboxDetailsResource.getString("delete")%></a>
 					</li>
 				</ul>

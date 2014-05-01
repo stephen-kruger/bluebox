@@ -20,31 +20,31 @@
 		require(["dojo/parser", "dijit/form/Button", "dijit/form/NumberTextBox"]);
 		
 		function generateEmails() {
-			genericGet("../rest/admin/test?count="+document.getElementById('count').value,"Email generation","Generated "+document.getElementById('count').value+" emails");
+			genericGet("<%=request.getContextPath()%>/rest/admin/test?count="+document.getElementById('count').value,"Email generation","Generated "+document.getElementById('count').value+" emails");
 		}
 
 		function setBaseCount() {
-			genericGet("../rest/admin/setbasecount?count="+document.getElementById('setbasecount').value,"Base count","Set to "+document.getElementById('setbasecount').value);
+			genericGet("<%=request.getContextPath()%>/rest/admin/setbasecount?count="+document.getElementById('setbasecount').value,"Base count","Set to "+document.getElementById('setbasecount').value);
 		}
 		
 		function deleteAllMail() {
-			genericGet("../rest/admin/clear","Mail deletion","All deleted");
+			genericGet("<%=request.getContextPath()%>/rest/admin/clear","Mail deletion","All deleted");
 		}
 		
 		function clearErrorLogs() {
-			genericGet("../rest/admin/errors","Error logs","Cleared");
+			genericGet("<%=request.getContextPath()%>/rest/admin/errors","Error logs","Cleared");
 		}
 		
 		function pruneMail() {
-			genericGet("../rest/admin/prune","Mail cleanup","Started");
+			genericGet("<%=request.getContextPath()%>/rest/admin/prune","Mail cleanup","Started");
 		}
 		
 		function rebuildSearchIndexes() {
-			genericGet("../rest/admin/rebuildsearchindexes","Search index rebuild","Started");
+			genericGet("<%=request.getContextPath()%>/rest/admin/rebuildsearchindexes","Search index rebuild","Started");
 		}
 		
 		function dbMaintenance() {
-			genericGet("../rest/admin/dbmaintenance","Maintenance requested","OK");
+			genericGet("<%=request.getContextPath()%>/rest/admin/dbmaintenance","Maintenance requested","OK");
 
 		}
 		

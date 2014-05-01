@@ -327,8 +327,13 @@ public class Inbox implements SimpleMessageListener {
 						from,
 						mmessage);
 				// ensure the content is indexed
-				SearchIndexer.getInstance().indexMail(message);
-
+				try {
+					SearchIndexer.getInstance().indexMail(message);
+				}
+				catch (Throwable t) {
+					log.severe(t.getMessage());
+					t.printStackTrace();
+				}
 				// now update all our stats trackers
 				incrementGlobalCount();
 				updateStatsActive(new InboxAddress(recipient));
@@ -372,7 +377,7 @@ public class Inbox implements SimpleMessageListener {
 	//	}
 
 	public JSONArray autoComplete(String hint, long start, long count) throws Exception {
-//		return StorageFactory.getInstance().autoComplete(hint, start, count);
+		//		return StorageFactory.getInstance().autoComplete(hint, start, count);
 		JSONObject curr;
 		JSONArray children = new JSONArray();
 		// no need to include wildcard
@@ -437,7 +442,7 @@ public class Inbox implements SimpleMessageListener {
 		}
 		return false;
 	}
-	
+
 	public long getStatsGlobalCount() {
 		return Long.parseLong(StorageFactory.getInstance().getProperty(GLOBAL_COUNT_NODE,"0"));	
 	}
@@ -454,10 +459,11 @@ public class Inbox implements SimpleMessageListener {
 	public JSONObject getStatsRecent() {
 		JSONObject jo=null;
 		try {
-			if (StorageFactory.getInstance().getProperty("stats_recent", "{}")==null) {
+			String prop = StorageFactory.getInstance().getProperty("stats_recent", "{}");
+			if ((prop==null)||(prop=="{}")) {
 				return updateStatsRecent("","","");
 			}
-			return new JSONObject(StorageFactory.getInstance().getProperty("stats_recent", "{}"));
+			return new JSONObject(prop);
 		} 
 		catch (JSONException e2) {
 			e2.printStackTrace();
@@ -469,10 +475,11 @@ public class Inbox implements SimpleMessageListener {
 	public JSONObject getStatsActive() {
 		JSONObject jo=null;
 		try {
-			if (StorageFactory.getInstance().getProperty("stats_active","{}")==null) {
+			String prop = StorageFactory.getInstance().getProperty("stats_active", "{}");
+			if ((prop==null)||(prop=="{}")) {
 				return updateStatsActive(null);
 			}
-			return new JSONObject(StorageFactory.getInstance().getProperty("stats_active", "{}"));
+			return new JSONObject(prop);
 		} 
 		catch (JSONException e2) {
 			e2.printStackTrace();
