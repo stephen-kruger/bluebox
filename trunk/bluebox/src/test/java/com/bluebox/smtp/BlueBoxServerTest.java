@@ -48,12 +48,18 @@ public class BlueBoxServerTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-//		Config config = Config.getInstance();
-//		config.setString(Config.BLUEBOX_HOST, "localhost");
+		//		Config config = Config.getInstance();
+		//		config.setString(Config.BLUEBOX_HOST, "localhost");
 		Inbox inbox = Inbox.getInstance();
 		inbox.deleteAll();
 		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(inbox));
 		smtpServer.start();
+		int max = 10;
+		do {
+			// give thread time to start up
+			Thread.sleep(1000);
+		} while ((max-- > 0)&&(!smtpServer.isRunning()));
+
 		log.fine("Test setUp");
 	}
 
@@ -62,8 +68,14 @@ public class BlueBoxServerTest extends TestCase {
 		Inbox.getInstance().deleteAll();
 		Inbox.getInstance().stop();
 		smtpServer.stop();
+		int max = 10;
+		do {
+			// give thread time to close down
+			Thread.sleep(1000);
+		}
+		while ((max-- > 0)&&(smtpServer.isRunning()));
 	}
-	
+
 	public void testCrash() throws IOException, MessagingException, InterruptedException {
 		assertEquals("Mailbox was not cleared",0,Inbox.getInstance().getMailCount(State.ANY));
 		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"crashfix.eml");
@@ -181,7 +193,7 @@ public class BlueBoxServerTest extends TestCase {
 			// we expect this to fail
 		}
 		assertTrue("Message should  not have been delivered (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 0)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 0);
-		
+
 		try {
 			Utils.sendMessage(new InternetAddress("test@example.com"), testSubject, testBody, Utils.getRandomAddresses(1), Utils.getRandomAddresses(1), Utils.getRandomAddresses(1),false);
 			fail("The mail should have thrown an exception");
@@ -191,7 +203,7 @@ public class BlueBoxServerTest extends TestCase {
 		}
 		assertTrue("Message should  not have been delivered (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 0)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 0);
 	}
-	
+
 	public void testToWhiteList() throws Exception {
 		Inbox inbox = Inbox.getInstance();
 		assertTrue("No whitelist defined, should be accepted",inbox.accept("sender@nowhere.com", "badboy@notinvited.com"));
@@ -199,7 +211,7 @@ public class BlueBoxServerTest extends TestCase {
 		assertFalse("Recipient was not on whitelist, should be refused",inbox.accept("sender@nowhere.com", "badboy@notinvited.com"));
 		assertTrue("Recipient was on whitelist, should be accepted",inbox.accept("sender@nowhere.com","goodboy@gooddomain.com"));
 	}
-	
+
 	public void testFromWhiteList() throws Exception {
 		Inbox inbox = Inbox.getInstance();
 		assertTrue("No whitelist defined, should be accepted",inbox.accept("sender@nowhere.com", "badboy@notinvited.com"));
@@ -376,7 +388,7 @@ public class BlueBoxServerTest extends TestCase {
 		assertNull("No CC recipient was expected",mimeMessage.getRecipients(RecipientType.CC));
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 3)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 1);
 	}
-	
+
 	public void testSubjectEncoding() throws Exception {
 		Inbox inbox = Inbox.getInstance();
 		String chineseStr = "æ¥·ä¹¦ï¼�æ¥·æ›¸";
@@ -389,7 +401,7 @@ public class BlueBoxServerTest extends TestCase {
 		MimeMessageWrapper mimeMessage = email.getBlueBoxMimeMessage();
 		assertEquals("The subject was not correctly encoded or decoded",chineseStr, mimeMessage.getSubject());
 	}
-	
+
 	private Properties getMailProperties() {
 		Properties mailProps = new Properties();
 		mailProps.setProperty("mail.smtp.host", Utils.getHostName());

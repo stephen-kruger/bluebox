@@ -29,6 +29,11 @@ public class InboxTest extends TestCase {
 		inbox.deleteAll();
 		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(inbox));
 		smtpServer.start();
+		int max = 10;
+		do {
+			// give thread time to start up
+			Thread.sleep(500);
+		} while ((max-- > 0)&&(!smtpServer.isRunning()));
 	}
 
 	@Override
@@ -36,6 +41,13 @@ public class InboxTest extends TestCase {
 		super.tearDown();
 		inbox.deleteAll();
 		smtpServer.stop();
+		inbox.stop();
+		int max = 10;
+		do {
+			// give thread time to close down
+			Thread.sleep(500);
+		}
+		while ((max-- > 0)&&(smtpServer.isRunning()));
 	}
 
 	public StorageIf getBlueBoxStorageIf() {
@@ -52,7 +64,7 @@ public class InboxTest extends TestCase {
 		inbox.setStatsGlobalCount(123456);
 		assertEquals("Incorrectly reported global stats",123456,inbox.getStatsGlobalCount());
 	}
-	
+
 	public void testRecentStats() throws AddressException, MessagingException, IOException, Exception {
 		String email1 = "Steve1 <steve1@there.com>";
 		String email2 = "Steve2 <steve2@there.com>";
@@ -61,7 +73,7 @@ public class InboxTest extends TestCase {
 		Utils.sendMessage(new InternetAddress("from@from.com"), "subject", "body", new InternetAddress[]{new InternetAddress(email2)}, new InternetAddress[]{}, new InternetAddress[]{}, false);
 		Utils.sendMessage(new InternetAddress("from@from.com"), "subject", "body", new InternetAddress[]{new InternetAddress(email3)}, new InternetAddress[]{}, new InternetAddress[]{}, false);
 
-		
+
 		Thread.sleep(2000);
 		JSONObject json = inbox.getStatsRecent();
 		log.info(json.toString(3));
@@ -86,5 +98,5 @@ public class InboxTest extends TestCase {
 		assertEquals("Incorrectly reported most active inbox",new InboxAddress(email1).getAddress(),jo.getString(BlueboxMessage.TO));
 		assertEquals("Incorrectly reported most active inbox count",10,jo.getInt(BlueboxMessage.COUNT));
 	}
-	
+
 }

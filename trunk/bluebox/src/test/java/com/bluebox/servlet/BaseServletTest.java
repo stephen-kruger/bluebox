@@ -1,10 +1,12 @@
 package com.bluebox.servlet;
 
 import java.io.IOException;
+import java.sql.DriverManager;
 import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.testing.HttpTester;
@@ -13,6 +15,7 @@ import org.mortbay.jetty.testing.ServletTester;
 import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.smtp.Inbox;
+import com.bluebox.smtp.storage.BlueboxMessage;
 
 public abstract class BaseServletTest extends TestCase {
 
@@ -27,6 +30,7 @@ public abstract class BaseServletTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
+
 		tester = new ServletTester();
 		tester.setContextPath(contextPath);
 		//ServletHolder jsp = tester.addServlet(org.apache.jasper.servlet.JspServlet.class, "*.jsp");
@@ -44,12 +48,15 @@ public abstract class BaseServletTest extends TestCase {
 		// this triggers the servlet to actually start
 		getRestJSON("/"+JSONFolderHandler.JSON_ROOT);
 
+		// clear mailboxes
+		getURL("/rest/admin/clear");
+
 		// send some test messages
 		Utils.sendSingleMessage(COUNT);
 
 		getRestJSON("/"+JSONFolderHandler.JSON_ROOT);
 
-		//		Thread.sleep(20000);
+		//		Thread.sleep(5000);
 
 
 		//		Inbox inbox = Inbox.getInstance();
@@ -65,6 +72,26 @@ public abstract class BaseServletTest extends TestCase {
 
 	}
 
+	public int getMailCount(BlueboxMessage.State state) {
+		String url = "/"+JSONFolderHandler.JSON_ROOT;
+		try {
+			JSONObject js = getRestJSON(url);
+			System.out.println(js.toString(3));
+			JSONArray children = js.getJSONArray("items").getJSONObject(0).getJSONArray("children");
+			for (int i = 0; i < children.length();i++) {
+				JSONObject stateC = children.getJSONObject(i);
+				if (BlueboxMessage.State.valueOf(stateC.getString("state"))==state) {
+					return stateC.getInt("count");
+				}
+			}
+			return 0;
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+			return 0;
+		}
+	}
+
 	public JSONObject getRestJSON(String url) throws IOException, Exception {
 		HttpTester request = new HttpTester();
 		request.setMethod("GET");
@@ -77,16 +104,60 @@ public abstract class BaseServletTest extends TestCase {
 
 		assertNull(response.getMethod());
 		assertEquals(200,response.getStatus());
-		JSONObject jo = new JSONObject(response.getContent());
-		return jo;
+		String js = response.getContent();
+		try {
+			JSONObject jo = new JSONObject(js);
+			return jo;
+		}
+		catch (Throwable t) {
+			log.info(js);
+			throw t;
+		}
+	}
+
+	public String getURL(String url) throws IOException, Exception {
+		HttpTester request = new HttpTester();
+		request.setMethod("GET");
+		request.setHeader("HOST","127.0.0.1");
+		request.setURI(url);
+		request.setVersion("HTTP/1.0");
+
+		HttpTester response = new HttpTester();
+		response.parse(getTester().getResponses(request.generate()));
+
+		assertNull(response.getMethod());
+		// delete gives 302 redirect, so don't check for 200
+		//		assertEquals(200,response.getStatus());
+		String js = response.getContent();
+		return js;
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		log.info("Stopping servlet");
-		tester.stop();
-		Inbox.getInstance().deleteAll();
+
+		try {
+			tester.stop();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		try {
+			bbs.stop();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		//		try {
+		//			Inbox.getInstance().deleteAll();
+		//			Inbox.getInstance().stop();
+		//		}
+		//		catch (Throwable t) {
+		//			t.printStackTrace();
+		//		}
+
+		Thread.sleep(3000);
 	}
 
 	public ServletTester getTester() {
