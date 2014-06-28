@@ -7,7 +7,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONFolderHandler;
-import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class RestTest extends BaseServletTest {
@@ -30,19 +29,18 @@ public class RestTest extends BaseServletTest {
 		}
 		log.info(js.toString(3));
 	}
-	
+
 	public void testInbox() throws Exception {
-		
-		
+
+
 		// first we check directly
-		Inbox inbox = Inbox.getInstance();
 		int count = 0;
-		while ((count++<10)&&(inbox.getMailCount(BlueboxMessage.State.ANY)<COUNT)) {
-			System.out.println("Waiting for mail delivery :"+inbox.getMailCount(BlueboxMessage.State.ANY));
-			Thread.sleep(3500);
+		while ((count++<20)&&(getMailCount(BlueboxMessage.State.NORMAL)<COUNT)) {
+			System.out.println("Waiting for mail delivery :"+getMailCount(BlueboxMessage.State.NORMAL));
+			Thread.sleep(1000);
 		}
-		assertEquals("Missing mails",COUNT,inbox.getMailCount(BlueboxMessage.State.ANY));
-		
+		assertEquals("Missing mails",COUNT,getMailCount(BlueboxMessage.State.NORMAL));
+
 		// now hit the REST web service
 		String inboxURL = "/"+JSONFolderHandler.JSON_ROOT;
 		log.info("Checking URL:"+inboxURL);
@@ -72,43 +70,43 @@ public class RestTest extends BaseServletTest {
 			}
 		}
 		log.info(js.toString(3));
-		
-//		{
-//			   "identifier": "id",
-//			   "label": "name",
-//			   "items": [{
-//			      "id": "Overview",
-//			      "name": "Inbox for \/NORMAL@XHOSA",
-//			      "type": "folder",
-//			      "style": "rootFolder",
-//			      "children": [
-//			         {
-//			            "id": "Inbox",
-//			            "name": "Inbox (0)",
-//			            "count": 0,
-//			            "email": "\/NORMAL@XHOSA",
-//			            "state": "NORMAL",
-//			            "style": "inboxFolder"
-//			         },
-//			         {
-//			            "id": "Trash",
-//			            "name": "Trash (0)",
-//			            "count": 0,
-//			            "email": "\/NORMAL@XHOSA",
-//			            "state": "DELETED",
-//			            "style": "trashFolder"
-//			         },
-//			         {
-//			            "id": "All",
-//			            "name": "All documents (0)",
-//			            "count": 0,
-//			            "email": "\/NORMAL@XHOSA",
-//			            "state": "ANY",
-//			            "style": "allFolder"
-//			         }
-//			      ]
-//			   }]
-//			}		
+
+		//		{
+		//			   "identifier": "id",
+		//			   "label": "name",
+		//			   "items": [{
+		//			      "id": "Overview",
+		//			      "name": "Inbox for \/NORMAL@XHOSA",
+		//			      "type": "folder",
+		//			      "style": "rootFolder",
+		//			      "children": [
+		//			         {
+		//			            "id": "Inbox",
+		//			            "name": "Inbox (0)",
+		//			            "count": 0,
+		//			            "email": "\/NORMAL@XHOSA",
+		//			            "state": "NORMAL",
+		//			            "style": "inboxFolder"
+		//			         },
+		//			         {
+		//			            "id": "Trash",
+		//			            "name": "Trash (0)",
+		//			            "count": 0,
+		//			            "email": "\/NORMAL@XHOSA",
+		//			            "state": "DELETED",
+		//			            "style": "trashFolder"
+		//			         },
+		//			         {
+		//			            "id": "All",
+		//			            "name": "All documents (0)",
+		//			            "count": 0,
+		//			            "email": "\/NORMAL@XHOSA",
+		//			            "state": "ANY",
+		//			            "style": "allFolder"
+		//			         }
+		//			      ]
+		//			   }]
+		//			}		
 	}
 
 

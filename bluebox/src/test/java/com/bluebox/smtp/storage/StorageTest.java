@@ -39,22 +39,22 @@ public class StorageTest extends TestCase {
 		setBlueBoxStorageIf(StorageFactory.getInstance());
 		getBlueBoxStorageIf().start();
 		log.info("Cleaning up messages to start tests");
+		getBlueBoxStorageIf().logErrorClear();
 		try {
 			getBlueBoxStorageIf().deleteAll();
 		}
 		catch (Throwable t) {
 			log.warning("Tables not created");
 		}
-		getBlueBoxStorageIf().logErrorClear();
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		log.info("Cleaning up messages after tests");
-		getBlueBoxStorageIf().deleteAll();
-		getBlueBoxStorageIf().logErrorClear();
-		getBlueBoxStorageIf().stop();
+		jr.logErrorClear();
+		jr.deleteAll();
+		jr.stop();
 	}
 
 	public StorageIf getBlueBoxStorageIf() {

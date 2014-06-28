@@ -59,6 +59,9 @@ public class StorageImpl implements StorageIf {
 		catch (Throwable t) {
 			log.warning(t.getMessage());
 		}
+		// force gc to unload the derby classes
+		//http://db.apache.org/derby/docs/10.3/devguide/tdevdvlp20349.html
+		System.gc();
 	}
 
 	public static Connection getConnection() throws SQLException {
