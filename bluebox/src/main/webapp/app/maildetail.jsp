@@ -14,8 +14,7 @@
 %>
 <script type="text/javascript" charset="utf-8">
 
-	require(["dijit/form/Button"]);
-
+	 
 	function getAttachmentIcon(attachmentName) {
 		attachmentName = attachmentName.toLowerCase();
 		
@@ -99,14 +98,18 @@
 	}
 	
 	function createEmailButton(parentId, labelStr) {
-		new dijit.form.Button({
-			id :parentId+labelStr,
-	        label: labelStr,
-	        onClick: function() {
-	        	loadInboxAndFolder(labelStr);
-	        }
-	    },
-	    parentId);	
+		require(["dijit/form/Button", "dojo/dom", "dojo/domReady!"], function(Button, dom){
+			new dijit.form.Button({
+				id :parentId+labelStr,
+		        label: labelStr,
+		        onClick: function() {
+		        	loadInboxAndFolder(labelStr);
+		        }
+		    },
+		    parentId).startup();	
+		});
+
+		
 	}
 	
 	function loadActualInbox() {
@@ -205,19 +208,7 @@
 						displayAttachments(uid,"Attachment",data.Attachment);
 					}
 					
-					require(["dijit/registry"], function(registry) {
-						registry.byId("html-tab").setContent(data.<%=MimeMessageWrapper.HTML_BODY%>);
-						registry.byId("text-tab").setValue(data.<%=MimeMessageWrapper.TEXT_BODY%>);
-						registry.byId("text-tab").resize();
-					});
-					
-					// show the table with the most content by default
-					if (data.<%=MimeMessageWrapper.HTML_BODY%>.length>data.<%=MimeMessageWrapper.TEXT_BODY%>.length) {
-						selectMailTab("html-tab");
-					}
-					else {
-						selectMailTab("text-tab");
-					}
+					setBodyContent(data.<%=MimeMessageWrapper.HTML_BODY%>,data.<%=MimeMessageWrapper.TEXT_BODY%>);
 	
 				},
 				error: function (error) {
@@ -235,8 +226,37 @@
 	   return div.innerHTML;
 	}
 	
+	function setBodyContent(htmlContent, textContent) {
+		require(["dijit/registry"],
+	            function(registry) {
+			var htmltab = registry.byId("html-tab");
+			var texttab = registry.byId("text-tab");
+				if (htmltab) {
+					htmltab.setContent(htmlContent);
+				}
+				else {
+					alert("error getting html tab");
+				}
+				if (texttab) {
+					texttab.setValue(textContent);
+					texttab.resize();
+				}
+				else {
+					alert("error getting text tab");
+				}			
+		});
+		// show the table with the most content by default
+		if (htmlContent.length>textContent.length) {
+			selectMailTab("html-tab");
+		}
+		else {
+			selectMailTab("text-tab");
+		}
+	}
+	
 	function selectMailTab(showTab) {
-		require(["dijit/registry"], function(registry) {
+		require(["dijit/registry"],
+	            function(registry) {
 			var tabs = registry.byId("mail-tab");
 			var pane = registry.byId(showTab);
 			tabs.selectChild(pane);
