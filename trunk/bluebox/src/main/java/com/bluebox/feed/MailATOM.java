@@ -43,8 +43,8 @@ public class MailATOM {
 			Feed feed = Abdera.getInstance().newFeed();
 			// NOTE - RFC 4287 requires a feed to have id, title, and updated properties
 			feed.setId("bluebox");
-			feed.setLogo(uri.getBaseUri().toString()+"../theme/images/message.png");
-			feed.setIcon(uri.getBaseUri().toString()+"../theme/images/favicon.ico");
+			feed.setLogo(uri.getBaseUri().toString()+"../app/images/message.png");
+			feed.setIcon(uri.getBaseUri().toString()+"../app/images/favicon.ico");
 			feed.setTitle("Inbox for "+email);
 			feed.addAuthor(email);
 			feed.addLink(uri.getBaseUri().toString()+"../app/inbox.jsp?email="+URLEncoder.encode(email,"UTF-8"), "self");

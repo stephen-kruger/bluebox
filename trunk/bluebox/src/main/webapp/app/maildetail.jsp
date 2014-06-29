@@ -19,11 +19,11 @@
 		attachmentName = attachmentName.toLowerCase();
 		
 		if (attachmentName.indexOf(".pdf")>0) {
-			return "<%=request.getContextPath()%>/theme/images/ftPdf16.png";
+			return "<%=request.getContextPath()%>/app/images/ftPdf16.png";
 		}
 		if ((attachmentName.indexOf(".ppt")>0)||
 				(attachmentName.indexOf(".odp")>0)) {
-			return "<%=request.getContextPath()%>/theme/images/ftPresentation16.png";
+			return "<%=request.getContextPath()%>/app/images/ftPresentation16.png";
 		}
 		if ((attachmentName.indexOf(".doc")>0)||
 				(attachmentName.indexOf(".docx")>0)||
@@ -31,7 +31,7 @@
 				(attachmentName.indexOf(".wps")>0)||
 				(attachmentName.indexOf(".wpd")>0)||
 				(attachmentName.indexOf(".odt")>0)) {
-			return "<%=request.getContextPath()%>/theme/images/ftWordProcessing16.png";
+			return "<%=request.getContextPath()%>/app/images/ftWordProcessing16.png";
 		}
 		if ((attachmentName.indexOf(".avi")>0)||
 				(attachmentName.indexOf(".mp4")>0)||
@@ -41,7 +41,7 @@
 				(attachmentName.indexOf(".swf")>0)||
 				(attachmentName.indexOf(".mkv")>0)||
 				(attachmentName.indexOf(".wmv")>0)) {
-			return "<%=request.getContextPath()%>/theme/images/ftVideo16.png";
+			return "<%=request.getContextPath()%>/app/images/ftVideo16.png";
 		}
 		if ((attachmentName.indexOf(".csv")>0)||
 				(attachmentName.indexOf(".xls")>0)||
@@ -50,7 +50,7 @@
 				(attachmentName.indexOf(".ods")>0)||
 				(attachmentName.indexOf(".dat")>0)||
 				(attachmentName.indexOf(".xml")>0)) {
-			return "<%=request.getContextPath()%>/theme/images/ftData16.png";
+			return "<%=request.getContextPath()%>/app/images/ftData16.png";
 		}				
 		if ((attachmentName.indexOf(".zip")>0)||
 				(attachmentName.indexOf(".7z")>0)||
@@ -59,12 +59,12 @@
 				(attachmentName.indexOf(".arc")>0)||
 				(attachmentName.indexOf(".tgz")>0)||
 				(attachmentName.indexOf(".tar")>0)) {
-			return "<%=request.getContextPath()%>/theme/images/ftCompressed16.png";
+			return "<%=request.getContextPath()%>/app/images/ftCompressed16.png";
 		}
 		if ((attachmentName.indexOf(".txt")>0)||
 				(attachmentName.indexOf(".text")>0)||
 				(attachmentName.indexOf(".readme")>0)) {
-			return "<%=request.getContextPath()%>/theme/images/ftText16.png";
+			return "<%=request.getContextPath()%>/app/images/ftText16.png";
 		}
 		if ((attachmentName.indexOf(".wav")>0)||
 				(attachmentName.indexOf(".aac")>0)||
@@ -73,14 +73,14 @@
 				(attachmentName.indexOf(".m3u")>0)||
 				(attachmentName.indexOf(".mid")>0)||
 				(attachmentName.indexOf(".mp3")>0)) {
-			return "<%=request.getContextPath()%>/theme/images/ftAudio16.png";
+			return "<%=request.getContextPath()%>/app/images/ftAudio16.png";
 		}
 		if ((attachmentName.indexOf(".jpg")>0)||
 				(attachmentName.indexOf(".gif")>0)||
 				(attachmentName.indexOf(".png")>0)) {
-			return "<%=request.getContextPath()%>/theme/images/ftGraphic16.png";
+			return "<%=request.getContextPath()%>/app/images/ftGraphic16.png";
 		}
-		return "<%=request.getContextPath()%>/theme/images/attachment.png";
+		return "<%=request.getContextPath()%>/app/images/attachment.png";
 	}
 	
 	// create a link to rest service using */uid/attachment_index/filename
@@ -140,10 +140,10 @@
 			var str = "";
 			for (var i = 0; i < array.length; i++) {
 				if (i>0) {
-					str += ", <a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/theme/images/iconMail.png\"/></a>"+encodeMyHtml(array[i]);
+					str += ", <a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/images/iconMail.png\"/></a>"+encodeMyHtml(array[i]);
 				}
 				else {
-					str += "<a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/theme/images/iconMail.png\"/></a>"+encodeMyHtml(array[i]);
+					str += "<a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/images/iconMail.png\"/></a>"+encodeMyHtml(array[i]);
 				}
 			}
 			label.innerHTML = str;
@@ -365,7 +365,7 @@
 	<table class="headerBoxTable">
 		<tr>
 			<td valign="top"><img id="subjectIcon"
-				src="<%=request.getContextPath()%>/theme/images/message.png" align="top" /></td>
+				src="<%=request.getContextPath()%>/app/images/message.png" align="top" /></td>
 			<td>
 				<table class="headerBoxTable">
 					<tr>
