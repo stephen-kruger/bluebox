@@ -19,6 +19,7 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
@@ -43,8 +44,8 @@ public class MailATOM {
 			Feed feed = Abdera.getInstance().newFeed();
 			// NOTE - RFC 4287 requires a feed to have id, title, and updated properties
 			feed.setId("bluebox");
-			feed.setLogo(uri.getBaseUri().toString()+"../app/images/message.png");
-			feed.setIcon(uri.getBaseUri().toString()+"../app/images/favicon.ico");
+			feed.setLogo(uri.getBaseUri().toString()+"../app/"+Config.getInstance().getString("bluebox_theme")+"/message.png");
+			feed.setIcon(uri.getBaseUri().toString()+"../app/"+Config.getInstance().getString("bluebox_theme")+"/favicon.ico");
 			feed.setTitle("Inbox for "+email);
 			feed.addAuthor(email);
 			feed.addLink(uri.getBaseUri().toString()+"../app/inbox.jsp?email="+URLEncoder.encode(email,"UTF-8"), "self");
