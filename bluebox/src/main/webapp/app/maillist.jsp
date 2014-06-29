@@ -295,23 +295,23 @@
 			<div class="navcontainer">
 				<ul>
 					<li><a href="javascript:;" onclick="loadAll()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/theme/images/iconMail.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/app/images/iconMail.png"
 							alt="<%=inboxDetailsResource.getString("allTooltip")%>" /><%=inboxDetailsResource.getString("all")%>
 					</a></li>
 					<li><a href="javascript:;" onclick="loadRaw()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/theme/images/download.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/app/images/download.png"
 							alt="<%=inboxDetailsResource.getString("downloadTooltip")%>" /><%=inboxDetailsResource.getString("download")%></a>
 					</li>
 					<li><a href="javascript:;" onclick="refresh()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/theme/images/refresh.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/app/images/refresh.png"
 							alt="<%=inboxDetailsResource.getString("refreshTooltip")%>" /><%=inboxDetailsResource.getString("refresh")%></a>
 					</li>
 					<li><a href="javascript:;" onclick="atomFeed()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/theme/images/rss.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/app/images/rss.png"
 							alt="<%=inboxDetailsResource.getString("atomTooltip")%>" /><%=inboxDetailsResource.getString("atom")%></a>
 					</li>
 					<li><a href="javascript:;" onclick="deleteSelectedRows()">
-							<img class="sixteenIcon" src="<%=request.getContextPath()%>/theme/images/inboxTrash.png"
+							<img class="sixteenIcon" src="<%=request.getContextPath()%>/app/images/inboxTrash.png"
 							alt="<%=inboxDetailsResource.getString("deleteTooltip")%>" /><%=inboxDetailsResource.getString("delete")%></a>
 					</li>
 				</ul>

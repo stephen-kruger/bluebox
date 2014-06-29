@@ -70,13 +70,13 @@
 </script>
 	<div class="rightSideContent">	    	    
 		<h2><%= statsResource.getString("traffic_title") %></h2>
-		<p><span id="statsGlobalCount" style="white-space: nowrap;"><img src="<%=request.getContextPath()%>/theme/images/loading.gif"></span></p>
+		<p><span id="statsGlobalCount" style="white-space: nowrap;"><img src="<%=request.getContextPath()%>/app/images/loading.gif"></span></p>
 
 		<h2><%= statsResource.getString("active_title") %></h2>
-		<p><span id="stats_active" style="white-space: nowrap;"><img src="<%=request.getContextPath()%>/theme/images/loading.gif"></span></p>
+		<p><span id="stats_active" style="white-space: nowrap;"><img src="<%=request.getContextPath()%>/app/images/loading.gif"></span></p>
          
 		<h2><%= statsResource.getString("recent_title") %></h2>
-		<p><span id="stats_recent" style="white-space: normal;"><img src="<%=request.getContextPath()%>/theme/images/loading.gif"></span></p>
+		<p><span id="stats_recent" style="white-space: normal;"><img src="<%=request.getContextPath()%>/app/images/loading.gif"></span></p>
 		<div class="seperator"></div>
 		<br/>
 		<span style="color:lightGrey;"><%= footerResource.getString("title") %> V<%= BlueBoxServlet.VERSION %></span>
