@@ -1,7 +1,6 @@
 package com.bluebox.servlet;
 
 import java.io.IOException;
-import java.sql.DriverManager;
 import java.util.logging.Logger;
 
 import junit.framework.TestCase;
@@ -14,7 +13,6 @@ import org.mortbay.jetty.testing.ServletTester;
 
 import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONFolderHandler;
-import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public abstract class BaseServletTest extends TestCase {
