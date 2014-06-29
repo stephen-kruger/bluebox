@@ -120,8 +120,8 @@ public class BlueBoxServlet extends HttpServlet {
 			return;
 		}	
 		if (req.getRequestURI().indexOf("rest/admin/rebuildsearchindexes")>=0){
-			Inbox.getInstance().rebuildSearchIndexes();
 			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
+			Inbox.getInstance().rebuildSearchIndexes();
 			return;
 		}
 		if (req.getRequestURI().indexOf("rest/admin/prune")>=0){
