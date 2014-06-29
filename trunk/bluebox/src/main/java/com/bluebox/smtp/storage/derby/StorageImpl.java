@@ -1,7 +1,6 @@
 package com.bluebox.smtp.storage.derby;
 
 import java.io.InputStream;
-import java.io.Writer;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -23,11 +22,12 @@ import org.codehaus.jettison.json.JSONObject;
 import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.MimeMessageWrapper;
+import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
-import com.bluebox.smtp.storage.StorageIf;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
+import com.bluebox.smtp.storage.StorageIf;
 
-public class StorageImpl implements StorageIf {
+public class StorageImpl extends AbstractStorage implements StorageIf {
 	private static final Logger log = Logger.getAnonymousLogger();
 	private static final String INBOX_TABLE = "INBOX";
 	private static final String PROPS_TABLE = "PROPERTIES";
@@ -215,25 +215,75 @@ public class StorageImpl implements StorageIf {
 		return message;
 	}
 
-	public BlueboxMessage loadMessage(ResultSet result) throws Exception {
-
-		//id VARCHAR(36), email VARCHAR(20), from VARCHAR(20), subject VARCHAR(255), received DATE, state INTEGER, pic blob(16M))");
-		BlueboxMessage message = new BlueboxMessage(result.getString(BlueboxMessage.UID));
-		message.setProperty(BlueboxMessage.TO, result.getString(BlueboxMessage.TO));
-		message.setProperty(BlueboxMessage.INBOX, result.getString(BlueboxMessage.INBOX));
-		message.setProperty(BlueboxMessage.FROM, result.getString(BlueboxMessage.FROM));
-		message.setProperty(BlueboxMessage.SUBJECT, result.getString(BlueboxMessage.SUBJECT));
-		message.setProperty(BlueboxMessage.RECEIVED, Long.toString(result.getTimestamp(BlueboxMessage.RECEIVED).getTime()));
-
-		message.setProperty(BlueboxMessage.STATE, State.values()[result.getInt(BlueboxMessage.STATE)].name());
-		MimeMessageWrapper mmw = new MimeMessageWrapper(null, result.getBinaryStream(StorageImpl.RAW));
-		message.loadBlueBoxMimeMessage(mmw);
-		int size = message.getBlueBoxMimeMessage().getSize()/1000;
-		if (size==0)
-			size = 1;
-		message.setProperty(BlueboxMessage.SIZE, Long.toString(size));
-		return message;
+	public String getDBOString(Object dbo, String key, String def) {
+		ResultSet mo = (ResultSet)dbo;
+		try {
+			String value = mo.getString(key);
+			if (value!=null) {
+				return value;
+			}
+			else {
+				log.warning("Missing field "+key);
+			}
+		}
+		catch (SQLException sqe) {
+			sqe.printStackTrace();
+		}
+		return def;
 	}
+
+	public int getDBOInt(Object dbo, String key, int def) {
+		ResultSet mo = (ResultSet)dbo;
+		try {
+			return mo.getInt(key);
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+			return def;
+		}
+	}
+	public Date getDBODate(Object dbo, String key) {
+		ResultSet mo = (ResultSet)dbo;
+		try {
+			return mo.getTimestamp(key);
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public InputStream getDBORaw(Object dbo, String key) {
+		ResultSet mo = (ResultSet)dbo;
+		try {
+			return mo.getBinaryStream(StorageImpl.RAW);
+		}
+		catch (Throwable t) {
+			log.severe(t.getMessage());
+			t.printStackTrace();
+			return null;
+		}
+	}
+
+	//	public BlueboxMessage loadMessage(ResultSet result) throws Exception {
+	//
+	//		//id VARCHAR(36), email VARCHAR(20), from VARCHAR(20), subject VARCHAR(255), received DATE, state INTEGER, pic blob(16M))");
+	//		BlueboxMessage message = new BlueboxMessage(result.getString(BlueboxMessage.UID));
+	//		message.setProperty(BlueboxMessage.TO, result.getString(BlueboxMessage.TO));
+	//		message.setProperty(BlueboxMessage.INBOX, result.getString(BlueboxMessage.INBOX));
+	//		message.setProperty(BlueboxMessage.FROM, result.getString(BlueboxMessage.FROM));
+	//		message.setProperty(BlueboxMessage.SUBJECT, result.getString(BlueboxMessage.SUBJECT));
+	//		message.setProperty(BlueboxMessage.RECEIVED, Long.toString(result.getTimestamp(BlueboxMessage.RECEIVED).getTime()));
+	//
+	//		message.setProperty(BlueboxMessage.STATE, State.values()[result.getInt(BlueboxMessage.STATE)].name());
+	//		MimeMessageWrapper mmw = new MimeMessageWrapper(null, result.getBinaryStream(StorageImpl.RAW));
+	//		message.loadBlueBoxMimeMessage(mmw);
+	//		int size = message.getBlueBoxMimeMessage().getSize()/1000;
+	//		if (size==0)
+	//			size = 1;
+	//		message.setProperty(BlueboxMessage.SIZE, Long.toString(size));
+	//		return message;
+	//	}
 
 	public void deleteAll(InboxAddress inbox) throws Exception {
 		log.fine("Deleting inbox "+inbox);
@@ -363,7 +413,7 @@ public class StorageImpl implements StorageIf {
 		connection.close();
 		return list;
 	}
-	
+
 	public List<JSONObject> listMailLite(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		if (count<0)
 			count = Integer.MAX_VALUE;
@@ -418,37 +468,37 @@ public class StorageImpl implements StorageIf {
 		return list;
 	}
 
-	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
-		long startTime = new Date().getTime();
-		List<JSONObject> mail = listMailLite(inbox, state, start, count, orderBy, ascending);
-
-//		JSONObject curr;
-		int index = 0;
-		writer.write("[");
-		for (JSONObject curr : mail) {
-//			curr = new JSONObject();
-//			curr.put(BlueboxMessage.FROM, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.FROM)));
-//			curr.put(BlueboxMessage.SUBJECT, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.SUBJECT)));
-//			// convert the date to the locale used by the users browser
-//			if (message.hasProperty(BlueboxMessage.RECEIVED)) {
-//				curr.put(BlueboxMessage.RECEIVED, SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.LONG, SimpleDateFormat.SHORT, locale).format(new Date(message.getLongProperty(BlueboxMessage.RECEIVED))));
-//			}
-//			if (message.hasProperty(BlueboxMessage.SIZE)) {
-//				curr.put(BlueboxMessage.SIZE, message.getPropertyString(BlueboxMessage.SIZE)+"K");
-//			}
-//			else {
-//				curr.put(BlueboxMessage.SIZE, "1K");
-//			}
-//			curr.put(BlueboxMessage.UID, message.getIdentifier());
-			writer.write(curr.toString(3));
-			if ((index++)<mail.size()-1) {
-				writer.write(",");
-			}
-		}
-		writer.write("]");
-		writer.flush();
-		log.fine("Served inbox contents in "+(new Date().getTime()-startTime)+"ms");
-	}
+	//	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
+	//		long startTime = new Date().getTime();
+	//		List<JSONObject> mail = listMailLite(inbox, state, start, count, orderBy, ascending);
+	//
+	////		JSONObject curr;
+	//		int index = 0;
+	//		writer.write("[");
+	//		for (JSONObject curr : mail) {
+	////			curr = new JSONObject();
+	////			curr.put(BlueboxMessage.FROM, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.FROM)));
+	////			curr.put(BlueboxMessage.SUBJECT, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.SUBJECT)));
+	////			// convert the date to the locale used by the users browser
+	////			if (message.hasProperty(BlueboxMessage.RECEIVED)) {
+	////				curr.put(BlueboxMessage.RECEIVED, SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.LONG, SimpleDateFormat.SHORT, locale).format(new Date(message.getLongProperty(BlueboxMessage.RECEIVED))));
+	////			}
+	////			if (message.hasProperty(BlueboxMessage.SIZE)) {
+	////				curr.put(BlueboxMessage.SIZE, message.getPropertyString(BlueboxMessage.SIZE)+"K");
+	////			}
+	////			else {
+	////				curr.put(BlueboxMessage.SIZE, "1K");
+	////			}
+	////			curr.put(BlueboxMessage.UID, message.getIdentifier());
+	//			writer.write(curr.toString(3));
+	//			if ((index++)<mail.size()-1) {
+	//				writer.write(",");
+	//			}
+	//		}
+	//		writer.write("]");
+	//		writer.flush();
+	//		log.fine("Served inbox contents in "+(new Date().getTime()-startTime)+"ms");
+	//	}
 
 	@Override
 	public void setState(String uid, BlueboxMessage.State state) throws Exception {
@@ -489,73 +539,73 @@ public class StorageImpl implements StorageIf {
 	//		return children;
 	//	}
 
-//	@Override
-//	public JSONArray autoComplete(String hint, long start, long count) throws Exception {
-//		JSONObject curr;
-//		JSONArray children = new JSONArray();
-//		// no need to include wildcard
-//		if (hint.contains("*")) {
-//			hint=hint.substring(0,hint.indexOf('*'));
-//		}
-//		if (hint.length()==1)
-//			return children;
-//		if (hint.length()>1) {			
-//			hint = QueryParser.escape(hint);
-//			System.out.println(hint);
-//			SearchIndexer search = SearchIndexer.getInstance();
-//			Document[] results = search.search(hint, SearchIndexer.SearchFields.TO, (int)start, (int)count, SearchIndexer.SearchFields.TO.name());
-//			for (int i = 0; i < results.length;i++) {
-//				String uid = results[i].get(SearchFields.UID.name());
-//				BlueboxMessage message = retrieve(uid);
-//				if (message!=null) {
-//					String name = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.INBOX));
-//					String label = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.TO));
-//					String identifier = uid;
-//					curr = new JSONObject();
-//					curr.put("name", name);
-//					curr.put("label", label);
-//					curr.put("identifier", identifier);
-//					if (!contains(children,name))
-//						children.put(curr);
-//				}
-//				else {
-//					log.severe("Sync error between search indexes and derby tables");					
-//				}
-//				if (children.length()>=count)
-//					break;
-//			}
-//		}
-//		else {
-//			List<BlueboxMessage> mail =  listMail(null, BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.RECEIVED, true);
-//			for (BlueboxMessage message : mail) {
-//				curr = new JSONObject();
-//				curr.put("name", message.getProperty(BlueboxMessage.INBOX));
-//				curr.put("label", message.getProperty(BlueboxMessage.TO));
-//				curr.put("identifier", message.getIdentifier());
-//				if (!contains(children,curr.getString("name")))
-//					children.put(curr);
-//				if (children.length()>=count)
-//					break;
-//			}
-//		}
-//
-//		return children;
-//	}
+	//	@Override
+	//	public JSONArray autoComplete(String hint, long start, long count) throws Exception {
+	//		JSONObject curr;
+	//		JSONArray children = new JSONArray();
+	//		// no need to include wildcard
+	//		if (hint.contains("*")) {
+	//			hint=hint.substring(0,hint.indexOf('*'));
+	//		}
+	//		if (hint.length()==1)
+	//			return children;
+	//		if (hint.length()>1) {			
+	//			hint = QueryParser.escape(hint);
+	//			System.out.println(hint);
+	//			SearchIndexer search = SearchIndexer.getInstance();
+	//			Document[] results = search.search(hint, SearchIndexer.SearchFields.TO, (int)start, (int)count, SearchIndexer.SearchFields.TO.name());
+	//			for (int i = 0; i < results.length;i++) {
+	//				String uid = results[i].get(SearchFields.UID.name());
+	//				BlueboxMessage message = retrieve(uid);
+	//				if (message!=null) {
+	//					String name = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.INBOX));
+	//					String label = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.TO));
+	//					String identifier = uid;
+	//					curr = new JSONObject();
+	//					curr.put("name", name);
+	//					curr.put("label", label);
+	//					curr.put("identifier", identifier);
+	//					if (!contains(children,name))
+	//						children.put(curr);
+	//				}
+	//				else {
+	//					log.severe("Sync error between search indexes and derby tables");					
+	//				}
+	//				if (children.length()>=count)
+	//					break;
+	//			}
+	//		}
+	//		else {
+	//			List<BlueboxMessage> mail =  listMail(null, BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.RECEIVED, true);
+	//			for (BlueboxMessage message : mail) {
+	//				curr = new JSONObject();
+	//				curr.put("name", message.getProperty(BlueboxMessage.INBOX));
+	//				curr.put("label", message.getProperty(BlueboxMessage.TO));
+	//				curr.put("identifier", message.getIdentifier());
+	//				if (!contains(children,curr.getString("name")))
+	//					children.put(curr);
+	//				if (children.length()>=count)
+	//					break;
+	//			}
+	//		}
+	//
+	//		return children;
+	//	}
 
-//	private boolean contains(JSONArray children, String name) {
-//		for (int i = 0; i < children.length();i++) {
-//			try {
-//				if (children.getJSONObject(i).getString("name").equals(name)) {
-//					return true;
-//				}
-//			} 
-//			catch (JSONException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		return false;
-//	}
-	
+	//	private boolean contains(JSONArray children, String name) {
+	//		for (int i = 0; i < children.length();i++) {
+	//			try {
+	//				if (children.getJSONObject(i).getString("name").equals(name)) {
+	//					return true;
+	//				}
+	//			} 
+	//			catch (JSONException e) {
+	//				e.printStackTrace();
+	//			}
+	//		}
+	//		return false;
+	//	}
+
 	@Override
 	public void setProperty(String key, String value) {
 		if (value.length()>512) {
@@ -604,7 +654,7 @@ public class StorageImpl implements StorageIf {
 		}
 		return value;
 	}
-	
+
 	@Override
 	public boolean hasProperty(String key) {
 		String r = Long.toString(new Random().nextLong());

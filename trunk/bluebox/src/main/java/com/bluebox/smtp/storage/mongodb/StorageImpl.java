@@ -2,12 +2,9 @@ package com.bluebox.smtp.storage.mongodb;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.Writer;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -20,6 +17,7 @@ import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.MimeMessageWrapper;
+import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
@@ -35,7 +33,7 @@ import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 import com.mongodb.util.JSON;
 
-public class StorageImpl implements StorageIf {
+public class StorageImpl extends AbstractStorage implements StorageIf {
 	// 1224264 
 	private static final Logger log = Logger.getAnonymousLogger();
 	private static final String DB_NAME = "bluebox";
@@ -123,69 +121,99 @@ public class StorageImpl implements StorageIf {
 		return loadMessage(dbo);
 	}
 
-	public BlueboxMessage loadMessage(DBObject dbo) throws Exception {
-		//		MimeMessageWrapper mmwDbo = new MimeMessageWrapper(null, new ByteArrayInputStream(dbo.get(MessageImpl.BINARY_CONTENT).toString().getBytes("UTF-8")));
-		String uid = getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString());
-		BlueboxMessage message = new BlueboxMessage(uid);
-		if (dbo.containsField(BlueboxMessage.TO))
-			message.setProperty(BlueboxMessage.TO,getDBOString(dbo,BlueboxMessage.TO,"bluebox@bluebox.com"));
-		else {
-			log.warning("Missing field "+BlueboxMessage.TO);
-		}
-		if (dbo.containsField(BlueboxMessage.AUTO_COMPLETE))
-			message.setProperty(BlueboxMessage.AUTO_COMPLETE,getDBOString(dbo,BlueboxMessage.AUTO_COMPLETE,"bluebox@bluebox.com"));
-		else
-			log.warning("Missing field "+BlueboxMessage.AUTO_COMPLETE);
-
-		if (dbo.containsField(BlueboxMessage.FROM))
-			message.setProperty(BlueboxMessage.FROM,getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com"));
-		else
-			log.warning("Missing field "+BlueboxMessage.FROM);
-
-		if (dbo.containsField(BlueboxMessage.SUBJECT))
-			message.setProperty(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
-		else
-			log.warning("Missing field "+BlueboxMessage.SUBJECT);
-
-		if (dbo.containsField(BlueboxMessage.RECEIVED))
-			message.setProperty(BlueboxMessage.RECEIVED,getDBOString(dbo,BlueboxMessage.RECEIVED,""));
-		else
-			log.warning("Missing field "+BlueboxMessage.RECEIVED);
-
-		if (dbo.containsField(BlueboxMessage.STATE))
-			message.setProperty(BlueboxMessage.STATE,getDBOString(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.name()));
-		else
-			log.warning("Missing field "+BlueboxMessage.STATE);
-
-		if (dbo.containsField(BlueboxMessage.INBOX))
-			message.setProperty(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
-		else
-			log.warning("Missing field "+BlueboxMessage.INBOX);
-
-		if (dbo.containsField(BlueboxMessage.SIZE))
-			message.setProperty(BlueboxMessage.SIZE,getDBOString(dbo,BlueboxMessage.SIZE,"0"));
-		else
-			log.warning("Missing field "+BlueboxMessage.SIZE);
-		//		if (dbo.containsField(MessageImpl.BINARY_CONTENT))
-		//			message.setProperty(MessageImpl.BINARY_CONTENT,dbo.get(MessageImpl.BINARY_CONTENT).toString());
-		//		else
-		//			log.warning("Missing field "+MessageImpl.BINARY_CONTENT);
-		message.loadBlueBoxMimeMessage(new MimeMessageWrapper(null, new ByteArrayInputStream(dbo.get(BlueboxMessage.RAW).toString().getBytes("UTF-8"))));
-		return message;
-	}
-
-	public static String getDBOString(DBObject dbo, String key, String defaultValue) {
-		if (dbo.containsField(key)) {
-			Object o = dbo.get(key);
+	public String getDBOString(Object dbo, String key, String def) {
+		DBObject mo = (DBObject)dbo;
+		if (mo.containsField(key)) {
+			Object o = mo.get(key);
 			if (o instanceof BasicDBList) {
-				return ((BasicDBList)dbo.get(key)).get(0).toString();
+				return ((BasicDBList)mo.get(key)).get(0).toString();
 			}
 			return o.toString();
 		}
 		else {
-			return defaultValue;
+			log.warning("Missing field "+key);
+			return def;
 		}
 	}
+	
+	public int getDBOInt(Object dbo, String key, int def) {
+		DBObject mo = (DBObject)dbo;
+		if (mo.containsField(key)) {
+			return Integer.parseInt(mo.get(key).toString());
+		}
+		else {
+			log.warning("Missing field "+key);
+			return def;
+		}
+	}
+	
+	public Date getDBODate(Object dbo, String key) {
+		BasicDBObject mo = (BasicDBObject)dbo;
+		return new Date(mo.getLong(key));
+	}
+
+	public InputStream getDBORaw(Object dbo, String key) {
+		DBObject mo = (DBObject)dbo;
+		try {
+			return new ByteArrayInputStream( mo.get(key).toString().getBytes("UTF-8") );
+		}
+		catch (Throwable t) {
+			log.severe(t.getMessage());
+			t.printStackTrace();
+			return null;
+		}
+	}
+
+//	public BlueboxMessage loadMessage(DBObject dbo) throws Exception {
+//		//		MimeMessageWrapper mmwDbo = new MimeMessageWrapper(null, new ByteArrayInputStream(dbo.get(MessageImpl.BINARY_CONTENT).toString().getBytes("UTF-8")));
+//		String uid = getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString());
+//		BlueboxMessage message = new BlueboxMessage(uid);
+//		if (dbo.containsField(BlueboxMessage.TO))
+//			message.setProperty(BlueboxMessage.TO,getDBOString(dbo,BlueboxMessage.TO,"bluebox@bluebox.com"));
+//		else {
+//			log.warning("Missing field "+BlueboxMessage.TO);
+//		}
+//		if (dbo.containsField(BlueboxMessage.AUTO_COMPLETE))
+//			message.setProperty(BlueboxMessage.AUTO_COMPLETE,getDBOString(dbo,BlueboxMessage.AUTO_COMPLETE,"bluebox@bluebox.com"));
+//		else
+//			log.warning("Missing field "+BlueboxMessage.AUTO_COMPLETE);
+//
+//		if (dbo.containsField(BlueboxMessage.FROM))
+//			message.setProperty(BlueboxMessage.FROM,getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com"));
+//		else
+//			log.warning("Missing field "+BlueboxMessage.FROM);
+//
+//		if (dbo.containsField(BlueboxMessage.SUBJECT))
+//			message.setProperty(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
+//		else
+//			log.warning("Missing field "+BlueboxMessage.SUBJECT);
+//
+//		if (dbo.containsField(BlueboxMessage.RECEIVED))
+//			message.setProperty(BlueboxMessage.RECEIVED,getDBOString(dbo,BlueboxMessage.RECEIVED,""));
+//		else
+//			log.warning("Missing field "+BlueboxMessage.RECEIVED);
+//
+//		if (dbo.containsField(BlueboxMessage.STATE))
+//			message.setProperty(BlueboxMessage.STATE,getDBOString(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.name()));
+//		else
+//			log.warning("Missing field "+BlueboxMessage.STATE);
+//
+//		if (dbo.containsField(BlueboxMessage.INBOX))
+//			message.setProperty(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
+//		else
+//			log.warning("Missing field "+BlueboxMessage.INBOX);
+//
+//		if (dbo.containsField(BlueboxMessage.SIZE))
+//			message.setProperty(BlueboxMessage.SIZE,getDBOString(dbo,BlueboxMessage.SIZE,"0"));
+//		else
+//			log.warning("Missing field "+BlueboxMessage.SIZE);
+//		//		if (dbo.containsField(MessageImpl.BINARY_CONTENT))
+//		//			message.setProperty(MessageImpl.BINARY_CONTENT,dbo.get(MessageImpl.BINARY_CONTENT).toString());
+//		//		else
+//		//			log.warning("Missing field "+MessageImpl.BINARY_CONTENT);
+//		message.loadBlueBoxMimeMessage(new MimeMessageWrapper(null, new ByteArrayInputStream(dbo.get(BlueboxMessage.RAW).toString().getBytes("UTF-8"))));
+//		return message;
+//	}
 
 	@Override
 	public void delete(String uid) {
@@ -270,42 +298,42 @@ public class StorageImpl implements StorageIf {
 		return results;
 	}
 
-	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
-		long startTime = new Date().getTime();
-		// the Query has already been requested to start at correct place
-		JSONObject curr;
-		List<BlueboxMessage> mail = listMail(inbox, state, start, count, orderBy, ascending);
-		int index = 0;
-		writer.write("[");
-		for (BlueboxMessage message : mail) {
-			curr = new JSONObject();
-			curr.put(BlueboxMessage.FROM, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.FROM)));
-			curr.put(BlueboxMessage.SUBJECT, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.SUBJECT)));
-			//			curr.put(MessageImpl.SUBJECT,  Utils.convertEncoding(Utils.decodeRFC2407(msg.getPropertyString(MessageImpl.SUBJECT)),"GB2312"));
-			//			ByteBuffer b = ByteBuffer.wrap(Utils.decodeRFC2407(msg.getBlueBoxMimeMessage().getSubject()).getBytes());
-			//			curr.put(MessageImpl.SUBJECT,  java.nio.charset.Charset.forName("GB2312").newDecoder().decode(b));
-			//			curr.put(MessageImpl.SUBJECT, msg.getBlueBoxMimeMessage().getSubject());
-			// convert the date to the locale used by the users browser
-			if (message.hasProperty(BlueboxMessage.RECEIVED)) {
-				//				curr.put(MessageImpl.RECEIVED, new Date(msg.getLongProperty(MessageImpl.RECEIVED)));
-				curr.put(BlueboxMessage.RECEIVED, SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.LONG, SimpleDateFormat.SHORT, locale).format(new Date(message.getLongProperty(BlueboxMessage.RECEIVED))));
-			}
-			if (message.hasProperty(BlueboxMessage.SIZE)) {
-				curr.put(BlueboxMessage.SIZE, message.getPropertyString(BlueboxMessage.SIZE)+"K");
-			}
-			else {
-				curr.put(BlueboxMessage.SIZE, "1K");
-			}
-			curr.put(BlueboxMessage.UID, message.getIdentifier());
-			writer.write(curr.toString(3));
-			if ((index++)<mail.size()-1) {
-				writer.write(",");
-			}
-		}
-		writer.write("]");
-		writer.flush();
-		log.info("Served inbox contents in "+(new Date().getTime()-startTime)+"ms");
-	}
+	//	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
+	//		long startTime = new Date().getTime();
+	//		// the Query has already been requested to start at correct place
+	//		JSONObject curr;
+	//		List<BlueboxMessage> mail = listMail(inbox, state, start, count, orderBy, ascending);
+	//		int index = 0;
+	//		writer.write("[");
+	//		for (BlueboxMessage message : mail) {
+	//			curr = new JSONObject();
+	//			curr.put(BlueboxMessage.FROM, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.FROM)));
+	//			curr.put(BlueboxMessage.SUBJECT, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.SUBJECT)));
+	//			//			curr.put(MessageImpl.SUBJECT,  Utils.convertEncoding(Utils.decodeRFC2407(msg.getPropertyString(MessageImpl.SUBJECT)),"GB2312"));
+	//			//			ByteBuffer b = ByteBuffer.wrap(Utils.decodeRFC2407(msg.getBlueBoxMimeMessage().getSubject()).getBytes());
+	//			//			curr.put(MessageImpl.SUBJECT,  java.nio.charset.Charset.forName("GB2312").newDecoder().decode(b));
+	//			//			curr.put(MessageImpl.SUBJECT, msg.getBlueBoxMimeMessage().getSubject());
+	//			// convert the date to the locale used by the users browser
+	//			if (message.hasProperty(BlueboxMessage.RECEIVED)) {
+	//				//				curr.put(MessageImpl.RECEIVED, new Date(msg.getLongProperty(MessageImpl.RECEIVED)));
+	//				curr.put(BlueboxMessage.RECEIVED, SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.LONG, SimpleDateFormat.SHORT, locale).format(new Date(message.getLongProperty(BlueboxMessage.RECEIVED))));
+	//			}
+	//			if (message.hasProperty(BlueboxMessage.SIZE)) {
+	//				curr.put(BlueboxMessage.SIZE, message.getPropertyString(BlueboxMessage.SIZE)+"K");
+	//			}
+	//			else {
+	//				curr.put(BlueboxMessage.SIZE, "1K");
+	//			}
+	//			curr.put(BlueboxMessage.UID, message.getIdentifier());
+	//			writer.write(curr.toString(3));
+	//			if ((index++)<mail.size()-1) {
+	//				writer.write(",");
+	//			}
+	//		}
+	//		writer.write("]");
+	//		writer.flush();
+	//		log.info("Served inbox contents in "+(new Date().getTime()-startTime)+"ms");
+	//	}
 
 	@Override
 	public void setState(String uid, BlueboxMessage.State state) throws Exception {
