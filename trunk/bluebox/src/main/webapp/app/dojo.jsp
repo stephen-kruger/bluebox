@@ -4,7 +4,7 @@
 <%
 	Config bbconfig = Config.getInstance();
 %>
-<link rel="SHORTCUT ICON" href="images/favicon.ico" />
+<link rel="SHORTCUT ICON" href="<%=bbconfig.getString("bluebox_theme")%>/favicon.ico" />
 
 <!-- core dojo style sheets -->
 <link
@@ -28,9 +28,5 @@
 
 <!--  load google web fonts  -->
 <link href='http://fonts.googleapis.com/css?family=Roboto:700,400&subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic' rel='stylesheet' type='text/css'>
-<style>
-.claro {
-        font-family:Roboto;
-} 
-</style>
 <link type="text/css" href="<%=request.getContextPath()%>/app/index.css" rel="stylesheet" />
+<link href="<%=bbconfig.getString("bluebox_theme")%>/theme.css"	rel="stylesheet" type="text/css" />

@@ -43,6 +43,31 @@ a {
 	text-decoration: none;
 }
 
+.claro {
+	font-family: 'Roboto', sans-serif !important;
+}
+
 body {
-	font-family: 'Roboto', sans-serif;
+	font-family: 'Roboto', sans-serif !important;
+}
+
+img.sixteenIcon {
+    width:14px !important;
+    height:14px !important;
+    padding-right:3px;
+}
+
+.mailIcon{
+	position:static;
+	vertical-align: middle;
+	right:2px;
+}
+
+.attachmentIcon{
+	position:static;
+	right:-1px;
+	font-weight: normal;
+	vertical-align: middle;
+	width : 16px;
+	height : 16px;
 }

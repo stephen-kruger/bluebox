@@ -1,0 +1,24 @@
+@CHARSET "ISO-8859-1";
+
+img.sixteenIcon {
+    width:17px !important;
+    height:17px !important;
+    padding-right:3px;
+} 
+
+.mailIcon{
+	width:15px !important;
+    height:15px !important;
+	position:static;
+	vertical-align: middle;
+	right:2px;
+}
+
+.attachmentIcon{
+	position:static;
+	right:-1px;
+	font-weight: normal;
+	vertical-align: middle;
+	width : 16px;
+	height : 16px;
+}
