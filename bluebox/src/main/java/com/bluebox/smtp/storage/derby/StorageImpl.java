@@ -37,8 +37,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public static final String ERROR_TITLE = "error_title";
 	public static final String ERROR_CONTENT = "error_content";
 	public static final String RAW = "pic";
+	private boolean started = false;
 
 	public void start() throws Exception {
+		if (started) {
+			throw new Exception("Storage instance already started");
+		}
 		log.info("Starting Derby repository");
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
 		try {
@@ -47,10 +51,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (Throwable t) {
 			log.warning(t.getMessage());
 		}
+		started = true;
 		log.info("Started Derby repository.");
 	}
 
 	public void stop() throws Exception {
+		if (!started) {
+			throw new Exception("Storage instance was not running");
+		}
 		log.info("Stopping Derby repository");
 		try {
 			//StorageFactory.clearInstance();
@@ -62,9 +70,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		// force gc to unload the derby classes
 		//http://db.apache.org/derby/docs/10.3/devguide/tdevdvlp20349.html
 		System.gc();
+		started = false;
 	}
 
-	public static Connection getConnection() throws SQLException {
+	public Connection getConnection() throws Exception {
+		if (!started) {
+			throw new Exception("Storage instance not started");
+		}
 		System.setProperty("derby.language.logQueryPlan", "false");
 		String url = "jdbc:derby:bluebox.derby;create=true";
 		Connection conn = DriverManager.getConnection(url);
@@ -94,7 +106,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 	}
 
-	private void createIndexes(String table, String[] indexes) throws SQLException {
+	private void createIndexes(String table, String[] indexes) throws Exception {
 		Connection connection = getConnection();
 		Statement s = connection.createStatement();
 		for (int i = 0; i < indexes.length; i++) {
@@ -150,7 +162,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		createIndexes(PROPS_TABLE,indexes);
 	}
 
-	private String add(String id, InboxAddress inbox, String from, String subject, Date date, State state, long size, InputStream blob) throws SQLException {
+	private String add(String id, InboxAddress inbox, String from, String subject, Date date, State state, long size, InputStream blob) throws Exception {
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		ps.setString(1, id);
@@ -723,23 +735,36 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public List<String> listUniqueInboxes() {
 		List<String> inboxes = new ArrayList<String>();
 		// list unique mails, then count each one
+		Connection connection = null;
 		try {
-			Connection connection = getConnection();
-			Statement s = connection.createStatement();
-			PreparedStatement ps;
-			ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.INBOX+" from "+INBOX_TABLE);
-			ps.execute();
-			ResultSet result = ps.getResultSet();
-			while (result.next()) {
-				String currInbox = result.getString(BlueboxMessage.INBOX);
-				inboxes.add(currInbox);						
+			connection = getConnection();
+			try {
+				Statement s = connection.createStatement();
+				PreparedStatement ps;
+				ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.INBOX+" from "+INBOX_TABLE);
+				ps.execute();
+				ResultSet result = ps.getResultSet();
+				while (result.next()) {
+					String currInbox = result.getString(BlueboxMessage.INBOX);
+					inboxes.add(currInbox);						
+				}
+				ps.close();
+				s.close();
 			}
-			ps.close();
-			s.close();
-			connection.close();
+			catch (Throwable t) {
+				t.printStackTrace();
+			}
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
+		}
+		finally {
+			try {
+				connection.close();
+			} 
+			catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return inboxes;
 	}
