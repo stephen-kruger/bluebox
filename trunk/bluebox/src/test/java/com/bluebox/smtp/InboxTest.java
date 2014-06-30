@@ -39,15 +39,15 @@ public class InboxTest extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		inbox.deleteAll();
 		smtpServer.stop();
-		inbox.stop();
 		int max = 10;
 		do {
 			// give thread time to close down
 			Thread.sleep(500);
 		}
 		while ((max-- > 0)&&(smtpServer.isRunning()));
+		inbox.deleteAll();
+		inbox.stop();
 	}
 
 	public StorageIf getBlueBoxStorageIf() {

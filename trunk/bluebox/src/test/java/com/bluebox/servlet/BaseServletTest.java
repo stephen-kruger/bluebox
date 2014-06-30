@@ -13,6 +13,7 @@ import org.mortbay.jetty.testing.ServletTester;
 
 import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONFolderHandler;
+import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public abstract class BaseServletTest extends TestCase {
@@ -54,7 +55,7 @@ public abstract class BaseServletTest extends TestCase {
 
 		getRestJSON("/"+JSONFolderHandler.JSON_ROOT);
 
-		//		Thread.sleep(5000);
+//				Thread.sleep(5000);
 
 
 		//		Inbox inbox = Inbox.getInstance();
@@ -67,6 +68,34 @@ public abstract class BaseServletTest extends TestCase {
 		//		is = new FileInputStream(new File("src/test/resources/test-data/m0017.txt"));
 		//		inbox.deliver("sender@here.com", RECIPIENT, is);
 		//		log.fine("Test setUp");
+
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
+		super.tearDown();
+		log.info("Stopping servlet");
+
+		try {
+			tester.stop();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		try {
+			bbs.stop();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		try {
+			Inbox inbox = Inbox.getInstance();
+			inbox.deleteAll();
+			inbox.stop();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
 
 	}
 
@@ -130,33 +159,7 @@ public abstract class BaseServletTest extends TestCase {
 		return js;
 	}
 
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		log.info("Stopping servlet");
 
-		try {
-			tester.stop();
-		}
-		catch (Throwable t) {
-			t.printStackTrace();
-		}
-		try {
-			bbs.stop();
-		}
-		catch (Throwable t) {
-			t.printStackTrace();
-		}
-		//		try {
-		//			Inbox.getInstance().deleteAll();
-		//			Inbox.getInstance().stop();
-		//		}
-		//		catch (Throwable t) {
-		//			t.printStackTrace();
-		//		}
-
-		Thread.sleep(3000);
-	}
 
 	public ServletTester getTester() {
 		return tester;

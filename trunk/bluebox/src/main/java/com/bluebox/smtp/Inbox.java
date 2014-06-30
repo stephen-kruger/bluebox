@@ -388,7 +388,6 @@ public class Inbox implements SimpleMessageListener {
 			return children;
 		if (hint.length()>1) {			
 			hint = QueryParser.escape(hint);
-			System.out.println(hint);
 			SearchIndexer search = SearchIndexer.getInstance();
 			Document[] results = search.search(hint, SearchIndexer.SearchFields.TO, (int)start, (int)count, SearchIndexer.SearchFields.TO.name());
 			for (int i = 0; i < results.length;i++) {
@@ -406,7 +405,7 @@ public class Inbox implements SimpleMessageListener {
 						children.put(curr);
 				}
 				else {
-					log.severe("Sync error between search indexes and derby tables");					
+					log.severe("Sync error between search indexes and derby tables");		
 				}
 				if (children.length()>=count)
 					break;

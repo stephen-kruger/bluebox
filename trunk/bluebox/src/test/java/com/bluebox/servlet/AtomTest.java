@@ -1,6 +1,7 @@
 package com.bluebox.servlet;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.abdera.Abdera;
@@ -28,9 +29,9 @@ public class AtomTest extends BaseServletTest {
 		
 		 URL url = new URL(atomURL);
 		 Parser parser = new Abdera().getParser();
-         Document<Feed> doc = parser.parse(url.openStream(), url.toString());
+		 InputStream is = url.openStream();
+         Document<Feed> doc = parser.parse(is, url.toString());
          Feed feed = doc.getRoot();
-         
 		//WebResource webResource = client.resource(atomURL);
 		//MultivaluedMap<String, String> queryMap = new MultivaluedMapImpl();
 		//String s = webResource.queryParams(queryMap).get(String.class);
