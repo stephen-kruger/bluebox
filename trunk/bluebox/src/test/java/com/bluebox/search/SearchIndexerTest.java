@@ -8,23 +8,19 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.queryparser.classic.ParseException;
 
 import com.bluebox.TestUtils;
-import com.bluebox.search.SearchIndexer;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageFactory;
-import com.bluebox.smtp.storage.StorageIf;
 
 public class SearchIndexerTest extends TestCase {
 	private SearchIndexer si;
-	private StorageIf jr;
 	
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		setBlueBoxStorageIf(StorageFactory.getInstance());
 		//		Config config = Config.getInstance();
 		//		config.setString(Config.BLUEBOX_STORAGE,"com.bluebox.smtp.storage.mongodb.StorageImpl");
-		getBlueBoxStorageIf().start();
-		getBlueBoxStorageIf().deleteAll();
+		StorageFactory.getInstance().start();
+		StorageFactory.getInstance().deleteAll();
 		
 		si = SearchIndexer.getInstance();
 		si.deleteIndexes();
@@ -34,13 +30,10 @@ public class SearchIndexerTest extends TestCase {
 		si.addDoc("55063554A","receiever1@here.com","sender@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "55063554A","7646","6346543");
 		si.addDoc("9900333X","receiever1@here.com","sender@there.com","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "9900333X","543","6346543");
 	}
-
-	public StorageIf getBlueBoxStorageIf() {
-		return jr;
-	}
-
-	public void setBlueBoxStorageIf(StorageIf si) {
-		jr = si;
+	
+	@Override
+	protected void tearDown() throws Exception {
+		StorageFactory.getInstance().stop();
 	}
 	
 	public void testHtmlSearch() throws IOException, ParseException {

@@ -59,6 +59,8 @@ public class Inbox implements SimpleMessageListener {
 
 	private void start() {
 		log.info("Starting inbox");
+		
+		// ensure storage instance if loaded and started
 		try {
 			StorageFactory.getInstance().start();
 		} 
