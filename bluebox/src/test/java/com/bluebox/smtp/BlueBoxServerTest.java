@@ -48,32 +48,28 @@ public class BlueBoxServerTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		//		Config config = Config.getInstance();
-		//		config.setString(Config.BLUEBOX_HOST, "localhost");
-		Inbox inbox = Inbox.getInstance();
-		inbox.deleteAll();
-		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(inbox));
+		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(Inbox.getInstance()));
 		smtpServer.start();
-		int max = 10;
-		do {
-			// give thread time to start up
-			Thread.sleep(1000);
-		} while ((max-- > 0)&&(!smtpServer.isRunning()));
+//		int max = 10;
+//		do {
+//			// give thread time to start up
+//			Thread.sleep(1000);
+//		} while ((max-- > 0)&&(!smtpServer.isRunning()));
 
 		log.fine("Test setUp");
 	}
 
 	protected void tearDown() throws Exception {
 		super.tearDown();
+		smtpServer.stop();
+//		int max = 10;
+//		do {
+//			// give thread time to close down
+//			Thread.sleep(1000);
+//		}
+//		while ((max-- > 0)&&(smtpServer.isRunning()));
 		Inbox.getInstance().deleteAll();
 		Inbox.getInstance().stop();
-		smtpServer.stop();
-		int max = 10;
-		do {
-			// give thread time to close down
-			Thread.sleep(1000);
-		}
-		while ((max-- > 0)&&(smtpServer.isRunning()));
 	}
 
 	public void testCrash() throws IOException, MessagingException, InterruptedException {
@@ -85,12 +81,14 @@ public class BlueBoxServerTest extends TestCase {
 	}
 
 	public void testRaw() throws UnknownHostException, IOException {
-		Socket s = new Socket(smtpServer.getHostName(),smtpServer.getPort());
+		String host = smtpServer.getHostName();
+		int port = smtpServer.getPort();
+		Socket s = new Socket(host,port);
 		BufferedReader input = new BufferedReader(new InputStreamReader(s.getInputStream()));
 		BufferedWriter output = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
 		//input.readLine();
 		// S: 220 smtp.example.com ESMTP Postfix
-		log.info("Opening smtp relay on host "+smtpServer.getHostName()+" port "+smtpServer.getPort());
+		log.info("Opening smtp relay on host "+host+" port "+port);
 		output.write("HELO relay.example.org\n");output.flush();
 		safeRead(input);
 		// S: 250 Hello relay.example.org, I am glad to meet you

@@ -8,8 +8,7 @@ public class TestAbstractHandler extends TestCase {
 
 
 	public void testURIExtraction() {
-		String uri = "/bluebox/rest/json/inbox/Steve/NORMAL/";
-		uri = "/aaa/bbb/ccc/ddd";
+		String uri = "/aaa/bbb/ccc/ddd";
 		assertEquals("Field was not properly extracted","ddd",AbstractHandler.extractFragment(uri, 0));
 		assertEquals("Field was not properly extracted","ccc",AbstractHandler.extractFragment(uri, 1));
 		assertEquals("Field was not properly extracted","bbb",AbstractHandler.extractFragment(uri, 2));
@@ -21,7 +20,6 @@ public class TestAbstractHandler extends TestCase {
 		assertEquals("Field was not properly extracted","ccc",AbstractHandler.extractFragment(uri, 2));
 		assertEquals("Field was not properly extracted","bbb",AbstractHandler.extractFragment(uri, 3));
 		assertEquals("Field was not properly extracted","aaa",AbstractHandler.extractFragment(uri, 4));
-//		assertEquals("Field was not properly extracted","NORMAL",AbstractHandler.extractFragment(uri, 1));
 	}
 
 }
