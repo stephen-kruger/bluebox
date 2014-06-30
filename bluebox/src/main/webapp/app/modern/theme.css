@@ -22,3 +22,7 @@ img.sixteenIcon {
 	width : 16px;
 	height : 16px;
 }
+
+.claro .dijitButton .dijitButtonNode, .claro .dijitDropDownButton .dijitButtonNode, .claro .dijitComboButton .dijitButtonNode, .claro .dijitToggleButton .dijitButtonNode {
+    background-color: #cccccc;
+}

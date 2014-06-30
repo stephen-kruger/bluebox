@@ -38,7 +38,7 @@
 					<ol>
 						<li style="list-style-type:none;">The easiest way : simply send an email to any address you like using the <b>@bluebox.xxx.com domain</b></li>
 						<li style="list-style-type:none;">For example send a test mail using your Notes client to <a href="mailto:test@bluebox.xxx.com">test@bluebox.xxx.com</a> or <a href="mailto:fake.mail@bluebox.xxx.com">fake.mail@bluebox.xxx.com</a></li>
-						<li style="list-style-type:none;">Then enter the email address into the <a href="http://bluebox.xxx.com/bluebox">form</a> here at BlueBox to show your inbox</li>
+						<li style="list-style-type:none;">Then enter the email address into the <a href="index.jsp">form</a> here at BlueBox to show your inbox</li>
 						<li style="list-style-type:none;">Another way : set your SMTP server to <b>bluebox.xxx.com</b>, you can send emails to any address and any domain (although they will all be delivered and available only on bluebox.xxx.com)</li>
 					</ol>
 					<h2>How long will my email be available?</h2>
@@ -67,7 +67,6 @@
 					</ol>
 					<h2>Terms and conditions of usage</h2>
 					<ol>
-						<li style="list-style-type:none;">Please do not use BlueBox for any business critical applications</li>		
 						<li style="list-style-type:none;">Please respect others may be using the system - don't delete mails which are not yours</li>		
 						<li style="list-style-type:none;">This software is provided as is. Availability and support is limited to the goodwill of the author, or patches you may wish to submit</li>
 					</ol>
