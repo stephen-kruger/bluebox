@@ -1,8 +1,9 @@
-<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
+<%@ page language="java" pageEncoding="utf-8"
+	contentType="text/html;charset=utf-8"%>
 <%@ page import="com.bluebox.smtp.Inbox"%>
 <%@ page import="com.bluebox.rest.json.JSONAutoCompleteHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONStatsHandler"%>
-<%@ page language="java" import="java.util.ResourceBundle" %>
+<%@ page language="java" import="java.util.ResourceBundle"%>
 <%
 	ResourceBundle checkResource = ResourceBundle.getBundle("check",request.getLocale());
 %>
@@ -16,23 +17,22 @@
 	}
 %>
 <style type="text/css">
-	.checkbox {
-		position:fixed;
-		top:35%;
-		bottom:20%;
-		left:20%;
-		right:20%;
-	 	vertical-align: middle;
-	}
-	
-	.checkboxContent {
-	 	display: table;
-		vertical-align: middle;
-		text-align: center;
-		width:100%;
-		height:100%;
-		margin-right:2em;
-	}
+.checkbox {
+	position: fixed;
+	top: 35%;
+	bottom: 20%;
+	left: 20%;
+	right: 20%;
+	vertical-align: middle;
+}
+
+.checkboxContent {
+	display: inline;
+	vertical-align: middle;
+	text-align: center;
+	width: 80%;
+	height: 100%;
+}
 </style>
 <script type="text/javascript">
 
@@ -88,14 +88,27 @@
 		  // will not be called until DOM is ready
 			initTypeAhead();
 	});
-</script>	
+</script>
 
 <div class="checkboxContent">
-         <form id="checkemail" name="checkemail" action="<%=request.getContextPath()%>/app/inbox.jsp" method="get">
-            	<h2><%= checkResource.getString("header") %></h2>
-           
-            	<input id="<%= Inbox.EMAIL %>" name="<%= Inbox.EMAIL %>"/>
-			            	
-            	<button onclick="submitForm();" data-dojo-type="dijit/form/Button" data-dojo-props="iconClass:'dijitEditorIcon  dijitEditorIconTabIndent', showLabel: false" type="button"><%= checkResource.getString("go") %></button>
-         </form>
+	<table>
+		<tr>
+			<td>
+				<h2><%= checkResource.getString("header") %></h2>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<form id="checkemail" name="checkemail"
+					action="<%=request.getContextPath()%>/app/inbox.jsp" method="get">
+					<input id="<%= Inbox.EMAIL %>" name="<%= Inbox.EMAIL %>" />
+				</form>
+			</td>
+			<td>
+				<button onclick="submitForm();" data-dojo-type="dijit/form/Button"
+					data-dojo-props="iconClass:'dijitEditorIcon  dijitEditorIconTabIndent', showLabel: false"
+					type="button"><%= checkResource.getString("go") %></button>
+			</td>
+		</tr>
+	</table>
 </div>

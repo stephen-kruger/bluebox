@@ -339,21 +339,13 @@
 	// force parse - IE requires this, force dojo parse
 	require(["dojo/parser", "dojo/dom", "dijit/registry", "dijit/form/TextBox", "dojo/domReady!"],
 			  function(parser, dom, registry) {
-				try {alert("setting up page");
+				try {
 						setupPage();
 						require(["dojo/has", "dojo/_base/sniff"], function(has){
-							  if(has("ie") <= 6){ // only IE6 and below
-							  		alert("ie hack activated");
+							  if(has("ie")) {
 								  parser.parse();
 							  }
-				
-							  if(has("ff") < 3){ // only Firefox 2.x and lower
-								  alert("ie hack deactivated");
-							  }
-				
-							  if(has("ie") == 7){ // only IE7
-								  alert("ie hack deactivated");
-							  }
+			
 							});
 				}
 				catch (err) {
