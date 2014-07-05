@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="com.bluebox.rest.json.JSONFolderHandler"%>
 <%@ page language="java" import="java.util.ResourceBundle" %>
@@ -17,11 +16,21 @@
 		folderEmail = "";
 		
 	function setInboxCount(count) {
-		document.getElementById("inboxCount").innerHTML = count;				
+		try {
+			document.getElementById("inboxCount").innerHTML = count;		
+		}
+		catch (err) {
+			alert("folders1:"+err);
+		}
 	}
 	
 	function setDeletedCount(count) {
-		document.getElementById("deletedCount").innerHTML = count;				
+		try {
+			document.getElementById("deletedCount").innerHTML = count;			
+		}
+		catch (err) {
+			alert("folders2:"+err);
+		}
 	}
 	
 	function loadInboxAndFolder(email) {
@@ -30,20 +39,29 @@
 	} 
 	
 	function loadFolder(newEmail) {
-		
-		require(["dojox/data/JsonRestStore"], function (JsonRestStore) {
-			var urlStr = "<%=request.getContextPath()%>/<%=JSONFolderHandler.JSON_ROOT%>/"+encodeURI(newEmail);
-			var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:true});
-			var queryResults = jStore.fetch({}).results;
-			setInboxCount(queryResults.items[0].children[0].count);
-			setDeletedCount(queryResults.items[0].children[1].count);
-			folderEmail = newEmail;
-		});
+		try {
+			require(["dojox/data/JsonRestStore"], function (JsonRestStore) {
+				var urlStr = "<%=request.getContextPath()%>/<%=JSONFolderHandler.JSON_ROOT%>/"+encodeURI(newEmail);
+				var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:true});
+				var queryResults = jStore.fetch({}).results;
+				setInboxCount(queryResults.items[0].children[0].count);
+				setDeletedCount(queryResults.items[0].children[1].count);
+				folderEmail = newEmail;
+			});
+		}
+		catch (err) {
+			alert("folders3:"+err);
+		}
 	}
 	
 	function filter(item, node) {
-		if (node.label.indexOf("<%= folderDetailResource.getString("inboxfor") %>")<0) {
-			loadInbox(item.email, item.state);
+		try {
+			if (node.label.indexOf("<%= folderDetailResource.getString("inboxfor") %>")<0) {
+				loadInbox(item.email, item.state);
+			}
+		}
+		catch (err) {
+			alert("folders4:"+err);
 		}
 	}
 	
