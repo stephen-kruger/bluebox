@@ -96,17 +96,21 @@
 	}
 	
 	function createEmailButton(parentId, labelStr) {
-		require(["dijit/form/Button", "dojo/dom", "dojo/domReady!"], function(Button, dom){
-			new dijit.form.Button({
-				id :parentId+labelStr,
-		        label: labelStr,
-		        onClick: function() {
-		        	loadInboxAndFolder(labelStr);
-		        }
-		    },
-		    parentId).startup();	
-		});
-
+		try {
+			require(["dijit/form/Button", "dojo/dom", "dojo/domReady!"], function(Button, dom){
+				new dijit.form.Button({
+					id :parentId+labelStr,
+			        label: labelStr,
+			        onClick: function() {
+			        	loadInboxAndFolder(labelStr);
+			        }
+			    },
+			    parentId).startup();	
+			});
+		}
+		catch (err) {
+			alert("maildetail1:"+err);
+		}
 		
 	}
 	
@@ -115,16 +119,21 @@
 	}
 	
 	function displayArrayButton(parentId, array) {
-		var parentNode = document.getElementById(parentId);
-		// remove all the previously added buttons
-		while (parentNode.childNodes[0]) {
-			parentNode.removeChild(cells[i].childNodes[0]);
-		}
-	
-		if (array) {
-			for (var i = 0; i < array.length; i++) {
-				createEmailButton(parentId, encodeMyHtml(array[i]));
+		try {
+			var parentNode = document.getElementById(parentId);
+			// remove all the previously added buttons
+			while (parentNode.childNodes[0]) {
+				parentNode.removeChild(cells[i].childNodes[0]);
 			}
+		
+			if (array) {
+				for (var i = 0; i < array.length; i++) {
+					createEmailButton(parentId, encodeMyHtml(array[i]));
+				}
+			}
+		}
+		catch (err) {
+			alert("maildetail2:"+err);
 		}
 	}
 	
@@ -152,142 +161,205 @@
 	}
 	
 	function clearDetail() {
-		document.getElementById("mailHeaderBlock").style.display="none";
-		document.getElementById("mailToggleBlock").style.display="none";
-	
-		document.getElementById("CcLabel").style.display="none";
-		document.getElementById("From").innerHTML="";
-		document.getElementById("To").innerHTML="";
-		document.getElementById("Cc").innerHTML="";
-		document.getElementById("Date").innerHTML="";
-		document.getElementById("Attachment").innerHTML="";
+		try {
+			document.getElementById("mailHeaderBlock").style.display="none";
+			document.getElementById("mailToggleBlock").style.display="none";
+		
+			document.getElementById("CcLabel").style.display="none";
+			document.getElementById("From").innerHTML="";
+			document.getElementById("To").innerHTML="";
+			document.getElementById("Cc").innerHTML="";
+			document.getElementById("Date").innerHTML="";
+			document.getElementById("Attachment").innerHTML="";
+		}
+		catch (err) {
+			alert("maildetail3:"+err);
+		}
 	}
 	
 	function showDetail() {
-		document.getElementById("mailHeaderBlock").style.display="block";
-		document.getElementById("mailToggleBlock").style.display="block";
+		try {
+			document.getElementById("mailHeaderBlock").style.display="block";
+			document.getElementById("mailToggleBlock").style.display="block";
+		}
+		catch (err) {
+			alert("maildetail4:"+err);
+		}
 	}
 	
 	function loadDetail(uid) {
-		currentUid = uid;
-		clearDetail();
-		showDetail();
-		var xhrArgs = {
-				url: "<%=request.getContextPath()%>/rest/json/inbox/detail/"+uid,
-				handleAs: "json",
-				preventCache: false,
-				load: function(data) {
-					document.getElementById("subjectIcon").style.display="block";
-					if (data.To){
-						displayArray(document.getElementById("To"), data.To);
+		try {
+			currentUid = uid;
+			clearDetail();
+			showDetail();
+			var xhrArgs = {
+					url: "<%=request.getContextPath()%>/rest/json/inbox/detail/"+uid,
+					handleAs: "json",
+					preventCache: false,
+					load: function(data) {
+						document.getElementById("subjectIcon").style.display="block";
+						if (data.To){
+							displayArray(document.getElementById("To"), data.To);
+						}
+						if (data.Cc){
+							document.getElementById("CcLabel").style.display="block";
+							displayArray(document.getElementById("Cc"), data.Cc);
+						}
+						if (data.From){
+							displayArray(document.getElementById("From"), data.From);
+						}
+						if (data.Inbox){
+							currentInbox = data.Inbox;
+						}
+						// subject may be null
+						if (data.Subject)
+							document.getElementById("Subject").innerHTML = data.<%=BlueboxMessage.SUBJECT%>;
+						else
+							document.getElementById("Subject").innerHTML = "";
+						// date field may be null
+						if (data.Date)
+							document.getElementById("Date").innerHTML = data.Date[0];
+						else
+							document.getElementById("Date").innerHTML = "";
+		
+						if (data.Attachment){
+							displayAttachments(uid,"Attachment",data.Attachment);
+						}
+						
+						setBodyContent(data.<%=MimeMessageWrapper.HTML_BODY%>,data.<%=MimeMessageWrapper.TEXT_BODY%>);
+		
+					},
+					error: function (error) {
+						alert("Something veeery bad happened :"+error);
 					}
-					if (data.Cc){
-						document.getElementById("CcLabel").style.display="block";
-						displayArray(document.getElementById("Cc"), data.Cc);
-					}
-					if (data.From){
-						displayArray(document.getElementById("From"), data.From);
-					}
-					if (data.Inbox){
-						currentInbox = data.Inbox;
-					}
-					// subject may be null
-					if (data.Subject)
-						document.getElementById("Subject").innerHTML = data.<%=BlueboxMessage.SUBJECT%>;
-					else
-						document.getElementById("Subject").innerHTML = "";
-					// date field may be null
-					if (data.Date)
-						document.getElementById("Date").innerHTML = data.Date[0];
-					else
-						document.getElementById("Date").innerHTML = "";
-	
-					if (data.Attachment){
-						displayAttachments(uid,"Attachment",data.Attachment);
-					}
-					
-					setBodyContent(data.<%=MimeMessageWrapper.HTML_BODY%>,data.<%=MimeMessageWrapper.TEXT_BODY%>);
-	
-				},
-				error: function (error) {
-					alert("Something veeery bad happened :"+error);
-				}
-		};
-	
-		dojo.xhrGet(xhrArgs);
+			};
+		
+			dojo.xhrGet(xhrArgs);
+		}
+		catch (err) {
+			alert("maildetail5:"+err);
+		}
 	}
 	
 	function encodeMyHtml(str) {
-	   var div = document.createElement("div");
-	   var text = document.createTextNode(str);
-	   div.appendChild(text);
-	   return div.innerHTML;
+		try {
+		   var div = document.createElement("div");
+		   var text = document.createTextNode(str);
+		   div.appendChild(text);
+		   return div.innerHTML;
+		}
+		catch (err) {
+			alert("maildetail6:"+err);
+		}
 	}
 	
 	function setBodyContent(htmlContent, textContent) {
-		require(["dijit/registry"],
-	            function(registry) {
-			var htmltab = registry.byId("html-tab");
-			var texttab = registry.byId("text-tab");
-				if (htmltab) {
-					htmltab.setContent(htmlContent);
-				}
-				else {
-					alert("error getting html tab");
-				}
-				if (texttab) {
-					texttab.setValue(textContent);
-					texttab.resize();
-				}
-				else {
-					alert("error getting text tab");
-				}			
-		});
-		// show the table with the most content by default
-		if (htmlContent.length>textContent.length) {
-			selectMailTab("html-tab");
+		try {
+			require(["dijit/registry"],
+		            function(registry) {
+				var htmltab = registry.byId("html-tab");
+				var texttab = registry.byId("text-tab");
+					if (htmltab) {
+						htmltab.setContent(htmlContent);
+					}
+					else {
+						alert("error getting html tab");
+					}
+					if (texttab) {
+						texttab.setValue(textContent);
+						texttab.resize();
+					}
+					else {
+						alert("error getting text tab");
+					}			
+			});
+			// show the table with the most content by default
+			if (htmlContent.length>textContent.length) {
+				selectMailTab("html-tab");
+			}
+			else {
+				selectMailTab("text-tab");
+			}
 		}
-		else {
-			selectMailTab("text-tab");
+		catch (err) {
+			alert("maildetail7:"+err);
 		}
 	}
 	
 	function selectMailTab(showTab) {
-		require(["dijit/registry"],
-	            function(registry) {
-			var tabs = registry.byId("mail-tab");
-			var pane = registry.byId(showTab);
-			tabs.selectChild(pane);
-		});
+		try {
+			require(["dijit/registry"],
+		            function(registry) {
+				var tabs = registry.byId("mail-tab");
+				var pane = registry.byId(showTab);
+				tabs.selectChild(pane);
+			});
+		}
+		catch (err) {
+			alert("maildetail8:"+err);
+		}
 	}
 	
-	require(["dijit/layout/TabContainer", "dijit/layout/ContentPane", "dijit/form/Textarea", "dojo/domReady!"], function(TabContainer, ContentPane, Textarea, domReady){
-	    var tc = new TabContainer({
-	        style: "width: 100%; height: 100%;",
-	        tabPosition:"right-h",
-	        doLayout:"false"
-	    }, "mail-tab");
-
-	    var cp1 = new Textarea({
-	        title: "<%= mailDetailsResource.getString("text") %>",
-	        id : "text-tab",
-	        readonly:"readonly",
-	        class:"textBody"
-	   });
-	   
-	    tc.addChild(cp1);
-
-	    var cp2 = new ContentPane({
-	         title: "<%= mailDetailsResource.getString("html") %>",
-	         id : "html-tab"
-	    });
-	    tc.addChild(cp2);
-
-	    tc.startup();
-	    
-		clearDetail();
-
-	});	
+	function setupPage() {
+		try {
+			require(["dijit/layout/TabContainer", "dijit/layout/ContentPane", "dijit/form/Textarea", "dojo/domReady!"], function(TabContainer, ContentPane, Textarea, domReady){
+			    var tc = new TabContainer({
+			        style: "width: 100%; height: 100%;",
+			        tabPosition:"right-h",
+			        doLayout:"false"
+			    }, "mail-tab");
+		
+			    var cp1 = new Textarea({
+			        title: "<%= mailDetailsResource.getString("text") %>",
+			        id : "text-tab",
+			        readonly:"readonly",
+			        class:"textBody"
+			   });
+			   
+			    tc.addChild(cp1);
+		
+			    var cp2 = new ContentPane({
+			         title: "<%= mailDetailsResource.getString("html") %>",
+			         id : "html-tab"
+			    });
+			    tc.addChild(cp2);
+		
+			    tc.startup();
+			    
+				clearDetail();
+		
+			});	
+		}
+		catch (err) {
+			alert("maildetail9:"+err);
+		}
+		
+	}
+	
+	// force parse - IE requires this, force dojo parse
+	require(["dojo/parser", "dojo/dom", "dijit/registry", "dijit/form/TextBox", "dojo/domReady!"],
+			  function(parser, dom, registry) {
+				try {alert("setting up page");
+						setupPage();
+						require(["dojo/has", "dojo/_base/sniff"], function(has){
+							  if(has("ie") <= 6){ // only IE6 and below
+							  		alert("ie hack activated");
+								  parser.parse();
+							  }
+				
+							  if(has("ff") < 3){ // only Firefox 2.x and lower
+								  alert("ie hack deactivated");
+							  }
+				
+							  if(has("ie") == 7){ // only IE7
+								  alert("ie hack deactivated");
+							  }
+							});
+				}
+				catch (err) {
+					alert("maildetail10:"+err)
+				}
+			});
 </script>	
 <style>
 .mailDate{
