@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="com.bluebox.Config"%>
 <%@ page import="com.bluebox.Utils"%>
@@ -78,7 +77,6 @@
 	.logoText {
 		color:white;
 		padding-left:5px;
-		font-family: 'Roboto', sans-serif;
 		font-size:16pt;
 		display: table-cell;
 	}

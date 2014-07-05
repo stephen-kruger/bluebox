@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <%@ page language="java" pageEncoding="utf-8"
 	contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle"%>
@@ -87,64 +86,74 @@
 		require(["dojox/data/JsonRestStore"]);
 	
 		function loadInbox(email, state) {
-			require(["dijit/registry"], function(registry){
-			    grid = registry.byId("grid");
-			    if (grid) {
-			    	clearSelection();
-			    	store = getStore(email, state);
-					grid.setStore(store, {});
-			    }
-			});	
+			try {
+				require(["dijit/registry"], function(registry){
+				    grid = registry.byId("grid");
+				    if (grid) {
+				    	clearSelection();
+				    	store = getStore(email, state);
+						grid.setStore(store, {});
+				    }
+				});	
+					
+				    
+				// set the banner title
+				if (email=="")
+					document.getElementById("mailTitle").innerHTML = "<%=inboxDetailsResource.getString("allMail")%>";
+				else
+					document.getElementById("mailTitle").innerHTML = "<%=inboxDetailsResource.getString("inboxfor")%> "+email;
+					
+				// set the check fragment
+				if (email)
+				   	document.getElementById('<%=Inbox.EMAIL%>').value = email;
+			   	else
+			   		document.getElementById('<%=Inbox.EMAIL%>').value = "";
 				
-			    
-			// set the banner title
-			if (email=="")
-				document.getElementById("mailTitle").innerHTML = "<%=inboxDetailsResource.getString("allMail")%>";
-			else
-				document.getElementById("mailTitle").innerHTML = "<%=inboxDetailsResource.getString("inboxfor")%> "+email;
-				
-			// set the check fragment
-			if (email)
-			   	document.getElementById('<%=Inbox.EMAIL%>').value = email;
-		   	else
-		   		document.getElementById('<%=Inbox.EMAIL%>').value = "";
-			
-			// set the selected folder style
-			if (state=="<%=BlueboxMessage.State.NORMAL%>") {
-				document.getElementById('<%=BlueboxMessage.State.NORMAL%>').className = "selectedFolder";
-				document.getElementById('<%=BlueboxMessage.State.DELETED%>').className = "unselectedFolder";
+				// set the selected folder style
+				if (state=="<%=BlueboxMessage.State.NORMAL%>") {
+					document.getElementById('<%=BlueboxMessage.State.NORMAL%>').className = "selectedFolder";
+					document.getElementById('<%=BlueboxMessage.State.DELETED%>').className = "unselectedFolder";
+				}
+				if (state=="<%=BlueboxMessage.State.DELETED%>") {
+					document.getElementById('<%=BlueboxMessage.State.NORMAL%>').className = "unselectedFolder";
+					document.getElementById('<%=BlueboxMessage.State.DELETED%>').className = "selectedFolder";	
+				}
+				currentEmail = email;
+				loadStats();
 			}
-			if (state=="<%=BlueboxMessage.State.DELETED%>") {
-				document.getElementById('<%=BlueboxMessage.State.NORMAL%>').className = "unselectedFolder";
-				document.getElementById('<%=BlueboxMessage.State.DELETED%>').className = "selectedFolder";	
+			catch (err) {
+				alert("maillist1:"+err);
 			}
-			currentEmail = email;
-			loadStats();
 	
 		}
 	
 		function deleteSelectedRows() {
-			var inbox = dijit.byId("grid");
-			var items = inbox.selection.getSelected();
-			var itemList = "";
-			require(["dijit/registry"], function(registry){
-			    var grid = registry.byId("grid");
-				if(items.length){
-					dojo.forEach(items, function(selectedItem){
-						if(selectedItem !== null){
-							itemList += grid.store.getValue(selectedItem, "<%=BlueboxMessage.UID%>")+",";
+			try {
+				var inbox = dijit.byId("grid");
+				var items = inbox.selection.getSelected();
+				var itemList = "";
+				require(["dijit/registry"], function(registry){
+				    var grid = registry.byId("grid");
+					if(items.length){
+						dojo.forEach(items, function(selectedItem){
+							if(selectedItem !== null){
+								itemList += grid.store.getValue(selectedItem, "<%=BlueboxMessage.UID%>")+",";
+							}
+						});
+						deleteMail(itemList);
+						if (items.length>1) {
+							inbox.selection.clear();
 						}
-					});
-					deleteMail(itemList);
-					if (items.length>1) {
-						inbox.selection.clear();
+						loadInboxAndFolder(currentEmail);
 					}
-					loadInboxAndFolder(currentEmail);
-				}
-				else {
-					alert("<%=inboxDetailsResource.getString("error.noselection")%>");
-				}
-			});
+					else {
+						alert("<%=inboxDetailsResource.getString("error.noselection")%>");
+					}
+				});
+			}
+			catch (err) {
+				alert("maillist2:"+err);
+			}
 		}
 	
 		function refresh() {
@@ -156,33 +165,43 @@
 		}
 				
 		function deleteMail(uidList) {
-			if (currentUid) {
-				var delUrl = "<%=request.getContextPath()%>/<%=JSONMessageHandler.JSON_ROOT%>/"+uidList;
-				var xhrArgs = {
-						url: delUrl,
-						handleAs: "text",
-						preventCache: true,
-						load: function(data) {
-							loadInboxAndFolder(currentEmail);
-						},
-						error: function (error) {
-							alert("<%=inboxDetailsResource.getString("error.unknown")%>"+error);
-						}
-				};
-	
-				dojo.xhrDelete(xhrArgs);		
+			try {
+				if (currentUid) {
+					var delUrl = "<%=request.getContextPath()%>/<%=JSONMessageHandler.JSON_ROOT%>/"+uidList;
+					var xhrArgs = {
+							url: delUrl,
+							handleAs: "text",
+							preventCache: true,
+							load: function(data) {
+								loadInboxAndFolder(currentEmail);
+							},
+							error: function (error) {
+								alert("<%=inboxDetailsResource.getString("error.unknown")%>"+error);
+							}
+					};
+		
+					dojo.xhrDelete(xhrArgs);		
+				}
+				else {
+					alert("<%=inboxDetailsResource.getString("error.noselection")%>");
+				}
 			}
-			else {
-				alert("<%=inboxDetailsResource.getString("error.noselection")%>");
+			catch (err) {
+				alert("maillist3:"+err);
 			}
 		}
 	
 		function clearSelection() {
-			require(["dijit/registry"], function(registry){
-			    var widget = registry.byId("grid");
-			    if (widget)
-			    	widget.selection.clear();
-		    });
+			try {
+				require(["dijit/registry"], function(registry){
+				    var widget = registry.byId("grid");
+				    if (widget)
+				    	widget.selection.clear();
+			    });
+			}
+			catch (err) {
+				alert("maillist4:"+err);
+			}
 	
 		}
 		
