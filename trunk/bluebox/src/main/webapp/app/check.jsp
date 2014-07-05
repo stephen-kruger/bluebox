@@ -39,34 +39,49 @@
 	require(["dijit/form/Button"]);
 
 	function clearForm(){
-		document.getElementById('<%= Inbox.EMAIL %>').value = "";
-		submitForm();
+		try {
+			document.getElementById('<%= Inbox.EMAIL %>').value = "";
+			submitForm();
+		}
+		catch (err) {
+			alert("check1:"+err);
+		}
 	}
 	
 	function submitForm(){
-		document.getElementById('checkemail').submit();
+		try {
+			document.getElementById('checkemail').submit();
+		}
+		catch (err) {
+			alert("check2:"+err);
+		}
 	}
 			
 	function initTypeAhead() {
-		require(["dojox/data/QueryReadStore","dijit/form/ComboBox"], function (QueryReadStore,ComboBox) {
-               var stateStore = new dojox.data.QueryReadStore({
-                   url: "<%=request.getContextPath()%>/<%= JSONAutoCompleteHandler.JSON_ROOT %>"
-               });
-               new dijit.form.ComboBox({
-                   id: "<%= Inbox.EMAIL %>",
-                   name: "Email",
-                   value: "<%=email%>",
-                   autocomplete:true,
-                   store: stateStore,
-                   placeholder: "<%= checkResource.getString("typeaheadPlaceholder") %>",
-                   searchAttr: "label",
-                   	onChange:function(){      
-      					document.getElementById('checkemail').submit();
-      		    	}
-               },
-
-               "<%= Inbox.EMAIL %>");
-		});
+		try {
+			require(["dojox/data/QueryReadStore","dijit/form/ComboBox"], function (QueryReadStore,ComboBox) {
+	               var stateStore = new dojox.data.QueryReadStore({
+	                   url: "<%=request.getContextPath()%>/<%= JSONAutoCompleteHandler.JSON_ROOT %>"
+	               });
+	               new dijit.form.ComboBox({
+	                   id: "<%= Inbox.EMAIL %>",
+	                   name: "Email",
+	                   value: "<%=email%>",
+	                   autocomplete:true,
+	                   store: stateStore,
+	                   placeholder: "<%= checkResource.getString("typeaheadPlaceholder") %>",
+	                   searchAttr: "label",
+	                   	onChange:function(){      
+	      					document.getElementById('checkemail').submit();
+	      		    	}
+	               },
+	
+	               "<%= Inbox.EMAIL %>");
+			});
+		}
+		catch (err) {
+			alert("check3:"+err);
+		}
     }
 	
 	require(["dojo/domReady!"], function(domready){

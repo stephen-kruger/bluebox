@@ -125,33 +125,48 @@
 
 <script type="text/javascript">		
 			function selectMenu(id) {
-				document.getElementById(id).className = "menuselected";
+				try {
+					document.getElementById(id).className = "menuselected";
+				}
+				catch (err) {
+					alert("menu1:"+err);
+				}
 			}
 			
 			// load the global stats
 			function loadGlobalMenu() {
-				require(["dojox/data/JsonRestStore"], function () {
-					var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.GLOBAL_STAT %>";
-					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
-					jStore.fetch({
-						  onComplete : 
-							  	function(queryResults, request) {
-									document.getElementById("statsMenuGlobalCount").innerHTML = queryResults.countAll;
-									document.getElementById("statsMenuErrorCount").innerHTML = queryResults.countError;
-								}
+				try {
+					require(["dojox/data/JsonRestStore"], function () {
+						var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.GLOBAL_STAT %>";
+						var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
+						jStore.fetch({
+							  onComplete : 
+								  	function(queryResults, request) {
+										document.getElementById("statsMenuGlobalCount").innerHTML = queryResults.countAll;
+										document.getElementById("statsMenuErrorCount").innerHTML = queryResults.countError;
+									}
+						});
 					});
-				});
+				}
+				catch (err) {
+					alert("menu2:"+err);
+				}
 			}
 			
 			function startTimer() {
-				// start the refresh timer
-				require(["dojox/timing"], function(registry){
-					var t = new dojox.timing.Timer(30000);
-					t.onTick = function() {
-						loadGlobalMenu();
-					}
-					t.start();
-				});
+				try {
+					// start the refresh timer
+					require(["dojox/timing"], function(registry){
+						var t = new dojox.timing.Timer(30000);
+						t.onTick = function() {
+							loadGlobalMenu();
+						}
+						t.start();
+					});
+				}
+				catch (err) {
+					alert("menu3:"+err);
+				}
 			}
 			
 			require(["dojo/domReady!"], function() {
