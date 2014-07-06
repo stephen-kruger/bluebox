@@ -34,6 +34,7 @@
 			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftWordProcessing16.png";
 		}
 		if ((attachmentName.indexOf(".avi")>0)||
+				(attachmentName.indexOf(".mpg")>0)||
 				(attachmentName.indexOf(".mp4")>0)||
 				(attachmentName.indexOf(".mpeg")>0)||
 				(attachmentName.indexOf(".mov")>0)||
@@ -80,7 +81,7 @@
 				(attachmentName.indexOf(".png")>0)) {
 			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftGraphic16.png";
 		}
-		return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/attachment.png";
+		return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftDefault16.png";
 	}
 	
 	// create a link to rest service using */uid/attachment_index/filename
@@ -149,10 +150,10 @@
 			var str = "";
 			for (var i = 0; i < array.length; i++) {
 				if (i>0) {
-					str += ", <a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/iconMail.png\"/></a>"+encodeMyHtml(array[i]);
+					str += ", <a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/mailSmall.png\"/></a>"+encodeMyHtml(array[i]);
 				}
 				else {
-					str += "<a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/iconMail.png\"/></a>"+encodeMyHtml(array[i]);
+					str += "<a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/mailSmall.png\"/></a>"+encodeMyHtml(array[i]);
 				}
 			}
 			label.innerHTML = str;
@@ -285,7 +286,6 @@
 								preventCache: true,
 								load: function(data) {
 									tabs.selectedChildWidget.setValue(data);
-									tabs.selectedChildWidget.resize();
 								},
 								error: function (error) {
 									tabs.selectedChildWidget.setValue(error);

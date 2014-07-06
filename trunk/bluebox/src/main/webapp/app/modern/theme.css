@@ -1,17 +1,11 @@
 @CHARSET "ISO-8859-1";
 
-img.sixteenIcon {
-    width:17px !important;
-    height:17px !important;
-    padding-right:3px;
-} 
-
 .mailIcon{
 	width:15px !important;
     height:15px !important;
 	position:static;
 	vertical-align: middle;
-	right:2px;
+	margin-right:2px;
 }
 
 .attachmentIcon{
@@ -21,6 +15,17 @@ img.sixteenIcon {
 	vertical-align: middle;
 	width : 16px;
 	height : 16px;
+}
+
+.unselectedFolder {
+	background:#ffffff;
+	padding:5px;
+}
+	
+.selectedFolder {
+	background:#CCD6EB;
+	padding:5px;
+	border-radius: 1em;
 }
 
 .claro .dijitButton .dijitButtonNode, .claro .dijitDropDownButton .dijitButtonNode, .claro .dijitComboButton .dijitButtonNode, .claro .dijitToggleButton .dijitButtonNode {
