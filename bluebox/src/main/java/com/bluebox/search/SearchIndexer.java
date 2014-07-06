@@ -48,7 +48,7 @@ import com.bluebox.smtp.storage.StorageIf;
 
 public class SearchIndexer {
 	private static final Logger log = Logger.getAnonymousLogger();
-	private static Version version = Version.LUCENE_48;
+	private static Version version = Version.LUCENE_4_9;
 	private StandardAnalyzer analyzer = new StandardAnalyzer(version);
 	private Directory index;
 	private IndexWriterConfig config;
