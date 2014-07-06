@@ -1,6 +1,8 @@
-<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
+<%@ page language="java" pageEncoding="utf-8"
+	contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.rest.json.JSONAttachmentHandler"%>
+<%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.Config"%>
 <%@ page import="com.bluebox.smtp.MimeMessageWrapper"%>
@@ -226,7 +228,7 @@
 							displayAttachments(uid,"Attachment",data.Attachment);
 						}
 						
-						setBodyContent(data.<%=MimeMessageWrapper.HTML_BODY%>,data.<%=MimeMessageWrapper.TEXT_BODY%>);
+						setBodyContent(data.<%=MimeMessageWrapper.HTML_BODY%>,data.<%=MimeMessageWrapper.TEXT_BODY%>,"<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+uid);
 		
 					},
 					error: function (error) {
@@ -253,10 +255,10 @@
 		}
 	}
 	
-	function setBodyContent(htmlContent, textContent) {
+	function setBodyContent(htmlContent, textContent,rawurl) {
 		try {
-			require(["dijit/registry"],
-		            function(registry) {
+			require(["dijit/registry","dojo/aspect"],
+		            function(registry,aspect) {
 				var htmltab = registry.byId("html-tab");
 				var texttab = registry.byId("text-tab");
 					if (htmltab) {
@@ -272,6 +274,29 @@
 					else {
 						alert("error getting text tab");
 					}			
+				var tabs = registry.byId("mail-tab");
+				aspect.after(tabs, "selectChild", function (event) {
+					if (tabs.selectedChildWidget.id=="raw-tab") {
+				     	console.log("You selected ", tabs.selectedChildWidget.id);
+				     	tabs.selectedChildWidget.setValue("<%= mailDetailsResource.getString("downloading") %>");
+				     	var xhrArgs = {
+								url: rawurl,
+								handleAs: "text",
+								preventCache: true,
+								load: function(data) {
+									tabs.selectedChildWidget.setValue(data);
+									tabs.selectedChildWidget.resize();
+								},
+								error: function (error) {
+									tabs.selectedChildWidget.setValue(error);
+								}
+						};
+			
+						dojo.xhrGet(xhrArgs);	
+				     	  
+					}
+				});
+				//rawtab.href = rawurl;
 			});
 			// show the table with the most content by default
 			if (htmlContent.length>textContent.length) {
@@ -314,8 +339,7 @@
 			        id : "text-tab",
 			        readonly:"readonly",
 			        class:"textBody"
-			   });
-			   
+			   });			   
 			    tc.addChild(cp1);
 		
 			    var cp2 = new ContentPane({
@@ -324,6 +348,14 @@
 			    });
 			    tc.addChild(cp2);
 		
+			    var cp3 = new Textarea({
+			         title: "<%= mailDetailsResource.getString("raw") %>",
+			         id : "raw-tab",
+			         class:"textBody"
+			    });
+			    tc.addChild(cp3);
+
+			    
 			    tc.startup();
 			    
 				clearDetail();
@@ -352,59 +384,59 @@
 					alert("maildetail10:"+err)
 				}
 			});
-</script>	
+</script>
 <style>
-.mailDate{
-	align:right;
+.mailDate {
+	align: right;
 }
 
-.headerValue{
-	display:inline;
-	font-weight:bold;
+.headerValue {
+	display: inline;
+	font-weight: bold;
 }
 
-.headerLabel{
+.headerLabel {
 	font-weight: normal;
-	padding-left:5px;
-	padding-right:5px;
+	padding-left: 5px;
+	padding-right: 5px;
 	color: Gray;
 	display: inline-table !important;
 }
 
-.fromHeaderValue{
-	font-weight: bold; 
-	display:inline;
+.fromHeaderValue {
+	font-weight: bold;
+	display: inline;
 	color: #E26200;
 	display: inline-table !important;
 }
 
 .subject {
-  	font-weight: bold; 
-	font-size:1.5em;
-	float:left;
+	font-weight: bold;
+	font-size: 1.5em;
+	float: left;
 }
 
 .headerBox {
-	padding : 20px;
+	padding: 20px;
 }
 
 .headerBoxTable {
-	width:100%;
-	border:0;
+	width: 100%;
+	border: 0;
 }
 
 .textBody {
 	border: 0;
-	overflow:auto;
-	position:relative;
-	min-height:400px;
-	width:100%;
-	vertical-align:top;
+	overflow: auto;
+	position: relative;
+	min-height: 400px;
+	width: 100%;
+	vertical-align: top;
 }
 
 .htmlBody {
-	width:100%;
-	height:100%;
+	width: 100%;
+	height: 100%;
 	border: 0;
 }
 </style>
@@ -412,38 +444,31 @@
 	<table class="headerBoxTable">
 		<tr>
 			<td valign="top"><img id="subjectIcon"
-				src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/message.png" align="top" /></td>
+				src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/message.png"
+				align="top" /></td>
 			<td>
 				<table class="headerBoxTable">
 					<tr>
 						<td><span id="Subject" class="subject"></span></td>
 					</tr>
 					<tr>
-						<td  align="left">
-							<span id="From" class="fromHeaderValue"></span>&nbsp;
-						<td align="right">
-							<span id="Date" class="mailDate"></span>
-						</td>
+						<td align="left"><span id="From" class="fromHeaderValue"></span>&nbsp;
+						
+						<td align="right"><span id="Date" class="mailDate"></span></td>
 					</tr>
 					<tr>
-						<td  align="left">
-							<span class="headerLabel">&nbsp;<%= mailDetailsResource.getString("to") %></span>&nbsp;
-							<span id="To" class="headerValue"></span>
-						</td>
+						<td align="left"><span class="headerLabel">&nbsp;<%= mailDetailsResource.getString("to") %></span>&nbsp;
+							<span id="To" class="headerValue"></span></td>
 					</tr>
 					<tr>
-						<td align="left">
-							<span id="CcLabel" class="headerLabel">&nbsp;<%= mailDetailsResource.getString("cc") %></span>&nbsp;
-							<span id="Cc" class="fromHeaderValue"></span>
-						</td>
+						<td align="left"><span id="CcLabel" class="headerLabel">&nbsp;<%= mailDetailsResource.getString("cc") %></span>&nbsp;
+							<span id="Cc" class="fromHeaderValue"></span></td>
 					</tr>
 					<tr>
-						<td align="left">
-							<span class="headerLabel"><%= mailDetailsResource.getString("attachments") %></span>&nbsp;
+						<td align="left"><span class="headerLabel"><%= mailDetailsResource.getString("attachments") %></span>&nbsp;
 							<div id="Attachment" class="fromHeaderValue"
 								data-dojo-type="dijit/layout/ContentPane"
-								style="padding: 0px 0px 0px 0px; display: none;"></div>
-							</td>
+								style="padding: 0px 0px 0px 0px; display: none;"></div></td>
 					</tr>
 				</table>
 			</td>
@@ -455,7 +480,7 @@
 <!-- the Text vs Html view selector -->
 <br />
 <div id="mailToggleBlock">
-	<div style="width: 100%; height: 480px;text-align:left;">
+	<div style="width: 100%; height: 480px; text-align: left;">
 		<div id="mail-tab"></div>
 	</div>
 </div>
