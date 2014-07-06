@@ -10,7 +10,7 @@
 	width: 100%;
 	display:table;
 	list-style-type:none;
-	margin:2em;
+	margin:0.5em;
 }
 
 
@@ -49,8 +49,8 @@ body, .claro, .dojoxGrid  {
 }
 
 img.sixteenIcon {
-    width:14px !important;
-    height:14px !important;
+    width:32px !important;
+    height:32px !important;
     padding-right:3px;
 }
 
@@ -67,4 +67,15 @@ img.sixteenIcon {
 	vertical-align: middle;
 	width : 16px;
 	height : 16px;
+}
+
+.unselectedFolder {
+	background:#ffffff;
+	padding:5px;
+}
+	
+.selectedFolder {
+	background:#efefef;
+	padding:5px;
+	border-radius: 1em;
 }

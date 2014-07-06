@@ -69,20 +69,6 @@
 		loadFolder(folderEmail);
 	});
 </script>
-<style type="text/css">
-		
-	.unselectedFolder {
-		background:#ffffff;
-		padding:5px;
-	}
-	
-	.selectedFolder {
-		background:#efefef;
-		padding:5px;
-		border-radius: 1em;
-	}
-
-</style>
 	
 <!-- the inbox folder tree -->                
 <header>
@@ -92,13 +78,13 @@
 	<ul>
 		<li style="list-style-type:none;cursor:pointer;padding:0.1em;">
 		  	<a id="<%=BlueboxMessage.State.NORMAL%>" class="selectedFolder" onclick="loadInbox(folderEmail, '<%=BlueboxMessage.State.NORMAL%>');">
-			  	<img style="padding-right : 5px; width:16px; height:16px;" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/inboxNormal.png" alt="<%= folderDetailResource.getString("inbox") %>"/><%= folderDetailResource.getString("inbox") %>
+			  	<img style="padding-right : 5px;" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/inboxNormal.png" alt="<%= folderDetailResource.getString("inbox") %>"/><%= folderDetailResource.getString("inbox") %>
 			  	<span id="inboxCount" class="badgeDown">?</span>
 		  	</a>
 		</li>
   		<li style="list-style-type:none;cursor:pointer;padding:0.1em;">
 		  	<a id="<%=BlueboxMessage.State.DELETED%>" class="unselectedFolder" onclick="loadInbox(folderEmail, '<%=BlueboxMessage.State.DELETED%>');">
-		  		<img style="padding-right : 5px; width:16px; height:16px;" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/inboxTrash.png" alt="<%= folderDetailResource.getString("inbox") %>"/><%= folderDetailResource.getString("trash") %>
+		  		<img style="padding-right : 5px;" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/inboxTrash.png" alt="<%= folderDetailResource.getString("inbox") %>"/><%= folderDetailResource.getString("trash") %>
 		  		<span id="deletedCount" class="badgeDown">?</span>
 		  	</a>
 		</li>
