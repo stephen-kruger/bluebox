@@ -1,8 +1,10 @@
 =Installing=
 Download the war file from [https://drive.google.com/folderview?id=0B_idaoMmuNnyYW9FS1paTEhuSXc&usp=sharing here].
-Drop the war file into your favourite application server.
-This one requires no special setup, and uses an embedded Derby database. If you want you can edit bluebox.properties and select the MongoDB driver instead - especially useful for larger mailboxes.
-You will require Java 7.
+*Drop the war file into your favourite application server.
+This one requires no special setup, and uses an embedded Derby database. 
+*If you want you can edit bluebox.properties and select the MongoDB driver instead - especially useful for larger mailboxes.
+*You will require Java 7.
+*access to the administration page requires user/password for role "tomcat", so edit your tomcat-users.conf file or whatever your app server uses
 
 
 =What is it?=
