@@ -43,11 +43,8 @@ a {
 	text-decoration: none;
 }
 
-.claro {
-	font-family: 'Roboto', sans-serif !important;
-}
-
-body {
+body, .claro, .dojoxGrid  {
+	font: 'Roboto', sans-serif !important;
 	font-family: 'Roboto', sans-serif !important;
 }
 
