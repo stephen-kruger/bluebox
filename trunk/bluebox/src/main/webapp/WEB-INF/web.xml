@@ -75,8 +75,8 @@
 	</login-config>
 	
 	<security-role>
-	        <description>Only 'tomcat' role is allowed to access this web application</description>
-	        <role-name>tomcat</role-name>
+	        <description>Only 'bluebox' role is allowed to access this web application</description>
+	        <role-name>bluebox</role-name>
 	</security-role>
 
 	<!-- Start page -->
