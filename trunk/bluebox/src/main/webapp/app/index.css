@@ -18,13 +18,17 @@
 	display:table-cell;
 	text-align: left;
 	width:20%;
-	padding:2em;
+	padding-left:1em;
+	padding-right:1em;
+	padding-top:0;
 	vertical-align:top;
 }
 
 .rightCol {
 	display:table-cell;
-	padding:2em;
+	padding-left:1em;
+	padding-right:1em;
+	padding-top:1em;
 }
 
 .centerCol {
@@ -49,8 +53,8 @@ body, .claro, .dojoxGrid  {
 }
 
 img.sixteenIcon {
-    width:32px !important;
-    height:32px !important;
+    width:21px !important;
+    height:21px !important;
     padding-right:3px;
 }
 
