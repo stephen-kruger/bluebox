@@ -36,7 +36,7 @@ public class InboxAddress extends Object {
 		return address;
 	}
 
-	private static final String getEmail(String email) {
+	public static final String getEmail(String email) {
 		try {
 			if ((email==null)||(email.trim().length()==0)) {
 				return "";

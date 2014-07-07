@@ -285,17 +285,18 @@ public class SearchIndexer {
 		final File temp;
 
 		temp = File.createTempFile("bluebox", "lucene");
-
+		log.info("Cleaning search indexes in "+temp.getCanonicalPath());
 		if(!(temp.delete()))
 		{
 			throw new IOException("Could not delete temp file: " + temp.getAbsolutePath());
 		}
 
+		log.info("Preparing search indexes in "+temp.getCanonicalPath());
 		if(!(temp.mkdir()))
 		{
 			throw new IOException("Could not create temp directory: " + temp.getAbsolutePath());
 		}
-		log.info("Storing search indexes in "+temp.getCanonicalPath());
+		log.info("Configured search indexes in "+temp.getCanonicalPath());
 		return (temp);
 	}
 

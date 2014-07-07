@@ -58,6 +58,7 @@
 		</div>
 			
 		<div class="rightCol">
+			<jsp:include page="search.jsp" />
 			<jsp:include page="stats.jsp" />
 		</div>
 	</div>
