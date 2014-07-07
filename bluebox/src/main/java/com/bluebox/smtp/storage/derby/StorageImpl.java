@@ -45,14 +45,20 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		log.info("Starting Derby repository");
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
-		try {
-			setupTables();
+		int count = 10;
+		while (count-- > 0) {
+			try {
+				started = true;
+				setupTables();
+				log.info("Started Derby repository.");
+				count = 0;
+			}
+			catch (Throwable t) {
+				log.warning("Trying again "+t.getMessage());
+				Thread.sleep(750);
+				started=false;
+			}
 		}
-		catch (Throwable t) {
-			log.warning(t.getMessage());
-		}
-		started = true;
-		log.info("Started Derby repository.");
 	}
 
 	public void stop() throws Exception {
@@ -75,7 +81,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public Connection getConnection() throws Exception {
 		if (!started) {
-			throw new Exception("Storage instance not started");
+			Exception e = new Exception("Storage instance not started");
+//			e.printStackTrace();
+			throw e;
 		}
 		System.setProperty("derby.language.logQueryPlan", "false");
 		String url = "jdbc:derby:bluebox.derby;create=true";
