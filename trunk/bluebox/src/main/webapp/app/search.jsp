@@ -23,13 +23,6 @@
 %>
 
 <style type="text/css">
-.claro .dijitButton .dijitButtonNode,.claro .dijitDropDownButton .dijitButtonNode,.claro .dijitComboButton .dijitButtonNode,.claro .dijitToggleButton .dijitButtonNode
-	{
-	background: #CCD6EB;
-	box-shadow: none;
-	border: none;
-}
-
 .searchBox {
 	background: #CCD6EB;
 	border-radius: 15px;

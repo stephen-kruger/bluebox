@@ -8,7 +8,7 @@
 	<name>BlueBox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
-		<jersey_version>1.18.1</jersey_version>
+		<jersey_version>2.10</jersey_version>
 		<slf4j_version>1.7.7</slf4j_version>
 		<lucene_version>4.9.0</lucene_version>
 		<derby_version>10.10.2.0</derby_version>
@@ -104,22 +104,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-json</artifactId>
+			<groupId>org.glassfish.jersey.containers</groupId>
+			<artifactId>jersey-container-servlet-core</artifactId>
 			<version>${jersey_version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-server</artifactId>
-			<version>${jersey_version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.jersey</groupId>
-			<artifactId>jersey-bundle</artifactId>
-			<version>${jersey_version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.jettison</groupId>

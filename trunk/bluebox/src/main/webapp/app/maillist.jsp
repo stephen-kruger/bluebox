@@ -40,7 +40,7 @@
 		
 		.dojoxGridHeader div {
 			font-style: bold !important;
-			background:#efefef;
+			background:#CCD6EB;
 		}
 		
 		.dojoxGrid, .gridDiv {

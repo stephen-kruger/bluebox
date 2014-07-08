@@ -22,7 +22,7 @@
 	<!-- the Atom feed servlet -->
 	<servlet>
 		<servlet-name>atom</servlet-name>
-		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
 		<init-param>
 			<param-name>javax.ws.rs.Application</param-name>
 			<param-value>com.bluebox.feed.ATOMApplication</param-value>
