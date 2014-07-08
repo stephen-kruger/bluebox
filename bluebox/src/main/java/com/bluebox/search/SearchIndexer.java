@@ -105,6 +105,11 @@ public class SearchIndexer {
 					analyzer);
 			break;
 		case FROM :
+			queryParser = new MultiFieldQueryParser(version,
+					new String[] {
+					SearchFields.FROM.name()},
+					analyzer);
+			break;
 		case RECIPIENTS :
 			queryParser = new MultiFieldQueryParser(version,
 					new String[] {

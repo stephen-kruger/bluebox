@@ -55,6 +55,18 @@
 	    	        content: content,
 	    	        style: "width: 300px"
 	    	    });
+	    	    
+	    	    var div = dojo.create('div', {}, myDialog.containerNode);
+                dojo.style(dojo.byId(div), "padding", "2em");
+                dojo.style(dojo.byId(div), "float", "middle");
+	    	    var closeBtn = new dijit.form.Button({
+                    label: "Close",
+                    onClick: function(){
+                    	myDialog.hide();
+                        dojo.destroy(myDialog);
+                    }
+                 });
+	    	    dojo.create(closeBtn.domNode,{}, div);
 	    	    myDialog.show();
 	    	});
 		}
@@ -94,7 +106,7 @@
 					<td><label>Generate fake emails</label></td>
 					<td>
 					<form id="generate" method="get" action="rest/admin/test">
-						<input id="count" type="text" data-dojo-type="dijit/form/NumberTextBox" name= "count" value="10" data-dojo-props="constraints:{min:10,max:5000,places:0},  invalidMessage:'Please enter a value between 10 and 5000'" />
+						<input id="count" type="text" data-dojo-type="dijit/form/NumberTextBox" name= "count" value="10" data-dojo-props="constraints:{min:10,max:5000,places:0,pattern:'#'},  invalidMessage:'Please enter a value between 10 and 5000'" />
 					</form>
 					</td>
 					<td><button onclick="generateEmails();" data-dojo-type="dijit/form/Button" type="button">Go</button></td>
