@@ -31,3 +31,7 @@
 .claro .dijitButton .dijitButtonNode, .claro .dijitDropDownButton .dijitButtonNode, .claro .dijitComboButton .dijitButtonNode, .claro .dijitToggleButton .dijitButtonNode {
     background-color: #cccccc;
 }
+
+.claro .dijitDialogTitleBar {
+	background-color: #CCD6EB;
+}

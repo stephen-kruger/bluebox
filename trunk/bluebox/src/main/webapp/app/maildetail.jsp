@@ -256,25 +256,25 @@
 		}
 	}
 	
-	function setBodyContent(htmlContent, textContent,rawurl) {
+	function setBodyContent(htmlContent, textContent, rawurl) {
 		try {
 			require(["dijit/registry","dojo/aspect"],
 		            function(registry,aspect) {
 				var htmltab = registry.byId("html-tab");
+				if (htmltab) {
+					htmltab.setContent(htmlContent);
+				}
+				else {
+					alert("error getting html tab");
+				}
 				var texttab = registry.byId("text-tab");
-					if (htmltab) {
-						htmltab.setContent(htmlContent);
-					}
-					else {
-						alert("error getting html tab");
-					}
-					if (texttab) {
-						texttab.setValue(textContent);
-						texttab.resize();
-					}
-					else {
-						alert("error getting text tab");
-					}			
+				if (texttab) {
+					texttab.setValue(textContent);
+					texttab.resize();
+				}
+				else {
+					alert("error getting text tab");
+				}			
 				var tabs = registry.byId("mail-tab");
 				aspect.after(tabs, "selectChild", function (event) {
 					if (tabs.selectedChildWidget.id=="raw-tab") {
@@ -296,7 +296,6 @@
 				     	  
 					}
 				});
-				//rawtab.href = rawurl;
 			});
 			// show the table with the most content by default
 			if (htmlContent.length>textContent.length) {

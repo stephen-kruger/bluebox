@@ -62,7 +62,6 @@
 					        //}
 	
 					        //store.fetch({query: {}, onBegin: size, start: 9990, count: 9999});
-							alert(urlStr);
 					        widget.setStore(store, {});	   
 					    });
 				    });
@@ -117,6 +116,13 @@
 			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeRecipients") %>','<%=SearchIndexer.SearchFields.RECIPIENTS%>') }
 			    });
 			    menu.addChild(menuItem4);
+			    
+			    var menuItem5 = new MenuItem({
+			        label: "<%= inboxResource.getString("searchScopeFrom") %>",
+			        iconClass:"dijitIcon dijitIconUsers",
+			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeFrom") %>','<%=SearchIndexer.SearchFields.FROM%>') }
+			    });
+			    menu.addChild(menuItem5);
 
 			    var button = new DropDownButton({
 			        label: "<%= inboxResource.getString("searchScopeAll") %>",
