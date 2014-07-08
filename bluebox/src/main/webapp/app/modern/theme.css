@@ -28,8 +28,11 @@
 	border-radius: 1em;
 }
 
-.claro .dijitButton .dijitButtonNode, .claro .dijitDropDownButton .dijitButtonNode, .claro .dijitComboButton .dijitButtonNode, .claro .dijitToggleButton .dijitButtonNode {
-    background-color: #cccccc;
+/* change buttons to be flat */
+.claro .dijitButton .dijitButtonNode,.claro .dijitDropDownButton .dijitButtonNode,.claro .dijitComboButton .dijitButtonNode,.claro .dijitToggleButton .dijitButtonNode {
+	background: #CCD6EB;
+	box-shadow: none;
+	border: none;
 }
 
 .claro .dijitDialogTitleBar {

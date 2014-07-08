@@ -107,7 +107,7 @@
 			<td>
 				<button onclick="submitForm();" data-dojo-type="dijit/form/Button"
 					data-dojo-props="iconClass:'dijitEditorIcon  dijitEditorIconTabIndent', showLabel: false"
-					type="button"><%= checkResource.getString("go") %></button>
+					type="button"></button>
 			</td>
 		</tr>
 	</table>
