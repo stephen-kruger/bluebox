@@ -21,7 +21,6 @@ public abstract class BaseServletTest extends TestCase {
 	private ServletTester tester;
 	private String baseURL;
 	private String contextPath = "/";
-	//	private BlueBoxSMTPServer smtpServer;
 	public ServletHolder bbs;
 	public static final Logger log = Logger.getAnonymousLogger();
 	public static final int COUNT = 5;

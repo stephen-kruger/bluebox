@@ -12,11 +12,6 @@
 <html lang="en-US">
 <head>
 	<title><%=headerResource.getString("welcome")%></title>
-	<link href="<%=bbconfig.getString("dojo_base")%>/dojo/resources/dojo.css" rel="stylesheet" type="text/css" />
-	<link href="<%=bbconfig.getString("dojo_base")%>/dijit/themes/<%=bbconfig.getString("dojo_style")%>/<%=bbconfig.getString("dojo_style")%>.css" rel="stylesheet" type="text/css" />
-	<link href="<%=bbconfig.getString("dojo_base")%>/dojox/grid/resources/Grid.css" rel="stylesheet" rel="stylesheet" type="text/css" />
-	<link href="<%=bbconfig.getString("dojo_base")%>/dojox/grid/enhanced/resources/claro/EnhancedGrid.css" rel="stylesheet" rel="stylesheet" type="text/css" />
-	<link href="<%=bbconfig.getString("dojo_base")%>/dojox/grid/enhanced/resources/EnhancedGrid_rtl.css" rel="stylesheet" rel="stylesheet" type="text/css" />
 	<jsp:include page="dojo.jsp" />
 	
 	<style type="text/css">
@@ -116,18 +111,16 @@
 	<div class="headerCol"><jsp:include page="menu.jsp" /></div>
 	<div class="colWrapper">		
 		<div class="leftCol">
-			<h2>Errors</h2>
+			<h2><%= menuResource.getString("errors") %></h2>
 		</div>
 			
 		<div class="centerCol">
-
-						<div>
-							<div class=errorList id="gridDiv"></div>
-							<h3>Error details</h3>
-							<div id="errorTitle"></div>
-							<textarea id="errorBody" data-dojo-type="dijit/form/Textarea" readonly="readonly" class="errorBody"></textarea>	
-						</div>
-					
+			<div>
+				<div class=errorList id="gridDiv"></div>
+				<h3>Error details</h3>
+				<div id="errorTitle"></div>
+				<textarea id="errorBody" data-dojo-type="dijit/form/Textarea" readonly="readonly" class="errorBody"></textarea>	
+			</div>
 		</div>
 			
 		<div class="rightCol">

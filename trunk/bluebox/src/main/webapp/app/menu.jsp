@@ -63,8 +63,8 @@
 	}
 	
 	.logo {
-		width:1.5em;
-		height:0.75em;
+		width:1.7em;
+		height:1.7em;
 		border:1px solid white;
 		background: darkBlue; /* fallback for silly old IE */
 		background: -webkit-linear-gradient(left top, lightBlue , darkBlue); /* For Safari 5.1 to 6.0 */

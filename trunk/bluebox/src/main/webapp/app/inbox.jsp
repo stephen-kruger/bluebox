@@ -46,7 +46,6 @@
 				</div>
 				<div style="display:table-row"></div>
 				<div class="seperator"></div>
-				<br/>
 				<div style="display:table-row">
 					<jsp:include page="check.jsp" />
 				</div>
