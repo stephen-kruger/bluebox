@@ -26,6 +26,12 @@
 			
 		<div class="centerCol">
 			<div style="text-align:left;">
+					<h2>Contact and support links</h2>
+					<ol>
+						<li style="list-style-type:none;">For feature requests, info etc contact me directly via the <a href="https://code.google.com/p/bluebox/">Bluebox Project</a> site</li>
+						<li style="list-style-type:none;">To report rendering defects, bugs etc, please use the <a href="https://code.google.com/p/bluebox/issues/list">defect tracking</a> system</li>
+						<li style="list-style-type:none;">Please try and attach the offending .eml file whenever possible to help in reproducing</li>
+					</ol>
 					<h2>What is it?</h2>
 					<ol>
 						<li style="list-style-type:none;">Many teams within our company develop software that rely heavily on sending emails (for sign-up, social software notifications etc).</li>
@@ -68,12 +74,6 @@
 					<ol>
 						<li style="list-style-type:none;">Please respect others may be using the system - don't delete mails which are not yours</li>		
 						<li style="list-style-type:none;">This software is provided as is. Availability and support is limited to the goodwill of the author, or patches you may wish to submit</li>
-					</ol>
-					<h2>Contact and support links</h2>
-					<ol>
-						<li style="list-style-type:none;">For feature requests, info etc contact me directly: <a href="https://code.google.com/p/bluebox/">Project Home Page</a></li>
-						<li style="list-style-type:none;">To report rendering defects, bugs etc, please use the <a href="https://code.google.com/p/bluebox/">Project Home Page</a> defect tracking</li>
-						<li style="list-style-type:none;">Please try and attach the offending .eml file whenever possible to help in reproducing</li>
 					</ol>
 			</div>
 		</div>

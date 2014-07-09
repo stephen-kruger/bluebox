@@ -93,7 +93,7 @@
 <div class="checkboxContent">
 	<table>
 		<tr>
-			<td>
+			<td style="float:left;">
 				<h2><%= checkResource.getString("header") %></h2>
 			</td>
 		</tr>
