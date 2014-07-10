@@ -21,7 +21,7 @@
 	<div class="headerCol"><jsp:include page="menu.jsp" /></div>
 	<div class="colWrapper">		
 		<div class="leftCol">
-			<h2>Help</h2>
+			<h1>Help</h1>
 		</div>
 			
 		<div class="centerCol">
@@ -70,9 +70,13 @@
 						<li style="list-style-type:none;">BlueBox itself does not do any mail forwarding, only incoming mail is accepted</li>
 						<li style="list-style-type:none;">It's not very scrupulous about destination addresses, so if you have set bluebox as your smtp server, you can send to any hostnames that you like. Such as stephen@xxx.com, steve@google.com, or any other domain you might want</li>		
 					</ol>
+					<h2>Installation</h2>
+					<ol>
+						<li style="list-style-type:none;">Full install instructions can be found <a href="https://code.google.com/p/bluebox/">here</a></li>
+					</ol>
 					<h2>Terms and conditions of usage</h2>
 					<ol>
-						<li style="list-style-type:none;">Please respect others may be using the system - don't delete mails which are not yours</li>		
+						<li style="list-style-type:none;">Please respect others who may be using the system - don't delete mails which are not yours</li>		
 						<li style="list-style-type:none;">This software is provided as is. Availability and support is limited to the goodwill of the author, or patches you may wish to submit</li>
 					</ol>
 			</div>

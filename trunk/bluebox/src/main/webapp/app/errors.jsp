@@ -24,6 +24,15 @@
 			height:20em;
 			width:100%;
 		}
+		
+		.dojoxGridHeader div {
+			font-style: bold !important;
+			background:#CCD6EB;
+		}
+		
+		.claro .dojoxGridPaginator {
+			background:#CCD6EB;
+		}
 	</style>
 	
 	<script type="text/javascript">

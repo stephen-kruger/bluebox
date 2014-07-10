@@ -98,10 +98,13 @@
 					
 				    
 				// set the banner title
-				if (email=="")
+				if (email=="") {
 					document.getElementById("mailTitle").innerHTML = "<%=inboxDetailsResource.getString("allMail")%>";
-				else
-					document.getElementById("mailTitle").innerHTML = "<%=inboxDetailsResource.getString("inboxfor")%> "+email;
+				}
+				else {
+					//document.getElementById("mailTitle").innerHTML = "<%=inboxDetailsResource.getString("inboxfor")%>"+email;
+					document.getElementById("mailTitle").innerHTML = email;
+				}
 					
 				// set the check fragment
 				if (email)

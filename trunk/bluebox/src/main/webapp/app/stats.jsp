@@ -78,12 +78,7 @@
 		loadStats();
 	});
 </script>
-<style>
-p {
-	margin-top: 0em;
-	margin-bottom: 0em;
-}
-</style>
+
 <div class="rightSideContent">
 	<h2><%= statsResource.getString("traffic_title") %></h2>
 	<p>
