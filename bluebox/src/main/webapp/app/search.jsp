@@ -84,7 +84,7 @@
 			    var menu = new DropDownMenu();
 			    var menuItem1 = new MenuItem({
 			        label: "<%= inboxResource.getString("searchScopeAll") %>",
-			        iconClass:"dijitIcon dijitIconMail",
+			        iconClass:"dijitIcon dijitIconConfigure",
 			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeAll") %>','<%=SearchIndexer.SearchFields.ANY%>') }
 			    });
 			    menu.addChild(menuItem1);
@@ -112,7 +112,7 @@
 			    
 			    var menuItem5 = new MenuItem({
 			        label: "<%= inboxResource.getString("searchScopeFrom") %>",
-			        iconClass:"dijitIcon dijitIconUsers",
+			        iconClass:"dijitIcon dijitIconMail",
 			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeFrom") %>','<%=SearchIndexer.SearchFields.FROM%>') }
 			    });
 			    menu.addChild(menuItem5);

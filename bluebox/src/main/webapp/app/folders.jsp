@@ -72,7 +72,7 @@
 	
 <!-- the inbox folder tree -->                
 <header>
-	<h2 id="mailTitle"></h2>
+	<h1 id="mailTitle"></h1>
 </header>
 <div>
 	<ul>
