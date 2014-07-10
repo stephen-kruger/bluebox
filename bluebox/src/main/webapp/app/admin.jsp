@@ -169,62 +169,6 @@
 				<tr>
 				<td><br/></td>
 				</tr>
-				<tr>
-					<td><label>To blacklist</label></td>
-					<td>
-						<%= bbconfig.getFlatList(Config.BLUEBOX_TOBLACKLIST) %>
-					</td>
-					<td></td>
-				</tr>
-				<tr>
-				<td><br/></td>
-				</tr>
-				<tr>
-					<td><label>From blacklist</label></td>
-					<td>
-						<%= bbconfig.getFlatList(Config.BLUEBOX_FROMBLACKLIST) %>
-					</td>
-					<td></td>
-				</tr>
-				<tr>
-				<td><br/></td>
-				</tr>
-				<tr>
-					<td><label>To whitelist</label></td>
-					<td>
-						<%= bbconfig.getFlatList(Config.BLUEBOX_TOWHITELIST) %>
-					</td>
-					<td></td>
-				</tr>
-				<tr>
-				<td><br/></td>
-				</tr>
-				<tr>
-					<td><label>From whitelist</label></td>
-					<td>
-						<%= bbconfig.getFlatList(Config.BLUEBOX_FROMWHITELIST) %>
-					</td>
-					<td></td>
-				</tr>
-				
-				<tr>
-					<td><br/></td>
-				</tr>
-				<tr>
-					<td><label>How many hours to keep messages</label></td>
-					<td>
-						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_AGE) %>
-					</td>
-				</tr>
-				<tr>
-					<td><br/></td>
-				</tr>
-				<tr>
-					<td><label>How many hours to keep deleted messages</label></td>
-					<td>
-						<%= bbconfig.getString(Config.BLUEBOX_TRASH_AGE) %>
-					</td>
-				</tr>
 			</table>
 			</div>
 		</div>
