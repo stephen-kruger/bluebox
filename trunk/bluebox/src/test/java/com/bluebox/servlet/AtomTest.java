@@ -58,7 +58,7 @@ public class AtomTest extends BaseServletTest {
 		InternetAddress[] blank =  new InternetAddress[]{};
 		String to = "junit@junit.com";
 		Utils.sendMessage(new InternetAddress("bob@test.com"), "atom test", "body", new InternetAddress[]{new InternetAddress(to)}, blank, blank, false);
-		Thread.sleep(1000);
+		Utils.waitFor(1);
 
 		String atomURL = getBaseURL()+"/atom/inbox?email="+to;
 		log.info("Checking URL:"+atomURL);
