@@ -16,7 +16,6 @@ import javax.mail.internet.InternetAddress;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -142,7 +141,7 @@ public class Inbox implements SimpleMessageListener {
 		return StorageFactory.getInstance().listMail(inbox, state, start, count, orderBy, ascending);
 	}
 
-	public long searchInbox(String search, Writer writer, int start, int count, SearchIndexer.SearchFields searchScope, String orderBy, boolean ascending) throws Exception {
+	public long searchInbox(String search, Writer writer, int start, int count, SearchIndexer.SearchFields searchScope, SearchIndexer.SearchFields orderBy, boolean ascending) throws Exception {
 		log.fine("Searching for "+search+" ordered by "+orderBy);
 		try {
 			return SearchIndexer.getInstance().searchInboxes(search, writer, start, count, searchScope, orderBy, ascending);
@@ -392,7 +391,7 @@ public class Inbox implements SimpleMessageListener {
 
 //			hint = QueryParser.escape(hint);
 			SearchIndexer search = SearchIndexer.getInstance();
-			Document[] results = search.search(hint, SearchIndexer.SearchFields.TO, (int)start, (int)count, SearchIndexer.SearchFields.TO.name());
+			Document[] results = search.search(hint, SearchIndexer.SearchFields.TO, (int)start, (int)count, SearchIndexer.SearchFields.TO);
 			for (int i = 0; i < results.length;i++) {
 				String uid = results[i].get(SearchFields.UID.name());
 //				BlueboxMessage message = retrieve(uid);

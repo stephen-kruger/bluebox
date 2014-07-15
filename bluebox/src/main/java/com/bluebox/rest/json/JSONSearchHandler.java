@@ -43,7 +43,7 @@ public class JSONSearchHandler extends AbstractHandler {
 		String search = extractFragment(req.getRequestURI(), 1);
 		String searchScope = extractFragment(req.getRequestURI(), 2);
 		// check sort order, which comes in a strange format "sort(-Subject)=null"
-		String orderBy = BlueboxMessage.RECEIVED;
+		SearchIndexer.SearchFields orderBy = SearchIndexer.SearchFields.RECEIVED;
 		boolean ascending = false;
 		String n;
 		for (
@@ -54,19 +54,19 @@ public class JSONSearchHandler extends AbstractHandler {
 				ascending = false;
 			}
 			if (n.contains(BlueboxMessage.RECEIVED)) {
-				orderBy = BlueboxMessage.RECEIVED;
+				orderBy = SearchIndexer.SearchFields.RECEIVED;
 				break;
 			}
 			if (n.contains(BlueboxMessage.FROM)) {
-				orderBy = BlueboxMessage.FROM;
+				orderBy = SearchIndexer.SearchFields.FROM;
 				break;
 			}
 			if (n.contains(BlueboxMessage.SUBJECT)) {
-				orderBy = BlueboxMessage.SUBJECT;
+				orderBy = SearchIndexer.SearchFields.SUBJECT;
 				break;
 			}
 			if (n.contains(BlueboxMessage.SIZE)) {
-				orderBy = BlueboxMessage.SIZE;
+				orderBy = SearchIndexer.SearchFields.SIZE;
 				break;
 			}			
 		}

@@ -6,7 +6,6 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.util.Date;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 import javax.mail.Address;
 import javax.mail.Message.RecipientType;
@@ -16,7 +15,6 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
 
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -33,7 +31,6 @@ import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
@@ -44,12 +41,9 @@ import org.apache.lucene.util.Version;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.MimeMessageWrapper;
 import com.bluebox.smtp.storage.BlueboxMessage;
-import com.bluebox.smtp.storage.StorageFactory;
-import com.bluebox.smtp.storage.StorageIf;
 
 public class SearchIndexer {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -78,8 +72,8 @@ public class SearchIndexer {
 		indexWriter = new IndexWriter(index, config);
 	}
 
-	public Document[] search(String querystr, SearchFields fields, int start, int count, String orderBy) throws ParseException, IOException {
-//		querystr = "*"+QueryParser.escape(querystr)+"*";
+	public Document[] search(String querystr, SearchFields fields, int start, int count, SearchFields orderBy) throws ParseException, IOException {
+		//		querystr = "*"+QueryParser.escape(querystr)+"*";
 		QueryParser queryParser;
 		Analyzer analyzer = new StandardAnalyzer(version);
 		switch (fields) {
@@ -141,7 +135,7 @@ public class SearchIndexer {
 
 			Sort sort;
 			try {
-				sort = new Sort(new SortField(SearchFields.valueOf(orderBy.toUpperCase()).name(),SortField.Type.STRING));
+				sort = new Sort(new SortField(orderBy.name(),SortField.Type.STRING));
 			}
 			catch (Throwable t) {
 				log.warning("Unsupported orderBy value :"+orderBy);
@@ -169,22 +163,19 @@ public class SearchIndexer {
 		}
 	}
 
-	public long searchInboxes(String search, Writer writer, int start,	int count, SearchFields fields, String orderBy, boolean ascending) throws ParseException, IOException {
-		Document[] hits = search(search, fields, start, count, orderBy);
+	public long searchInboxes(String search, Writer writer, int start,	int count, SearchFields fields, SearchFields orderBy, boolean ascending) throws ParseException, IOException {
+		Document[] hits = search(QueryParser.escape(search), fields, start, count, orderBy);
 		JSONObject curr;
 		writer.write("[");
-		StorageIf si = StorageFactory.getInstance();
 		for (int i = 0; i < hits.length; i++) {
 			String uid = hits[i].get(SearchFields.UID.name());
 			try {
-				BlueboxMessage msg = si.retrieve(uid);
 				curr = new JSONObject();
-				curr.put(BlueboxMessage.FROM, Utils.decodeRFC2407(msg.getPropertyString(BlueboxMessage.FROM)));
-				curr.put(BlueboxMessage.SUBJECT, Utils.decodeRFC2407(msg.getPropertyString(BlueboxMessage.SUBJECT)));
-				if (msg.hasProperty(BlueboxMessage.RECEIVED))
-					curr.put(BlueboxMessage.RECEIVED, new Date(msg.getLongProperty(BlueboxMessage.RECEIVED)));
-				curr.put(BlueboxMessage.SIZE, msg.getPropertyString(BlueboxMessage.SIZE)+"K");
-				curr.put(BlueboxMessage.UID, msg.getIdentifier());
+				curr.put(BlueboxMessage.FROM, hits[i].get(SearchFields.FROM.name()));
+				curr.put(BlueboxMessage.SUBJECT, hits[i].get(SearchFields.SUBJECT.name()));
+				curr.put(BlueboxMessage.RECEIVED, new Date(Long.parseLong(hits[i].get(SearchFields.RECEIVED.name()))));
+				curr.put(BlueboxMessage.SIZE, hits[i].get(SearchFields.SIZE.name())+"K");
+				curr.put(BlueboxMessage.UID, uid);
 				writer.write(curr.toString(3));
 				if (i < hits.length-1) {
 					writer.write(",");
@@ -242,6 +233,7 @@ public class SearchIndexer {
 	}
 
 	protected synchronized void addDoc(String uid, String to, String from, String subject, String text, String html, String recipients, String size, String received) throws IOException {
+		log.fine("Indexing mail "+uid+" "+from);
 		Document doc = new Document();
 		doc.add(new StringField(SearchFields.UID.name(), uid, Field.Store.YES));
 		doc.add(new TextField(SearchFields.FROM.name(), from, Field.Store.YES));
@@ -293,14 +285,9 @@ public class SearchIndexer {
 	}
 
 	public static File createTempDirectory()  throws IOException {
+		//File tmpDir = (File)getServletContext().getAttribute(ServletContext.TEMPDIR);
 		File temp = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.lucene");
-//		temp = baseDir.File.createTempFile("bluebox", "lucene");
-//		temp.deleteOnExit();
-//		log.info("Cleaning search indexes in "+temp.getCanonicalPath());
-//		if(!(temp.delete()))
-//		{
-//			throw new IOException("Could not delete temp file: " + temp.getAbsolutePath());
-//		}
+
 
 		log.info("Preparing search indexes in "+temp.getCanonicalPath());
 		if(!(temp.mkdir()))

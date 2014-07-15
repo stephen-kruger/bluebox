@@ -74,7 +74,7 @@ public class InboxTest extends TestCase {
 		Utils.sendMessage(new InternetAddress("from@from.com"), "subject", "body", new InternetAddress[]{new InternetAddress(email3)}, new InternetAddress[]{}, new InternetAddress[]{}, false);
 
 
-		Thread.sleep(2000);
+		Utils.waitFor(3);
 		JSONObject json = inbox.getStatsRecent();
 		log.info(json.toString(3));
 		assertEquals("Incorrectly reported recent stats recipient",email3,json.getString(BlueboxMessage.TO));

@@ -53,6 +53,7 @@ import org.codehaus.jettison.json.JSONException;
 import com.bluebox.rest.json.AbstractHandler;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.MimeMessageWrapper;
+import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class Utils {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -414,6 +415,24 @@ public class Utils {
 		Transport.send(msg);
 	}
 
+	public static void waitFor(int i) {
+		Inbox inbox = Inbox.getInstance();
+		int retryCount = 5;
+		while ((retryCount-->0)&&(inbox.getMailCount(BlueboxMessage.State.NORMAL)<i)) {
+			try {
+				log.info("Waiting for delivery "+i);
+				Thread.sleep(250);
+			} 
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		if (retryCount<=0)
+			log.warning("Timed out waiting for messages to arrive");
+		else
+			log.info("Found expected message count received");
+	}
+	
 	public static String trimURLParam(String p) {
 		if (p.endsWith("/")) {
 			return p.substring(0,p.length()-1);

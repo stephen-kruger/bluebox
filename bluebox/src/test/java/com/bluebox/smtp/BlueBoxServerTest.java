@@ -76,7 +76,7 @@ public class BlueBoxServerTest extends TestCase {
 		assertEquals("Mailbox was not cleared",0,Inbox.getInstance().getMailCount(State.ANY));
 		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"crashfix.eml");
 		Utils.uploadEML(emlStream);
-		Thread.sleep(1000);
+		Utils.waitFor(1);
 		assertEquals("Mail was not delivered",1,Inbox.getInstance().getMailCount(State.ANY));
 	}
 
@@ -150,7 +150,7 @@ public class BlueBoxServerTest extends TestCase {
 			e.printStackTrace();
 			fail("Unexpected exception: " + e);
 		}
-		waitFor(1);
+		Utils.waitFor(1);
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 1)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 1);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		assertEquals("Did not find expected results",1,list.size());
@@ -170,7 +170,9 @@ public class BlueBoxServerTest extends TestCase {
 			e.printStackTrace();
 			fail("Unexpected exception: " + e);
 		}
-		waitFor(5);
+		
+		Utils.waitFor(3);
+		
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 3)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 3);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		assertEquals("Did not find expected results",3,list.size());
@@ -218,23 +220,7 @@ public class BlueBoxServerTest extends TestCase {
 		assertTrue("Sender was on whitelist, should be accepted",inbox.accept("goodboy@gooddomain.com","sender@nowhere.com"));
 	}
 
-	private void waitFor(int i) {
-		Inbox inbox = Inbox.getInstance();
-		int retryCount = 5;
-		while ((retryCount-->0)&&(inbox.getMailCount(BlueboxMessage.State.NORMAL)<i)) {
-			try {
-				log.info("Waiting for delivery "+i);
-				Thread.sleep(1000);
-			} 
-			catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		if (retryCount<=0)
-			log.warning("Timed out waiting for messages to arrive");
-		else
-			log.info("Found expected message count received");
-	}
+	
 
 	public void xtestSendMessageWithCarriageReturn() throws Exception {
 		Inbox inbox = Inbox.getInstance();
@@ -246,7 +232,7 @@ public class BlueBoxServerTest extends TestCase {
 			e.printStackTrace();
 			fail("Unexpected exception: " + e);
 		}
-		waitFor(1);
+		Utils.waitFor(1);
 		assertTrue("Sent message was not correctly recieved (Got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+")",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 1);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
@@ -281,7 +267,7 @@ public class BlueBoxServerTest extends TestCase {
 			e.printStackTrace();
 			fail("Unexpected exception: " + e);
 		}
-		waitFor(2);
+		Utils.waitFor(2);
 		assertTrue("Not all messages were received (Got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+")",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 2);
 	}
 
@@ -340,7 +326,7 @@ public class BlueBoxServerTest extends TestCase {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		waitFor(2);
+		Utils.waitFor(2);
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 2)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 2);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
@@ -360,7 +346,7 @@ public class BlueBoxServerTest extends TestCase {
 			e.printStackTrace();
 			fail("Unexpected exception: " + e);
 		}
-		waitFor(3);
+		Utils.waitFor(3);
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 3)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 3);
 	}
 
@@ -376,7 +362,7 @@ public class BlueBoxServerTest extends TestCase {
 			fail("Unexpected exception: " + e);
 		}
 		log.info("Waiting for message to get delivered");
-		waitFor(1);
+		Utils.waitFor(1);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		assertTrue("Did not find the expected message",emailIter.hasNext());
@@ -391,7 +377,7 @@ public class BlueBoxServerTest extends TestCase {
 		Inbox inbox = Inbox.getInstance();
 		String chineseStr = "æ¥·ä¹¦ï¼�æ¥·æ›¸";
 		Utils.sendMessage(Utils.getRandomAddress(), chineseStr, "This is the body", Utils.getRandomAddresses(1), Utils.getRandomAddresses(0), Utils.getRandomAddresses(0),true);
-		waitFor(1);
+		Utils.waitFor(1);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		assertTrue("Did not find the expected message",emailIter.hasNext());

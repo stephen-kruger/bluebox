@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -34,11 +35,8 @@ public class RestTest extends BaseServletTest {
 
 
 		// first we check directly
-		int count = 0;
-		while ((count++<20)&&(getMailCount(BlueboxMessage.State.NORMAL)<COUNT)) {
-			System.out.println("Waiting for mail delivery :"+getMailCount(BlueboxMessage.State.NORMAL));
-			Thread.sleep(1000);
-		}
+		Utils.waitFor(COUNT);
+		
 		assertEquals("Missing mails",COUNT,getMailCount(BlueboxMessage.State.NORMAL));
 
 		// now hit the REST web service
