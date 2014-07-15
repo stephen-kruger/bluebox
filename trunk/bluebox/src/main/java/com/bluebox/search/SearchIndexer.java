@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.util.Date;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.mail.Address;
 import javax.mail.Message.RecipientType;
@@ -14,9 +15,12 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
+import org.apache.lucene.document.LongField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
@@ -29,6 +33,7 @@ import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
@@ -49,7 +54,6 @@ import com.bluebox.smtp.storage.StorageIf;
 public class SearchIndexer {
 	private static final Logger log = Logger.getAnonymousLogger();
 	private static Version version = Version.LUCENE_4_9;
-	private StandardAnalyzer analyzer = new StandardAnalyzer(version);
 	private Directory index;
 	private IndexWriterConfig config;
 	private static SearchIndexer si;
@@ -69,14 +73,15 @@ public class SearchIndexer {
 
 	private SearchIndexer(Directory index) throws IOException {
 		this.index = index;
-		analyzer = new StandardAnalyzer(version);
+		Analyzer analyzer = new StandardAnalyzer(version);
 		config = new IndexWriterConfig(version, analyzer);
 		indexWriter = new IndexWriter(index, config);
 	}
 
 	public Document[] search(String querystr, SearchFields fields, int start, int count, String orderBy) throws ParseException, IOException {
-		querystr = "*"+QueryParser.escape(querystr)+"*";
-		MultiFieldQueryParser queryParser;
+//		querystr = "*"+QueryParser.escape(querystr)+"*";
+		QueryParser queryParser;
+		Analyzer analyzer = new StandardAnalyzer(version);
 		switch (fields) {
 
 		case SUBJECT :
@@ -129,6 +134,7 @@ public class SearchIndexer {
 					analyzer);
 		}
 		queryParser.setAllowLeadingWildcard(true);
+		queryParser.setDefaultOperator(QueryParser.Operator.AND);
 		try {
 			IndexReader reader = DirectoryReader.open(index);
 			IndexSearcher searcher = new IndexSearcher(reader);
@@ -139,7 +145,7 @@ public class SearchIndexer {
 			}
 			catch (Throwable t) {
 				log.warning("Unsupported orderBy value :"+orderBy);
-				sort = new Sort(new SortField(SearchFields.SUBJECT.name(),SortField.Type.STRING));
+				sort = new Sort(new SortField(SearchFields.RECEIVED.name(),SortField.Type.LONG));
 			}
 			// if count is 0, then return only total number of hits, without sending all the data.
 			// used to calculate number of search results
@@ -245,7 +251,7 @@ public class SearchIndexer {
 		doc.add(new TextField(SearchFields.HTML_BODY.name(), htmlToString(html), Field.Store.YES));
 		doc.add(new TextField(SearchFields.RECIPIENTS.name(), recipients, Field.Store.YES));
 		doc.add(new TextField(SearchFields.SIZE.name(), size, Field.Store.YES));
-		doc.add(new TextField(SearchFields.RECEIVED.name(), size, Field.Store.YES));
+		doc.add(new LongField(SearchFields.RECEIVED.name(), Long.parseLong(received), Field.Store.YES));
 		indexWriter.addDocument(doc);
 		indexWriter.commit();
 	}
@@ -287,19 +293,19 @@ public class SearchIndexer {
 	}
 
 	public static File createTempDirectory()  throws IOException {
-		final File temp;
-
-		temp = File.createTempFile("bluebox", "lucene");
-		log.info("Cleaning search indexes in "+temp.getCanonicalPath());
-		if(!(temp.delete()))
-		{
-			throw new IOException("Could not delete temp file: " + temp.getAbsolutePath());
-		}
+		File temp = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.lucene");
+//		temp = baseDir.File.createTempFile("bluebox", "lucene");
+//		temp.deleteOnExit();
+//		log.info("Cleaning search indexes in "+temp.getCanonicalPath());
+//		if(!(temp.delete()))
+//		{
+//			throw new IOException("Could not delete temp file: " + temp.getAbsolutePath());
+//		}
 
 		log.info("Preparing search indexes in "+temp.getCanonicalPath());
 		if(!(temp.mkdir()))
 		{
-			throw new IOException("Could not create temp directory: " + temp.getAbsolutePath());
+			log.warning("Re-using index directory: " + temp.getAbsolutePath());
 		}
 		log.info("Configured search indexes in "+temp.getCanonicalPath());
 		return (temp);

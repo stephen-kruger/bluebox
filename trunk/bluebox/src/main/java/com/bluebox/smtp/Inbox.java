@@ -374,58 +374,52 @@ public class Inbox implements SimpleMessageListener {
 		StorageFactory.getInstance().setState(uid, BlueboxMessage.State.DELETED);
 	}
 
-	//	public void listInboxes() {
-	//		StorageFactory.getInstance().listInboxes();		
-	//	}
-
 	public JSONArray autoComplete(String hint, long start, long count) throws Exception {
-		//		return StorageFactory.getInstance().autoComplete(hint, start, count);
+
 		JSONObject curr;
 		JSONArray children = new JSONArray();
 		// no need to include wildcard
-		if (hint.contains("*")) {
-			hint=hint.substring(0,hint.indexOf('*'));
-		}
-		if (hint.length()==1)
-			return children;
-		if (hint.length()>1) {			
-			hint = QueryParser.escape(hint);
+//		if (hint.contains("*")) {
+//			hint=hint.substring(0,hint.indexOf('*'));
+//		}
+		if (hint.length()==0)
+			hint = "*";
+		// ensure we check for all substrings
+		if (!hint.startsWith("*"))
+			hint = "*"+hint;
+//		if (hint.length()==1)
+//			return children;
+
+//			hint = QueryParser.escape(hint);
 			SearchIndexer search = SearchIndexer.getInstance();
 			Document[] results = search.search(hint, SearchIndexer.SearchFields.TO, (int)start, (int)count, SearchIndexer.SearchFields.TO.name());
 			for (int i = 0; i < results.length;i++) {
 				String uid = results[i].get(SearchFields.UID.name());
-				BlueboxMessage message = retrieve(uid);
-				if (message!=null) {
-					String name = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.INBOX));
-					String label = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.TO));
-					String identifier = uid;
-					curr = new JSONObject();
-					curr.put("name", name);
-					curr.put("label", label);
-					curr.put("identifier", identifier);
-					if (!contains(children,name))
-						children.put(curr);
-				}
-				else {
-					log.severe("Sync error between search indexes and derby tables");		
-				}
-				if (children.length()>=count)
-					break;
-			}
-		}
-		else {
-			List<BlueboxMessage> mail =  StorageFactory.getInstance().listMail(null, BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.RECEIVED, true);
-			for (BlueboxMessage message : mail) {
+//				BlueboxMessage message = retrieve(uid);
+//				if (message!=null) {
+//					String name = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.INBOX));
+//					String label = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.TO));
+//					String identifier = uid;
+//					curr = new JSONObject();
+//					curr.put("name", name);
+//					curr.put("label", label);
+//					curr.put("identifier", identifier);
+//					if (!contains(children,name))
+//						children.put(curr);
+//				}
+//				else {
+//					log.severe("Sync error between search indexes and derby tables");		
+//				}
 				curr = new JSONObject();
-				curr.put("name", message.getProperty(BlueboxMessage.INBOX));
-				curr.put("label", message.getProperty(BlueboxMessage.TO));
-				curr.put("identifier", message.getIdentifier());
+				curr.put("name", new InboxAddress(results[i].get(Utils.decodeRFC2407(SearchFields.TO.name()))).getAddress());
+				curr.put("label", Utils.decodeRFC2407(results[i].get(SearchFields.TO.name())));
+				curr.put("identifier", uid);
 				if (!contains(children,curr.getString("name")))
 					children.put(curr);
+				
 				if (children.length()>=count)
 					break;
 			}
-		}
 
 		return children;
 	}
