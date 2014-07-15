@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import javax.activation.DataHandler;
 import javax.mail.Message;
 import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
@@ -224,9 +225,9 @@ public class BlueBoxServerTest extends TestCase {
 
 	public void xtestSendMessageWithCarriageReturn() throws Exception {
 		Inbox inbox = Inbox.getInstance();
-		String bodyWithCR = "\nKeep these pesky\n carriage returns";
+		String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
 		try {
-			Utils.sendMessage(Utils.getRandomAddress(), "Test", bodyWithCR, Utils.getRandomAddresses(1), new InternetAddress[]{}, new InternetAddress[]{},false);
+			Utils.sendMessage(Utils.getRandomAddress(), "Test", bodyWithCR, new InternetAddress[]{Utils.getRandomAddress()}, new InternetAddress[]{}, new InternetAddress[]{},false);
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
@@ -238,11 +239,11 @@ public class BlueBoxServerTest extends TestCase {
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		BlueboxMessage email = (BlueboxMessage) emailIter.next();
 		MimeMessageWrapper mimeMessage = email.getBlueBoxMimeMessage();
-
-		assertEquals("Body did not match",bodyWithCR,mimeMessage.getContent());
+		DataHandler dh = mimeMessage.getDataHandler();
+		assertEquals("Body did not match",bodyWithCR,dh.getContent().toString());
 	}
 
-	public void xtestSendTwoMessagesSameConnection() {
+	public void testSendTwoMessagesSameConnection() {
 		Inbox inbox = Inbox.getInstance();
 		try {
 			MimeMessage[] mimeMessages = new MimeMessage[2];
