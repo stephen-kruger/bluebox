@@ -73,7 +73,9 @@ public class SearchIndexer {
 	}
 
 	public Document[] search(String querystr, SearchFields fields, int start, int count, SearchFields orderBy) throws ParseException, IOException {
-		//		querystr = "*"+QueryParser.escape(querystr)+"*";
+//		querystr = QueryParser.escape(querystr);
+//		querystr = "*"+QueryParser.escape(querystr)+"*";
+//		querystr = "*"+querystr+"*";
 		QueryParser queryParser;
 		Analyzer analyzer = new StandardAnalyzer(version);
 		switch (fields) {
@@ -164,7 +166,7 @@ public class SearchIndexer {
 	}
 
 	public long searchInboxes(String search, Writer writer, int start,	int count, SearchFields fields, SearchFields orderBy, boolean ascending) throws ParseException, IOException {
-		Document[] hits = search(QueryParser.escape(search), fields, start, count, orderBy);
+		Document[] hits = search(search, fields, start, count, orderBy);
 		JSONObject curr;
 		writer.write("[");
 		for (int i = 0; i < hits.length; i++) {
@@ -199,8 +201,8 @@ public class SearchIndexer {
 				json.getString(MimeMessageWrapper.TEXT_BODY),
 				json.getString(MimeMessageWrapper.HTML_BODY),
 				getRecipients(message),
-				message.getProperty(BlueboxMessage.SIZE),
-				message.getProperty(BlueboxMessage.RECEIVED));
+				message.getLongProperty(BlueboxMessage.SIZE),
+				message.getLongProperty(BlueboxMessage.RECEIVED));
 	}
 
 	private String getRecipients(BlueboxMessage message) throws Exception {
@@ -232,7 +234,7 @@ public class SearchIndexer {
 		indexWriter.commit();
 	}
 
-	protected synchronized void addDoc(String uid, String to, String from, String subject, String text, String html, String recipients, String size, String received) throws IOException {
+	protected synchronized void addDoc(String uid, String to, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
 		log.fine("Indexing mail "+uid+" "+from);
 		Document doc = new Document();
 		doc.add(new StringField(SearchFields.UID.name(), uid, Field.Store.YES));
@@ -242,8 +244,8 @@ public class SearchIndexer {
 		doc.add(new TextField(SearchFields.TEXT_BODY.name(), text, Field.Store.YES));
 		doc.add(new TextField(SearchFields.HTML_BODY.name(), htmlToString(html), Field.Store.YES));
 		doc.add(new TextField(SearchFields.RECIPIENTS.name(), recipients, Field.Store.YES));
-		doc.add(new TextField(SearchFields.SIZE.name(), size, Field.Store.YES));
-		doc.add(new LongField(SearchFields.RECEIVED.name(), Long.parseLong(received), Field.Store.YES));
+		doc.add(new LongField(SearchFields.SIZE.name(), size, Field.Store.YES));
+		doc.add(new LongField(SearchFields.RECEIVED.name(), received, Field.Store.YES));
 		indexWriter.addDocument(doc);
 		indexWriter.commit();
 	}

@@ -25,20 +25,21 @@ public class SearchIndexerTest extends TestCase {
 		super.setUp();
 		//		Config config = Config.getInstance();
 		//		config.setString(Config.BLUEBOX_STORAGE,"com.bluebox.smtp.storage.mongodb.StorageImpl");
-		Inbox.getInstance();
-		Inbox.getInstance().deleteAll();
-		Inbox.getInstance().rebuildSearchIndexes();
+//		Inbox.getInstance();
+//		Inbox.getInstance().deleteAll();
+//		Inbox.getInstance().rebuildSearchIndexes();
 		si = SearchIndexer.getInstance();
-		String recipients = "receiever1@here.com, receiever2@here.com";
-		si.addDoc("193398817","receiever1@here.com","sender@there.com","Subject in action","Lucene in Action","<b>Lucene in Action</b>", recipients,"23423","6346543");
-		si.addDoc("55320055Z","receiever2@here.com","sender@there.com","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "55320055Z","235324","6346543");
-		si.addDoc("55063554A","receiever3@here.com","sender@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "55063554A","7646","6346543");
-		si.addDoc("9900333X","receiever4@here.com","sender@there.com","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "9900333X","543","6346543");
+		si.deleteIndexes();
+//		String recipients = "receiever1@here.com, receiever2@here.com";
+		si.addDoc("193398817","receiever1@here.com","sender@there.com","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543);
+		si.addDoc("55320055Z","receiever2@here.com","sender@there.com","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543);
+		si.addDoc("55063554A","receiever3@here.com","sender@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543);
+		si.addDoc("9900333X","receiever4@here.com","sender@there.com","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543);
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
-		Inbox.getInstance().stop();
+//		Inbox.getInstance().stop();
 	}
 
 	public void testHtmlSearch() throws IOException, ParseException {
@@ -63,12 +64,21 @@ public class SearchIndexerTest extends TestCase {
 		assertEquals("Missing expected search results",1,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
 		assertEquals("Missing expected search results",1,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
 	}
+	
+	public void testRecipientSearch() throws IOException, ParseException {
+		assertEquals("Missing expected search results",1,si.search("receiever1",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED).length);
+		assertEquals("Missing expected search results",1,si.search("receiever1@here.com",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED).length);
+		assertEquals("Missing expected search results",1,si.search("receiever2",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED).length);
+//		assertEquals("Missing expected search results",4,si.search("receiever",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED).length);
+	}
 
 	public void testMailIndexing() throws Exception {
+		Inbox.getInstance();
 		BlueboxMessage msg = TestUtils.addRandom(StorageFactory.getInstance());
 		si.indexMail(msg);
 		assertEquals("Missing expected search results",1,si.search(msg.getProperty(BlueboxMessage.SUBJECT),SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
 		assertEquals("Missing expected search results",1,si.search("steve",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
+		Inbox.getInstance().stop();
 	}
 
 	public void testDelete() throws IOException, ParseException {
@@ -102,10 +112,6 @@ public class SearchIndexerTest extends TestCase {
 
 	@Test
 	public void testSearch() throws Exception {
-		//BlueboxMessage original = TestUtils.addRandom(StorageFactory.getInstance());
-		//TestUtils.addRandom(StorageFactory.getInstance(),10);
-		//Utils.waitFor(10);
-		//assertNotNull(original);
 		StringWriter sw;
 		JSONArray ja;
 
