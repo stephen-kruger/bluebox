@@ -26,9 +26,9 @@ public class SearchIndexerTest extends TestCase {
 		si.deleteIndexes();
 		String recipients = "receiever1@here.com, receiever2@here.com";
 		si.addDoc("193398817","receiever1@here.com","sender@there.com","Subject in action","Lucene in Action","<b>Lucene in Action</b>", recipients,"23423","6346543");
-		si.addDoc("55320055Z","receiever1@here.com","sender@there.com","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "55320055Z","235324","6346543");
-		si.addDoc("55063554A","receiever1@here.com","sender@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "55063554A","7646","6346543");
-		si.addDoc("9900333X","receiever1@here.com","sender@there.com","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "9900333X","543","6346543");
+		si.addDoc("55320055Z","receiever2@here.com","sender@there.com","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "55320055Z","235324","6346543");
+		si.addDoc("55063554A","receiever3@here.com","sender@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "55063554A","7646","6346543");
+		si.addDoc("9900333X","receiever4@here.com","sender@there.com","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "9900333X","543","6346543");
 	}
 	
 	@Override
@@ -40,6 +40,14 @@ public class SearchIndexerTest extends TestCase {
 		assertEquals("Missing expected search results",4,si.search("sender",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
 	}
 	
+	public void testMultiWord() throws IOException, ParseException {
+		assertEquals("Missing expected search results",1,si.search("Art of Computer",SearchIndexer.SearchFields.BODY,0,10,SearchIndexer.SearchFields.BODY.name()).length);
+		assertEquals("Missing expected search results",1,si.search("for dummies",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
+		assertEquals("Missing expected search results",1,si.search("in action",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
+		assertEquals("Missing expected search results",1,si.search("Subject in action",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
+		assertEquals("Missing expected search results",0,si.search("Subject in action",SearchIndexer.SearchFields.BODY,0,10,SearchIndexer.SearchFields.BODY.name()).length);
+	}
+	
 	public void testSubjectSearch() throws IOException, ParseException {
 		assertEquals("Missing expected search results",1,si.search("action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
 		assertEquals("Missing expected search results",1,si.search("action",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
@@ -48,7 +56,7 @@ public class SearchIndexerTest extends TestCase {
 	public void testFromSearch() throws IOException, ParseException {
 		assertEquals("Missing expected search results",1,si.search("johnson",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
 		assertEquals("Missing expected search results",1,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
-		assertEquals("Missing expected search results",3,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
+		assertEquals("Missing expected search results",1,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
 	}
 	
 	public void testMailIndexing() throws Exception {
@@ -62,7 +70,7 @@ public class SearchIndexerTest extends TestCase {
 		si.deleteDoc("55063554A");
 		assertEquals("Missing expected search results",0,si.search("johnson",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
 		assertEquals("Missing expected search results",0,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
-		assertEquals("Missing expected search results",3,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
+		assertEquals("Missing expected search results",1,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT.name()).length);
 	}
 	
 	public void testTextSearch() throws IOException, ParseException {
@@ -78,5 +86,12 @@ public class SearchIndexerTest extends TestCase {
 		String htmlStr = "<html><title>title text</title><body>this is the body</body></html>";
 		String textStr = SearchIndexer.htmlToString(htmlStr);
 		assertEquals("Html to text conversion failed","title text this is the body",textStr);
+	}
+	
+	public void testTypeAhead() throws ParseException, IOException {
+		Document[] results = si.search("receiever*", SearchIndexer.SearchFields.TO, 0, 199, SearchIndexer.SearchFields.TO.name());
+		assertTrue("Missing autocomplete results",results.length==4);
+		results = si.search("receiever1*", SearchIndexer.SearchFields.TO, 0, 199, SearchIndexer.SearchFields.TO.name());
+		assertTrue("Missing autocomplete results",results.length>0);
 	}
 }

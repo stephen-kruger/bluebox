@@ -42,12 +42,20 @@ public class StorageTest extends TestCase {
 		catch (Throwable t) {
 			log.warning("Tables not created");
 		}
+		Inbox.getInstance().rebuildSearchIndexes();
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		log.info("Cleaning up messages after tests");
+		try {
+			StorageFactory.getInstance().deleteAll();
+		}
+		catch (Throwable t) {
+			log.warning("Tables not created");
+		}
+		
 		Inbox.getInstance().stop();
 	}
 
@@ -77,44 +85,44 @@ public class StorageTest extends TestCase {
 //		assertEquals("Autocomplete not working as expected",1,Inbox.getInstance().autoComplete(ia.getAddress(), 0, 10).length());
 	}
 
-	//	@Test
-	//	public void testSearch() throws Exception {
-	//		MessageImpl original = TestUtils.addRandom(StorageFactory.getInstance());
-	//		TestUtils.addRandom(StorageFactory.getInstance(),10);
-	//		assertNotNull(original);
-	//		StringWriter sw;
-	//		JSONArray ja;
-	//
-	//		// test search in subject
-	//		sw = new StringWriter();
-	//		StorageFactory.getInstance().searchInboxes(original.getProperty(MessageImpl.SUBJECT), sw, 0, 50, null, true);
-	//		ja = new JSONArray(sw.toString());
-	//		log.info(ja.toString(3));
-	//		assertTrue("No 'Subject' search results",ja.length()>0);
-	//		assertEquals(ja.getJSONObject(0).get(MessageImpl.SUBJECT),original.getProperty(MessageImpl.SUBJECT));
-	//		assertEquals(ja.getJSONObject(0).get(MessageImpl.FROM),original.getProperty(MessageImpl.FROM));
-	//		// search for first few chars of subject
-	//		assertEquals("partial initial subject search failed",1,StorageFactory.getInstance().searchInboxes(original.getProperty(MessageImpl.SUBJECT).substring(0,4), sw, 0, 50, null, true));
-	//		assertEquals("partial end subject search failed",1,StorageFactory.getInstance().searchInboxes(original.getProperty(MessageImpl.SUBJECT).substring(3), sw, 0, 50, null, true));
-	//
-	//		// test search To:
-	//		sw = new StringWriter();
-	//		StorageFactory.getInstance().searchInboxes(original.getProperty(MessageImpl.FROM), sw, 0, 50, null, true);
-	//		ja = new JSONArray(sw.toString());
-	//		log.info(ja.toString(3));
-	//		assertTrue("No 'From' search results",ja.length()>0);
-	//		assertEquals(ja.getJSONObject(0).get(MessageImpl.SUBJECT),original.getProperty(MessageImpl.SUBJECT));
-	//		assertEquals(ja.getJSONObject(0).get(MessageImpl.FROM),original.getProperty(MessageImpl.FROM));
-	//
-	//		// test substring search
-	//		sw = new StringWriter();
-	//		StorageFactory.getInstance().searchInboxes("steve", sw, 0, 50, null, true);
-	//		ja = new JSONArray(sw.toString());
-	//		log.info(ja.toString(3));
-	//		assertTrue("No substring search results",ja.length()>0);
-	//		assertEquals(ja.getJSONObject(0).get(MessageImpl.SUBJECT),original.getProperty(MessageImpl.SUBJECT));
-	//		assertEquals(ja.getJSONObject(0).get(MessageImpl.FROM),original.getProperty(MessageImpl.FROM));
-	//	}
+		@Test
+		public void testSearch() throws Exception {
+			BlueboxMessage original = TestUtils.addRandom(StorageFactory.getInstance());
+			TestUtils.addRandom(StorageFactory.getInstance(),10);
+			assertNotNull(original);
+			StringWriter sw;
+			JSONArray ja;
+
+			// test search in subject
+			sw = new StringWriter();
+			SearchIndexer.getInstance().searchInboxes(original.getProperty(BlueboxMessage.SUBJECT), sw, 0, 50, SearchIndexer.SearchFields.SUBJECT, null, true);
+			ja = new JSONArray(sw.toString());
+			log.info(original.getProperty(BlueboxMessage.SUBJECT)+"<<<<<<<<<>>>>>>>>>>"+ja.toString(3));
+			assertTrue("No 'Subject' found in search results",ja.length()>0);
+			assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),original.getProperty(BlueboxMessage.SUBJECT));
+			assertEquals(ja.getJSONObject(0).get(BlueboxMessage.FROM),original.getProperty(BlueboxMessage.FROM));
+			// search for first few chars of subject
+			assertEquals("partial initial subject search failed",1,SearchIndexer.getInstance().searchInboxes(original.getProperty(BlueboxMessage.SUBJECT), sw, 0, 50, SearchIndexer.SearchFields.FROM,SearchIndexer.SearchFields.FROM.name(),true));
+			assertEquals("partial end subject search failed",1,    SearchIndexer.getInstance().searchInboxes(original.getProperty(BlueboxMessage.SUBJECT).substring(3), sw, 0, 50, SearchIndexer.SearchFields.SUBJECT, SearchIndexer.SearchFields.SUBJECT.name(), true));
+	
+			// test search To:
+			sw = new StringWriter();
+			SearchIndexer.getInstance().searchInboxes(original.getProperty(BlueboxMessage.FROM), sw, 0, 50, SearchIndexer.SearchFields.FROM,SearchIndexer.SearchFields.FROM.name(),true);
+			ja = new JSONArray(sw.toString());
+			log.info(ja.toString(3));
+			assertTrue("No 'From' search results",ja.length()>0);
+			assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),original.getProperty(BlueboxMessage.SUBJECT));
+			assertEquals(ja.getJSONObject(0).get(BlueboxMessage.FROM),original.getProperty(BlueboxMessage.FROM));
+	
+			// test substring search
+			sw = new StringWriter();
+			SearchIndexer.getInstance().searchInboxes("steve", sw, 0, 50, SearchIndexer.SearchFields.FROM, null, true);
+			ja = new JSONArray(sw.toString());
+			log.info(ja.toString(3));
+			assertTrue("No substring search results",ja.length()>0);
+			assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),original.getProperty(BlueboxMessage.SUBJECT));
+			assertEquals(ja.getJSONObject(0).get(BlueboxMessage.FROM),original.getProperty(BlueboxMessage.FROM));
+		}
 
 	public void testState() throws Exception {
 		BlueboxMessage original = TestUtils.addRandom(StorageFactory.getInstance());
@@ -175,9 +183,6 @@ public class StorageTest extends TestCase {
 		BlueboxMessage stored = StorageFactory.getInstance().retrieve(bbm.getIdentifier());
 		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
 		assertEquals("Stored recipient did not match original",inbox.getAddress(),stored.getInbox().getAddress());
-		JSONArray ja = Inbox.getInstance().autoComplete("", 0, 10);
-		log.info(ja.toString(3));
-		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),ja.getJSONObject(0).getString("label"));
 	}
 
 	public void testRetrieve() throws Exception {
@@ -338,7 +343,7 @@ public class StorageTest extends TestCase {
 	}
 
 	public void testAutoComplete() throws Exception {
-		String name = "Another Name";
+		String name = "Monica Smith";
 		InboxAddress email = new InboxAddress(name+" <monica.smith@test.com>");
 
 		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(null,
@@ -364,6 +369,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("Smi*", 0, 10).length());
 		//		assertEquals("Message not found",1,Inbox.getInstance().autoComplete(inbox, 0, 10).length());
 		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("ith*", 0, 10).length());
+		System.out.println(Inbox.getInstance().autoComplete(name+"*", 0, 10).toString(3));
 		assertEquals("Message not found",1,Inbox.getInstance().autoComplete(name+"*", 0, 10).length());
 
 		// test for search of name
@@ -376,12 +382,12 @@ public class StorageTest extends TestCase {
 		assertTrue("Did not return full name",ja.toString().toLowerCase().indexOf(name.toLowerCase())>0);
 
 		// check for partial firstname
-		ja = Inbox.getInstance().autoComplete("Another*", 0, 10);
+		ja = Inbox.getInstance().autoComplete("Monica*", 0, 10);
 		log.info(ja.toString(3));
 		assertTrue("Did not return search on first name",ja.toString().toLowerCase().indexOf(name.toLowerCase())>0);
 
 		// check for partial secondname
-		ja = Inbox.getInstance().autoComplete("Name*", 0, 10);
+		ja = Inbox.getInstance().autoComplete("Smith*", 0, 10);
 		log.info(ja.toString(3));
 		assertTrue("Did not return search on last name",ja.toString().toLowerCase().indexOf(name.toLowerCase())>0);
 
