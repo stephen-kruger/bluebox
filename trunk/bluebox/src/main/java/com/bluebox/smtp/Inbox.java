@@ -159,6 +159,10 @@ public class Inbox implements SimpleMessageListener {
 		}
 	}
 
+	public void delete(String uid) throws Exception {
+		StorageFactory.getInstance().delete(uid);
+	}
+	
 	public void deleteAll() {
 		try {
 			StorageFactory.getInstance().deleteAll();
@@ -283,7 +287,7 @@ public class Inbox implements SimpleMessageListener {
 
 
 			// else we accept everyone
-			log.info("Accepting mail for "+recipient+" from "+from);
+			log.fine("Accepting mail for "+recipient+" from "+from);
 			return true;
 		}
 		catch (Throwable t) {
@@ -335,6 +339,7 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public void deliver(String from, String recipient, MimeMessageWrapper mmessage) throws Exception {
+		log.info("Delivering mail for "+recipient+" from "+from);
 		InboxAddress inbox = new InboxAddress(BlueboxMessage.getRecipient(new InboxAddress(recipient), mmessage).toString());
 		BlueboxMessage message = StorageFactory.getInstance().store(inbox, 
 				from,

@@ -1,14 +1,21 @@
 package com.bluebox.servlet;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.mortbay.jetty.testing.HttpTester;
 
 import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONFolderHandler;
+import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public class RestTest extends BaseServletTest {
 
@@ -36,7 +43,7 @@ public class RestTest extends BaseServletTest {
 
 		// first we check directly
 		Utils.waitFor(COUNT);
-		
+
 		assertEquals("Missing mails",COUNT,getMailCount(BlueboxMessage.State.NORMAL));
 
 		// now hit the REST web service
@@ -107,5 +114,27 @@ public class RestTest extends BaseServletTest {
 		//			}		
 	}
 
+	public void testAttatchmentHandler() throws Exception {
+		Inbox.getInstance().deleteAll();
+		Utils.waitFor(0);
+		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"inlineattachments.eml");
+		Utils.uploadEML(emlStream);
+		Utils.waitFor(1);
+		assertEquals("Mail was not delivered",1,Inbox.getInstance().getMailCount(State.ANY));
+		
+		// now retrieve the atachment
+		List<BlueboxMessage> messages = Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
+		BlueboxMessage msg = messages.get(0);
+		HttpTester request = new HttpTester();
+		request.setMethod("GET");
+		request.setHeader("HOST","127.0.0.1");
+		request.setURI(getBaseURL()+"/rest/json/inbox/attachment/"+msg.getIdentifier()+"/0/ISM%20Open%20Tickets%20Report%20-%2003-13-2012-DOW.zip");
+		request.setVersion("HTTP/1.0");
+
+		HttpTester response = new HttpTester();
+		response.parse(getTester().getResponses(request.generate()));
+
+		assertEquals(200,response.getStatus());
+	}
 
 }

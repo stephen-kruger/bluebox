@@ -222,6 +222,18 @@ public class BlueboxMessage {
 			else
 				json.put(AUTO_COMPLETE,properties.get(TO));
 
+//			// hack
+//			MimeMessageParser parser = new MimeMessageParser(mmw);
+//			parser.parse();
+//			System.out.println("<><><><><><><><><><><>><"+parser.getSubject());
+//			System.out.println(parser.getHtmlContent());
+//			System.out.println("<><><><><><><><><><><>><"+parser.getFrom());
+//			System.out.println(parser.getPlainContent());
+//			System.out.println("<><><><><><><><><><><>><"+parser.getTo());
+//			json.put(MimeMessageWrapper.HTML_BODY, parser.getHtmlContent());
+//			json.put(MimeMessageWrapper.TEXT_BODY, parser.getPlainContent());
+//			json.put(MimeMessageWrapper.TEXT_BODY, parser.get);
+//			// end hack
 			return json.toString();
 
 		}

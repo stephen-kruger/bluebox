@@ -3,6 +3,7 @@
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.rest.json.JSONAttachmentHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
+<%@ page import="com.bluebox.rest.json.JSONMessageHandler"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.Config"%>
 <%@ page import="com.bluebox.smtp.MimeMessageWrapper"%>
@@ -196,7 +197,7 @@
 			clearDetail();
 			showDetail();
 			var xhrArgs = {
-					url: "<%=request.getContextPath()%>/rest/json/inbox/detail/"+uid,
+					url: "<%=request.getContextPath()%>/<%=JSONMessageHandler.JSON_ROOT%>/"+uid,
 					handleAs: "json",
 					preventCache: false,
 					load: function(data) {

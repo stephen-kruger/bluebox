@@ -27,6 +27,6 @@
 <script data-dojo-config="parseOnLoad:false, locale: 'en-us',extraLocale: ['fr','de','zn']" src="<%=bbconfig.getString("dojo_base")%>/dojo/dojo.js"></script>
 
 <!--  load google web fonts  -->
-<link href='http://fonts.googleapis.com/css?family=Roboto:700,400&subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic' rel='stylesheet' type='text/css'>
+<link type="text/css" href='http://fonts.googleapis.com/css?family=Roboto:700,400&subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic' rel='stylesheet'>
 <link type="text/css" href="<%=request.getContextPath()%>/app/index.css" rel="stylesheet" />
-<link href="<%=bbconfig.getString("bluebox_theme")%>/theme.css"	rel="stylesheet" type="text/css" />
+<link type="text/css" href="<%=request.getContextPath()%>/app/<%=bbconfig.getString("bluebox_theme")%>/theme.css" rel="stylesheet" />
