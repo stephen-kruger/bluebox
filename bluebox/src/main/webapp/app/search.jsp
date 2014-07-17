@@ -39,7 +39,7 @@
 			function searchInbox(searchString) {
 				try {
 					clearSelection();
-				    var urlStr = "../<%=JSONSearchHandler.JSON_ROOT%>/"+searchScope+"/"+encodeURI(searchString);
+				    var urlStr = "<%=request.getContextPath()%>/<%=JSONSearchHandler.JSON_ROOT%>/"+searchScope+"/"+encodeURI(searchString);
 				    require(["dojox/data/JsonRestStore"], function () {
 					    var store = new dojox.data.JsonRestStore({ target: urlStr, parameters: [{name: "state", type: "string", optional: true}]});
 					    require(["dijit/registry"], function(registry){

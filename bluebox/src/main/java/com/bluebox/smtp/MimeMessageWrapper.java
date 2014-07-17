@@ -92,16 +92,16 @@ public class MimeMessageWrapper extends MimeMessage {
 				BodyPart bp = getBodyPart(i);
 //				log.fine("Processing body-part "+i+" ContentType="+bp.getContentType()+" ContentType="+bp.getContentType()+" Disposition="+bp.getDisposition()+" FileName="+bp.getFileName());
 				if ((bp.getDisposition()==null)||(bp.getDisposition().equals(Part.INLINE))) {
-					log.fine("Processing as INLINE");
+					log.info("Processing as INLINE");
 					getText(identifier,bp);
 				}
 				else {
-					log.fine("Processing as ATTACHMENT");
+					log.info("Processing as ATTACHMENT");
 					String attachmentName;
 					if ((attachmentName=bp.getFileName())==null) {
 						attachmentName = "unnamed";
 					}
-					log.fine("Processing attachment:"+attachmentName);
+					log.info("Processing attachment:"+attachmentName);
 					addHeader(ATTACHMENT,attachmentName);
 				}
 			}
@@ -266,7 +266,7 @@ public class MimeMessageWrapper extends MimeMessage {
 					addHeader(ATTACHMENT,attachmentName);
 				}
 				else {
-					log.warning("Unknown mime type :"+p.getContentType()+" "+p.getDisposition());					
+					log.fine("Attachment found with mime type :"+p.getContentType()+" and disposition:"+p.getDisposition());	
 				}
 			}
 		}
@@ -275,7 +275,7 @@ public class MimeMessageWrapper extends MimeMessage {
 
 	private String convertCidLinks(String identifier, String htmlString) {
 		try {
-			return htmlString.replaceAll("cid:", JSONInlineHandler.JSON_ROOT+"/"+identifier+"/");
+			return htmlString.replaceAll("cid:", "../"+JSONInlineHandler.JSON_ROOT+"/"+identifier+"/");
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();
@@ -359,7 +359,7 @@ public class MimeMessageWrapper extends MimeMessage {
 					return bp;							
 				}
 				else {
-					log.fine("Not what we are looking for :"+mbp.getContentID()+" vs "+cid);
+					log.info("Not what we are looking for :"+mbp.getContentID()+" vs "+cid);
 				}
 			}
 			else {
@@ -399,6 +399,7 @@ public class MimeMessageWrapper extends MimeMessage {
 						// set the correct mime type
 						if (resp!=null) {
 							ContentType ct = new ContentType(bp.getContentType());
+							log.info("Setting mime type to "+ct.getBaseType());
 							resp.setContentType(ct.getBaseType());
 						}
 						log.fine("Sending attachment "+bp.getFileName());

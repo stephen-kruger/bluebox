@@ -173,10 +173,11 @@
 					var delUrl = "<%=request.getContextPath()%>/<%=JSONMessageHandler.JSON_ROOT%>/"+uidList;
 					var xhrArgs = {
 							url: delUrl,
-							handleAs: "text",
+							handleAs: "json",
 							preventCache: true,
 							load: function(data) {
 								loadInboxAndFolder(currentEmail);
+								clearDetail();
 							},
 							error: function (error) {
 								alert("<%=inboxDetailsResource.getString("error.unknown")%>"+error);

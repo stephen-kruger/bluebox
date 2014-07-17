@@ -219,7 +219,7 @@ public class BlueBoxServlet extends HttpServlet {
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		log.fine("doDelete :"+req.getRequestURI());
+		log.info("doDelete :"+req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
 			new JSONMessageHandler().doDelete(Inbox.getInstance(),req,resp);
 			return;

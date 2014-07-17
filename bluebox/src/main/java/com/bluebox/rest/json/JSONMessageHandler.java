@@ -51,8 +51,16 @@ public class JSONMessageHandler extends AbstractHandler {
 		try {
 			String uidList = extractFragment(req.getRequestURI(),0);
 			StringTokenizer uidArray = new StringTokenizer(uidList,",");
+			String uid;
 			while (uidArray.hasMoreTokens()) {
-				inbox.setState(uidArray.nextToken(), BlueboxMessage.State.DELETED);
+				uid = uidArray.nextToken();
+				BlueboxMessage msg = inbox.retrieve(uid);
+				if (msg.getLongProperty(BlueboxMessage.STATE)==BlueboxMessage.State.DELETED.ordinal()) {
+					inbox.delete(uid);
+				}
+				else {
+					inbox.setState(uid, BlueboxMessage.State.DELETED);
+				}
 			}
 			JSONObject result = new JSONObject();
 			result.put("message", "ok");
