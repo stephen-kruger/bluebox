@@ -11,6 +11,7 @@ import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.testing.HttpTester;
 import org.mortbay.jetty.testing.ServletTester;
 
+import com.bluebox.TestUtils;
 import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.smtp.Inbox;
@@ -50,8 +51,9 @@ public abstract class BaseServletTest extends TestCase {
 		getURL("/rest/admin/clear");
 
 		// send some test messages
-		Utils.sendSingleMessage(COUNT);
-
+		//Utils.sendSingleMessage(COUNT);
+		for (int i = 0; i < COUNT; i++)
+			TestUtils.sendMailSMTP(Utils.getRandomAddress(), Utils.getRandomAddress(), null, null, "subject", "body");
 		getRestJSON("/"+JSONFolderHandler.JSON_ROOT);
 
 //				Thread.sleep(5000);

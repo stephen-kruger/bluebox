@@ -15,8 +15,10 @@ import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.parser.ParseException;
 import org.apache.abdera.parser.Parser;
+import org.apache.commons.mail.EmailException;
 import org.codehaus.jettison.json.JSONException;
 
+import com.bluebox.TestUtils;
 import com.bluebox.Utils;
 
 public class AtomTest extends BaseServletTest {
@@ -52,12 +54,12 @@ public class AtomTest extends BaseServletTest {
 
 	}
 
-	public void testAtomUpdate() throws JSONException, ParseException, IOException, AddressException, MessagingException, InterruptedException {
+	public void testAtomUpdate() throws JSONException, ParseException, IOException, AddressException, MessagingException, InterruptedException, EmailException {
 
 		// now send a new mail
-		InternetAddress[] blank =  new InternetAddress[]{};
 		String to = "junit@junit.com";
-		Utils.sendMessage(new InternetAddress("bob@test.com"), "atom test", "body", new InternetAddress[]{new InternetAddress(to)}, blank, blank, false);
+		TestUtils.sendMailSMTP(new InternetAddress("bob@test.com"), new InternetAddress(to), null, null, "atom test", "body");
+
 		Utils.waitFor(1);
 
 		String atomURL = getBaseURL()+"/atom/inbox?email="+to;

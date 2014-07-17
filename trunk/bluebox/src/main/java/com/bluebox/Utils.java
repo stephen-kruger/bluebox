@@ -16,11 +16,12 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.StringTokenizer;
@@ -34,10 +35,10 @@ import javax.activation.FileTypeMap;
 import javax.activation.MimetypesFileTypeMap;
 import javax.mail.Address;
 import javax.mail.Message;
+import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
-import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
@@ -57,7 +58,7 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class Utils {
 	private static final Logger log = Logger.getAnonymousLogger();
-	private static Config config = Config.getInstance();
+	//	private static Config config = Config.getInstance();
 	private static Map<String,File> cachedFiles = new HashMap<String,File>();
 	private static int counter=0;
 
@@ -202,20 +203,20 @@ public class Utils {
 			return "Could not load eml resource";
 		}
 		try {
-			Session sess = getSession();
-			log.info("Session retrieved :"+sess);
+			//			Session sess = getSession();
+			//			log.info("Session retrieved :"+sess);
 			//MimeMessage message = new MimeMessage(sess, eml);
 			String mstr = Utils.convertStreamToString(eml);
 			//log.info(mstr);
 			MimeMessage message = loadEML(Utils.convertStringToStream(mstr));
-			Transport.send(message);
+			sendMessageDirect(message);
 			eml.close();
 			return "Loaded email ok";
 		}  
-//		catch (Throwable e) {
-//			e.printStackTrace();
-//			return e.toString()+":"+e.getMessage();
-//		}
+		catch (Throwable e) {
+			e.printStackTrace();
+			return e.toString()+":"+e.getMessage();
+		}
 		finally {
 			try {
 				eml.close();
@@ -227,8 +228,8 @@ public class Utils {
 	}
 
 	public static MimeMessage loadEML(InputStream emlStream) throws MessagingException {
-		Session sess = getSession();
-		MimeMessage message = new MimeMessage(sess, emlStream);
+		//		Session sess = getSession();
+		MimeMessage message = new MimeMessage(null, emlStream);
 		return message;
 	}
 
@@ -322,48 +323,52 @@ public class Utils {
 		return text;
 	}
 
-	private static Properties getMailProperties() {
-		Properties mailProps = new Properties();
-		// http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html
-		mailProps.setProperty("mail.smtp.host", Utils.getHostName());
-		mailProps.setProperty("mail.smtp.port", "" + config.getString(Config.BLUEBOX_PORT));
-		mailProps.setProperty("mail.smtp.sendpartial", "true");
-		//		mailProps.setProperty("mail.smtp.auth", "true");
-		mailProps.setProperty("mail.smtp.starttls.enable","false");
-		//		mailProps.setProperty("mail.smtp.ssl.trust","*");
-		return mailProps;
-	}
+	//	private static Properties getMailProperties() {
+	//		Properties mailProps = new Properties();
+	//		// http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html
+	//		mailProps.setProperty("mail.smtp.host", Utils.getHostName());
+	//		mailProps.setProperty("mail.smtp.port", "" + config.getString(Config.BLUEBOX_PORT));
+	//		mailProps.setProperty("mail.smtp.sendpartial", "true");
+	//		//		mailProps.setProperty("mail.smtp.auth", "true");
+	//		mailProps.setProperty("mail.smtp.starttls.enable","false");
+	//		//		mailProps.setProperty("mail.smtp.ssl.trust","*");
+	//		return mailProps;
+	//	}
 
-	public static void sendSingleMessage(int count) {
-		boolean sent = false;
-		int retryCount = 5;
-		while ((!sent)&&(retryCount-->0)) {
-			log.info("Sending message");
-			try {
-				sendMessage(getRandomAddress(), 
-						(counter++)+" "+randomLine(35), 
-						randomText(14), 
-						getRandomAddresses(count),//to
-						getRandomAddresses(0),//cc
-						getRandomAddresses(0),//bcc
-						true);
-				sent = true;
-			} 
-			catch (Throwable e) {
-				// server overloaded, try again later
-				try {
-					log.info("Waiting to deliver ("+e.getMessage()+")");
-					Thread.sleep(5000);
-				} 
-				catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
-			}
-		}
-	}
+	//	public static void sendSingleMessage(int count) {
+	//		boolean sent = false;
+	//		int retryCount = 5;
+	//		while ((!sent)&&(retryCount-->0)) {
+	//			log.info("Sending message");
+	//			try {
+	//				MimeMessage msg = createMessage(getSession(),
+	//						getRandomAddress(),  
+	//						getRandomAddresses(1),//to
+	//						getRandomAddresses(0),//cc
+	//						getRandomAddresses(0),//bcc
+	//						(counter++)+" "+randomLine(35), 
+	//						randomText(14),
+	//						true);
+	//				if (Inbox.getInstance().accept(msg.getFrom()[0].toString(), msg.getRecipients(RecipientType.TO)[0].toString())) {
+	//					Inbox.getInstance().deliver(msg.getFrom()[0].toString(), msg.getRecipients(RecipientType.TO)[0].toString(), msg.getInputStream());
+	//					sent = true;
+	//				}
+	//			} 
+	//			catch (Throwable e) {
+	//				// server overloaded, try again later
+	//				try {
+	//					log.info("Waiting to deliver ("+e.getMessage()+")");
+	//					Thread.sleep(5000);
+	//				} 
+	//				catch (InterruptedException e1) {
+	//					e1.printStackTrace();
+	//				}
+	//			}
+	//		}
+	//	}
 	public static void sendMessage(final int count) {
 		ExecutorService threadPool = Executors.newFixedThreadPool(10);
-		for (int j = 0; j < (count/6); j++) {
+		for (int j = 0; j < count; j++) {
 			log.info("Sending message "+j);
 			threadPool.execute(new Runnable() {
 
@@ -374,14 +379,18 @@ public class Utils {
 					while ((!sent)&&(retryCount-->0)) {
 						log.info("Sending message");
 						try {
-							sendMessage(getRandomAddress(), 
-									(counter++)+" "+randomLine(35), 
-									randomText(14), 
+							MimeMessage msg = createMessage(null,
+									getRandomAddress(),  
 									getRandomAddresses(2),//to
 									getRandomAddresses(2),//cc
 									getRandomAddresses(2),//bcc
+									(counter++)+" "+randomLine(35), 
+									randomText(14),
 									true);
+
+							sendMessageDirect(msg);
 							sent = true;
+
 						} 
 						catch (Throwable e) {
 							// server overloaded, try again later
@@ -396,24 +405,48 @@ public class Utils {
 					}
 				}
 
+
+
 			});
 		}		
 	}
 
-	public static Session getSession() {
-		Properties mailProps = getMailProperties();
-		Session session = Session.getInstance(mailProps, null);
-		session.setDebug(false);
-		return session;
+	private static void sendMessageDirect(MimeMessage msg) throws Exception {
+		Address[] to = msg.getRecipients(RecipientType.TO);
+		Address[] cc = msg.getRecipients(RecipientType.CC);
+		Address[] bcc = msg.getRecipients(RecipientType.BCC);
+		List<String> recipients = new ArrayList<String>();
+		if (to!=null)
+			for (int i = 0; i < to.length;i++)
+				recipients.add(to[i].toString());
+		if (cc!=null)
+			for (int i = 0; i < cc.length;i++)
+				recipients.add(cc[i].toString());
+		if (bcc!=null)
+			for (int i = 0; i < bcc.length;i++)
+				recipients.add(bcc[i].toString());
+		for (String recipient : recipients) {
+			if (Inbox.getInstance().accept(msg.getFrom()[0].toString(), recipient)) {
+				Inbox.getInstance().deliver(msg.getFrom()[0].toString(), recipient, new MimeMessageWrapper(msg));
+			}
+		}
+
 	}
 
-	public static void sendMessage(InternetAddress from, String subject, String body, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, boolean attachment) throws MessagingException, IOException {
-		Properties mailProps = getMailProperties();
-		Session session = Session.getInstance(mailProps, null);
-		session.setDebug(false);
-		MimeMessage msg = createMessage(session, from, to, cc, bcc, subject, body, attachment);
-		Transport.send(msg);
-	}
+	//	public static Session getSession() {
+	//		Properties mailProps = getMailProperties();
+	//		Session session = Session.getInstance(mailProps, null);
+	//		session.setDebug(false);
+	//		return session;
+	//	}
+	//
+	//	public static void sendMessage(InternetAddress from, String subject, String body, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, boolean attachment) throws MessagingException, IOException {
+	//		Properties mailProps = getMailProperties();
+	//		Session session = Session.getInstance(mailProps, null);
+	//		session.setDebug(false);
+	//		MimeMessage msg = createMessage(session, from, to, cc, bcc, subject, body, attachment);
+	//		Transport.send(msg);
+	//	}
 
 	public static void waitFor(int i) {
 		Inbox inbox = Inbox.getInstance();
@@ -432,7 +465,7 @@ public class Utils {
 		else
 			log.info("Found expected message count received");
 	}
-	
+
 	public static String trimURLParam(String p) {
 		if (p.endsWith("/")) {
 			return p.substring(0,p.length()-1);
@@ -440,6 +473,17 @@ public class Utils {
 		else {
 			return p;
 		}
+	}
+
+	public static MimeMessage createMessage(Session session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
+		return createMessage(session, 
+				new InternetAddress(from),
+				new InternetAddress[]{new InternetAddress(to)},
+				new InternetAddress[]{new InternetAddress(cc)},
+				new InternetAddress[]{new InternetAddress(bcc)},
+				subject,
+				body,
+				false);
 	}
 
 	public static MimeMessage createMessage(Session session, InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body, boolean attachment) 
@@ -580,7 +624,7 @@ public class Utils {
 			return javax.mail.internet.MimeUtility.encodeText(s);
 		} 
 		catch (UnsupportedEncodingException e) {
-//			e.printStackTrace();
+			//			e.printStackTrace();
 			log.warning("Problem encoding "+s);
 			return s;
 		}

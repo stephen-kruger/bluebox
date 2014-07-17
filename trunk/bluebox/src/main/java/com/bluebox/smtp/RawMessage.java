@@ -4,9 +4,6 @@ import java.io.ByteArrayInputStream;
 import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
-import javax.mail.Session;
-
-import com.bluebox.Utils;
 
 /**
  * This class wraps a received message and provides
@@ -17,7 +14,7 @@ public class RawMessage {
 	private byte[] messageData;
 	private String envelopeSender;
 	private String envelopeReceiver;
-	private static Session session;
+//	private static Session session;
 	
 	RawMessage(String envelopeSender, String envelopeReceiver, byte[] messageData) {
 		this.envelopeSender = envelopeSender;
@@ -30,15 +27,15 @@ public class RawMessage {
 	 * @throws MessagingException
 	 */
 	public MimeMessageWrapper getMimeMessage() throws MessagingException {
-		return new MimeMessageWrapper(getSession(), new ByteArrayInputStream(this.messageData));
+		return new MimeMessageWrapper(null, new ByteArrayInputStream(this.messageData));
 	}
 
-	private static Session getSession() {
-		if (session==null) {
-			session = Utils.getSession();;
-		}
-		return session;
-	}
+//	private static Session getSession() {
+//		if (session==null) {
+//			session = Utils.getSession();;
+//		}
+//		return session;
+//	}
 
 	/**
 	 * Get's the raw message DATA.

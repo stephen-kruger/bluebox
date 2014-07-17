@@ -307,8 +307,8 @@ public class Inbox implements SimpleMessageListener {
 			while (tok.hasMoreTokens()) {
 				r = tok.nextToken();
 				// ensure we remove duplicates
-				if (!recipients.contains(r)) {
-					recipients.add(tok.nextToken());
+				if ((r.length()>1)&&(!recipients.contains(r))) {
+					recipients.add(r);
 				}		
 				else {
 					log.info("Skipping duplicate recipient");
@@ -323,22 +323,7 @@ public class Inbox implements SimpleMessageListener {
 		else {
 			try {
 				MimeMessageWrapper mmessage = new MimeMessageWrapper(null,data);
-				InboxAddress inbox = new InboxAddress(BlueboxMessage.getRecipient(new InboxAddress(recipient), mmessage).toString());
-				BlueboxMessage message = StorageFactory.getInstance().store(inbox, 
-						from,
-						mmessage);
-				// ensure the content is indexed
-				try {
-					SearchIndexer.getInstance().indexMail(message);
-				}
-				catch (Throwable t) {
-					log.severe(t.getMessage());
-					t.printStackTrace();
-				}
-				// now update all our stats trackers
-				incrementGlobalCount();
-				updateStatsActive(new InboxAddress(recipient));
-				updateStatsRecent(message.getProperty(BlueboxMessage.TO),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT));
+				deliver(from,recipient,mmessage);
 			} 
 			catch (Throwable e) {
 				log.severe(e.getMessage());
@@ -349,6 +334,25 @@ public class Inbox implements SimpleMessageListener {
 
 	}
 
+	public void deliver(String from, String recipient, MimeMessageWrapper mmessage) throws Exception {
+		InboxAddress inbox = new InboxAddress(BlueboxMessage.getRecipient(new InboxAddress(recipient), mmessage).toString());
+		BlueboxMessage message = StorageFactory.getInstance().store(inbox, 
+				from,
+				mmessage);
+		// ensure the content is indexed
+		try {
+			SearchIndexer.getInstance().indexMail(message);
+		}
+		catch (Throwable t) {
+			log.severe(t.getMessage());
+			t.printStackTrace();
+		}
+		// now update all our stats trackers
+		incrementGlobalCount();
+		updateStatsActive(new InboxAddress(recipient));
+		updateStatsRecent(message.getProperty(BlueboxMessage.TO),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT));
+	}
+	
 	public void clearErrors() throws Exception {
 		StorageFactory.getInstance().logErrorClear();
 	}

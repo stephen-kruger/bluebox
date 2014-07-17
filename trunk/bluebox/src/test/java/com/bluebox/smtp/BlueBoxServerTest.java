@@ -31,10 +31,8 @@ import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 import org.subethamail.smtp.server.SMTPServer;
 
 import com.bluebox.Config;
+import com.bluebox.TestUtils;
 import com.bluebox.Utils;
-import com.bluebox.smtp.BlueBoxSMTPServer;
-import com.bluebox.smtp.Inbox;
-import com.bluebox.smtp.MimeMessageWrapper;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
@@ -51,24 +49,12 @@ public class BlueBoxServerTest extends TestCase {
 		super.setUp();
 		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(Inbox.getInstance()));
 		smtpServer.start();
-//		int max = 10;
-//		do {
-//			// give thread time to start up
-//			Thread.sleep(1000);
-//		} while ((max-- > 0)&&(!smtpServer.isRunning()));
-
 		log.fine("Test setUp");
 	}
 
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		smtpServer.stop();
-//		int max = 10;
-//		do {
-//			// give thread time to close down
-//			Thread.sleep(1000);
-//		}
-//		while ((max-- > 0)&&(smtpServer.isRunning()));
 		Inbox.getInstance().deleteAll();
 		Inbox.getInstance().stop();
 	}
@@ -141,11 +127,12 @@ public class BlueBoxServerTest extends TestCase {
 		String testBody = "testSend Test Body";
 		String testSubject = "testSend Test Subject";
 		try {
-			Utils.sendMessage(Utils.getRandomAddress(), testSubject, testBody, 
-					new InternetAddress[]{new InternetAddress("suresh%hserus.net@here.com")}, 
-					Utils.getRandomAddresses(0), 
-					Utils.getRandomAddresses(0),
-					false);
+			TestUtils.sendMailSMTP(Utils.getRandomAddress().toString(), 
+					new InternetAddress("suresh%hserus.net@here.com").toString(),
+					null,
+					null,
+					testSubject, 
+					testBody);
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
@@ -165,15 +152,20 @@ public class BlueBoxServerTest extends TestCase {
 		String testBody = "testSend Test Body";
 		String testSubject = "testSend Test Subject";
 		try {
-			Utils.sendMessage(Utils.getRandomAddress(), testSubject, testBody, Utils.getRandomAddresses(1), Utils.getRandomAddresses(1), Utils.getRandomAddresses(1),false);
+			TestUtils.sendMailSMTP(Utils.getRandomAddress(), 
+					Utils.getRandomAddress(),
+					Utils.getRandomAddress(),
+					Utils.getRandomAddress(),
+					testSubject, 
+					testBody);
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
 			fail("Unexpected exception: " + e);
 		}
-		
+
 		Utils.waitFor(3);
-		
+
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 3)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 3);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		assertEquals("Did not find expected results",3,list.size());
@@ -187,7 +179,7 @@ public class BlueBoxServerTest extends TestCase {
 		String testBody = "testSend Test Body";
 		String testSubject = "testSend Test Subject";
 		try {
-			Utils.sendMessage(new InternetAddress("badboy@blackdomain.com"), testSubject, testBody, Utils.getRandomAddresses(1), Utils.getRandomAddresses(1), Utils.getRandomAddresses(1),false);
+			TestUtils.sendMailSMTP(new InternetAddress("badboy@blackdomain.com"), Utils.getRandomAddress(), Utils.getRandomAddress(), Utils.getRandomAddress(), testSubject, testBody);
 			fail("The mail should have thrown an exception");
 		} 
 		catch (Exception e) {
@@ -196,7 +188,7 @@ public class BlueBoxServerTest extends TestCase {
 		assertTrue("Message should  not have been delivered (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 0)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 0);
 
 		try {
-			Utils.sendMessage(new InternetAddress("test@example.com"), testSubject, testBody, Utils.getRandomAddresses(1), Utils.getRandomAddresses(1), Utils.getRandomAddresses(1),false);
+			TestUtils.sendMailSMTP(new InternetAddress("test@example.com"),Utils.getRandomAddress(), Utils.getRandomAddress(), Utils.getRandomAddress(), testSubject, testBody);
 			fail("The mail should have thrown an exception");
 		} 
 		catch (Exception e) {
@@ -221,13 +213,13 @@ public class BlueBoxServerTest extends TestCase {
 		assertTrue("Sender was on whitelist, should be accepted",inbox.accept("goodboy@gooddomain.com","sender@nowhere.com"));
 	}
 
-	
+
 
 	public void xtestSendMessageWithCarriageReturn() throws Exception {
 		Inbox inbox = Inbox.getInstance();
 		String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
 		try {
-			Utils.sendMessage(Utils.getRandomAddress(), "Test", bodyWithCR, new InternetAddress[]{Utils.getRandomAddress()}, new InternetAddress[]{}, new InternetAddress[]{},false);
+			TestUtils.sendMailSMTP(Utils.getRandomAddress(), Utils.getRandomAddress(), null, null,"Test", bodyWithCR);
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
@@ -243,35 +235,6 @@ public class BlueBoxServerTest extends TestCase {
 		assertEquals("Body did not match",bodyWithCR,dh.getContent().toString());
 	}
 
-	public void testSendTwoMessagesSameConnection() {
-		Inbox inbox = Inbox.getInstance();
-		try {
-			MimeMessage[] mimeMessages = new MimeMessage[2];
-			Properties mailProps = getMailProperties();
-			Session session = Session.getInstance(mailProps, null);
-			//session.setDebug(true);
-
-			mimeMessages[0] = createMessage(session, "sender@whatever.com", "receiver@home.com", null, null, "Doodle1", "Bug1");
-			mimeMessages[1] = createMessage(session, "sender@whatever.com", "receiver@home.com", null, null, "Doodle2", "Bug2");
-
-			Transport transport = session.getTransport("smtp");
-			transport.connect(Utils.getHostName(), config.getInt(Config.BLUEBOX_PORT), null, null);
-
-			for (int i = 0; i < mimeMessages.length; i++) {
-				MimeMessage mimeMessage = mimeMessages[i];
-				transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
-			}
-
-			transport.close();
-		} 
-		catch (Throwable e) {
-			e.printStackTrace();
-			fail("Unexpected exception: " + e);
-		}
-		Utils.waitFor(2);
-		assertTrue("Not all messages were received (Got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+")",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 2);
-	}
-
 	// not sure this is a valid test as we never see the receiver@there.com or webhiker@test.com
 	public void testSendTwoMsgsWithLogin() throws Exception {
 		Inbox inbox = Inbox.getInstance();
@@ -279,7 +242,6 @@ public class BlueBoxServerTest extends TestCase {
 			String server = Config.getInstance().getString("bluebox_host");
 			String port = Config.getInstance().getString("bluebox_port");
 			String From = "sender@here.com";
-			//String To = "receiver@there.com";
 			String Subject = "Test";
 			String body = "Test Body";
 
@@ -341,7 +303,8 @@ public class BlueBoxServerTest extends TestCase {
 		Inbox inbox = Inbox.getInstance();
 		String testBody = "testSend Test Body";
 		try {
-			Utils.sendMessage(Utils.getRandomAddress(), "Test", testBody, Utils.getRandomAddresses(1), Utils.getRandomAddresses(1), Utils.getRandomAddresses(1),true);
+			TestUtils.sendMailSMTP(Utils.getRandomAddress(), Utils.getRandomAddress(), Utils.getRandomAddress(), Utils.getRandomAddress(), "Test", testBody);
+
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
@@ -356,7 +319,7 @@ public class BlueBoxServerTest extends TestCase {
 		String testBody = "testSend Test Body";
 		try {
 			log.info("Sending BCC only message");
-			Utils.sendMessage(Utils.getRandomAddress(), "Test", testBody, Utils.getRandomAddresses(0), Utils.getRandomAddresses(0), Utils.getRandomAddresses(1),true);
+			TestUtils.sendMailSMTP(Utils.getRandomAddress(), null, null, Utils.getRandomAddress(), "Test", testBody);
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
@@ -377,7 +340,7 @@ public class BlueBoxServerTest extends TestCase {
 	public void testSubjectEncoding() throws Exception {
 		Inbox inbox = Inbox.getInstance();
 		String chineseStr = "æ¥·ä¹¦ï¼�æ¥·æ›¸";
-		Utils.sendMessage(Utils.getRandomAddress(), chineseStr, "This is the body", Utils.getRandomAddresses(1), Utils.getRandomAddresses(0), Utils.getRandomAddresses(0),true);
+		TestUtils.sendMailSMTP(Utils.getRandomAddress(), Utils.getRandomAddress(), null, null, chineseStr, "This is the body");
 		Utils.waitFor(1);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
@@ -387,44 +350,33 @@ public class BlueBoxServerTest extends TestCase {
 		assertEquals("The subject was not correctly encoded or decoded",chineseStr, mimeMessage.getSubject());
 	}
 
-	private Properties getMailProperties() {
-		Properties mailProps = new Properties();
-		mailProps.setProperty("mail.smtp.host", Utils.getHostName());
-		mailProps.setProperty("mail.smtp.port", "" + config.getString(Config.BLUEBOX_PORT));
-		mailProps.setProperty("mail.smtp.sendpartial", "true");
-		return mailProps;
-	}
+//	private Properties getMailProperties() {
+//		Properties mailProps = new Properties();
+//		mailProps.setProperty("mail.smtp.host", Utils.getHostName());
+//		mailProps.setProperty("mail.smtp.port", "" + config.getString(Config.BLUEBOX_PORT));
+//		mailProps.setProperty("mail.smtp.sendpartial", "true");
+//		return mailProps;
+//	}
 
 
-	//	private void sendMessage(String from, String subject, String body, String to) throws MessagingException {
-	//		sendMessage(from, subject, body, to, null, null);
-	//	}
-	//
-	//	private void sendMessage(String from, String subject, String body, String to, String cc, String bcc) throws MessagingException {
-	//		Properties mailProps = getMailProperties();
-	//		Session session = Session.getInstance(mailProps, null);
-	//		//session.setDebug(true);
-	//
-	//		MimeMessage msg = createMessage(session, from, to, cc, bcc, subject, body);
-	//		Transport.send(msg);
-	//	}
-	//
-	private MimeMessage createMessage(Session session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException {
-		MimeMessage msg = new MimeMessage(session);
-		msg.setFrom(new InternetAddress(from));
-		msg.setSubject(subject);
-		msg.setSentDate(new Date());
-		msg.setText(body);
-		if (to!=null) {
-			msg.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
-		}
-		if (cc!=null) {
-			log.info("CC:"+cc);
-			msg.setRecipient(Message.RecipientType.CC, new InternetAddress(cc));			
-		}
-		if (bcc!=null) {
-			msg.setRecipient(Message.RecipientType.BCC, new InternetAddress(bcc));			
-		}
-		return msg;
+	public void testSendSMTP() throws Exception {
+		String subject = "My country is dying";
+		String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
+		TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", null, null, subject, bodyWithCR);
+
+		Utils.waitFor(1);
+
+
+		Inbox inbox = Inbox.getInstance();
+		assertTrue("Sent message was not correctly recieved (Got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+")",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 1);
+		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
+		Iterator<BlueboxMessage> emailIter = list.iterator();
+		BlueboxMessage email = (BlueboxMessage) emailIter.next();
+		MimeMessageWrapper mimeMessage = email.getBlueBoxMimeMessage();
+//		DataHandler dh = mimeMessage.getDataHandler();
+		assertEquals("Subject did not match",subject,mimeMessage.getSubject().toString());
+		// TODO - figure out why this does not work
+		//		assertEquals("Body did not match",bodyWithCR,mimeMessage.getContent().toString());
 	}
+
 }
