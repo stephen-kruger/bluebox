@@ -37,7 +37,7 @@ public class BlueboxMessage {
 	public static final String AUTO_COMPLETE = "Autocomplete";
 	public static final String RAW = "pic";
 	public enum State {ANY, NORMAL, DELETED};
-	
+
 	private static final Logger log = Logger.getAnonymousLogger();
 	private JSONObject properties = new JSONObject();
 	private MimeMessageWrapper mmw;
@@ -210,7 +210,8 @@ public class BlueboxMessage {
 			}
 			json.put(UID,properties.get(UID));
 			json.put(FROM,properties.get(FROM));
-			json.put(SUBJECT,properties.get(SUBJECT));
+			if (properties.has(SUBJECT))
+				json.put(SUBJECT,properties.get(SUBJECT));
 			json.put(INBOX,properties.get(INBOX));
 			json.put(RECEIVED,properties.getLong(RECEIVED));
 			json.put(STATE,properties.get(STATE));
@@ -233,7 +234,7 @@ public class BlueboxMessage {
 			return new JSONObject().toString();
 		}				
 	}
-	
+
 	public static String dateToString(Date date, Locale locale) {
 		return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.FULL, SimpleDateFormat.MEDIUM, locale).format(date);
 	}
@@ -255,7 +256,7 @@ public class BlueboxMessage {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void setLongProperty(String name, long value) {
 		try {
 			properties.put(name, value);

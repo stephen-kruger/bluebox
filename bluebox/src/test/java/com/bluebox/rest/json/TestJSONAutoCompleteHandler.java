@@ -37,7 +37,7 @@ public class TestJSONAutoCompleteHandler extends TestCase {
 	}
 	
 	public void testFullname() throws Exception {
-		TestUtils.sendMail(getBlueBoxStorageIf(),"\"Joe Blow\" <jblow@example.com>", "WinEdt Mailing List <winedt+list@wsg.net>");
+		TestUtils.sendMailDirect(getBlueBoxStorageIf(),"\"Joe Blow\" <jblow@example.com>", "WinEdt Mailing List <winedt+list@wsg.net>");
 		JSONArray result = handler.doAutoComplete(inbox, "Joe", "0", "10");
 		assertEquals("Missing results",1,result.length());
 		assertEquals("Incorrect name set","Joe Blow <jblow@example.com>",result.getJSONObject(0).getString("label"));
@@ -46,7 +46,7 @@ public class TestJSONAutoCompleteHandler extends TestCase {
 	public void testAutoComplete() throws Exception {
 		log.info("Testing type-ahead");
 		for (int i = 0; i < 20; i++) {
-			TestUtils.sendMail(getBlueBoxStorageIf(),"\"Joe Blow\" <jblow@example.com>", "WinEdt Mailing List <winedt+list@wsg.net>");
+			TestUtils.sendMailDirect(getBlueBoxStorageIf(),"\"Joe Blow\" <jblow@example.com>", "WinEdt Mailing List <winedt+list@wsg.net>");
 		}
 
 		assertEquals("Should not trigger for one character", 0, handler.doAutoComplete(inbox, "j", "0", "10").length());
@@ -69,7 +69,7 @@ public class TestJSONAutoCompleteHandler extends TestCase {
 		int count = 5;
 		for (int i = 0; i < count; i++) {
 			for (int j = 0; j < count; j++) {
-				TestUtils.sendMail(getBlueBoxStorageIf(),to, i+from+j);
+				TestUtils.sendMailDirect(getBlueBoxStorageIf(),to, i+from+j);
 			}
 		}
 
@@ -84,7 +84,7 @@ public class TestJSONAutoCompleteHandler extends TestCase {
 		String from = "bob-the-sender@nowhere.com";
 		int count = 10;
 		for (int i = 0; i < count; i++) {
-			TestUtils.sendMail(getBlueBoxStorageIf(),i+to, from);
+			TestUtils.sendMailDirect(getBlueBoxStorageIf(),i+to, from);
 		}
 
 		// check we recieve 10 non-identical results

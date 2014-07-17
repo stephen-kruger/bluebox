@@ -37,7 +37,7 @@ public class MessageTest extends TestCase {
 
 	public void testProperties() throws AddressException, MessagingException, IOException {
 		log.info("Doing nothing");
-		MimeMessage message = Utils.createMessage(Utils.getSession(),
+		MimeMessage message = Utils.createMessage(null,
 				Utils.getRandomAddress(), 
 				Utils.getRandomAddresses(1), 
 				Utils.getRandomAddresses(1), 
@@ -56,7 +56,7 @@ public class MessageTest extends TestCase {
 	public void testBlueBoxMessage() throws AddressException, MessagingException, IOException {
 		String bodyStr = "\nThis is a body\n with line feeds";
 		String subjStr = "This is the subject";
-		MimeMessage message = Utils.createMessage(Utils.getSession(),
+		MimeMessage message = Utils.createMessage(null,
 				Utils.getRandomAddress(), 
 				Utils.getRandomAddresses(1), 
 				Utils.getRandomAddresses(1), 
@@ -78,7 +78,7 @@ public class MessageTest extends TestCase {
 		String subjStr = "This is the subject";
 		//		String uidStr = "1234567890";
 
-		MimeMessage message = Utils.createMessage(Utils.getSession(),
+		MimeMessage message = Utils.createMessage(null,
 				Utils.getRandomAddress(), 
 				Utils.getRandomAddresses(1), 
 				Utils.getRandomAddresses(1), 

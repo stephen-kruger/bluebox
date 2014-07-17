@@ -109,7 +109,7 @@ public class StorageTest extends TestCase {
 
 	public void testAddAndRetrieve() throws Exception {
 		InboxAddress inbox = new InboxAddress("Stephen johnson <steve@test.com>");
-		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(Utils.getSession(),
+		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(null,
 				Utils.getRandomAddress(), 
 				Utils.getRandomAddresses(1), 
 				Utils.getRandomAddresses(1), 
@@ -132,7 +132,7 @@ public class StorageTest extends TestCase {
 	
 	public void testInboxAndFullName() throws Exception {
 		InboxAddress inbox = new InboxAddress("Stephen johnson <steve@test.com>");
-		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(Utils.getSession(),
+		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(null,
 				Utils.getRandomAddress(), 
 				new InternetAddress[]{new InternetAddress(inbox.getFullAddress())}, 
 				Utils.getRandomAddresses(0), 
@@ -363,7 +363,7 @@ public class StorageTest extends TestCase {
 		String name = "Another Name";
 		String email = name+" <"+inbox.getAddress()+">";
 		InternetAddress to = new InternetAddress(email);
-		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(Utils.getSession(),
+		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(null,
 				Utils.getRandomAddress(), 
 				new InternetAddress[]{to}, 
 				Utils.getRandomAddresses(0), 

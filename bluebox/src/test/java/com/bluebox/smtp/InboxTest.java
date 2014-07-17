@@ -12,6 +12,7 @@ import junit.framework.TestCase;
 import org.codehaus.jettison.json.JSONObject;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
+import com.bluebox.TestUtils;
 import com.bluebox.Utils;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageIf;
@@ -69,10 +70,9 @@ public class InboxTest extends TestCase {
 		String email1 = "Steve1 <steve1@there.com>";
 		String email2 = "Steve2 <steve2@there.com>";
 		String email3 = "Steve3 <steve3@there.com>";
-		Utils.sendMessage(new InternetAddress("from@from.com"), "subject", "body", new InternetAddress[]{new InternetAddress(email1)}, new InternetAddress[]{}, new InternetAddress[]{}, false);
-		Utils.sendMessage(new InternetAddress("from@from.com"), "subject", "body", new InternetAddress[]{new InternetAddress(email2)}, new InternetAddress[]{}, new InternetAddress[]{}, false);
-		Utils.sendMessage(new InternetAddress("from@from.com"), "subject", "body", new InternetAddress[]{new InternetAddress(email3)}, new InternetAddress[]{}, new InternetAddress[]{}, false);
-
+		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email1), null, null, "subject", "body");
+		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email2), null, null, "subject", "body");
+		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email3), null, null, "subject", "body");
 
 		Utils.waitFor(3);
 		JSONObject json = inbox.getStatsRecent();
@@ -86,13 +86,13 @@ public class InboxTest extends TestCase {
 		String email2 = "Steve2 <steve2@there.com>";
 		String email3 = "Steve3 <steve3@there.com>";
 		for (int i = 0; i <10; i++) {
-			Utils.sendMessage(new InternetAddress(email1), "subject", "body", new InternetAddress[]{new InternetAddress(email1)}, new InternetAddress[]{}, new InternetAddress[]{}, false);
+			TestUtils.sendMailSMTP(new InternetAddress(email1), new InternetAddress(email1), null, null, "subject", "body");
 		}
 		for (int i = 0; i <5; i++) {
-			Utils.sendMessage(new InternetAddress(email2), "subject", "body", new InternetAddress[]{new InternetAddress(email2)}, new InternetAddress[]{}, new InternetAddress[]{}, false);
+			TestUtils.sendMailSMTP(new InternetAddress(email2), new InternetAddress(email2), null, null, "subject", "body");
 		}
 		for (int i = 0; i <2; i++) {
-			Utils.sendMessage(new InternetAddress(email3), "subject", "body", new InternetAddress[]{new InternetAddress(email3)}, new InternetAddress[]{}, new InternetAddress[]{}, false);
+			TestUtils.sendMailSMTP(new InternetAddress(email3), new InternetAddress(email3), null, null, "subject", "body");
 		}
 		JSONObject jo = inbox.getStatsActive();
 		assertEquals("Incorrectly reported most active inbox",new InboxAddress(email1).getAddress(),jo.getString(BlueboxMessage.TO));

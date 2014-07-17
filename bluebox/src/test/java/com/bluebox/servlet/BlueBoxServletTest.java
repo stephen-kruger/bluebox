@@ -2,12 +2,12 @@ package com.bluebox.servlet;
 
 import java.io.IOException;
 
-import javax.mail.SendFailedException;
 import javax.mail.internet.InternetAddress;
 
+import org.apache.commons.mail.EmailException;
 import org.junit.Test;
 
-import com.bluebox.Utils;
+import com.bluebox.TestUtils;
 import com.bluebox.smtp.Inbox;
 
 public class BlueBoxServletTest extends BaseServletTest {
@@ -24,14 +24,10 @@ public class BlueBoxServletTest extends BaseServletTest {
 	@Test
 	public void testBlacklistTo() {
 		try {
-			Utils.sendMessage(new InternetAddress("test@here.com"), 
-					"subject", "body", 
-					new InternetAddress[]{new InternetAddress("steve@blackdomain.com")}, 
-					new InternetAddress[]{}, 
-					new InternetAddress[]{}, false);
+			TestUtils.sendMailSMTP(new InternetAddress("test@here.com"), new InternetAddress("steve@blackdomain.com"), null, null, "subject", "body");
 			fail("Mail to not blacklisted");
 		} 
-		catch (SendFailedException e) {
+		catch (EmailException e) {
 			// expected
 		}
 		catch (Exception e) {
@@ -42,14 +38,11 @@ public class BlueBoxServletTest extends BaseServletTest {
 		inbox.addToBlacklist("qwerty.com");
 
 		try {
-			Utils.sendMessage(new InternetAddress("test@here.com"), 
-					"subject", "body", 
-					new InternetAddress[]{new InternetAddress("steve@qwerty.com")}, 
-					new InternetAddress[]{}, 
-					new InternetAddress[]{}, false);
+			TestUtils.sendMailSMTP(new InternetAddress("test@here.com"), new InternetAddress("steve@qwerty.com"), null, null, "subject", "body");
+
 			fail("Mail to not blacklisted");
 		} 
-		catch (SendFailedException e) {
+		catch (EmailException e) {
 			// expected
 		}
 		catch (Exception e) {
@@ -61,14 +54,11 @@ public class BlueBoxServletTest extends BaseServletTest {
 	@Test
 	public void testBlacklistFrom() throws IOException, Exception {
 		try {
-			Utils.sendMessage(new InternetAddress("test@here.com"), 
-					"subject", "body", 
-					new InternetAddress[]{new InternetAddress("steve@blackdomain.com")}, 
-					new InternetAddress[]{}, 
-					new InternetAddress[]{}, false);
+			TestUtils.sendMailSMTP(new InternetAddress("test@here.com"), new InternetAddress("steve@blackdomain.com"), null, null, "subject", "body");
+
 			fail("Mail to not blacklisted");
 		} 
-		catch (SendFailedException e) {
+		catch (EmailException e) {
 			// expected
 		}
 		catch (Exception e) {
@@ -79,14 +69,10 @@ public class BlueBoxServletTest extends BaseServletTest {
 		inbox.addFromBlacklist("qwerty.com");
 
 		try {
-			Utils.sendMessage(new InternetAddress("test@qwerty.com"), 
-					"subject", "body", 
-					new InternetAddress[]{new InternetAddress("steve@here.com")}, 
-					new InternetAddress[]{}, 
-					new InternetAddress[]{}, false);
+			TestUtils.sendMailSMTP(new InternetAddress("test@qwerty.com"), new InternetAddress("steve@here.com"), null, null, "subject", "body");
 			fail("Mail from not blacklisted");
 		} 
-		catch (SendFailedException e) {
+		catch (EmailException e) {
 			// expected
 		}
 		catch (Exception e) {
@@ -100,25 +86,19 @@ public class BlueBoxServletTest extends BaseServletTest {
 		Inbox inbox = Inbox.getInstance();
 		inbox.addToWhiteList("qwerty.com");
 		try {
-			Utils.sendMessage(new InternetAddress("test@here.com"), 
-					"subject", "body", 
-					new InternetAddress[]{new InternetAddress("steve@here.com")}, 
-					new InternetAddress[]{}, 
-					new InternetAddress[]{}, false);
+			TestUtils.sendMailSMTP(new InternetAddress("test@here.com"), new InternetAddress("steve@here.com"), null, null, "subject", "body");
+
 			fail("Mail to not whitelisted");
 		} 
-		catch (SendFailedException e) {
+		catch (EmailException e) {
 			// expected
 		}
 		catch (Exception e) {
 			fail("accepted Mail to not whitelisted");
 		} 
 
-		Utils.sendMessage(new InternetAddress("test@qwerty.com"), 
-				"subject", "body", 
-				new InternetAddress[]{new InternetAddress("steve@qwerty.com")}, 
-				new InternetAddress[]{}, 
-				new InternetAddress[]{}, false);
+		TestUtils.sendMailSMTP(new InternetAddress("test@qwerty.com"), new InternetAddress("steve@qwerty.com"), null, null, "subject", "body");
+
 
 	}
 
