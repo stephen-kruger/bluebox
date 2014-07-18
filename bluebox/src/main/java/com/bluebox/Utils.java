@@ -368,7 +368,7 @@ public class Utils {
 	//	}
 	public static void sendMessage(final int count) {
 		ExecutorService threadPool = Executors.newFixedThreadPool(10);
-		for (int j = 0; j < count; j++) {
+		for (int j = 0; j < count/6; j++) {
 			log.info("Sending message "+j);
 			threadPool.execute(new Runnable() {
 
