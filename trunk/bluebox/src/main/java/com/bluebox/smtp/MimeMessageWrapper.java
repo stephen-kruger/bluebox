@@ -92,16 +92,16 @@ public class MimeMessageWrapper extends MimeMessage {
 				BodyPart bp = getBodyPart(i);
 //				log.fine("Processing body-part "+i+" ContentType="+bp.getContentType()+" ContentType="+bp.getContentType()+" Disposition="+bp.getDisposition()+" FileName="+bp.getFileName());
 				if ((bp.getDisposition()==null)||(bp.getDisposition().equals(Part.INLINE))) {
-					log.info("Processing as INLINE");
+					log.fine("Processing as INLINE");
 					getText(identifier,bp);
 				}
 				else {
-					log.info("Processing as ATTACHMENT");
+					log.fine("Processing as ATTACHMENT");
 					String attachmentName;
 					if ((attachmentName=bp.getFileName())==null) {
 						attachmentName = "unnamed";
 					}
-					log.info("Processing attachment:"+attachmentName);
+					log.fine("Processing attachment:"+attachmentName);
 					addHeader(ATTACHMENT,attachmentName);
 				}
 			}

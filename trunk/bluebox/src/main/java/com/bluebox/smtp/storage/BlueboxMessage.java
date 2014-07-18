@@ -20,6 +20,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Utils;
+import com.bluebox.rest.json.JSONInlineHandler;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.MimeMessageWrapper;
 
@@ -178,7 +179,7 @@ public class BlueboxMessage {
 			resp.flushBuffer();
 		}
 		catch (SocketException se) {
-			log.info("Problem writing inline attachment :"+se.getMessage());
+			log.warning("Problem writing inline attachment :"+se.getMessage());
 		}
 	}
 
@@ -222,18 +223,6 @@ public class BlueboxMessage {
 			else
 				json.put(AUTO_COMPLETE,properties.get(TO));
 
-//			// hack
-//			MimeMessageParser parser = new MimeMessageParser(mmw);
-//			parser.parse();
-//			System.out.println("<><><><><><><><><><><>><"+parser.getSubject());
-//			System.out.println(parser.getHtmlContent());
-//			System.out.println("<><><><><><><><><><><>><"+parser.getFrom());
-//			System.out.println(parser.getPlainContent());
-//			System.out.println("<><><><><><><><><><><>><"+parser.getTo());
-//			json.put(MimeMessageWrapper.HTML_BODY, parser.getHtmlContent());
-//			json.put(MimeMessageWrapper.TEXT_BODY, parser.getPlainContent());
-//			json.put(MimeMessageWrapper.TEXT_BODY, parser.get);
-//			// end hack
 			return json.toString();
 
 		}
@@ -247,6 +236,17 @@ public class BlueboxMessage {
 		}				
 	}
 
+	public static String convertCidLinks(String identifier, String htmlString) {
+		try {
+//			return htmlString.replaceAll("cid:"+identifier, "../"+JSONInlineHandler.JSON_ROOT+"/"+identifier+"/");
+			return htmlString.replaceAll("cid:", "../"+JSONInlineHandler.JSON_ROOT+"/");
+		} 
+		catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return htmlString;
+	}
+	
 	public static String dateToString(Date date, Locale locale) {
 		return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.FULL, SimpleDateFormat.MEDIUM, locale).format(date);
 	}

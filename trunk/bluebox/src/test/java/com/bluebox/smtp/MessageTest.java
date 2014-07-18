@@ -4,17 +4,29 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
+import javax.activation.DataSource;
 import javax.mail.BodyPart;
+import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.InternetHeaders;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.mail.HtmlEmail;
+import org.apache.commons.mail.ImageHtmlEmail;
+import org.apache.commons.mail.util.MimeMessageParser;
+import org.apache.commons.mail.util.MimeMessageUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -140,5 +152,38 @@ public class MessageTest extends TestCase {
 		assertEquals("Mismatched subject",mmw.getSubject(),fromStream.getSubject());
 		assertEquals("Mismatched sender",mmw.getFrom()[0].toString(),fromStream.getFrom()[0].toString());
 		assertEquals("Mismatched body",mmw.getContent().toString(),fromStream.getContent().toString());
+	}
+
+	public List<String> listCids(MimeMessage mm) throws MessagingException {
+		List<String> cids = new ArrayList<String>();
+		MimeMultipart mmp = new MimeMultipart(mm.getDataHandler().getDataSource());
+		System.out.println(mm.getContentID());
+		for (int i = 0; i < mmp.getCount(); i++) {
+			BodyPart bp = mmp.getBodyPart(i);
+			if (bp instanceof MimeBodyPart) {
+				MimeBodyPart mbp = (MimeBodyPart)bp;
+				System.out.println("1:"+mbp.getContentID());
+				System.out.println("2:"+mbp.getFileName());
+				System.out.println("3:"+mbp.getDisposition());
+			}
+		}
+		return cids;
+	}
+
+	public void testCommonsAttachmentParsing() throws Exception {
+		MimeMessage mm = MimeMessageUtils.createMimeMessage(null, new File("src/test/resources/test-data/attachments.eml"));
+		MimeMessageParser parser = new MimeMessageParser(mm);
+		parser.parse();
+//		listCids(mm);
+//		String html = parser.getHtmlContent();
+//		System.out.println(BlueboxMessage.convertCidLinks("ii_hxqkskb21_147462ce25a92ebf", html));
+//		System.out.println(mm.getClass().getName());
+//		List<DataSource> attachments = parser.getAttachmentList();
+//		for (DataSource ds : attachments) {
+//			System.out.println(ds.getClass().getName()+">>>>>"+ds.getName()+" "+ds.getContentType());
+//			//			html = convertCidLinks(ds.getName(),html);
+//		}	
+//		System.out.println(parser.findAttachmentByName("cid:ii_hxqkskb21_147462ce25a92ebf"));
+
 	}
 }
