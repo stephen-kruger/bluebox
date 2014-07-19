@@ -23,13 +23,15 @@ import javax.mail.internet.MimeMultipart;
 
 import junit.framework.TestCase;
 
+
+
 import org.apache.commons.mail.HtmlEmail;
 import org.apache.commons.mail.ImageHtmlEmail;
-import org.apache.commons.mail.util.MimeMessageParser;
 import org.apache.commons.mail.util.MimeMessageUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.bluebox.MimeMessageParser;
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
@@ -174,16 +176,21 @@ public class MessageTest extends TestCase {
 		MimeMessage mm = MimeMessageUtils.createMimeMessage(null, new File("src/test/resources/test-data/attachments.eml"));
 		MimeMessageParser parser = new MimeMessageParser(mm);
 		parser.parse();
-//		listCids(mm);
-//		String html = parser.getHtmlContent();
-//		System.out.println(BlueboxMessage.convertCidLinks("ii_hxqkskb21_147462ce25a92ebf", html));
-//		System.out.println(mm.getClass().getName());
-//		List<DataSource> attachments = parser.getAttachmentList();
-//		for (DataSource ds : attachments) {
-//			System.out.println(ds.getClass().getName()+">>>>>"+ds.getName()+" "+ds.getContentType());
-//			//			html = convertCidLinks(ds.getName(),html);
-//		}	
-//		System.out.println(parser.findAttachmentByName("cid:ii_hxqkskb21_147462ce25a92ebf"));
+		for (String cid : parser.getCids()) {
+			DataSource ds = parser.getDataSourceForCid(cid);
+			assertNotNull(ds);
+			System.out.println(ds.getName()+">>>>>>>>>>"+cid);	
+		}
+		//		listCids(mm);
+		//		String html = parser.getHtmlContent();
+		//		System.out.println(BlueboxMessage.convertCidLinks("ii_hxqkskb21_147462ce25a92ebf", html));
+		//		System.out.println(mm.getClass().getName());
+		//		List<DataSource> attachments = parser.getAttachmentList();
+		//		for (DataSource ds : attachments) {
+		//			System.out.println(ds.getClass().getName()+">>>>>"+ds.getName()+" "+ds.getContentType());
+		//			//			html = convertCidLinks(ds.getName(),html);
+		//		}	
+		//		System.out.println(parser.findAttachmentByName("cid:ii_hxqkskb21_147462ce25a92ebf"));
 
 	}
 }

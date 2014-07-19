@@ -1,9 +1,9 @@
-<%@ page language="java" pageEncoding="utf-8"
-	contentType="text/html;charset=utf-8"%>
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%> 
 <%@ page import="com.bluebox.Config"%>
 <%
 	Config bbconfig = Config.getInstance();
 %>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
 <link rel="SHORTCUT ICON" href="<%=bbconfig.getString("bluebox_theme")%>/favicon.ico" />
 
 <!-- core dojo style sheets -->
