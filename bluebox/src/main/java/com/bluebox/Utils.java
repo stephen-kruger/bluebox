@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.StringTokenizer;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -207,7 +208,7 @@ public class Utils {
 			//			Session sess = getSession();
 			//			log.info("Session retrieved :"+sess);
 			//MimeMessage message = new MimeMessage(sess, eml);
-//			String mstr = Utils.convertStreamToString(eml);
+			//			String mstr = Utils.convertStreamToString(eml);
 			//log.info(mstr);
 			MimeMessage message = loadEML(eml);
 			sendMessageDirect(message);
@@ -229,7 +230,7 @@ public class Utils {
 	}
 
 	public static MimeMessage loadEML(InputStream emlStream) throws MessagingException, IOException {
-//				Session sess = getSession();
+		//				Session sess = getSession();
 		MimeMessage message = new MimeMessage(null,emlStream);
 		emlStream.close();
 		if (message.getSubject()==null)
@@ -327,17 +328,17 @@ public class Utils {
 		return text;
 	}
 
-//		private static Properties getMailProperties() {
-//			Properties mailProps = new Properties();
-//			// http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html
-//			mailProps.setProperty("mail.smtp.host", Utils.getHostName());
-//			mailProps.setProperty("mail.smtp.port", "" + Config.getInstance().getString(Config.BLUEBOX_PORT));
-//			mailProps.setProperty("mail.smtp.sendpartial", "true");
-//			//		mailProps.setProperty("mail.smtp.auth", "true");
-//			mailProps.setProperty("mail.smtp.starttls.enable","false");
-//			//		mailProps.setProperty("mail.smtp.ssl.trust","*");
-//			return mailProps;
-//		}
+	//		private static Properties getMailProperties() {
+	//			Properties mailProps = new Properties();
+	//			// http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html
+	//			mailProps.setProperty("mail.smtp.host", Utils.getHostName());
+	//			mailProps.setProperty("mail.smtp.port", "" + Config.getInstance().getString(Config.BLUEBOX_PORT));
+	//			mailProps.setProperty("mail.smtp.sendpartial", "true");
+	//			//		mailProps.setProperty("mail.smtp.auth", "true");
+	//			mailProps.setProperty("mail.smtp.starttls.enable","false");
+	//			//		mailProps.setProperty("mail.smtp.ssl.trust","*");
+	//			return mailProps;
+	//		}
 
 	//	public static void sendSingleMessage(int count) {
 	//		boolean sent = false;
@@ -437,12 +438,12 @@ public class Utils {
 
 	}
 
-//		public static Session getSession() {
-//			Properties mailProps = getMailProperties();
-//			Session session = Session.getInstance(mailProps, null);
-//			session.setDebug(false);
-//			return session;
-//		}
+	//		public static Session getSession() {
+	//			Properties mailProps = getMailProperties();
+	//			Session session = Session.getInstance(mailProps, null);
+	//			session.setDebug(false);
+	//			return session;
+	//		}
 	//
 	//	public static void sendMessage(InternetAddress from, String subject, String body, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, boolean attachment) throws MessagingException, IOException {
 	//		Properties mailProps = getMailProperties();
@@ -543,36 +544,31 @@ public class Utils {
 
 	private static MimeBodyPart createAttachment() throws MessagingException, IOException {
 		Random r = new Random();
+		String[] names = new String[] {
+				"MyDocument.odt",
+				"MyPresentation.odp",
+				"MySpreadsheet.ods",
+				"GettingStarted.txt",
+				"message.png",
+				"bigpic.jpg",
+				"BlueBox.png",
+				"cv-template-Marketing-Manager.doc"
+		}; 
 		String[] extensions = new String[] {
-				".odp",
 				".odt",
+				".odp",
 				".ods",
 				".txt",
-				".gif",
+				".png",
 				".jpg",
-				".png"
+				".png",
+				"doc"
 		}; 
-		String[] src = new String[] {
-				"http://"+Utils.getHostName()+":8080/bluebox/data/MyDocument.odt",
-				"http://"+Utils.getHostName()+":8080/bluebox/data/MyPresentation.odp",
-				"http://"+Utils.getHostName()+":8080/bluebox/data/MySpreadsheet.ods",
-				"http://"+Utils.getHostName()+":8080/bluebox/data/GettingStarted.txt",
-				"http://"+Utils.getHostName()+":8080/bluebox/data/message.png",
-				"http://"+Utils.getHostName()+":8080/bluebox/data/bigpic.jpg",
-				"http://"+Utils.getHostName()+":8080/bluebox/data/BlueBox.png"
-		}; 
+
 		String root = "src/main/resources/data/";
-		String[] srcLocal = new String[] {
-				root+"MyDocument.odt",
-				root+"MyPresentation.odp",
-				root+"MySpreadsheet.ods",
-				root+"GettingStarted.txt",
-				root+"message.png",
-				root+"bigpic.jpg",
-				root+"BlueBox.png"
-		}; 
+
 		int index = r.nextInt(extensions.length); 
-		String name = "attachment"+extensions[index];
+		String name = Integer.toString(r.nextInt(99))+"-"+names[index];
 
 		MimetypesFileTypeMap ftm = (MimetypesFileTypeMap) FileTypeMap.getDefaultFileTypeMap();
 		ftm.addMimeTypes("application/document odt ODT");
@@ -587,7 +583,7 @@ public class Utils {
 
 		if (!cachedFiles.containsKey(name)) {
 			try {
-				URL u = new URL(src[index]);
+				URL u = new URL("http://"+Utils.getHostName()+":8080/bluebox/data/"+names[index]);
 				URLConnection uc = u.openConnection();
 				uc.connect();
 				InputStream in = uc.getInputStream();
@@ -606,7 +602,7 @@ public class Utils {
 			}
 			catch (ConnectException ce) {
 				// we are running in localtest, so read files off disk
-				cachedFiles.put(name, new File(srcLocal[index]));
+				cachedFiles.put(name, new File(root+names[index]));
 			}
 		}
 
@@ -614,8 +610,9 @@ public class Utils {
 		FileDataSource source = new javax.activation.FileDataSource(cachedFiles.get(name));
 		source.setFileTypeMap(ftm);
 		messageBodyPart.setFileName(name);
+		messageBodyPart.setContentID(UUID.randomUUID().toString());
 		messageBodyPart.setDataHandler(new DataHandler(source));
-		messageBodyPart.setHeader("Content-Type", source.getContentType()); 
+		messageBodyPart.setHeader("Content-Type", ftm.getContentType(name)); 
 		return messageBodyPart;
 	}
 
@@ -731,7 +728,7 @@ public class Utils {
 
 		os.flush();
 	}
-	
+
 	public static InputStream streamMimeMessage(MimeMessage msg) throws IOException, MessagingException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		msg.writeTo(os);

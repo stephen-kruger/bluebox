@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.mortbay.jetty.HttpStatus;
 
 import com.bluebox.MimeMessageParser;
 import com.bluebox.Utils;
@@ -34,6 +35,7 @@ public class BlueboxMessage {
 	public static final String JSON = "Json";
 	public static final String FROM = "Sender";
 	public static final String TO = "Recipient";
+	public static final String CC = "Cc";
 	public static final String SUBJECT = "Subject";
 	public static final String RECEIVED = "Received";
 	public static final String STATE = "State";
@@ -45,7 +47,7 @@ public class BlueboxMessage {
 	public static final String ATTACHMENT = "Attachment";
 	public static final String HTML_BODY = "HtmlBody";
 	public static final String TEXT_BODY = "TextBody";
-	
+
 	public enum State {ANY, NORMAL, DELETED};
 
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -149,6 +151,28 @@ public class BlueboxMessage {
 		return new InternetAddress(inbox.getFullAddress());
 	}
 
+	private JSONArray getRecipient(RecipientType rtype) {
+		JSONArray ja = new JSONArray();
+		try {
+			Address[] r = getBlueBoxMimeMessage().getRecipients(rtype);
+			return toJSONArray(r);
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return ja;
+	}
+	
+	private JSONArray toJSONArray(Address[] r) {
+		JSONArray ja = new JSONArray();
+		try {
+			for (int i = 0; i < r.length;i++)
+				ja.put(r[i].toString());
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return ja;
+	}
+
 	public String getIdentifier() {
 		return getProperty(UID);
 	}
@@ -176,32 +200,44 @@ public class BlueboxMessage {
 			MimeMessageParser parser = new MimeMessageParser(bbmm);
 			parser.parse();
 			DataSource ds = parser.getAttachmentList().get(Integer.parseInt(index));
-//			bbmm.writeAttachment(Integer.parseInt(index), resp);
-			Utils.copy(ds.getInputStream(),resp.getOutputStream());
-			resp.flushBuffer();
+			writeDataSource(ds,resp);
 		}
 		catch (Exception se) {
 			log.info("Problem writing attachment :"+se.getMessage());
 		}
 	}
 
-	public void writeInlineAttachment(String name, HttpServletResponse resp) throws SQLException, IOException, MessagingException {
+	public void writeInlineAttachment(String cid, HttpServletResponse resp) throws SQLException, IOException, MessagingException {
 		MimeMessage bbmm = getBlueBoxMimeMessage();
 		try {
 			MimeMessageParser parser = new MimeMessageParser(bbmm);
 			parser.parse();
-			DataSource ds = parser.findAttachmentByName(name);
+			DataSource ds = parser.getDataSourceForCid(cid);
 			if (ds==null) {
-				// try by cid
-				ds = parser.getDataSourceForCid(name);
-				resp.setContentType(ds.getContentType());
+				// try by attachment name
+				ds = parser.findAttachmentByName(cid);
 			}
-//			bbmm.writeInlineAttachment(name, resp);
-			Utils.copy(ds.getInputStream(),resp.getOutputStream());
-			resp.flushBuffer();
+			writeDataSource(ds,resp);
 		}
 		catch (Exception se) {
 			log.warning("Problem writing inline attachment :"+se.getMessage());
+		}
+	}
+
+	private void writeDataSource(DataSource ds, HttpServletResponse resp) throws IOException {
+		try {
+			if (ds==null)
+				throw new Exception("No attachment found");
+			resp.setContentType(ds.getContentType());
+			Utils.copy(ds.getInputStream(),resp.getOutputStream());		
+		}
+		catch (Throwable t) {
+			log.severe(t.getMessage());
+			t.printStackTrace();
+			resp.sendError(HttpStatus.ORDINAL_404_Not_Found, t.getMessage());
+		}
+		finally {
+			resp.flushBuffer();
 		}
 	}
 
@@ -212,23 +248,23 @@ public class BlueboxMessage {
 	public String toJSON(Locale locale, boolean lite) throws Exception {
 		JSONObject json;
 		try {
-//			if (lite) {
-//				json = new JSONObject();				
-//			}
-//			else {
-				json = new JSONObject();				
-//				json = getBlueBoxMimeMessage().toJSON(getProperty(UID),locale);	
-				MimeMessageParser p = new MimeMessageParser(getBlueBoxMimeMessage());
-				p.parse();
-				List<DataSource> ds = p.getAttachmentList();
-				JSONArray ja = new JSONArray();
-				for (DataSource d : ds) {
-					ja.put(d.getName());
-				}
-				json.put(ATTACHMENT, ja);
-				json.put(BlueboxMessage.HTML_BODY, getHtml(p));
-				json.put(BlueboxMessage.TEXT_BODY, getText(p));
-//			}
+			//			if (lite) {
+			//				json = new JSONObject();				
+			//			}
+			//			else {
+			json = new JSONObject();				
+			//				json = getBlueBoxMimeMessage().toJSON(getProperty(UID),locale);	
+			MimeMessageParser p = new MimeMessageParser(getBlueBoxMimeMessage());
+			p.parse();
+			List<DataSource> ds = p.getAttachmentList();
+			JSONArray ja = new JSONArray();
+			for (DataSource d : ds) {
+				ja.put(d.getName());
+			}
+			json.put(ATTACHMENT, ja);
+			json.put(BlueboxMessage.HTML_BODY, getHtml(p));
+			json.put(BlueboxMessage.TEXT_BODY, getText(p));
+			//			}
 			// now convert the date to a user locale specific one
 			try {
 				log.fine("Converting to locale "+locale.toString()+" for inbox "+getInbox());
@@ -243,13 +279,15 @@ public class BlueboxMessage {
 				log.warning("Problem converting date to user locale :"+t.getMessage());
 			}
 			json.put(UID,properties.get(UID));
-			json.put(FROM,properties.get(FROM));
+			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
 			json.put(SUBJECT,getBlueBoxMimeMessage().getSubject());
 			json.put(INBOX,properties.get(INBOX));
 			json.put(RECEIVED,properties.getLong(RECEIVED));
 			json.put(STATE,properties.get(STATE));
 			json.put(SIZE,properties.get(SIZE));
-			json.put(TO,properties.get(TO));
+
+			json.put(TO,getRecipient(MimeMessage.RecipientType.TO));
+			json.put(CC,getRecipient(MimeMessage.RecipientType.CC));
 			if (properties.has(AUTO_COMPLETE))
 				json.put(AUTO_COMPLETE,properties.get(AUTO_COMPLETE));
 			else
@@ -277,7 +315,7 @@ public class BlueboxMessage {
 		}
 		return htmlString;
 	}
-	
+
 	public static String dateToString(Date date, Locale locale) {
 		return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.FULL, SimpleDateFormat.MEDIUM, locale).format(date);
 	}
@@ -377,7 +415,7 @@ public class BlueboxMessage {
 			html = "";
 		return convertCidLinks(this.getIdentifier(),html);
 	}
-	
+
 	public InputStream getRawMessage() throws IOException, MessagingException, SQLException {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		getBlueBoxMimeMessage().writeTo(os);
