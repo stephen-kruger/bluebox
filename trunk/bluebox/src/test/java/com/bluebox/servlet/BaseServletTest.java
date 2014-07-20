@@ -104,7 +104,6 @@ public abstract class BaseServletTest extends TestCase {
 		String url = "/"+JSONFolderHandler.JSON_ROOT;
 		try {
 			JSONObject js = getRestJSON(url);
-			System.out.println(js.toString(3));
 			JSONArray children = js.getJSONArray("items").getJSONObject(0).getJSONArray("children");
 			for (int i = 0; i < children.length();i++) {
 				JSONObject stateC = children.getJSONObject(i);

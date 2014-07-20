@@ -431,6 +431,10 @@ public class MimeMessageParser
     
     public DataSource getDataSourceForCid(String cid)
     {
+    	if (!cid.startsWith("<")) {
+    		cid = "<"+cid+">";
+    	}
     	return cidDsMap.get(cid);
     }
+
 }

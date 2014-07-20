@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -53,10 +54,10 @@ import org.codehaus.jettison.json.JSONException;
 
 import com.bluebox.rest.json.AbstractHandler;
 import com.bluebox.smtp.Inbox;
-import com.bluebox.smtp.MimeMessageWrapper;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class Utils {
+	public static final String UTF8 = "UTF-8";
 	private static final Logger log = Logger.getAnonymousLogger();
 	//	private static Config config = Config.getInstance();
 	private static Map<String,File> cachedFiles = new HashMap<String,File>();
@@ -206,9 +207,9 @@ public class Utils {
 			//			Session sess = getSession();
 			//			log.info("Session retrieved :"+sess);
 			//MimeMessage message = new MimeMessage(sess, eml);
-			String mstr = Utils.convertStreamToString(eml);
+//			String mstr = Utils.convertStreamToString(eml);
 			//log.info(mstr);
-			MimeMessage message = loadEML(Utils.convertStringToStream(mstr));
+			MimeMessage message = loadEML(eml);
 			sendMessageDirect(message);
 			eml.close();
 			return "Loaded email ok";
@@ -227,9 +228,12 @@ public class Utils {
 		}
 	}
 
-	public static MimeMessage loadEML(InputStream emlStream) throws MessagingException {
-		//		Session sess = getSession();
-		MimeMessage message = new MimeMessage(null, emlStream);
+	public static MimeMessage loadEML(InputStream emlStream) throws MessagingException, IOException {
+//				Session sess = getSession();
+		MimeMessage message = new MimeMessage(null,emlStream);
+		emlStream.close();
+		if (message.getSubject()==null)
+			new Exception().printStackTrace();
 		return message;
 	}
 
@@ -323,17 +327,17 @@ public class Utils {
 		return text;
 	}
 
-	//	private static Properties getMailProperties() {
-	//		Properties mailProps = new Properties();
-	//		// http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html
-	//		mailProps.setProperty("mail.smtp.host", Utils.getHostName());
-	//		mailProps.setProperty("mail.smtp.port", "" + config.getString(Config.BLUEBOX_PORT));
-	//		mailProps.setProperty("mail.smtp.sendpartial", "true");
-	//		//		mailProps.setProperty("mail.smtp.auth", "true");
-	//		mailProps.setProperty("mail.smtp.starttls.enable","false");
-	//		//		mailProps.setProperty("mail.smtp.ssl.trust","*");
-	//		return mailProps;
-	//	}
+//		private static Properties getMailProperties() {
+//			Properties mailProps = new Properties();
+//			// http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html
+//			mailProps.setProperty("mail.smtp.host", Utils.getHostName());
+//			mailProps.setProperty("mail.smtp.port", "" + Config.getInstance().getString(Config.BLUEBOX_PORT));
+//			mailProps.setProperty("mail.smtp.sendpartial", "true");
+//			//		mailProps.setProperty("mail.smtp.auth", "true");
+//			mailProps.setProperty("mail.smtp.starttls.enable","false");
+//			//		mailProps.setProperty("mail.smtp.ssl.trust","*");
+//			return mailProps;
+//		}
 
 	//	public static void sendSingleMessage(int count) {
 	//		boolean sent = false;
@@ -427,18 +431,18 @@ public class Utils {
 				recipients.add(bcc[i].toString());
 		for (String recipient : recipients) {
 			if (Inbox.getInstance().accept(msg.getFrom()[0].toString(), recipient)) {
-				Inbox.getInstance().deliver(msg.getFrom()[0].toString(), recipient, new MimeMessageWrapper(msg));
+				Inbox.getInstance().deliver(msg.getFrom()[0].toString(), recipient, Utils.streamMimeMessage(msg));
 			}
 		}
 
 	}
 
-	//	public static Session getSession() {
-	//		Properties mailProps = getMailProperties();
-	//		Session session = Session.getInstance(mailProps, null);
-	//		session.setDebug(false);
-	//		return session;
-	//	}
+//		public static Session getSession() {
+//			Properties mailProps = getMailProperties();
+//			Session session = Session.getInstance(mailProps, null);
+//			session.setDebug(false);
+//			return session;
+//		}
 	//
 	//	public static void sendMessage(InternetAddress from, String subject, String body, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, boolean attachment) throws MessagingException, IOException {
 	//		Properties mailProps = getMailProperties();
@@ -476,11 +480,18 @@ public class Utils {
 	}
 
 	public static MimeMessage createMessage(Session session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
+		InternetAddress[] toa=new InternetAddress[0], cca=new InternetAddress[0], bcca=new InternetAddress[0];
+		if (to!=null)
+			toa = new InternetAddress[]{new InternetAddress(to)};
+		if (cc!=null)
+			cca = new InternetAddress[]{new InternetAddress(cc)};
+		if (bcc!=null)
+			bcca = new InternetAddress[]{new InternetAddress(bcc)};
 		return createMessage(session, 
 				new InternetAddress(from),
-				new InternetAddress[]{new InternetAddress(to)},
-				new InternetAddress[]{new InternetAddress(cc)},
-				new InternetAddress[]{new InternetAddress(bcc)},
+				toa,
+				cca,
+				bcca,
 				subject,
 				body,
 				false);
@@ -490,7 +501,7 @@ public class Utils {
 			throws MessagingException, IOException {
 		MimeMessage msg = new MimeMessage(session);
 		msg.setFrom(from);
-		msg.setSubject(subject,MimeMessageWrapper.UTF8);
+		msg.setSubject(subject,UTF8);
 		msg.setSentDate(new Date());
 		if (to.length>0)
 			msg.addRecipients(Message.RecipientType.TO, to);
@@ -505,12 +516,12 @@ public class Utils {
 
 			// create the text message part 
 			MimeBodyPart textBodyPart = new MimeBodyPart();
-			textBodyPart.setContent(body,"text/plain; charset=\""+MimeMessageWrapper.UTF8+"\"");
+			textBodyPart.setContent(body,"text/plain; charset=\""+UTF8+"\"");
 			multipart.addBodyPart(textBodyPart);
 
 			// create the html message part 
 			MimeBodyPart htmlBodyPart = new MimeBodyPart();
-			htmlBodyPart.setContent("<font color=\"red\">"+body.replaceAll("\n", "</br>")+"</font>","text/html; charset=\""+MimeMessageWrapper.UTF8+"\"");
+			htmlBodyPart.setContent("<font color=\"red\">"+body.replaceAll("\n", "</br>")+"</font>","text/html; charset=\""+UTF8+"\"");
 
 			//htmlBodyPart.setHeader("Content-Type","text/plain; charset=\"utf-8\"");
 			//htmlBodyPart.setHeader("Content-Transfer-Encoding", "quoted-printable");
@@ -525,7 +536,7 @@ public class Utils {
 			msg.setContent(multipart);
 		}
 		else {
-			msg.setText(body,MimeMessageWrapper.UTF8);
+			msg.setText(body,UTF8);
 		}
 		return msg;
 	}
@@ -711,6 +722,20 @@ public class Utils {
 
 	public static byte[] convertStreamToBytes(InputStream binaryStream) throws IOException {
 		return convertStreamToString(binaryStream).getBytes();
+	}
+
+	public static void copy(InputStream is, OutputStream os) throws IOException {
+		int byteRead;
+		while((byteRead=is.read())>=0)
+			os.write(byteRead);
+
+		os.flush();
+	}
+	
+	public static InputStream streamMimeMessage(MimeMessage msg) throws IOException, MessagingException {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		msg.writeTo(os);
+		return new ByteArrayInputStream(os.toByteArray());
 	}
 
 

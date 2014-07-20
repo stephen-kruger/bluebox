@@ -91,9 +91,8 @@ public class SearchIndexerTest extends TestCase {
 	public void testTextSearch() throws IOException, ParseException {
 		Document[] hits = si.search("lucene",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT);
 		assertEquals("Missing expected search results",3,hits.length);
-		//		System.out.println("Found " + hits.length + " hits.");
 		for(int i=0;i<hits.length;++i) {
-			System.out.println((i + 1) + ". " + hits[i].get(SearchIndexer.SearchFields.UID.name()));
+			log.info((i + 1) + ". " + hits[i].get(SearchIndexer.SearchFields.UID.name()));
 		}
 	}
 

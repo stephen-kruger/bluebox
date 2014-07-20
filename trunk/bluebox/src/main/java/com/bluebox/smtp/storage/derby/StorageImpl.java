@@ -16,12 +16,13 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import javax.mail.internet.MimeMessage;
+
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
-import com.bluebox.smtp.MimeMessageWrapper;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
@@ -190,11 +191,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return id;
 	}
 
-	public BlueboxMessage store(InboxAddress inbox, String from, MimeMessageWrapper bbmm) throws Exception {
+	public BlueboxMessage store(InboxAddress inbox, String from, MimeMessage bbmm) throws Exception {
 		String uid = UUID.randomUUID().toString();
 		BlueboxMessage message = new BlueboxMessage(uid,inbox);
-		((BlueboxMessage)message).setInbox(inbox);
+		message.setInbox(inbox);
 		message.setBlueBoxMimeMessage(from, bbmm);
+		if (bbmm.getSubject()==null)
+			new Exception().printStackTrace();
 		add(uid, 
 				inbox, 
 				BlueboxMessage.getFrom(from, bbmm),
@@ -202,7 +205,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				new Date(Long.parseLong(message.getProperty(BlueboxMessage.RECEIVED))), 
 				State.NORMAL, 
 				bbmm.getSize(),
-				bbmm.getInputStream());
+				message.getRawMessage());
 		return message;
 	}
 
@@ -571,7 +574,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	//			return children;
 	//		if (hint.length()>1) {			
 	//			hint = QueryParser.escape(hint);
-	//			System.out.println(hint);
 	//			SearchIndexer search = SearchIndexer.getInstance();
 	//			Document[] results = search.search(hint, SearchIndexer.SearchFields.TO, (int)start, (int)count, SearchIndexer.SearchFields.TO.name());
 	//			for (int i = 0; i < results.length;i++) {
