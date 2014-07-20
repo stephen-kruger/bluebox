@@ -200,15 +200,15 @@
 					preventCache: false,
 					load: function(data) {
 						document.getElementById("subjectIcon").style.display="block";
-						if (data.To){
-							displayArray(document.getElementById("To"), data.To);
+						if (data.<%=BlueboxMessage.TO%>){
+							displayArray(document.getElementById("To"), data.<%=BlueboxMessage.TO%>);
 						}
-						if (data.Cc){
+						if (data.<%=BlueboxMessage.CC%>){
 							document.getElementById("CcLabel").style.display="block";
-							displayArray(document.getElementById("Cc"), data.Cc);
+							displayArray(document.getElementById("Cc"), data.<%=BlueboxMessage.CC%>);
 						}
-						if (data.From){
-							displayArray(document.getElementById("From"), data.From);
+						if (data.<%=BlueboxMessage.FROM%>){
+							displayArray(document.getElementById("From"), data.<%=BlueboxMessage.FROM%>);
 						}
 						if (data.Inbox){
 							currentInbox = data.Inbox;

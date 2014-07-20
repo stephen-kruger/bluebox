@@ -123,13 +123,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				s.executeUpdate("CREATE INDEX "+indexes[i]+"_INDEX_ASC ON "+table+"("+indexes[i]+" ASC)");
 			}
 			catch (Throwable t) {
-				log.warning("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
+				log.fine("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
 			}
 			try {
 				s.executeUpdate("CREATE INDEX "+indexes[i]+"_INDEX_DESC ON "+table+"("+indexes[i]+" DESC)");
 			}
 			catch (Throwable t) {
-				log.warning("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
+				log.fine("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
 			}
 		}
 		s.close();
@@ -153,13 +153,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					RAW+" blob(16M))");
 		}
 		catch (Throwable t) {
-			log.warning(t.getMessage());
+			log.fine(t.getMessage());
 		}
 		try {
 			s.executeUpdate("CREATE TABLE "+PROPS_TABLE+" ("+KEY+" VARCHAR(256), "+VALUE+" VARCHAR(512))");
 		}
 		catch (Throwable t) {
-			log.warning(t.getMessage());
+			log.fine(t.getMessage());
 		}
 		s.close();
 		connection.close();
