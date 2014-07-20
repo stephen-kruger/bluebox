@@ -13,7 +13,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
-import com.bluebox.smtp.MimeMessageWrapper;
 
 public abstract class AbstractStorage implements StorageIf {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -70,8 +69,7 @@ public abstract class AbstractStorage implements StorageIf {
 		message.setLongProperty(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED).getTime());
 		message.setProperty(BlueboxMessage.STATE,getDBOString(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.name()));
 		message.setProperty(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
-		
-		message.loadBlueBoxMimeMessage(new MimeMessageWrapper(null, getDBORaw(dbo,BlueboxMessage.RAW)));
+		message.loadBlueBoxMimeMessage(Utils.loadEML(getDBORaw(dbo,BlueboxMessage.RAW)));
 		int size = message.getBlueBoxMimeMessage().getSize()/1000;
 		if (size==0)
 			size = 1;

@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.logging.Logger;
 
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import junit.framework.TestCase;
 
@@ -22,7 +23,6 @@ import com.bluebox.Utils;
 import com.bluebox.search.SearchIndexer;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
-import com.bluebox.smtp.MimeMessageWrapper;
 
 public class StorageTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -62,14 +62,13 @@ public class StorageTest extends TestCase {
 	@Test
 	public void testAutoComplete2() throws Exception {
 		String email = "\"First Name\" <stephen.johnson@mail.com>";
-		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(null,
+		MimeMessage message = TestUtils.createMail(
 				Utils.getRandomAddress(), 
 				new InternetAddress[]{new InternetAddress(email)}, 
 				Utils.getRandomAddresses(0), 
 				Utils.getRandomAddresses(0), 
 				"subjStr",
-				"bodyStr", 
-				true);
+				"bodyStr");
 		InboxAddress ia = new InboxAddress(email);
 		BlueboxMessage m1 = StorageFactory.getInstance().store(ia, email, message);
 		SearchIndexer.getInstance().indexMail(m1);
@@ -109,37 +108,36 @@ public class StorageTest extends TestCase {
 
 	public void testAddAndRetrieve() throws Exception {
 		InboxAddress inbox = new InboxAddress("Stephen johnson <steve@test.com>");
-		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(null,
+		MimeMessage message = TestUtils.createMail(
 				Utils.getRandomAddress(), 
 				Utils.getRandomAddresses(1), 
 				Utils.getRandomAddresses(1), 
 				Utils.getRandomAddresses(1), 
 				"subjStr",
-				"bodyStr", 
-				true);
+				"bodyStr");
 		BlueboxMessage bbm = StorageFactory.getInstance().store(inbox, inbox.getAddress(), message);
 		BlueboxMessage stored = StorageFactory.getInstance().retrieve(bbm.getIdentifier());
 		assertEquals("Identifiers did not match",bbm.getIdentifier(),stored.getIdentifier());
-		MimeMessageWrapper storedMM = stored.getBlueBoxMimeMessage();
+		MimeMessage storedMM = stored.getBlueBoxMimeMessage();
 
 		assertEquals("MimeMessage subjects did not match",message.getSubject(),storedMM.getSubject());
 		assertEquals("Inbox address did not match",inbox.getFullAddress(),stored.getInbox().getFullAddress());
 		assertEquals("Received time did not match",bbm.getLongProperty(BlueboxMessage.RECEIVED),stored.getLongProperty(BlueboxMessage.RECEIVED));
 		assertEquals("Subjects did not match",bbm.getProperty(BlueboxMessage.SUBJECT),stored.getProperty(BlueboxMessage.SUBJECT));
+		assertEquals("Subjects did not match",message.getSubject(),storedMM.getSubject());
 		assertEquals("From did not match",bbm.getProperty(BlueboxMessage.FROM),stored.getProperty(BlueboxMessage.FROM));
-		log.info(bbm.toJSON(true));
+		log.info(stored.toJSON(true));
 	}
 	
 	public void testInboxAndFullName() throws Exception {
 		InboxAddress inbox = new InboxAddress("Stephen johnson <steve@test.com>");
-		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(null,
+		MimeMessage message = TestUtils.createMail(
 				Utils.getRandomAddress(), 
 				new InternetAddress[]{new InternetAddress(inbox.getFullAddress())}, 
 				Utils.getRandomAddresses(0), 
 				Utils.getRandomAddresses(0), 
 				"subjStr",
-				"bodyStr", 
-				true);
+				"bodyStr");
 		BlueboxMessage bbm = StorageFactory.getInstance().store(inbox, inbox.getAddress(), message);
 		BlueboxMessage stored = StorageFactory.getInstance().retrieve(bbm.getIdentifier());
 		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
@@ -152,6 +150,7 @@ public class StorageTest extends TestCase {
 			try {
 				BlueboxMessage saved = StorageFactory.getInstance().retrieve(original.getIdentifier());
 				assertEquals("The uid of the retrieved object did not match the one we saved",original.getIdentifier(),saved.getIdentifier());
+				assertEquals("The subject of the retrieved object did not match the one we saved",original.getBlueBoxMimeMessage().getSubject(),saved.getBlueBoxMimeMessage().getSubject());
 			}
 			catch (Exception re) {
 				fail("Failed to retrieve the stored message :"+re.getMessage());
@@ -307,14 +306,13 @@ public class StorageTest extends TestCase {
 		String name = "Monica Smith";
 		InboxAddress email = new InboxAddress(name+" <monica.smith@test.com>");
 
-		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(null,
+		MimeMessage message = TestUtils.createMail(
 				Utils.getRandomAddress(), 
 				new InternetAddress[]{new InternetAddress(email.getFullAddress())}, 
 				Utils.getRandomAddresses(0), 
 				Utils.getRandomAddresses(0), 
 				"subjStr",
-				"bodyStr", 
-				true);
+				"bodyStr");
 		BlueboxMessage m1 = StorageFactory.getInstance().store(email, email.getAddress(), message);
 		BlueboxMessage m2 = StorageFactory.getInstance().store(email, email.getAddress(), message);
 		BlueboxMessage m3 = StorageFactory.getInstance().store(email, email.getAddress(), message);
@@ -330,7 +328,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("Smi*", 0, 10).length());
 		//		assertEquals("Message not found",1,Inbox.getInstance().autoComplete(inbox, 0, 10).length());
 		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("ith*", 0, 10).length());
-		System.out.println(Inbox.getInstance().autoComplete(name+"*", 0, 10).toString(3));
+		log.info(Inbox.getInstance().autoComplete(name+"*", 0, 10).toString(3));
 		assertEquals("Message not found",1,Inbox.getInstance().autoComplete(name+"*", 0, 10).length());
 
 		// test for search of name
@@ -363,14 +361,13 @@ public class StorageTest extends TestCase {
 		String name = "Another Name";
 		String email = name+" <"+inbox.getAddress()+">";
 		InternetAddress to = new InternetAddress(email);
-		MimeMessageWrapper message = TestUtils.createBlueBoxMimeMessage(null,
+		MimeMessage message = TestUtils.createMail(
 				Utils.getRandomAddress(), 
 				new InternetAddress[]{to}, 
 				Utils.getRandomAddresses(0), 
 				Utils.getRandomAddresses(0), 
 				"subjStr",
-				"bodyStr", 
-				true);
+				"bodyStr");
 		SearchIndexer.getInstance().indexMail(StorageFactory.getInstance().store(inbox, inbox.getAddress(), message));
 		SearchIndexer.getInstance().indexMail(StorageFactory.getInstance().store(inbox, inbox.getAddress(), message));
 		SearchIndexer.getInstance().indexMail(StorageFactory.getInstance().store(inbox, inbox.getAddress(), message));

@@ -5,7 +5,6 @@
 <%@ page import="com.bluebox.rest.json.JSONMessageHandler"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.Config"%>
-<%@ page import="com.bluebox.smtp.MimeMessageWrapper"%>
 
 
 <%
@@ -229,7 +228,7 @@
 							displayAttachments(uid,"Attachment",data.Attachment);
 						}
 						
-						setBodyContent(data.<%=MimeMessageWrapper.HTML_BODY%>,data.<%=MimeMessageWrapper.TEXT_BODY%>,"<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+uid);
+						setBodyContent(data.<%=BlueboxMessage.HTML_BODY%>,data.<%=BlueboxMessage.TEXT_BODY%>,"<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+uid);
 		
 					},
 					error: function (error) {

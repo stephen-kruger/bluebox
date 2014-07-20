@@ -5,10 +5,11 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Locale;
 
+import javax.mail.internet.MimeMessage;
+
 import org.codehaus.jettison.json.JSONArray;
 
 import com.bluebox.smtp.InboxAddress;
-import com.bluebox.smtp.MimeMessageWrapper;
 
 public interface StorageIf {
 
@@ -16,7 +17,7 @@ public interface StorageIf {
 
 	public abstract void stop() throws Exception;
 	
-	public abstract BlueboxMessage store(InboxAddress inbox, String from, MimeMessageWrapper bbmm)
+	public abstract BlueboxMessage store(InboxAddress inbox, String from, MimeMessage bbmm)
 			throws Exception;
 
 	public abstract BlueboxMessage retrieve(String uid)

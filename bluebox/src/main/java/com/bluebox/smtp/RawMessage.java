@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 
 /**
  * This class wraps a received message and provides
@@ -26,8 +27,8 @@ public class RawMessage {
 	 * Generate a JavaMail MimeMessage.
 	 * @throws MessagingException
 	 */
-	public MimeMessageWrapper getMimeMessage() throws MessagingException {
-		return new MimeMessageWrapper(null, new ByteArrayInputStream(this.messageData));
+	public MimeMessage getMimeMessage() throws MessagingException {
+		return new MimeMessage(null, new ByteArrayInputStream(this.messageData));
 	}
 
 //	private static Session getSession() {

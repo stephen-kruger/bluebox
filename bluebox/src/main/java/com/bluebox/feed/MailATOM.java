@@ -17,13 +17,11 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
-import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
-import com.bluebox.smtp.MimeMessageWrapper;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 
@@ -59,9 +57,8 @@ public class MailATOM {
 				entry.setUpdated(new Date(Long.parseLong(message.getProperty(BlueboxMessage.RECEIVED))));
 				entry.addAuthor(Utils.decodeRFC2407(message.getProperty(BlueboxMessage.FROM)));
 				entry.setEdited(entry.getUpdated());
-				JSONObject jo = new JSONObject(message.toJSON(false));
-				entry.setContentAsHtml(jo.getString(MimeMessageWrapper.HTML_BODY));
-				entry.setSummary(jo.getString(MimeMessageWrapper.TEXT_BODY));
+				entry.setContentAsHtml(message.getHtml());
+				entry.setSummary(message.getText());
 				entry.addCategory("email");
 				entry.addLink(uri.getBaseUri().toString()+"message?uid="+message.getIdentifier(), "self");
 				entry.addLink(uri.getBaseUri().toString()+"../app/inbox.jsp?email="+URLEncoder.encode(email,"UTF-8"));

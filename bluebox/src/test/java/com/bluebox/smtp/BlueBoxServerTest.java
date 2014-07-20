@@ -143,7 +143,7 @@ public class BlueBoxServerTest extends TestCase {
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		assertEquals("Did not find expected results",1,list.size());
 		BlueboxMessage email = (BlueboxMessage) list.get(0);
-		MimeMessageWrapper mimeMessage = email.getBlueBoxMimeMessage();
+		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertTrue(mimeMessage.getSubject().equals(testSubject));
 	}
 
@@ -170,7 +170,7 @@ public class BlueBoxServerTest extends TestCase {
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		assertEquals("Did not find expected results",3,list.size());
 		BlueboxMessage email = (BlueboxMessage) list.get(0);
-		MimeMessageWrapper mimeMessage = email.getBlueBoxMimeMessage();
+		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertTrue(mimeMessage.getSubject().equals(testSubject));
 	}
 
@@ -230,7 +230,7 @@ public class BlueBoxServerTest extends TestCase {
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		BlueboxMessage email = (BlueboxMessage) emailIter.next();
-		MimeMessageWrapper mimeMessage = email.getBlueBoxMimeMessage();
+		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		DataHandler dh = mimeMessage.getDataHandler();
 		assertEquals("Body did not match",bodyWithCR,dh.getContent().toString());
 	}
@@ -294,7 +294,7 @@ public class BlueBoxServerTest extends TestCase {
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		BlueboxMessage email = (BlueboxMessage) emailIter.next();
-		MimeMessageWrapper mimeMessage = email.getBlueBoxMimeMessage();
+		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertTrue(mimeMessage.getSubject().equals("Test"));
 		//		assertTrue(email.getContent().toString().equals("Test Body"));
 	}
@@ -331,7 +331,7 @@ public class BlueBoxServerTest extends TestCase {
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		assertTrue("Did not find the expected message",emailIter.hasNext());
 		BlueboxMessage email = (BlueboxMessage) emailIter.next();
-		MimeMessageWrapper mimeMessage = email.getBlueBoxMimeMessage();
+		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertNull("No To recipient was expected",mimeMessage.getRecipients(RecipientType.TO));
 		assertNull("No CC recipient was expected",mimeMessage.getRecipients(RecipientType.CC));
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 3)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 1);
@@ -346,7 +346,7 @@ public class BlueBoxServerTest extends TestCase {
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		assertTrue("Did not find the expected message",emailIter.hasNext());
 		BlueboxMessage email = (BlueboxMessage) emailIter.next();
-		MimeMessageWrapper mimeMessage = email.getBlueBoxMimeMessage();
+		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertEquals("The subject was not correctly encoded or decoded",chineseStr, mimeMessage.getSubject());
 	}
 
@@ -372,7 +372,7 @@ public class BlueBoxServerTest extends TestCase {
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		BlueboxMessage email = (BlueboxMessage) emailIter.next();
-		MimeMessageWrapper mimeMessage = email.getBlueBoxMimeMessage();
+		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 //		DataHandler dh = mimeMessage.getDataHandler();
 		assertEquals("Subject did not match",subject,mimeMessage.getSubject().toString());
 		// TODO - figure out why this does not work

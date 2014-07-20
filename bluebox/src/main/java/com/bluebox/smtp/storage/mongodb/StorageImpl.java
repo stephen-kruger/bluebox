@@ -9,6 +9,8 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import javax.mail.internet.MimeMessage;
+
 import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -16,7 +18,6 @@ import org.codehaus.jettison.json.JSONObject;
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
-import com.bluebox.smtp.MimeMessageWrapper;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageFactory;
@@ -79,7 +80,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		StorageFactory.clearInstance();
 	}
 
-	public BlueboxMessage store(InboxAddress inbox, String from, MimeMessageWrapper bbmm) throws Exception {
+	public BlueboxMessage store(InboxAddress inbox, String from, MimeMessage bbmm) throws Exception {
 		BlueboxMessage message = new BlueboxMessage(UUID.randomUUID().toString());
 		message.setInbox(inbox);
 		message.setBlueBoxMimeMessage(from, bbmm);
@@ -89,7 +90,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		//		bson.put(BlueboxMessage.TO, inbox.getFullAddress());
 		//		bson.put(BlueboxMessage.FROM, BlueboxMessage.getFrom(from, bbmm));
 		//		bson.put(BlueboxMessage.INBOX, inbox.getAddress());
-		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(bbmm.getInputStream()));
+		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(message.getRawMessage()));
 		BasicDBObject doc = new BasicDBObject();
 		doc.putAll(bson);
 		//		doc.put(BlueboxMessage.INBOX, inbox.getAddress());

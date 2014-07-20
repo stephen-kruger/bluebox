@@ -9,6 +9,7 @@ import java.util.logging.Logger;
 
 import javax.mail.Address;
 import javax.mail.Message.RecipientType;
+import javax.mail.internet.MimeMessage;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
@@ -42,7 +43,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.smtp.Inbox;
-import com.bluebox.smtp.MimeMessageWrapper;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class SearchIndexer {
@@ -193,20 +193,20 @@ public class SearchIndexer {
 
 
 	public void indexMail(BlueboxMessage message) throws IOException, JSONException, Exception {
-		JSONObject json = new JSONObject(message.toJSON(false));
+//		JSONObject json = new JSONObject(message.toJSON(false));
 		addDoc(message.getIdentifier(),
 				message.getInbox().getFullAddress(),
 				message.getProperty(BlueboxMessage.FROM),
 				message.getProperty(BlueboxMessage.SUBJECT),
-				json.getString(MimeMessageWrapper.TEXT_BODY),
-				json.getString(MimeMessageWrapper.HTML_BODY),
+				message.getHtml(),
+				message.getText(),
 				getRecipients(message),
 				message.getLongProperty(BlueboxMessage.SIZE),
 				message.getLongProperty(BlueboxMessage.RECEIVED));
 	}
 
 	private String getRecipients(BlueboxMessage message) throws Exception {
-		MimeMessageWrapper bbmm = message.getBlueBoxMimeMessage();
+		MimeMessage bbmm = message.getBlueBoxMimeMessage();
 		StringBuffer sb = new StringBuffer();
 		Address[] addr;
 		addr = bbmm.getRecipients(RecipientType.TO);

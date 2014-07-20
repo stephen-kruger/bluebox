@@ -13,6 +13,7 @@ import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
@@ -326,8 +327,7 @@ public class Inbox implements SimpleMessageListener {
 		}
 		else {
 			try {
-				MimeMessageWrapper mmessage = new MimeMessageWrapper(null,data);
-				deliver(from,recipient,mmessage);
+				deliver(from,recipient,Utils.loadEML(data));
 			} 
 			catch (Throwable e) {
 				log.severe(e.getMessage());
@@ -338,8 +338,9 @@ public class Inbox implements SimpleMessageListener {
 
 	}
 
-	public void deliver(String from, String recipient, MimeMessageWrapper mmessage) throws Exception {
+	public void deliver(String from, String recipient, MimeMessage mmessage) throws Exception {
 		log.info("Delivering mail for "+recipient+" from "+from);
+
 		InboxAddress inbox = new InboxAddress(BlueboxMessage.getRecipient(new InboxAddress(recipient), mmessage).toString());
 		BlueboxMessage message = StorageFactory.getInstance().store(inbox, 
 				from,

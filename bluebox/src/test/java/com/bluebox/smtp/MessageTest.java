@@ -1,41 +1,30 @@
 package com.bluebox.smtp;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.Locale;
 import java.util.logging.Logger;
 
 import javax.activation.DataSource;
 import javax.mail.BodyPart;
-import javax.mail.Header;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.mail.internet.InternetHeaders;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
 import junit.framework.TestCase;
 
-
-
-import org.apache.commons.mail.HtmlEmail;
-import org.apache.commons.mail.ImageHtmlEmail;
 import org.apache.commons.mail.util.MimeMessageUtils;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.MimeMessageParser;
-import com.bluebox.TestUtils;
 import com.bluebox.Utils;
-import com.bluebox.smtp.InboxAddress;
-import com.bluebox.smtp.MimeMessageWrapper;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class MessageTest extends TestCase {
@@ -87,86 +76,53 @@ public class MessageTest extends TestCase {
 
 	}
 
-	public void testJSON() throws AddressException, MessagingException, IOException, JSONException {
-		String bodyStr = "\nThis is a body\n with line feeds";
-		String subjStr = "This is the subject";
-		//		String uidStr = "1234567890";
-
-		MimeMessage message = Utils.createMessage(null,
-				Utils.getRandomAddress(), 
-				Utils.getRandomAddresses(1), 
-				Utils.getRandomAddresses(1), 
-				Utils.getRandomAddresses(1), 
-				subjStr,
-				bodyStr, 
-				false);
-
-		JSONObject json = new MimeMessageWrapper(message).toJSON("xx", Locale.ENGLISH);
-		log.info(json.toString(3));
-	}
-
-	public void testAttachmentParsing() throws IOException, MessagingException {
+	public void testAttachmentParsing() throws Exception {
 		InputStream is = new FileInputStream(new File("src/test/resources/test-data/m0017.txt"));
-		MimeMessageWrapper message = new MimeMessageWrapper(Utils.loadEML(is));
-		assertNotNull("Attachment not loaded correctly",message.loadInlineAttachment("938014623@17052000-0f9b"));
+		MimeMessage message = Utils.loadEML(is);
+		MimeMessageParser p = new MimeMessageParser(message);
+		p.parse();
+		assertNotNull("Attachment not loaded correctly",p.getDataSourceForCid("938014623@17052000-0f9b"));
 	}
 
-	public void testBodyEncoding() throws IOException, MessagingException, JSONException {
-		InputStream is = new FileInputStream(new File("src/test/resources/test-data/body_encoding_issue.eml"));
-		MimeMessageWrapper message = new MimeMessageWrapper(Utils.loadEML(is));
-		message.toJSON("12345", Locale.getDefault()).getString(MimeMessageWrapper.TEXT_BODY);
-	}
+	//	public void testInlineAttachmentParsing() throws IOException, MessagingException, JSONException {
+	//		InputStream is = new FileInputStream(new File("src/test/resources/test-data/inlineattachments.eml"));
+	//		MimeMessage message = Utils.loadEML(is);
+	//		BlueboxMessage bbm = new BlueboxMessage("svxcvkkxcvsxl");
+	//		bbm.setBlueBoxMimeMessage("test@here.com", bbmm);
+	//		bbm.
+	//		BodyPart bp = message.loadInlineAttachment("ISM Open Tickets Report - 03-13-2012-DOW.zip");
+	//		assertNotNull("Attachment not loaded correctly",bp);
+	//
+	//		InputStream attachmentStream = message.getAttachment(0, null);
+	//		assertNotNull("Attachment not loaded correctly",attachmentStream);
+	//		attachmentStream.close();
+	//	}
 
-	public void testInlineAttachmentParsing() throws IOException, MessagingException, JSONException {
-		InputStream is = new FileInputStream(new File("src/test/resources/test-data/inlineattachments.eml"));
-		MimeMessageWrapper message = new MimeMessageWrapper(Utils.loadEML(is));
-
-		BodyPart bp = message.loadInlineAttachment("ISM Open Tickets Report - 03-13-2012-DOW.zip");
-		assertNotNull("Attachment not loaded correctly",bp);
-
-		InputStream attachmentStream = message.getAttachment(0, null);
-		assertNotNull("Attachment not loaded correctly",attachmentStream);
-		attachmentStream.close();
-	}
-
-	public void testCharsetDetection() {
-		String contentType = "text/html; charset=GB2312";
-		assertEquals("Incorrect charset detected","GB2312",MimeMessageWrapper.getCharset(contentType));
-	}
+	//	public void testCharsetDetection() {
+	//		String contentType = "text/html; charset=GB2312";
+	//		assertEquals("Incorrect charset detected","GB2312",MimeMessageWrapper.getCharset(contentType));
+	//	}
 
 	public void testNoRecipient() throws MessagingException, IOException {
 		InputStream is = new FileInputStream(new File("src/test/resources/test-data/no-recipient.eml"));
-		MimeMessageWrapper message = new MimeMessageWrapper(Utils.loadEML(is));
+		MimeMessage message =Utils.loadEML(is);
 		is.close();
 
 		InternetAddress add = BlueboxMessage.getRecipient(new InboxAddress("xxx@xxx.com"), message);
 		assertEquals("Should not have any recipient fields",add.getAddress(),"xxx@xxx.com");
 	}
 
-	public void testPersistAndLoad() throws MessagingException, IOException, JSONException {
-		MimeMessageWrapper mmw = TestUtils.createBlueBoxMimeMessage(null, 
-				new InternetAddress("sender@test.com"), 
-				new InternetAddress[]{new InternetAddress("user@recipient.com")}, 
-				new InternetAddress[]{}, 
-				new InternetAddress[]{}, 
-				"subject", "body", false);
-		MimeMessageWrapper fromStream = new MimeMessageWrapper(null,mmw.getInputStream());
-		assertEquals("Mismatched subject",mmw.getSubject(),fromStream.getSubject());
-		assertEquals("Mismatched sender",mmw.getFrom()[0].toString(),fromStream.getFrom()[0].toString());
-		assertEquals("Mismatched body",mmw.getContent().toString(),fromStream.getContent().toString());
-	}
-
 	public List<String> listCids(MimeMessage mm) throws MessagingException {
 		List<String> cids = new ArrayList<String>();
 		MimeMultipart mmp = new MimeMultipart(mm.getDataHandler().getDataSource());
-		System.out.println(mm.getContentID());
+		log.info(mm.getContentID());
 		for (int i = 0; i < mmp.getCount(); i++) {
 			BodyPart bp = mmp.getBodyPart(i);
 			if (bp instanceof MimeBodyPart) {
 				MimeBodyPart mbp = (MimeBodyPart)bp;
-				System.out.println("1:"+mbp.getContentID());
-				System.out.println("2:"+mbp.getFileName());
-				System.out.println("3:"+mbp.getDisposition());
+				log.info("1:"+mbp.getContentID());
+				log.info("2:"+mbp.getFileName());
+				log.info("3:"+mbp.getDisposition());
 			}
 		}
 		return cids;
@@ -179,18 +135,27 @@ public class MessageTest extends TestCase {
 		for (String cid : parser.getCids()) {
 			DataSource ds = parser.getDataSourceForCid(cid);
 			assertNotNull(ds);
-			System.out.println(ds.getName()+">>>>>>>>>>"+cid);	
+			log.info(ds.getName()+">>>>>>>>>>"+cid);	
 		}
 		//		listCids(mm);
 		//		String html = parser.getHtmlContent();
-		//		System.out.println(BlueboxMessage.convertCidLinks("ii_hxqkskb21_147462ce25a92ebf", html));
-		//		System.out.println(mm.getClass().getName());
+		//		log.info(BlueboxMessage.convertCidLinks("ii_hxqkskb21_147462ce25a92ebf", html));
+		//		log.info(mm.getClass().getName());
 		//		List<DataSource> attachments = parser.getAttachmentList();
 		//		for (DataSource ds : attachments) {
-		//			System.out.println(ds.getClass().getName()+">>>>>"+ds.getName()+" "+ds.getContentType());
+		//			log.info(ds.getClass().getName()+">>>>>"+ds.getName()+" "+ds.getContentType());
 		//			//			html = convertCidLinks(ds.getName(),html);
 		//		}	
-		//		System.out.println(parser.findAttachmentByName("cid:ii_hxqkskb21_147462ce25a92ebf"));
+		//		log.info(parser.findAttachmentByName("cid:ii_hxqkskb21_147462ce25a92ebf"));
 
+	}
+	
+	public void testScratch() throws MessagingException, IOException {
+		InputStream is = new FileInputStream(new File("src/test/resources/test-data/no-recipient.eml"));
+		MimeMessage message =Utils.loadEML(is);
+		is.close();
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		message.writeTo(os);
+		log.info(Utils.convertStreamToString(new ByteArrayInputStream(os.toByteArray())));
 	}
 }

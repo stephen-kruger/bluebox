@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Logger;
 
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -11,7 +12,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.smtp.Inbox;
-import com.bluebox.smtp.MimeMessageWrapper;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONRawMessageHandler {
@@ -27,7 +27,7 @@ public class JSONRawMessageHandler {
 			String uid = uri.substring(uri.lastIndexOf("/")+1,uri.length());
 			log.info("Serving raw message for "+uid);
 			BlueboxMessage message = inbox.retrieve(uid);
-			MimeMessageWrapper bbm = message.getBlueBoxMimeMessage();
+			MimeMessage bbm = message.getBlueBoxMimeMessage();
 			resp.setContentType("text/plain");
 			resp.setCharacterEncoding("utf-8");
 			OutputStream os = resp.getOutputStream();

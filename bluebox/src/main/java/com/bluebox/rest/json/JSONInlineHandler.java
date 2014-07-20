@@ -24,9 +24,10 @@ public class JSONInlineHandler extends AbstractHandler {
 
 		try {
 			String uri = req.getRequestURI();
+			System.out.println(uri);
 			String uid = extractFragment(uri,1);
 			String name = extractFragment(uri,0);
-			log.fine("Serving inline attachment "+name+" for message "+uid);
+			log.info("Serving inline attachment for cid "+name+" for message "+uid);
 			BlueboxMessage message = inbox.retrieve(uid);
 			message.writeInlineAttachment(name, resp);
 		}
