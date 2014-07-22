@@ -17,17 +17,16 @@ public class JSONInlineHandler extends AbstractHandler {
 	public static final String JSON_ROOT = "rest/json/inline";
 	
 	/*
-	 * REST rest/json/inbox/attachment/26e3a411-f456-4c5f-a531-3b73f43ecf7f/1
+	 * REST rest/json/inline/<name>/<uid>
 	 */
 	public void doGetInlineAttachment(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		setDefaultHeaders(resp);
 
 		try {
 			String uri = req.getRequestURI();
-			System.out.println(uri);
 			String uid = extractFragment(uri,1);
 			String name = extractFragment(uri,0);
-			log.info("Serving inline attachment for cid "+name+" for message "+uid);
+			log.info("Serving inline attachment for uid "+uid+" with name "+name);
 			BlueboxMessage message = inbox.retrieve(uid);
 			message.writeInlineAttachment(name, resp);
 		}
