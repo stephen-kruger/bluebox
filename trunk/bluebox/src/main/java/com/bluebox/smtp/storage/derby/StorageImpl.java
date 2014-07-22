@@ -195,15 +195,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		BlueboxMessage message = new BlueboxMessage(uid,inbox);
 		message.setInbox(inbox);
 		message.setBlueBoxMimeMessage(from, bbmm);
-		if (bbmm.getSubject()==null)
-			new Exception().printStackTrace();
 		add(uid, 
 				inbox, 
 				BlueboxMessage.getFrom(from, bbmm),
 				bbmm.getSubject(),
 				new Date(Long.parseLong(message.getProperty(BlueboxMessage.RECEIVED))), 
 				State.NORMAL, 
-				bbmm.getSize(),
+				Long.parseLong(message.getProperty(BlueboxMessage.SIZE)),
 				message.getRawMessage());
 		return message;
 	}
@@ -404,7 +402,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return count;
 	}
 
-	public List<BlueboxMessage> listMail(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
+	private ResultSet listMailCommon(Connection connection, InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		if (count<0)
 			count = Integer.MAX_VALUE;
 		String orderStr;
@@ -415,7 +413,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if (email!=null)
 			if (email.getAddress().length()==0)
 				email=null;
-		Connection connection = getConnection();
 		Statement s = connection.createStatement();
 		PreparedStatement ps;
 		if (email==null) {
@@ -439,94 +436,34 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			}
 		}
 		ps.execute();
-		ResultSet result = ps.getResultSet();
+		s.close();
+		return ps.getResultSet();
+	}
+	
+	public List<BlueboxMessage> listMail(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
+		Connection connection = getConnection();
+		ResultSet result = listMailCommon(connection, email, state, start, count, orderBy, ascending);
+		
 		List<BlueboxMessage> list = new ArrayList<BlueboxMessage>();
 		while (result.next()) {
 			BlueboxMessage m = loadMessage(result); 
 			list.add(m);
 		}
-		s.close();
 		connection.close();
 		return list;
 	}
 
 	public List<JSONObject> listMailLite(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
-		if (count<0)
-			count = Integer.MAX_VALUE;
-		String orderStr;
-		if (ascending)
-			orderStr = " ASC";
-		else
-			orderStr = " DESC";
-		if (email!=null)
-			if (email.getAddress().length()==0)
-				email=null;
 		Connection connection = getConnection();
-		Statement s = connection.createStatement();
-		PreparedStatement ps;
-		if (email==null) {
-			if (state==State.ANY) {
-				ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
-			}
-			else {
-				ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.STATE+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
-				ps.setInt(1, state.ordinal());
-			}
-		}
-		else {
-			if (state==State.ANY) {
-				ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.INBOX+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
-				ps.setString(1, email.getAddress());
-			}
-			else {
-				ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.INBOX+"=? AND "+BlueboxMessage.STATE+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
-				ps.setString(1, email.getAddress());
-				ps.setInt(2, state.ordinal());
-			}
-		}
-		ps.execute();
-		ResultSet result = ps.getResultSet();
+		ResultSet result = listMailCommon(connection, email, state, start, count, orderBy, ascending);
 		List<JSONObject> list = new ArrayList<JSONObject>();
 		while (result.next()) {
 			JSONObject message = loadMessageJSON(result);			
 			list.add(message);
 		}
-		s.close();
 		connection.close();
 		return list;
 	}
-
-	//	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
-	//		long startTime = new Date().getTime();
-	//		List<JSONObject> mail = listMailLite(inbox, state, start, count, orderBy, ascending);
-	//
-	////		JSONObject curr;
-	//		int index = 0;
-	//		writer.write("[");
-	//		for (JSONObject curr : mail) {
-	////			curr = new JSONObject();
-	////			curr.put(BlueboxMessage.FROM, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.FROM)));
-	////			curr.put(BlueboxMessage.SUBJECT, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.SUBJECT)));
-	////			// convert the date to the locale used by the users browser
-	////			if (message.hasProperty(BlueboxMessage.RECEIVED)) {
-	////				curr.put(BlueboxMessage.RECEIVED, SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.LONG, SimpleDateFormat.SHORT, locale).format(new Date(message.getLongProperty(BlueboxMessage.RECEIVED))));
-	////			}
-	////			if (message.hasProperty(BlueboxMessage.SIZE)) {
-	////				curr.put(BlueboxMessage.SIZE, message.getPropertyString(BlueboxMessage.SIZE)+"K");
-	////			}
-	////			else {
-	////				curr.put(BlueboxMessage.SIZE, "1K");
-	////			}
-	////			curr.put(BlueboxMessage.UID, message.getIdentifier());
-	//			writer.write(curr.toString(3));
-	//			if ((index++)<mail.size()-1) {
-	//				writer.write(",");
-	//			}
-	//		}
-	//		writer.write("]");
-	//		writer.flush();
-	//		log.fine("Served inbox contents in "+(new Date().getTime()-startTime)+"ms");
-	//	}
 
 	@Override
 	public void setState(String uid, BlueboxMessage.State state) throws Exception {

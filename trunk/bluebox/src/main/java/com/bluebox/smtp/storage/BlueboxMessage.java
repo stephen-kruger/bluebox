@@ -82,11 +82,7 @@ public class BlueboxMessage {
 		setLongProperty(RECEIVED, new Date().getTime());
 		setProperty(RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
 		setProperty(STATE, State.NORMAL.name());
-		// round the size to KB, minimum 1K
-		int size = bbmm.getSize()/1000;
-		if (size==0)
-			size = 1;
-		setProperty(SIZE, size);
+		setProperty(SIZE, bbmm.getSize());
 	}
 
 	public void loadBlueBoxMimeMessage(MimeMessage bbmm) {
@@ -161,12 +157,13 @@ public class BlueboxMessage {
 		}
 		return ja;
 	}
-	
+
 	private JSONArray toJSONArray(Address[] r) {
 		JSONArray ja = new JSONArray();
 		try {
-			for (int i = 0; i < r.length;i++)
-				ja.put(r[i].toString());
+			if (r!=null)
+				for (int i = 0; i < r.length;i++)
+					ja.put(r[i].toString());
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
@@ -264,20 +261,19 @@ public class BlueboxMessage {
 			json.put(ATTACHMENT, ja);
 			json.put(BlueboxMessage.HTML_BODY, getHtml(p));
 			json.put(BlueboxMessage.TEXT_BODY, getText(p));
-			//			}
+
 			// now convert the date to a user locale specific one
-			try {
-				log.fine("Converting to locale "+locale.toString()+" for inbox "+getInbox());
-				//			log.info(node.getProperty(RECEIVED).getString());
-				Date date = new Date(getLongProperty(RECEIVED));
-				if (!json.has("Date")) {
-					json.put("Date",new JSONArray());
-				}
-				json.getJSONArray("Date").put(0, dateToString(date,locale));
-			}
-			catch (Throwable t) {
-				log.warning("Problem converting date to user locale :"+t.getMessage());
-			}
+//			try {
+//				log.fine("Converting to locale "+locale.toString()+" for inbox "+getInbox());
+//				Date date = new Date(getLongProperty(RECEIVED));
+//				if (!json.has("Date")) {
+//					json.put("Date",new JSONArray());
+//				}
+//				json.getJSONArray("Date").put(0, dateToString(date,locale));
+//			}
+//			catch (Throwable t) {
+//				log.warning("Problem converting date to user locale :"+t.getMessage());
+//			}
 			json.put(UID,properties.get(UID));
 			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
 			json.put(SUBJECT,getBlueBoxMimeMessage().getSubject());

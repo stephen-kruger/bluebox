@@ -70,7 +70,7 @@ public abstract class AbstractStorage implements StorageIf {
 		long size = getDBOLong(dbo,BlueboxMessage.SIZE,0)/1000;
 		if (size==0)
 			size = 1;
-		message.put(BlueboxMessage.SIZE,size);
+		message.put(BlueboxMessage.SIZE,size+"K");
 		return message;
 	}
 

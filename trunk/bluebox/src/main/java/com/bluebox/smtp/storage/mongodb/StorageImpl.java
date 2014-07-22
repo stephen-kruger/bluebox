@@ -87,26 +87,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		message.setBlueBoxMimeMessage(from, bbmm);
 		DBCollection coll = db.getCollection(TABLE_NAME);
 		DBObject bson = ( DBObject ) JSON.parse( message.toJSON(true) );
-
-		//		bson.put(BlueboxMessage.TO, inbox.getFullAddress());
-		//		bson.put(BlueboxMessage.FROM, BlueboxMessage.getFrom(from, bbmm));
-		//		bson.put(BlueboxMessage.INBOX, inbox.getAddress());
 		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(message.getRawMessage()));
 		BasicDBObject doc = new BasicDBObject();
 		doc.putAll(bson);
-		//		doc.put(BlueboxMessage.INBOX, inbox.getAddress());
-		//		StringBuffer s = new StringBuffer();
-		//		Address[] r = bbmm.getAllRecipients();
-		//		if (r!=null) {
-		//			for (int i = 0; i < r.length; i++)
-		//				s.append(r[i].toString()).append(' ');
-		//		}
-		//		else {
-		//			// bcc message, we're not on the list
-		//			s.append(inbox);
-		//			doc.put(BlueboxMessage.TO, inbox.getAddress());
-		//		}
-		//		doc.put(MessageImpl.TO_LOWER, s.toString().toLowerCase().trim());
 		coll.insert(doc);
 		return message;
 	}
@@ -129,7 +112,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if (mo.containsField(key)) {
 			Object o = mo.get(key);
 			if (o instanceof BasicDBList) {
-				return ((BasicDBList)mo.get(key)).get(0).toString();
+				BasicDBList list = (BasicDBList)mo.get(key);
+				if (list.size()>0)
+					return list.get(0).toString();
+				else
+					return def;
 			}
 			return o.toString();
 		}
@@ -282,12 +269,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return count;
 	}
 
-	public List<BlueboxMessage> listMail(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
-		// this special case happens when no email specified on Atom feed
-		//		if ("*"==inbox) {
-		//			inbox=null;
-		//		}
-
+	public DBCursor listMailCommon(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		BasicDBObject query = new BasicDBObject();
 		if (state != BlueboxMessage.State.ANY)
 			query.append(BlueboxMessage.STATE, state.name());
@@ -297,8 +279,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if (ascending) sortBit = 1; else sortBit = -1;
 		if (count<0)
 			count = 500;//Integer.MAX_VALUE; else we get "com.mongodb.MongoException: too much data for sort() with no index.  add an index or specify a smaller limit"
-		DBCursor cursor = db.getCollection(TABLE_NAME).find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
+		return db.getCollection(TABLE_NAME).find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
+	}
+	
+	public List<BlueboxMessage> listMail(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		List<BlueboxMessage> results = new ArrayList<BlueboxMessage>();
+		DBCursor cursor = this.listMailCommon(inbox, state, start, count, orderBy, ascending);
 		try {
 			while (cursor.hasNext()) {
 				DBObject dbo = cursor.next();
@@ -316,19 +302,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 	
 	@Override
-	public List<JSONObject> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending) {
-		System.out.println("<<<lite>>>");
-		BasicDBObject query = new BasicDBObject();
-		if (state != BlueboxMessage.State.ANY)
-			query.append(BlueboxMessage.STATE, state.name());
-		if ((inbox!=null)&&(inbox.getFullAddress().length()>0))
-			query.append(BlueboxMessage.INBOX, inbox.getAddress());
-		int sortBit;
-		if (ascending) sortBit = 1; else sortBit = -1;
-		if (count<0)
-			count = 500;//Integer.MAX_VALUE; else we get "com.mongodb.MongoException: too much data for sort() with no index.  add an index or specify a smaller limit"
-		DBCursor cursor = db.getCollection(TABLE_NAME).find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
+	public List<JSONObject> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending) throws Exception {
+
 		List<JSONObject> results = new ArrayList<JSONObject>();
+		DBCursor cursor = this.listMailCommon(inbox, state, start, count, orderBy, ascending);
 		try {
 			while (cursor.hasNext()) {
 				DBObject dbo = cursor.next();
@@ -345,43 +322,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return results;
 	}
 
-	//	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
-	//		long startTime = new Date().getTime();
-	//		// the Query has already been requested to start at correct place
-	//		JSONObject curr;
-	//		List<BlueboxMessage> mail = listMail(inbox, state, start, count, orderBy, ascending);
-	//		int index = 0;
-	//		writer.write("[");
-	//		for (BlueboxMessage message : mail) {
-	//			curr = new JSONObject();
-	//			curr.put(BlueboxMessage.FROM, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.FROM)));
-	//			curr.put(BlueboxMessage.SUBJECT, Utils.decodeRFC2407(message.getPropertyString(BlueboxMessage.SUBJECT)));
-	//			//			curr.put(MessageImpl.SUBJECT,  Utils.convertEncoding(Utils.decodeRFC2407(msg.getPropertyString(MessageImpl.SUBJECT)),"GB2312"));
-	//			//			ByteBuffer b = ByteBuffer.wrap(Utils.decodeRFC2407(msg.getBlueBoxMimeMessage().getSubject()).getBytes());
-	//			//			curr.put(MessageImpl.SUBJECT,  java.nio.charset.Charset.forName("GB2312").newDecoder().decode(b));
-	//			//			curr.put(MessageImpl.SUBJECT, msg.getBlueBoxMimeMessage().getSubject());
-	//			// convert the date to the locale used by the users browser
-	//			if (message.hasProperty(BlueboxMessage.RECEIVED)) {
-	//				//				curr.put(MessageImpl.RECEIVED, new Date(msg.getLongProperty(MessageImpl.RECEIVED)));
-	//				curr.put(BlueboxMessage.RECEIVED, SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.LONG, SimpleDateFormat.SHORT, locale).format(new Date(message.getLongProperty(BlueboxMessage.RECEIVED))));
-	//			}
-	//			if (message.hasProperty(BlueboxMessage.SIZE)) {
-	//				curr.put(BlueboxMessage.SIZE, message.getPropertyString(BlueboxMessage.SIZE)+"K");
-	//			}
-	//			else {
-	//				curr.put(BlueboxMessage.SIZE, "1K");
-	//			}
-	//			curr.put(BlueboxMessage.UID, message.getIdentifier());
-	//			writer.write(curr.toString(3));
-	//			if ((index++)<mail.size()-1) {
-	//				writer.write(",");
-	//			}
-	//		}
-	//		writer.write("]");
-	//		writer.flush();
-	//		log.info("Served inbox contents in "+(new Date().getTime()-startTime)+"ms");
-	//	}
-
 	@Override
 	public void setState(String uid, BlueboxMessage.State state) throws Exception {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
@@ -393,187 +333,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		cursor.close();
 	}
-
-	//	@Override
-	//	public JSONArray autoComplete(String hint, long start, long count) throws Exception {
-	//		if (count<0)
-	//			count = 500;
-	//		if ((hint==null)||(hint=="")) hint="*";
-	//		DBCollection coll = db.getCollection(TABLE_NAME);
-	//		DBCursor cursor;
-	//		if (hint.length()<3) {
-	//			if (hint.equals("*")) {
-	//				//				cursor = coll.distinct(MessageImpl.INBOX);
-	//				cursor = coll.find().limit((int)count).skip((int)start);;
-	//				log.fine("wild card result-count="+cursor.count()+" start="+start+" count="+count);
-	//			}
-	//			else {
-	//				log.fine("short circuit "+hint+" "+start+" "+count);
-	//				return new JSONArray();
-	//			}
-	//		}
-	//		else {
-	//			//			autocompleteQuery = new BasicDBObject(MessageImpl.TO_LOWER,new BasicDBObject("$regex", hint.toLowerCase()));
-	//			//			log.info(">>>>>>>>>looking for "+hint);
-	//			DBObject autocompleteQuery = new BasicDBObject(BlueboxMessage.AUTO_COMPLETE,new BasicDBObject("$regex", hint.toLowerCase()));
-	//			cursor = coll.find(autocompleteQuery).limit((int)count).skip((int)start);
-	//			log.fine("normal "+cursor.count()+" hint:"+hint+" "+autocompleteQuery);
-	//		}
-	//
-	//		JSONArray children = new JSONArray();
-	//		JSONObject curr;
-	//
-	//		while (cursor.hasNext()) {
-	//			DBObject dbo = cursor.next();
-	//			//			log.info(dbo.toString());
-	//			//			log.info(dbo.keySet().toString());
-	//			String name = Utils.decodeRFC2407(getDBOString(dbo, BlueboxMessage.INBOX,"error8473"));
-	//			String label = Utils.decodeRFC2407(getDBOString(dbo, BlueboxMessage.TO,name));
-	//			String identifier = getDBOString(dbo, BlueboxMessage.UID,name);
-	//			if (!autoCompleteContains(children,name)) {
-	//				curr = new JSONObject();
-	//				curr.put("name", name);
-	//				curr.put("label", label);
-	//				curr.put("identifier", identifier);
-	//				children.put(curr);
-	//			}
-	//
-	//			if (children.length()>=count)
-	//				break;
-	//		}
-	//		cursor.close();
-	//		return children;
-	//	}
-
-	//	/**
-	//	 * Ensures no type-ahead duplicates
-	//	 *
-	//	 * @param children the existingchildren
-	//	 * @param id the id of the root node containing the match
-	//	 * @return true, if entry already exists
-	//	 */
-	//	private boolean autoCompleteContains(JSONArray children, String name) {
-	//		try {
-	//			JSONObject c;
-	//			for (int i = 0; i < children.length();i++) {
-	//				c = children.getJSONObject(i);
-	//				if (c.get("name").equals(name)) {
-	//					return true;
-	//				}
-	//			}
-	//		}
-	//		catch (JSONException e) {
-	//			e.printStackTrace();
-	//		}
-	//		return false;
-	//	}
-
-	//	private JSONObject updateStatsRecent() {
-	//		JSONObject jo = new JSONObject();
-	//
-	//		try {
-	//			jo.put(MessageImpl.SUBJECT, "");
-	//			jo.put(MessageImpl.TO, "");
-	//			jo.put(MessageImpl.FROM, "");
-	//		} 
-	//		catch (JSONException e1) {
-	//			e1.printStackTrace();
-	//		}
-	//
-	//		try {
-	//			List<MessageImpl> msgs = listMail(null, MessageImpl.State.NORMAL, 0, 1, MessageImpl.RECEIVED, false);
-	//			if (msgs.size()>0) {
-	//				MessageImpl msg = msgs.get(0);
-	//				jo.put(MessageImpl.SUBJECT, msg.getBlueBoxMimeMessage().getSubject());
-	//				jo.put(MessageImpl.TO, msg.getInbox());
-	//				jo.put(MessageImpl.FROM, msg.getBlueBoxMimeMessage().getFrom()[0].toString());
-	//			}
-	//		} 
-	//		catch (Throwable e) {
-	//			e.printStackTrace();
-	//		}
-	//		setProperty("stats_recent",jo.toString());
-	//		return jo;
-	//	}
-
-	//	@Override
-	//	public JSONObject getStatsRecent() {
-	//		JSONObject jo=null;
-	//		try {
-	//			if (getProperty("stats_recent", "{}")==null) {
-	//				return updateStatsRecent();
-	//			}
-	//			return new JSONObject(this.getProperty("stats_recent", "{}"));
-	//		} 
-	//		catch (JSONException e2) {
-	//			e2.printStackTrace();
-	//			return jo;
-	//		}
-	//	}
-
-	//	private JSONObject updateStatsActive() {
-	//		JSONObject jo = new JSONObject();
-	//		try {	
-	//			@SuppressWarnings("unchecked")
-	//			List<String> inboxes = db.getCollection(TABLE_NAME).distinct(MessageImpl.INBOX);
-	//			long count = 0;
-	//			String inbox = "";
-	//			for (String currInbox : inboxes) {
-	//				//				long t = getMailCount(currInbox, MessageImpl.State.NORMAL);
-	//				long t = db.getCollection(TABLE_NAME).count(new BasicDBObject(MessageImpl.INBOX, currInbox));
-	//				if (t>count) {
-	//					count = t;
-	//					inbox = currInbox;
-	//				}
-	//			}
-	//
-	//			jo.put(MessageImpl.COUNT, count);
-	//			jo.put(MessageImpl.TO, inbox);
-	//		} 
-	//		catch (Throwable e) {
-	//			e.printStackTrace();
-	//			try {
-	//				jo.put(MessageImpl.COUNT, 0);
-	//				jo.put(MessageImpl.TO, "");
-	//			} 
-	//			catch (JSONException e1) {
-	//				e1.printStackTrace();
-	//			}			
-	//		}
-	//		setProperty("stats_active",jo.toString());
-	//		return jo;
-	//	}
-
-
-	//	@Override
-	//	public JSONObject getStatsActive() {
-	//		JSONObject jo=null;
-	//		try {
-	//			if (getProperty("stats_active","{}")==null) {
-	//				return updateStatsActive();
-	//			}
-	//			return new JSONObject(this.getProperty("stats_active", "{}"));
-	//		} 
-	//		catch (JSONException e2) {
-	//			e2.printStackTrace();
-	//			return jo;
-	//		}
-	//	}
-
-	//	@Override
-	//	public long getStatsGlobalCount() {
-	//		return Long.parseLong(getProperty(GLOBAL_COUNT_NODE,"0"));
-	//	}
-	//
-	//	private void incrementGlobalCount() {
-	//		long newCount = getStatsGlobalCount()+1;
-	//		setProperty(GLOBAL_COUNT_NODE,Long.toString(newCount));
-	//	}	
-	//
-	//	@Override
-	//	public void setStatsGlobalCount(long count) {
-	//		setProperty(GLOBAL_COUNT_NODE,Long.toString(count));
-	//	}
 
 	@Override
 	public void setProperty(String key, String value) {

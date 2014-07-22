@@ -13,6 +13,7 @@ import org.mortbay.jetty.testing.HttpTester;
 import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONFolderHandler;
+import com.bluebox.rest.json.JSONInlineHandler;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
@@ -114,24 +115,35 @@ public class RestTest extends BaseServletTest {
 		//			}		
 	}
 
-	public void testAttatchmentHandler() throws Exception {
+	public void testInlineHandler() throws Exception {
 		Inbox.getInstance().deleteAll();
 		Utils.waitFor(0);
-		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"inlineattachments.eml");
+		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"attachments.eml");
 		Utils.uploadEML(emlStream);
 		Utils.waitFor(1);
 		assertEquals("Mail was not delivered",1,Inbox.getInstance().getMailCount(State.ANY));
 		
-		// now retrieve the atachment
 		List<BlueboxMessage> messages = Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
 		BlueboxMessage msg = messages.get(0);
 		HttpTester request = new HttpTester();
+		// now retrieve the atachment by name
 		request.setMethod("GET");
 		request.setHeader("HOST","127.0.0.1");
-		request.setURI(getBaseURL()+"/rest/json/inbox/attachment/"+msg.getIdentifier()+"/0/ISM%20Open%20Tickets%20Report%20-%2003-13-2012-DOW.zip");
+		request.setURI(getBaseURL()+"/"+JSONInlineHandler.JSON_ROOT+"/"+msg.getIdentifier()+"/DSC_3968.JPG");
 		request.setVersion("HTTP/1.0");
 
 		HttpTester response = new HttpTester();
+		response.parse(getTester().getResponses(request.generate()));
+
+		assertEquals(200,response.getStatus());
+		
+		// now retrieve the atachment by uid
+		request.setMethod("GET");
+		request.setHeader("HOST","127.0.0.1");
+		request.setURI(getBaseURL()+"/"+JSONInlineHandler.JSON_ROOT+"/"+msg.getIdentifier()+"/ii_hxqkskb21_147462ce25a92ebf");
+		request.setVersion("HTTP/1.0");
+
+		response = new HttpTester();
 		response.parse(getTester().getResponses(request.generate()));
 
 		assertEquals(200,response.getStatus());

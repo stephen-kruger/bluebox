@@ -107,15 +107,17 @@ public class StorageTest extends TestCase {
 	}
 
 	public void testAddAndRetrieve() throws Exception {
-		InboxAddress inbox = new InboxAddress("Stephen johnson <steve@test.com>");
+		StorageFactory.getInstance().deleteAll();
+		InboxAddress inbox = new InboxAddress("Stephen johnson <steve.johnson@test.com>");
+		String from = "sender@nowhere.com";
 		MimeMessage message = TestUtils.createMail(
-				Utils.getRandomAddress(), 
-				Utils.getRandomAddresses(1), 
-				Utils.getRandomAddresses(1), 
-				Utils.getRandomAddresses(1), 
+				new InternetAddress(from), 
+				new InternetAddress[]{new InternetAddress(inbox.getFullAddress())}, 
+				Utils.getRandomAddresses(0), 
+				Utils.getRandomAddresses(0), 
 				"subjStr",
 				"bodyStr");
-		BlueboxMessage bbm = StorageFactory.getInstance().store(inbox, inbox.getAddress(), message);
+		BlueboxMessage bbm = StorageFactory.getInstance().store(inbox, from, message);
 		BlueboxMessage stored = StorageFactory.getInstance().retrieve(bbm.getIdentifier());
 		assertEquals("Identifiers did not match",bbm.getIdentifier(),stored.getIdentifier());
 		MimeMessage storedMM = stored.getBlueBoxMimeMessage();
