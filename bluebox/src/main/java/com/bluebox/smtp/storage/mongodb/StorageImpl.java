@@ -20,6 +20,7 @@ import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 import com.mongodb.BasicDBList;
@@ -122,6 +123,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return loadMessage(dbo);
 	}
 
+	@Override
 	public String getDBOString(Object dbo, String key, String def) {
 		DBObject mo = (DBObject)dbo;
 		if (mo.containsField(key)) {
@@ -137,6 +139,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 	
+	@Override
 	public int getDBOInt(Object dbo, String key, int def) {
 		DBObject mo = (DBObject)dbo;
 		if (mo.containsField(key)) {
@@ -147,6 +150,19 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return def;
 		}
 	}
+	
+	@Override
+	public long getDBOLong(Object dbo, String key, long def) {
+		DBObject mo = (DBObject)dbo;
+		if (mo.containsField(key)) {
+			return Long.parseLong(mo.get(key).toString());
+		}
+		else {
+			log.warning("Missing field "+key);
+			return def;
+		}
+	}
+	
 	
 	public Date getDBODate(Object dbo, String key) {
 		BasicDBObject mo = (BasicDBObject)dbo;
@@ -287,6 +303,36 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			while (cursor.hasNext()) {
 				DBObject dbo = cursor.next();
 				BlueboxMessage m = loadMessage(dbo);
+				results.add(m);
+			}
+		} 
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		finally {
+			cursor.close();
+		}
+		return results;
+	}
+	
+	@Override
+	public List<JSONObject> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending) {
+		System.out.println("<<<lite>>>");
+		BasicDBObject query = new BasicDBObject();
+		if (state != BlueboxMessage.State.ANY)
+			query.append(BlueboxMessage.STATE, state.name());
+		if ((inbox!=null)&&(inbox.getFullAddress().length()>0))
+			query.append(BlueboxMessage.INBOX, inbox.getAddress());
+		int sortBit;
+		if (ascending) sortBit = 1; else sortBit = -1;
+		if (count<0)
+			count = 500;//Integer.MAX_VALUE; else we get "com.mongodb.MongoException: too much data for sort() with no index.  add an index or specify a smaller limit"
+		DBCursor cursor = db.getCollection(TABLE_NAME).find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
+		List<JSONObject> results = new ArrayList<JSONObject>();
+		try {
+			while (cursor.hasNext()) {
+				DBObject dbo = cursor.next();
+				JSONObject m = loadMessageJSON(dbo);
 				results.add(m);
 			}
 		} 
@@ -667,5 +713,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		createIndexes();
 	}
+
+	
+
+
 
 }

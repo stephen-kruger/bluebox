@@ -199,7 +199,7 @@
 	</div>
 	<div class="menu3">
 		<a id="admin" class="menulink" href="<%=request.getContextPath()%>/app/admin.jsp"><%= menuResource.getString("admin") %></a>
-		<a class="helpIcon" href="<%=request.getContextPath()%>/app/help.jsp" id="help" onmouseover="dijit.Tooltip.defaultPosition=['below']">?</a>
+		<a id="help" class="helpIcon" href="<%=request.getContextPath()%>/app/help.jsp" onmouseover="dijit.Tooltip.defaultPosition=['below']">?</a>
 		<div class="dijitHidden"><span data-dojo-type="dijit.Tooltip" data-dojo-props="connectId:'helpMenu'"><%= menuResource.getString("help") %></span></div>
 	</div>
 </div>

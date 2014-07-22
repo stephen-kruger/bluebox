@@ -11,7 +11,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -255,6 +254,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return def;
 	}
 
+	@Override
 	public int getDBOInt(Object dbo, String key, int def) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
@@ -265,6 +265,19 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return def;
 		}
 	}
+	
+	@Override
+	public long getDBOLong(Object dbo, String key, long def) {
+		ResultSet mo = (ResultSet)dbo;
+		try {
+			return mo.getLong(key);
+		} 
+		catch (SQLException e) {
+			e.printStackTrace();
+			return def;
+		}
+	}
+	
 	public Date getDBODate(Object dbo, String key) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
@@ -475,15 +488,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ResultSet result = ps.getResultSet();
 		List<JSONObject> list = new ArrayList<JSONObject>();
 		while (result.next()) {
-			JSONObject message = new JSONObject();
-			message.put(BlueboxMessage.UID, result.getString(BlueboxMessage.UID));
-			message.put(BlueboxMessage.TO, result.getString(BlueboxMessage.TO));
-			message.put(BlueboxMessage.INBOX, result.getString(BlueboxMessage.INBOX));
-			message.put(BlueboxMessage.FROM, result.getString(BlueboxMessage.FROM));
-			message.put(BlueboxMessage.SUBJECT, result.getString(BlueboxMessage.SUBJECT));
-			message.put(BlueboxMessage.SIZE, result.getString(BlueboxMessage.SIZE));
-			message.put(BlueboxMessage.RECEIVED, BlueboxMessage.dateToString(result.getDate(BlueboxMessage.RECEIVED),Locale.getDefault()));
-			message.put(BlueboxMessage.STATE, State.values()[result.getInt(BlueboxMessage.STATE)].name());
+			JSONObject message = loadMessageJSON(result);			
 			list.add(message);
 		}
 		s.close();
@@ -783,5 +788,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public void runMaintenance() throws Exception {
 		setupTables();		
 	}
+
+
 
 }
