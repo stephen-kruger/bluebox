@@ -13,6 +13,12 @@
 <head>
 	<title><%=infoResource.getString("title")%></title>
 	<jsp:include page="dojo.jsp" />
+	
+	<script>
+		require(["dojo/domReady!","dijit/form/Button",  "dojox/form/Uploader", "dojox/form/uploader/FileList"], function(domReady,Button,Uploader,FileList){
+			selectMenu("info");
+		});
+	</script>
 </head>
 <body class="<%=bbconfig.getString("dojo_style")%>">
 	<div class="headerCol"><jsp:include page="menu.jsp" /></div>

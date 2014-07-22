@@ -14,7 +14,7 @@
 	<link href="<%=bbconfig.getString("dojo_base")%>/dojox/form/resources/UploaderFileList.css" rel="stylesheet" type="text/css" />
 	
 	<script>
-		require(["dojo/domReady!","dijit/form/Button",  "dojox/form/Uploader", "dojox/form/uploader/FileList"], function(domReady,Button,Uploader,FileList){
+		require(["dojo/domReady!","dijit/form/Button",  "dojox/form/Uploader", "dojox/form/uploader/FileList"], function(domReady){
 			selectMenu("upload");
 		});
 	</script>

@@ -105,7 +105,7 @@
 				<tr>
 					<td><label>Generate fake emails</label></td>
 					<td>
-					<form id="generate" method="get" action="rest/admin/test">
+					<form id="generate" method="get" action="<%=request.getContextPath()%>/rest/admin/test">
 						<input id="count" type="text" data-dojo-type="dijit/form/NumberTextBox" name= "count" value="10" data-dojo-props="constraints:{min:10,max:5000,places:0,pattern:'#'},  invalidMessage:'Please enter a value between 10 and 5000'" />
 					</form>
 					</td>
@@ -144,7 +144,7 @@
 				<tr>
 					<td><label>Set global received mail counter</label></td>
 					<td>
-					<form method="get" action="rest/admin/setbasecount">
+					<form method="get" action="<%=request.getContextPath()%>/rest/admin/setbasecount">
 					<input id="setbasecount" type="text" data-dojo-type="dijit/form/NumberTextBox" name="setbasecount" value="25000000" data-dojo-props="constraints:{pattern: '#',min:0,max:99999999,places:0},  invalidMessage:'Please enter a value between 10 and 5000'" />
 					</form>
 					</td>

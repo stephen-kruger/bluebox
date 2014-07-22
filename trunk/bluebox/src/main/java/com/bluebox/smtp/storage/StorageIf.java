@@ -8,6 +8,7 @@ import java.util.Locale;
 import javax.mail.internet.MimeMessage;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.smtp.InboxAddress;
 
@@ -36,6 +37,9 @@ public interface StorageIf {
 	public abstract List<BlueboxMessage> listMail(InboxAddress inbox, BlueboxMessage.State state,
 			int start, int count, String orderBy, boolean ascending)
 			throws Exception;
+	
+	public abstract List<JSONObject> listMailLite(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception;
+
 
 	/*
 	 * This method writes directly into the server stream, isntead of creating the entire structure in memory, and

@@ -20,8 +20,8 @@ public class InboxAddress extends Object {
 	public InboxAddress(HttpServletRequest req) throws AddressException {
 		this(req.getParameter(Inbox.EMAIL));
 	}
-	
-	
+
+
 
 	@Override
 	public String toString() {
@@ -31,7 +31,7 @@ public class InboxAddress extends Object {
 	public String getAddress() {
 		return getEmail(address);
 	}
-	
+
 	public String getFullAddress() {
 		return address;
 	}
@@ -63,5 +63,18 @@ public class InboxAddress extends Object {
 			//e.printStackTrace();
 		}
 		return "*";
+	}
+
+	public String getDisplayName() {
+		try {
+			String p = new InternetAddress(address).getAddress();
+			if (p!=null)
+				if (p.length()>0)
+					return p;
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		return address;
 	}
 }
