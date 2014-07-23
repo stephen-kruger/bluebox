@@ -368,7 +368,7 @@ public class BlueBoxServerTest extends TestCase {
 
 
 		Inbox inbox = Inbox.getInstance();
-		assertTrue("Sent message was not correctly recieved (Got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+")",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 1);
+		assertEquals("Sent message was not correctly recieved (Got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+")",1,inbox.getMailCount(BlueboxMessage.State.NORMAL));
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		BlueboxMessage email = (BlueboxMessage) emailIter.next();
@@ -376,7 +376,8 @@ public class BlueBoxServerTest extends TestCase {
 //		DataHandler dh = mimeMessage.getDataHandler();
 		assertEquals("Subject did not match",subject,mimeMessage.getSubject().toString());
 		// TODO - figure out why this does not work
-		//		assertEquals("Body did not match",bodyWithCR,mimeMessage.getContent().toString());
+//		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
+//		assertEquals("Body did not match",bodyWithCR,email.getText());
 	}
 
 }

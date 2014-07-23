@@ -82,55 +82,10 @@ public class TestUtils extends TestCase {
 	}
 
 	public static MimeMessage createMail(String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
-//		InternetAddress[] toa=null, cca=null, bcca=null;
-//		if (to!=null)
-//			toa = new InternetAddress[]{new InternetAddress(to)};
-//		if (cc!=null)
-//			cca = new InternetAddress[]{new InternetAddress(cc)};
-//		if (bcc!=null)
-//			bcca = new InternetAddress[]{new InternetAddress(bcc)};
-//		return createMail(new InternetAddress(from), toa, cca, bcca,subject,body);
 		return Utils.createMessage(null, from, to, cc, bcc, subject, body);
 	}
 
-	public static MimeMessage createMail(InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body) throws IOException, MessagingException {
-//		Email email = new SimpleEmail();
-//		email.setHostName("localhost");
-//		email.setSmtpPort(Config.getInstance().getInt(Config.BLUEBOX_PORT));
-//		email.setFrom(from.toString());
-//		email.setSubject(subject);
-//		email.setMsg(body);
-//		if (to!=null)
-//			for (int i = 0; i < to.length; i++)
-//				email.addTo(to[i].toString());
-//		if (cc!=null)
-//			for (int i = 0; i < cc.length; i++)
-//				email.addCc(cc[i].toString());
-//		if (bcc!=null)
-//			for (int i = 0; i < bcc.length; i++)
-//				email.addBcc(bcc[i].toString());
-//		email.buildMimeMessage();
-//		return email.getMimeMessage();
-		return Utils.createMessage(null, from, to, cc, bcc, subject, body, false);
+	public static MimeMessage createMail(InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body) throws IOException, MessagingException {		return Utils.createMessage(null, from, to, cc, bcc, subject, body, false);
 	}
-
-	//	public static MimeMessage createMessage(Session session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException {
-	//		MimeMessage msg = new MimeMessage(session);
-	//		msg.setFrom(new InternetAddress(from));
-	//		msg.setSubject(subject);
-	//		msg.setSentDate(new Date());
-	//		msg.setText(body);
-	//		if (to!=null) {
-	//			msg.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
-	//		}
-	//		if (cc!=null) {
-	//			log.info("CC:"+cc);
-	//			msg.setRecipient(Message.RecipientType.CC, new InternetAddress(cc));			
-	//		}
-	//		if (bcc!=null) {
-	//			msg.setRecipient(Message.RecipientType.BCC, new InternetAddress(bcc));			
-	//		}
-	//		return msg;
-	//	}
 
 }
