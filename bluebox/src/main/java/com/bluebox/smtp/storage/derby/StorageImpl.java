@@ -144,7 +144,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					" ("+
 					BlueboxMessage.UID+" VARCHAR(36), "+
 					BlueboxMessage.INBOX+" VARCHAR(255), "+
-					BlueboxMessage.TO+" VARCHAR(255), "+
+//					BlueboxMessage.TO+" VARCHAR(255), "+
 					BlueboxMessage.FROM+" VARCHAR(255), "+
 					BlueboxMessage.SUBJECT+" VARCHAR(255), "+
 					BlueboxMessage.RECEIVED+" TIMESTAMP, "+
@@ -164,7 +164,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 		connection.close();
 
-		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.TO,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED};
+		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED};
 		createIndexes(INBOX_TABLE,indexes);
 
 		indexes = new String[]{KEY,VALUE};
@@ -173,16 +173,16 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	private String add(String id, InboxAddress inbox, String from, String subject, Date date, State state, long size, InputStream blob) throws Exception {
 		Connection connection = getConnection();
-		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 		ps.setString(1, id);
 		ps.setString(2, inbox.getAddress());
-		ps.setString(3, inbox.getFullAddress());
-		ps.setString(4, from);
-		ps.setString(5, subject);
-		ps.setTimestamp(6, new Timestamp(date.getTime()));
-		ps.setInt(7, state.ordinal());
-		ps.setLong(8, size);
-		ps.setBinaryStream(9, blob);
+//		ps.setString(3, inbox.getFullAddress());
+		ps.setString(3, from);
+		ps.setString(4, subject);
+		ps.setTimestamp(5, new Timestamp(date.getTime()));
+		ps.setInt(6, state.ordinal());
+		ps.setLong(7, size);
+		ps.setBinaryStream(8, blob);
 		ps.execute();
 		connection.commit();
 		connection.close();
@@ -302,7 +302,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public void deleteAll(InboxAddress inbox) throws Exception {
 		log.fine("Deleting inbox "+inbox);
 		Connection connection = getConnection();
-		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.TO+"=?");
+		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.INBOX+"=?");
 		ps.setString(1, inbox.getAddress());
 		ps.execute();
 		ps.close();
@@ -318,7 +318,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.execute("delete from "+INBOX_TABLE);
 		s.close();
 
-		log.info("Deleting all properties");
+		log.fine("Deleting all properties");
 		s = connection.createStatement();
 		s.execute("delete from "+PROPS_TABLE);
 		s.close();

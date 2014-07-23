@@ -5,10 +5,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.Writer;
 import java.util.Date;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.mail.Address;
-import javax.mail.Message.RecipientType;
 import javax.mail.internet.MimeMessage;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
@@ -42,7 +42,9 @@ import org.apache.lucene.util.Version;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
+import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class SearchIndexer {
@@ -52,7 +54,7 @@ public class SearchIndexer {
 	private IndexWriterConfig config;
 	private static SearchIndexer si;
 	private IndexWriter indexWriter;
-	public enum SearchFields {UID, FROM, TO, SUBJECT, RECEIVED, TEXT_BODY, HTML_BODY, SIZE, RECIPIENTS, ANY, BODY};
+	public enum SearchFields {UID, INBOX, FROM, SUBJECT, RECEIVED, TEXT_BODY, HTML_BODY, SIZE, RECIPIENTS, ANY, BODY};
 
 	public static SearchIndexer getInstance() throws IOException {
 		if (si==null) {
@@ -73,9 +75,9 @@ public class SearchIndexer {
 	}
 
 	public Document[] search(String querystr, SearchFields fields, int start, int count, SearchFields orderBy) throws ParseException, IOException {
-//		querystr = QueryParser.escape(querystr);
-//		querystr = "*"+QueryParser.escape(querystr)+"*";
-//		querystr = "*"+querystr+"*";
+		//		querystr = QueryParser.escape(querystr);
+		//		querystr = "*"+QueryParser.escape(querystr)+"*";
+		//		querystr = "*"+querystr+"*";
 		QueryParser queryParser;
 		Analyzer analyzer = new StandardAnalyzer(version);
 		switch (fields) {
@@ -86,12 +88,12 @@ public class SearchIndexer {
 					SearchFields.SUBJECT.name()},
 					analyzer);
 			break;
-		case TO :
-			queryParser = new MultiFieldQueryParser(version,
-					new String[] {
-					SearchFields.TO.name()},
-					analyzer);
-			break;
+			//		case TO :
+			//			queryParser = new MultiFieldQueryParser(version,
+			//					new String[] {
+			//					SearchFields.TO.name()},
+			//					analyzer);
+			//			break;
 		case BODY :
 			queryParser = new MultiFieldQueryParser(version,
 					new String[] {
@@ -114,7 +116,6 @@ public class SearchIndexer {
 		case RECIPIENTS :
 			queryParser = new MultiFieldQueryParser(version,
 					new String[] {
-					SearchFields.FROM.name(),
 					SearchFields.RECIPIENTS.name()},
 					analyzer);
 			break;
@@ -193,7 +194,7 @@ public class SearchIndexer {
 
 
 	public void indexMail(BlueboxMessage message) throws IOException, JSONException, Exception {
-//		JSONObject json = new JSONObject(message.toJSON(false));
+		//		JSONObject json = new JSONObject(message.toJSON(false));
 		addDoc(message.getIdentifier(),
 				message.getInbox().getFullAddress(),
 				message.getProperty(BlueboxMessage.FROM),
@@ -205,27 +206,33 @@ public class SearchIndexer {
 				message.getLongProperty(BlueboxMessage.RECEIVED));
 	}
 
+	/* Find which one of the potential recipeints of this mail matches the specified inbox
+	 * 
+	 */
+	public InboxAddress getRecipient(InboxAddress inbox, String recipients) {
+		StringTokenizer tok = new StringTokenizer(recipients,",");
+		while (tok.hasMoreElements()) {
+			try {
+				InboxAddress curr = new InboxAddress(Utils.decodeRFC2407(tok.nextToken()));
+				if (inbox.getAddress().equalsIgnoreCase(curr.getAddress()))
+					return curr;
+			}
+			catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
+		return inbox;
+	}
+
 	private String getRecipients(BlueboxMessage message) throws Exception {
 		MimeMessage bbmm = message.getBlueBoxMimeMessage();
 		StringBuffer sb = new StringBuffer();
-		Address[] addr;
-		addr = bbmm.getRecipients(RecipientType.TO);
-		if (addr!=null)
+		Address[] addr = bbmm.getAllRecipients();
+		if (addr!=null) {
 			for (int i = 0; i < addr.length;i++) {
-				sb.append(addr[i].toString()).append(" ");
+				sb.append(addr[i].toString()).append(",");
 			}
-
-		addr = bbmm.getRecipients(RecipientType.BCC);
-		if (addr!=null)
-			for (int i = 0; i < addr.length;i++) {
-				sb.append(addr[i].toString()).append(" ");
-			}
-
-		addr = bbmm.getRecipients(RecipientType.CC);
-		if (addr!=null)
-			for (int i = 0; i < addr.length;i++) {
-				sb.append(addr[i].toString()).append(" ");
-			}
+		}
 		return sb.toString().trim();
 	}
 
@@ -234,12 +241,12 @@ public class SearchIndexer {
 		indexWriter.commit();
 	}
 
-	protected synchronized void addDoc(String uid, String to, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
+	protected synchronized void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
 		log.fine("Indexing mail "+uid+" "+from);
 		Document doc = new Document();
 		doc.add(new StringField(SearchFields.UID.name(), uid, Field.Store.YES));
 		doc.add(new TextField(SearchFields.FROM.name(), from, Field.Store.YES));
-		doc.add(new TextField(SearchFields.TO.name(), to, Field.Store.YES));
+		doc.add(new TextField(SearchFields.INBOX.name(), inbox, Field.Store.YES));
 		doc.add(new TextField(SearchFields.SUBJECT.name(), subject, Field.Store.YES));
 		doc.add(new TextField(SearchFields.TEXT_BODY.name(), text, Field.Store.YES));
 		doc.add(new TextField(SearchFields.HTML_BODY.name(), htmlToString(html), Field.Store.YES));
