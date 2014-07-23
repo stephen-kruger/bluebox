@@ -53,6 +53,7 @@ public class BlueboxMessage {
 	private static final Logger log = Logger.getAnonymousLogger();
 	private JSONObject properties = new JSONObject();
 	private MimeMessage mmw;
+	private MimeMessageParser parser;
 
 	public BlueboxMessage(String id) {
 		setProperty(UID,id);
@@ -251,16 +252,15 @@ public class BlueboxMessage {
 			//			else {
 			json = new JSONObject();				
 			//				json = getBlueBoxMimeMessage().toJSON(getProperty(UID),locale);	
-			MimeMessageParser p = new MimeMessageParser(getBlueBoxMimeMessage());
-			p.parse();
-			List<DataSource> ds = p.getAttachmentList();
+
+			List<DataSource> ds = getParser().getAttachmentList();
 			JSONArray ja = new JSONArray();
 			for (DataSource d : ds) {
 				ja.put(d.getName());
 			}
 			json.put(ATTACHMENT, ja);
-			json.put(BlueboxMessage.HTML_BODY, getHtml(p));
-			json.put(BlueboxMessage.TEXT_BODY, getText(p));
+			json.put(BlueboxMessage.HTML_BODY, getHtml());
+			json.put(BlueboxMessage.TEXT_BODY, getText());
 
 			// now convert the date to a user locale specific one
 //			try {
@@ -374,23 +374,20 @@ public class BlueboxMessage {
 		throw new MessagingException("No from address specified");
 	}
 
-	public String getHtml() {
-		try {
+	protected MimeMessageParser getParser() throws Exception {
+		if (parser==null) {
 			MimeMessageParser p = new MimeMessageParser(getBlueBoxMimeMessage());
-			p.parse();
-			return getHtml(p);
-		} 
-		catch (Throwable e) {
-			e.printStackTrace();
+			parser = p.parse();
 		}
-		return "";
+		return parser;
 	}
 
 	public String getText() {
 		try {
-			MimeMessageParser p = new MimeMessageParser(getBlueBoxMimeMessage());
-			p.parse();
-			return getText(p);
+			String text =  getParser().getPlainContent();
+			if (text==null)
+				text = "";
+			return text;
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();
@@ -398,18 +395,17 @@ public class BlueboxMessage {
 		return "";
 	}
 
-	private String getText(MimeMessageParser p) {
-		String text =  p.getPlainContent();
-		if (text==null)
-			text = "";
-		return text;
-	}
-
-	private String getHtml(MimeMessageParser p) {
-		String html = p.getHtmlContent();
-		if (html==null)
-			html = "";
-		return convertCidLinks(this.getIdentifier(),html);
+	public String getHtml() {
+		try {
+			String html = getParser().getHtmlContent();
+			if (html==null)
+				html = "";
+			return convertCidLinks(this.getIdentifier(),html);
+		} 
+		catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return "";
 	}
 
 	public InputStream getRawMessage() throws IOException, MessagingException, SQLException {
