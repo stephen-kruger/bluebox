@@ -38,7 +38,7 @@ public interface StorageIf {
 			int start, int count, String orderBy, boolean ascending)
 			throws Exception;
 	
-	public abstract List<JSONObject> listMailLite(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception;
+	public abstract List<JSONObject> listMailLite(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception;
 
 
 	/*

@@ -8,11 +8,11 @@
 	<name>BlueBox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
-		<jersey_version>2.10.1</jersey_version>
+		<jersey_version>2.11</jersey_version>
 		<slf4j_version>1.7.7</slf4j_version>
 		<lucene_version>4.9.0</lucene_version>
 		<derby_version>10.10.2.0</derby_version>
-		<mongo_version>2.12.2</mongo_version>
+		<mongo_version>2.12.3</mongo_version>
 	</properties>
 
 	<repositories>
