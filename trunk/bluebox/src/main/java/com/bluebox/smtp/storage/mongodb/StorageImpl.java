@@ -60,8 +60,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	private void createIndexes() {
 		// create indexes
 		String[] indexes = new String[]{
-				BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.TO,BlueboxMessage.SUBJECT, 
-				BlueboxMessage.FROM,BlueboxMessage.RECEIVED,BlueboxMessage.SIZE,BlueboxMessage.STATE,BlueboxMessage.AUTO_COMPLETE};
+				BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.SUBJECT, 
+				BlueboxMessage.FROM,BlueboxMessage.RECEIVED,BlueboxMessage.SIZE,BlueboxMessage.STATE};
 		for (int i = 0; i < indexes.length;i++) {
 			try {
 				db.getCollection(TABLE_NAME).createIndex(new BasicDBObject(indexes[i], 1));
@@ -266,7 +266,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			query.append(BlueboxMessage.INBOX, inbox.getAddress());
 		long start = new Date().getTime();
 		long count = db.getCollection(TABLE_NAME).count(query);
-		log.info("Calculated mail count in "+(new Date().getTime()-start)+"ms");
+		log.fine("Calculated mail count in "+(new Date().getTime()-start)+"ms");
 		return count;
 	}
 

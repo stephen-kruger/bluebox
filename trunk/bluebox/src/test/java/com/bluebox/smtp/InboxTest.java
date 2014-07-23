@@ -77,7 +77,7 @@ public class InboxTest extends TestCase {
 		Utils.waitFor(3);
 		JSONObject json = inbox.getStatsRecent();
 		log.info(json.toString(3));
-		assertEquals("Incorrectly reported recent stats recipient",email3,json.getString(BlueboxMessage.TO));
+		assertEquals("Incorrectly reported recent stats recipient",new InboxAddress(email3).getAddress(),json.getString(BlueboxMessage.INBOX));
 		assertEquals("Incorrectly reported recent stats sender","from@from.com",json.getString(BlueboxMessage.FROM));
 	}
 
@@ -95,7 +95,7 @@ public class InboxTest extends TestCase {
 			TestUtils.sendMailSMTP(new InternetAddress(email3), new InternetAddress(email3), null, null, "subject", "body");
 		}
 		JSONObject jo = inbox.getStatsActive();
-		assertEquals("Incorrectly reported most active inbox",new InboxAddress(email1).getAddress(),jo.getString(BlueboxMessage.TO));
+		assertEquals("Incorrectly reported most active inbox",new InboxAddress(email1).getAddress(),jo.getString(BlueboxMessage.INBOX));
 		assertEquals("Incorrectly reported most active inbox count",10,jo.getInt(BlueboxMessage.COUNT));
 	}
 

@@ -20,7 +20,7 @@
 				var queryResults = jStore.fetch({
 					  onComplete : 
 						  	function(queryResults, request) {
-								document.getElementById("stats_recent").innerHTML = '<a href="inbox.jsp?Email='+queryResults.recent.<%=BlueboxMessage.TO%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
+								document.getElementById("stats_recent").innerHTML = '<a href="inbox.jsp?Email='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
 							}
 				});
 			});
@@ -38,7 +38,7 @@
 				var queryResults = jStore.fetch({
 					  onComplete : 
 						  	function(queryResults, request) {
-								document.getElementById("stats_active").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.TO%>+'">'+queryResults.active.<%=BlueboxMessage.TO%>+'</a>';
+								document.getElementById("stats_active").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a>';
 							}
 				});
 			});
@@ -58,8 +58,8 @@
 				var queryResults = jStore.fetch({
 					  onComplete : 
 						  	function(queryResults, request) {
-								document.getElementById("stats_recent").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.recent.<%=BlueboxMessage.TO%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
-								document.getElementById("stats_active").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.TO%>+'">'+queryResults.active.<%=BlueboxMessage.TO%>+'</a>';
+								document.getElementById("stats_recent").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
+								document.getElementById("stats_active").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a>';
 								document.getElementById("statsGlobalCount").innerHTML = '<%= statsResource.getString("traffic_text1") %> <span id="statsGlobalCount">'+queryResults.<%=BlueboxMessage.COUNT%>+'</span> <%= statsResource.getString("traffic_text2") %>';
 							}
 				});

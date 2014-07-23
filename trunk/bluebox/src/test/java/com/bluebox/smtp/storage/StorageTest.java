@@ -34,7 +34,7 @@ public class StorageTest extends TestCase {
 		super.setUp();
 		// this triggers the storage to be created too, and started
 		Inbox.getInstance();
-		log.info("Cleaning up messages to start tests");
+		log.fine("Cleaning up messages to start tests");
 		StorageFactory.getInstance().logErrorClear();
 		try {
 			StorageFactory.getInstance().deleteAll();
@@ -48,7 +48,7 @@ public class StorageTest extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		log.info("Cleaning up messages after tests");
+		log.fine("Cleaning up messages after tests");
 		try {
 			StorageFactory.getInstance().deleteAll();
 		}
@@ -123,7 +123,7 @@ public class StorageTest extends TestCase {
 		MimeMessage storedMM = stored.getBlueBoxMimeMessage();
 
 		assertEquals("MimeMessage subjects did not match",message.getSubject(),storedMM.getSubject());
-		assertEquals("Inbox address did not match",inbox.getFullAddress(),stored.getInbox().getFullAddress());
+		assertEquals("Inbox address did not match",inbox.getAddress(),stored.getInbox().getAddress());
 		assertEquals("Received time did not match",bbm.getLongProperty(BlueboxMessage.RECEIVED),stored.getLongProperty(BlueboxMessage.RECEIVED));
 		assertEquals("Subjects did not match",bbm.getProperty(BlueboxMessage.SUBJECT),stored.getProperty(BlueboxMessage.SUBJECT));
 		assertEquals("Subjects did not match",message.getSubject(),storedMM.getSubject());
@@ -142,7 +142,7 @@ public class StorageTest extends TestCase {
 				"bodyStr");
 		BlueboxMessage bbm = StorageFactory.getInstance().store(inbox, inbox.getAddress(), message);
 		BlueboxMessage stored = StorageFactory.getInstance().retrieve(bbm.getIdentifier());
-		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
+//		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
 		assertEquals("Stored recipient did not match original",inbox.getAddress(),stored.getInbox().getAddress());
 	}
 

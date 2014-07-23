@@ -356,7 +356,7 @@ public class Inbox implements SimpleMessageListener {
 		// now update all our stats trackers
 		incrementGlobalCount();
 		updateStatsActive(new InboxAddress(recipient));
-		updateStatsRecent(message.getProperty(BlueboxMessage.TO),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT));
+		updateStatsRecent(message.getProperty(BlueboxMessage.INBOX),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT));
 	}
 	
 	public void clearErrors() throws Exception {
@@ -401,7 +401,7 @@ public class Inbox implements SimpleMessageListener {
 
 //			hint = QueryParser.escape(hint);
 			SearchIndexer search = SearchIndexer.getInstance();
-			Document[] results = search.search(hint, SearchIndexer.SearchFields.TO, (int)start, (int)count, SearchIndexer.SearchFields.TO);
+			Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENTS, (int)start, (int)count, SearchIndexer.SearchFields.RECEIVED);
 			for (int i = 0; i < results.length;i++) {
 				String uid = results[i].get(SearchFields.UID.name());
 //				BlueboxMessage message = retrieve(uid);
@@ -420,8 +420,11 @@ public class Inbox implements SimpleMessageListener {
 //					log.severe("Sync error between search indexes and derby tables");		
 //				}
 				curr = new JSONObject();
-				curr.put("name", new InboxAddress(results[i].get(Utils.decodeRFC2407(SearchFields.TO.name()))).getAddress());
-				curr.put("label", Utils.decodeRFC2407(results[i].get(SearchFields.TO.name())));
+				InboxAddress inbox;
+				inbox = new InboxAddress(results[i].get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
+				curr.put("name", inbox.getAddress());
+//				curr.put("label", Utils.decodeRFC2407(results[i].get(SearchFields.INBOX.name())));
+				curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENTS.name())).getFullAddress());
 				curr.put("identifier", uid);
 				if (!contains(children,curr.getString("name")))
 					children.put(curr);
@@ -516,13 +519,13 @@ public class Inbox implements SimpleMessageListener {
 			}
 
 			jo.put(BlueboxMessage.COUNT, count);
-			jo.put(BlueboxMessage.TO, inbox);
+			jo.put(BlueboxMessage.INBOX, inbox);
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();
 			try {
 				jo.put(BlueboxMessage.COUNT, 0);
-				jo.put(BlueboxMessage.TO, "");
+				jo.put(BlueboxMessage.INBOX, "");
 			} 
 			catch (JSONException e1) {
 				e1.printStackTrace();
@@ -538,7 +541,7 @@ public class Inbox implements SimpleMessageListener {
 
 		try {
 			jo.put(BlueboxMessage.SUBJECT, subject);
-			jo.put(BlueboxMessage.TO, to);
+			jo.put(BlueboxMessage.INBOX, to);
 			jo.put(BlueboxMessage.FROM, from);
 		} 
 		catch (JSONException e1) {

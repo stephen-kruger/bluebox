@@ -41,7 +41,6 @@ public class BlueboxMessage {
 	public static final String SIZE = "Size";
 	public static final String INBOX = "Inbox";
 	public static final String COUNT = "Count";
-	public static final String AUTO_COMPLETE = "Autocomplete";
 	public static final String RAW = "pic";
 	public static final String ATTACHMENT = "Attachment";
 	public static final String HTML_BODY = "HtmlBody";
@@ -70,12 +69,6 @@ public class BlueboxMessage {
 	public void setBlueBoxMimeMessage(String from, MimeMessage bbmm) throws IOException, MessagingException, SQLException {
 		mmw = bbmm;
 		log.fine("Persisting mime message");
-		setProperty(AUTO_COMPLETE, getRecipient(getInbox(),bbmm).toString().toLowerCase());
-		if ((bbmm.getFrom()!=null)&&(bbmm.getFrom().length>0))
-			setProperty(FROM, bbmm.getFrom()[0].toString());
-		else
-			setProperty(FROM, getProperty(TO));
-		setProperty(BlueboxMessage.TO, getInbox().getFullAddress());
 		setProperty(BlueboxMessage.FROM, BlueboxMessage.getFrom(from, bbmm));
 		setProperty(INBOX, getInbox().getAddress());
 		setProperty(SUBJECT, bbmm.getSubject());
@@ -105,9 +98,6 @@ public class BlueboxMessage {
 						log.fine("Found TO recipient");
 						return ia;
 					}
-					//					else {
-					//						log.info(Utils.getEmail(ia.getAddress())+" not good for "+inbox);
-					//					}
 				}
 			}
 			addr = bbmm.getRecipients(RecipientType.CC);
@@ -118,9 +108,6 @@ public class BlueboxMessage {
 						log.fine("Found CC recipient");
 						return ia;
 					}
-					//					else {
-					//						log.info(Utils.getEmail(ia.getAddress()));
-					//					}
 				}
 			}
 			addr = bbmm.getRecipients(RecipientType.BCC);
@@ -131,9 +118,6 @@ public class BlueboxMessage {
 						log.fine("Found BCC recipient");
 						return ia;
 					}
-					//					else {
-					//						log.info(Utils.getEmail(ia.getAddress()));
-					//					}
 				}
 			}
 		}
@@ -147,16 +131,16 @@ public class BlueboxMessage {
 		return new InternetAddress(inbox.getFullAddress());
 	}
 
-	private JSONArray getRecipient(RecipientType rtype) {
-		JSONArray ja = new JSONArray();
-		try {
-			Address[] r = getBlueBoxMimeMessage().getRecipients(rtype);
-			return toJSONArray(r);
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
-		return ja;
-	}
+//	private JSONArray getRecipient(RecipientType rtype) {
+//		JSONArray ja = new JSONArray();
+//		try {
+//			Address[] r = getBlueBoxMimeMessage().getRecipients(rtype);
+//			return toJSONArray(r);
+//		} catch (Throwable e) {
+//			e.printStackTrace();
+//		}
+//		return ja;
+//	}
 
 	private JSONArray toJSONArray(Address[] r) {
 		JSONArray ja = new JSONArray();
@@ -262,6 +246,8 @@ public class BlueboxMessage {
 			json.put(BlueboxMessage.TEXT_BODY, getText());
 
 			json.put(UID,properties.get(UID));
+			json.put(TO,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));
+			json.put(CC,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
 			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
 			json.put(SUBJECT,getBlueBoxMimeMessage().getSubject());
 			json.put(INBOX,properties.get(INBOX));
@@ -269,22 +255,11 @@ public class BlueboxMessage {
 			json.put(STATE,properties.get(STATE));
 			json.put(SIZE,properties.get(SIZE));
 
-			json.put(TO,getRecipient(MimeMessage.RecipientType.TO));
-			json.put(CC,getRecipient(MimeMessage.RecipientType.CC));
-			if (properties.has(AUTO_COMPLETE))
-				json.put(AUTO_COMPLETE,properties.get(AUTO_COMPLETE));
-			else
-				json.put(AUTO_COMPLETE,properties.get(TO));
-
 			return json.toString();
 
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
-			// found some funky node that should not be there
-			//			log.warning("Removing funky node "+node.getIdentifier());
-			//			node.remove();
-			//			node.getSession().save();
 			return new JSONObject().toString();
 		}				
 	}
@@ -337,12 +312,12 @@ public class BlueboxMessage {
 	}
 
 	public InboxAddress getInbox() throws AddressException {
-		return new InboxAddress(getProperty(TO));
+		return new InboxAddress(getProperty(INBOX));
 	}
 
 	public void setInbox(InboxAddress inbox) {
 		setProperty(INBOX,inbox.getAddress());
-		setProperty(TO,inbox.getFullAddress());
+//		setProperty(TO,inbox.getFullAddress());
 	}
 
 	public static String getFrom(String from, MimeMessage bbmm) throws MessagingException {

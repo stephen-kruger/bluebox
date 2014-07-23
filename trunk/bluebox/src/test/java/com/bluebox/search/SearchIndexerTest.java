@@ -103,9 +103,9 @@ public class SearchIndexerTest extends TestCase {
 	}
 
 	public void testTypeAhead() throws ParseException, IOException {
-		Document[] results = si.search("receiever*", SearchIndexer.SearchFields.TO, 0, 199, SearchIndexer.SearchFields.TO);
+		Document[] results = si.search("receiever*", SearchIndexer.SearchFields.RECIPIENTS, 0, 199, SearchIndexer.SearchFields.RECEIVED);
 		assertTrue("Missing autocomplete results",results.length==4);
-		results = si.search("receiever1*", SearchIndexer.SearchFields.TO, 0, 199, SearchIndexer.SearchFields.TO);
+		results = si.search("receiever1*", SearchIndexer.SearchFields.RECIPIENTS, 0, 199, SearchIndexer.SearchFields.RECEIVED);
 		assertTrue("Missing autocomplete results",results.length>0);
 	}
 
