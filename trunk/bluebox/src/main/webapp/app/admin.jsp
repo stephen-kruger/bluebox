@@ -20,7 +20,7 @@
 		require(["dojo/parser", "dijit/form/Button", "dijit/form/NumberTextBox"]);
 		
 		function generateEmails() {
-			genericGet("<%=request.getContextPath()%>/rest/admin/test?count="+document.getElementById('count').value,"Email generation","Generated "+document.getElementById('count').value+" emails");
+			genericGet("<%=request.getContextPath()%>/rest/admin/test?count="+document.getElementById('count').value,"Email generation","Scheduled generation of "+document.getElementById('count').value+" emails");
 		}
 
 		function setBaseCount() {

@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -262,18 +261,6 @@ public class BlueboxMessage {
 			json.put(BlueboxMessage.HTML_BODY, getHtml());
 			json.put(BlueboxMessage.TEXT_BODY, getText());
 
-			// now convert the date to a user locale specific one
-//			try {
-//				log.fine("Converting to locale "+locale.toString()+" for inbox "+getInbox());
-//				Date date = new Date(getLongProperty(RECEIVED));
-//				if (!json.has("Date")) {
-//					json.put("Date",new JSONArray());
-//				}
-//				json.getJSONArray("Date").put(0, dateToString(date,locale));
-//			}
-//			catch (Throwable t) {
-//				log.warning("Problem converting date to user locale :"+t.getMessage());
-//			}
 			json.put(UID,properties.get(UID));
 			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
 			json.put(SUBJECT,getBlueBoxMimeMessage().getSubject());
@@ -310,10 +297,6 @@ public class BlueboxMessage {
 			e.printStackTrace();
 		}
 		return htmlString;
-	}
-
-	public static String dateToString(Date date, Locale locale) {
-		return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.FULL, SimpleDateFormat.MEDIUM, locale).format(date);
 	}
 
 	private void setProperty(String name, long value) {

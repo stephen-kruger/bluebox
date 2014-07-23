@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -193,7 +194,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public BlueboxMessage store(InboxAddress inbox, String from, MimeMessage bbmm) throws Exception {
 		String uid = UUID.randomUUID().toString();
 		BlueboxMessage message = new BlueboxMessage(uid,inbox);
-		message.setInbox(inbox);
 		message.setBlueBoxMimeMessage(from, bbmm);
 		add(uid, 
 				inbox, 
@@ -202,7 +202,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				new Date(Long.parseLong(message.getProperty(BlueboxMessage.RECEIVED))), 
 				State.NORMAL, 
 				Long.parseLong(message.getProperty(BlueboxMessage.SIZE)),
-				message.getRawMessage());
+				Utils.streamMimeMessage(bbmm));
 		return message;
 	}
 
@@ -298,26 +298,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return null;
 		}
 	}
-
-	//	public BlueboxMessage loadMessage(ResultSet result) throws Exception {
-	//
-	//		//id VARCHAR(36), email VARCHAR(20), from VARCHAR(20), subject VARCHAR(255), received DATE, state INTEGER, pic blob(16M))");
-	//		BlueboxMessage message = new BlueboxMessage(result.getString(BlueboxMessage.UID));
-	//		message.setProperty(BlueboxMessage.TO, result.getString(BlueboxMessage.TO));
-	//		message.setProperty(BlueboxMessage.INBOX, result.getString(BlueboxMessage.INBOX));
-	//		message.setProperty(BlueboxMessage.FROM, result.getString(BlueboxMessage.FROM));
-	//		message.setProperty(BlueboxMessage.SUBJECT, result.getString(BlueboxMessage.SUBJECT));
-	//		message.setProperty(BlueboxMessage.RECEIVED, Long.toString(result.getTimestamp(BlueboxMessage.RECEIVED).getTime()));
-	//
-	//		message.setProperty(BlueboxMessage.STATE, State.values()[result.getInt(BlueboxMessage.STATE)].name());
-	//		MimeMessageWrapper mmw = new MimeMessageWrapper(null, result.getBinaryStream(StorageImpl.RAW));
-	//		message.loadBlueBoxMimeMessage(mmw);
-	//		int size = message.getBlueBoxMimeMessage().getSize()/1000;
-	//		if (size==0)
-	//			size = 1;
-	//		message.setProperty(BlueboxMessage.SIZE, Long.toString(size));
-	//		return message;
-	//	}
 
 	public void deleteAll(InboxAddress inbox) throws Exception {
 		log.fine("Deleting inbox "+inbox);
@@ -453,12 +433,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return list;
 	}
 
-	public List<JSONObject> listMailLite(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
+	public List<JSONObject> listMailLite(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
 		Connection connection = getConnection();
 		ResultSet result = listMailCommon(connection, email, state, start, count, orderBy, ascending);
 		List<JSONObject> list = new ArrayList<JSONObject>();
 		while (result.next()) {
-			JSONObject message = loadMessageJSON(result);			
+			JSONObject message = loadMessageJSON(result,locale);			
 			list.add(message);
 		}
 		connection.close();
@@ -476,99 +456,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		connection.close();
 		log.fine("Update mail entry "+uid+" to "+state);
 	}
-
-	//	public JSONArray autoCompleteOld(String hint, long start, long count) throws Exception {
-	//		Connection connection = getConnection();
-	//		Statement s = connection.createStatement();
-	//		PreparedStatement ps = connection.prepareStatement("SELECT "+MessageImpl.TO+","+MessageImpl.INBOX+" FROM "+TABLE_NAME+" WHERE "+MessageImpl.TO+" LIKE ?");
-	//		ps.setString(1, hint);
-	//		ps.execute();
-	//		ResultSet result = ps.getResultSet();
-	//		JSONArray children = new JSONArray();
-	//
-	//		JSONObject curr;
-	//		while (result.next()) {
-	//			String name = Utils.decodeRFC2407(result.getString(MessageImpl.INBOX));
-	//			String label = Utils.decodeRFC2407(result.getString(MessageImpl.TO));
-	//			String identifier = result.getString("id");
-	//			curr = new JSONObject();
-	//			curr.put("name", name);
-	//			curr.put("label", label);
-	//			curr.put("identifier", identifier);
-	//			children.put(curr);
-	//			if (children.length()>=count)
-	//				break;
-	//		}
-	//		s.close();
-	//		connection.close();
-	//		return children;
-	//	}
-
-	//	@Override
-	//	public JSONArray autoComplete(String hint, long start, long count) throws Exception {
-	//		JSONObject curr;
-	//		JSONArray children = new JSONArray();
-	//		// no need to include wildcard
-	//		if (hint.contains("*")) {
-	//			hint=hint.substring(0,hint.indexOf('*'));
-	//		}
-	//		if (hint.length()==1)
-	//			return children;
-	//		if (hint.length()>1) {			
-	//			hint = QueryParser.escape(hint);
-	//			SearchIndexer search = SearchIndexer.getInstance();
-	//			Document[] results = search.search(hint, SearchIndexer.SearchFields.TO, (int)start, (int)count, SearchIndexer.SearchFields.TO.name());
-	//			for (int i = 0; i < results.length;i++) {
-	//				String uid = results[i].get(SearchFields.UID.name());
-	//				BlueboxMessage message = retrieve(uid);
-	//				if (message!=null) {
-	//					String name = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.INBOX));
-	//					String label = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.TO));
-	//					String identifier = uid;
-	//					curr = new JSONObject();
-	//					curr.put("name", name);
-	//					curr.put("label", label);
-	//					curr.put("identifier", identifier);
-	//					if (!contains(children,name))
-	//						children.put(curr);
-	//				}
-	//				else {
-	//					log.severe("Sync error between search indexes and derby tables");					
-	//				}
-	//				if (children.length()>=count)
-	//					break;
-	//			}
-	//		}
-	//		else {
-	//			List<BlueboxMessage> mail =  listMail(null, BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.RECEIVED, true);
-	//			for (BlueboxMessage message : mail) {
-	//				curr = new JSONObject();
-	//				curr.put("name", message.getProperty(BlueboxMessage.INBOX));
-	//				curr.put("label", message.getProperty(BlueboxMessage.TO));
-	//				curr.put("identifier", message.getIdentifier());
-	//				if (!contains(children,curr.getString("name")))
-	//					children.put(curr);
-	//				if (children.length()>=count)
-	//					break;
-	//			}
-	//		}
-	//
-	//		return children;
-	//	}
-
-	//	private boolean contains(JSONArray children, String name) {
-	//		for (int i = 0; i < children.length();i++) {
-	//			try {
-	//				if (children.getJSONObject(i).getString("name").equals(name)) {
-	//					return true;
-	//				}
-	//			} 
-	//			catch (JSONException e) {
-	//				e.printStackTrace();
-	//			}
-	//		}
-	//		return false;
-	//	}
 
 	@Override
 	public void setProperty(String key, String value) {

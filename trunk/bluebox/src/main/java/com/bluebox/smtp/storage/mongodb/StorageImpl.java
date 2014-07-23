@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -302,14 +303,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 	
 	@Override
-	public List<JSONObject> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending) throws Exception {
+	public List<JSONObject> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
 
 		List<JSONObject> results = new ArrayList<JSONObject>();
 		DBCursor cursor = this.listMailCommon(inbox, state, start, count, orderBy, ascending);
 		try {
 			while (cursor.hasNext()) {
 				DBObject dbo = cursor.next();
-				JSONObject m = loadMessageJSON(dbo);
+				JSONObject m = loadMessageJSON(dbo,locale);
 				results.add(m);
 			}
 		} 
