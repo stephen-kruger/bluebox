@@ -66,11 +66,11 @@
 		width:1.7em;
 		height:1.7em;
 		border:1px solid white;
-		background: darkBlue; /* fallback for silly old IE */
-		background: -webkit-linear-gradient(left top, lightBlue , darkBlue); /* For Safari 5.1 to 6.0 */
-		background: -o-linear-gradient(bottom right, lightBlue, darkBlue); /* For Opera 11.1 to 12.0 */
-		background: -moz-linear-gradient(bottom right, lightBlue, darkBlue); /* For Firefox 3.6 to 15 */
-		background: linear-gradient(to bottom right, lightBlue , darkBlue); /* Standard syntax */
+		background: #107bbb; /* fallback for silly old IE */
+		background: -webkit-linear-gradient(left top, lightBlue , #107bbb); /* For Safari 5.1 to 6.0 */
+		background: -o-linear-gradient(bottom right, lightBlue, #107bbb); /* For Opera 11.1 to 12.0 */
+		background: -moz-linear-gradient(bottom right, lightBlue, #107bbb); /* For Firefox 3.6 to 15 */
+		background: linear-gradient(to bottom right, lightBlue , #107bbb); /* Standard syntax */
 		display: table-cell;
 	}
 	
