@@ -344,6 +344,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if (result.next()) {
 			count = result.getLong(1);
 		}
+		result.close();
 		ps.close();
 		connection.close();
 
@@ -375,6 +376,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if (result.next()) {
 			count = result.getLong(1);
 		}
+		result.close();
 		ps.close();
 		s.close();
 		connection.close();
@@ -430,6 +432,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			BlueboxMessage m = loadMessage(result); 
 			list.add(m);
 		}
+		result.close();
 		connection.close();
 		return list;
 	}

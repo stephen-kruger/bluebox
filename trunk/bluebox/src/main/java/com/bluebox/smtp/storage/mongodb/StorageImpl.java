@@ -469,7 +469,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			List<String> inboxes = db.getCollection(TABLE_NAME).distinct(BlueboxMessage.INBOX);
 			long currcount, maxcount = 0;
 			for (String inbox : inboxes) {
-				currcount = this.getMailCount(new InboxAddress(inbox), BlueboxMessage.State.NORMAL);
+				currcount = getMailCount(new InboxAddress(inbox), BlueboxMessage.State.NORMAL);
 				if (currcount>maxcount) {
 					jo.put(BlueboxMessage.INBOX,inbox);
 					jo.put(BlueboxMessage.COUNT,currcount);
