@@ -19,6 +19,7 @@ import java.util.logging.Logger;
 import javax.mail.internet.MimeMessage;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Utils;
@@ -83,7 +84,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public Connection getConnection() throws Exception {
 		if (!started) {
 			Exception e = new Exception("Storage instance not started");
-//			e.printStackTrace();
+			//			e.printStackTrace();
 			throw e;
 		}
 		System.setProperty("derby.language.logQueryPlan", "false");
@@ -144,7 +145,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					" ("+
 					BlueboxMessage.UID+" VARCHAR(36), "+
 					BlueboxMessage.INBOX+" VARCHAR(255), "+
-//					BlueboxMessage.TO+" VARCHAR(255), "+
+					//					BlueboxMessage.TO+" VARCHAR(255), "+
 					BlueboxMessage.FROM+" VARCHAR(255), "+
 					BlueboxMessage.SUBJECT+" VARCHAR(255), "+
 					BlueboxMessage.RECEIVED+" TIMESTAMP, "+
@@ -176,7 +177,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 		ps.setString(1, id);
 		ps.setString(2, inbox.getAddress());
-//		ps.setString(3, inbox.getFullAddress());
+		//		ps.setString(3, inbox.getFullAddress());
 		ps.setString(3, from);
 		ps.setString(4, subject);
 		ps.setTimestamp(5, new Timestamp(date.getTime()));
@@ -263,7 +264,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return def;
 		}
 	}
-	
+
 	@Override
 	public long getDBOLong(Object dbo, String key, long def) {
 		ResultSet mo = (ResultSet)dbo;
@@ -275,7 +276,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return def;
 		}
 	}
-	
+
 	public Date getDBODate(Object dbo, String key) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
@@ -419,11 +420,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 		return ps.getResultSet();
 	}
-	
+
 	public List<BlueboxMessage> listMail(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		Connection connection = getConnection();
 		ResultSet result = listMailCommon(connection, email, state, start, count, orderBy, ascending);
-		
+
 		List<BlueboxMessage> list = new ArrayList<BlueboxMessage>();
 		while (result.next()) {
 			BlueboxMessage m = loadMessage(result); 
@@ -571,42 +572,94 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public List<String> listUniqueInboxes() {
-		List<String> inboxes = new ArrayList<String>();
-		// list unique mails, then count each one
-		Connection connection = null;
+	public JSONObject getMostActive() {
+		JSONObject jo = new JSONObject();
 		try {
-			connection = getConnection();
+			jo.put(BlueboxMessage.COUNT, 0);
+			jo.put(BlueboxMessage.INBOX, "");
+
+			Connection connection = null;
 			try {
-				Statement s = connection.createStatement();
-				PreparedStatement ps;
-				ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.INBOX+" from "+INBOX_TABLE);
-				ps.execute();
-				ResultSet result = ps.getResultSet();
-				while (result.next()) {
-					String currInbox = result.getString(BlueboxMessage.INBOX);
-					inboxes.add(currInbox);						
+				connection = getConnection();
+				try {
+					Statement s = connection.createStatement();
+					PreparedStatement ps;
+					ps = connection.prepareStatement("SELECT "+BlueboxMessage.INBOX+", COUNT(*) FROM "+INBOX_TABLE+" GROUP BY "+BlueboxMessage.INBOX);
+					ps.execute();
+					ResultSet result = ps.getResultSet();
+					String curremail;
+					long currcount, maxcount=0;
+					while (result.next()) {
+						curremail = result.getString(1);					
+						currcount = result.getLong(2);
+						if (currcount>maxcount) {
+							jo.put(BlueboxMessage.INBOX,curremail);
+							jo.put(BlueboxMessage.COUNT,currcount);
+							maxcount = currcount;
+						}
+					}
+					ps.close();
+					s.close();
 				}
-				ps.close();
-				s.close();
+				catch (Throwable t) {
+					t.printStackTrace();
+				}
 			}
 			catch (Throwable t) {
 				t.printStackTrace();
 			}
-		}
-		catch (Throwable t) {
-			t.printStackTrace();
-		}
-		finally {
-			try {
-				connection.close();
-			} 
-			catch (SQLException e) {
-				e.printStackTrace();
+			finally {
+				try {
+					connection.close();
+				} 
+				catch (SQLException e) {
+					e.printStackTrace();
+				}
 			}
 		}
-		return inboxes;
+		catch (JSONException je) {
+			je.printStackTrace();
+		}
+		return jo;
 	}
+
+//	@Override
+//	public List<String> listUniqueInboxes() {
+//		List<String> inboxes = new ArrayList<String>();
+//		// list unique mails, then count each one
+//		Connection connection = null;
+//		try {
+//			connection = getConnection();
+//			try {
+//				Statement s = connection.createStatement();
+//				PreparedStatement ps;
+//				ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.INBOX+" from "+INBOX_TABLE);
+//				ps.execute();
+//				ResultSet result = ps.getResultSet();
+//				while (result.next()) {
+//					String currInbox = result.getString(BlueboxMessage.INBOX);
+//					inboxes.add(currInbox);						
+//				}
+//				ps.close();
+//				s.close();
+//			}
+//			catch (Throwable t) {
+//				t.printStackTrace();
+//			}
+//		}
+//		catch (Throwable t) {
+//			t.printStackTrace();
+//		}
+//		finally {
+//			try {
+//				connection.close();
+//			} 
+//			catch (SQLException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		return inboxes;
+//	}
 
 	@Override
 	public void runMaintenance() throws Exception {
