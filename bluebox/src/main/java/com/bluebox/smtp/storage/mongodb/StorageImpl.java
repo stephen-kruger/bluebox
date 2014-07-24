@@ -126,7 +126,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return def;
 		}
 	}
-	
+
 	@Override
 	public int getDBOInt(Object dbo, String key, int def) {
 		DBObject mo = (DBObject)dbo;
@@ -138,7 +138,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return def;
 		}
 	}
-	
+
 	@Override
 	public long getDBOLong(Object dbo, String key, long def) {
 		DBObject mo = (DBObject)dbo;
@@ -150,8 +150,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return def;
 		}
 	}
-	
-	
+
+
 	public Date getDBODate(Object dbo, String key) {
 		BasicDBObject mo = (BasicDBObject)dbo;
 		return new Date(mo.getLong(key));
@@ -169,56 +169,56 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-//	public BlueboxMessage loadMessage(DBObject dbo) throws Exception {
-//		//		MimeMessageWrapper mmwDbo = new MimeMessageWrapper(null, new ByteArrayInputStream(dbo.get(MessageImpl.BINARY_CONTENT).toString().getBytes("UTF-8")));
-//		String uid = getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString());
-//		BlueboxMessage message = new BlueboxMessage(uid);
-//		if (dbo.containsField(BlueboxMessage.TO))
-//			message.setProperty(BlueboxMessage.TO,getDBOString(dbo,BlueboxMessage.TO,"bluebox@bluebox.com"));
-//		else {
-//			log.warning("Missing field "+BlueboxMessage.TO);
-//		}
-//		if (dbo.containsField(BlueboxMessage.AUTO_COMPLETE))
-//			message.setProperty(BlueboxMessage.AUTO_COMPLETE,getDBOString(dbo,BlueboxMessage.AUTO_COMPLETE,"bluebox@bluebox.com"));
-//		else
-//			log.warning("Missing field "+BlueboxMessage.AUTO_COMPLETE);
-//
-//		if (dbo.containsField(BlueboxMessage.FROM))
-//			message.setProperty(BlueboxMessage.FROM,getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com"));
-//		else
-//			log.warning("Missing field "+BlueboxMessage.FROM);
-//
-//		if (dbo.containsField(BlueboxMessage.SUBJECT))
-//			message.setProperty(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
-//		else
-//			log.warning("Missing field "+BlueboxMessage.SUBJECT);
-//
-//		if (dbo.containsField(BlueboxMessage.RECEIVED))
-//			message.setProperty(BlueboxMessage.RECEIVED,getDBOString(dbo,BlueboxMessage.RECEIVED,""));
-//		else
-//			log.warning("Missing field "+BlueboxMessage.RECEIVED);
-//
-//		if (dbo.containsField(BlueboxMessage.STATE))
-//			message.setProperty(BlueboxMessage.STATE,getDBOString(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.name()));
-//		else
-//			log.warning("Missing field "+BlueboxMessage.STATE);
-//
-//		if (dbo.containsField(BlueboxMessage.INBOX))
-//			message.setProperty(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
-//		else
-//			log.warning("Missing field "+BlueboxMessage.INBOX);
-//
-//		if (dbo.containsField(BlueboxMessage.SIZE))
-//			message.setProperty(BlueboxMessage.SIZE,getDBOString(dbo,BlueboxMessage.SIZE,"0"));
-//		else
-//			log.warning("Missing field "+BlueboxMessage.SIZE);
-//		//		if (dbo.containsField(MessageImpl.BINARY_CONTENT))
-//		//			message.setProperty(MessageImpl.BINARY_CONTENT,dbo.get(MessageImpl.BINARY_CONTENT).toString());
-//		//		else
-//		//			log.warning("Missing field "+MessageImpl.BINARY_CONTENT);
-//		message.loadBlueBoxMimeMessage(new MimeMessageWrapper(null, new ByteArrayInputStream(dbo.get(BlueboxMessage.RAW).toString().getBytes("UTF-8"))));
-//		return message;
-//	}
+	//	public BlueboxMessage loadMessage(DBObject dbo) throws Exception {
+	//		//		MimeMessageWrapper mmwDbo = new MimeMessageWrapper(null, new ByteArrayInputStream(dbo.get(MessageImpl.BINARY_CONTENT).toString().getBytes("UTF-8")));
+	//		String uid = getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString());
+	//		BlueboxMessage message = new BlueboxMessage(uid);
+	//		if (dbo.containsField(BlueboxMessage.TO))
+	//			message.setProperty(BlueboxMessage.TO,getDBOString(dbo,BlueboxMessage.TO,"bluebox@bluebox.com"));
+	//		else {
+	//			log.warning("Missing field "+BlueboxMessage.TO);
+	//		}
+	//		if (dbo.containsField(BlueboxMessage.AUTO_COMPLETE))
+	//			message.setProperty(BlueboxMessage.AUTO_COMPLETE,getDBOString(dbo,BlueboxMessage.AUTO_COMPLETE,"bluebox@bluebox.com"));
+	//		else
+	//			log.warning("Missing field "+BlueboxMessage.AUTO_COMPLETE);
+	//
+	//		if (dbo.containsField(BlueboxMessage.FROM))
+	//			message.setProperty(BlueboxMessage.FROM,getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com"));
+	//		else
+	//			log.warning("Missing field "+BlueboxMessage.FROM);
+	//
+	//		if (dbo.containsField(BlueboxMessage.SUBJECT))
+	//			message.setProperty(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
+	//		else
+	//			log.warning("Missing field "+BlueboxMessage.SUBJECT);
+	//
+	//		if (dbo.containsField(BlueboxMessage.RECEIVED))
+	//			message.setProperty(BlueboxMessage.RECEIVED,getDBOString(dbo,BlueboxMessage.RECEIVED,""));
+	//		else
+	//			log.warning("Missing field "+BlueboxMessage.RECEIVED);
+	//
+	//		if (dbo.containsField(BlueboxMessage.STATE))
+	//			message.setProperty(BlueboxMessage.STATE,getDBOString(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.name()));
+	//		else
+	//			log.warning("Missing field "+BlueboxMessage.STATE);
+	//
+	//		if (dbo.containsField(BlueboxMessage.INBOX))
+	//			message.setProperty(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
+	//		else
+	//			log.warning("Missing field "+BlueboxMessage.INBOX);
+	//
+	//		if (dbo.containsField(BlueboxMessage.SIZE))
+	//			message.setProperty(BlueboxMessage.SIZE,getDBOString(dbo,BlueboxMessage.SIZE,"0"));
+	//		else
+	//			log.warning("Missing field "+BlueboxMessage.SIZE);
+	//		//		if (dbo.containsField(MessageImpl.BINARY_CONTENT))
+	//		//			message.setProperty(MessageImpl.BINARY_CONTENT,dbo.get(MessageImpl.BINARY_CONTENT).toString());
+	//		//		else
+	//		//			log.warning("Missing field "+MessageImpl.BINARY_CONTENT);
+	//		message.loadBlueBoxMimeMessage(new MimeMessageWrapper(null, new ByteArrayInputStream(dbo.get(BlueboxMessage.RAW).toString().getBytes("UTF-8"))));
+	//		return message;
+	//	}
 
 	@Override
 	public void delete(String uid) {
@@ -282,7 +282,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			count = 500;//Integer.MAX_VALUE; else we get "com.mongodb.MongoException: too much data for sort() with no index.  add an index or specify a smaller limit"
 		return db.getCollection(TABLE_NAME).find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
 	}
-	
+
 	public List<BlueboxMessage> listMail(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		List<BlueboxMessage> results = new ArrayList<BlueboxMessage>();
 		DBCursor cursor = this.listMailCommon(inbox, state, start, count, orderBy, ascending);
@@ -301,7 +301,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		return results;
 	}
-	
+
 	@Override
 	public List<JSONObject> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
 
@@ -458,12 +458,37 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public List<String> listUniqueInboxes() {
-		List<String> inboxes = db.getCollection(TABLE_NAME).distinct(BlueboxMessage.INBOX);
-		return inboxes;
+	public JSONObject getMostActive() {
+		//TODO - optimise this using Mongo aggregate functionality
+		JSONObject jo = new JSONObject();
+		try {
+			jo.put(BlueboxMessage.INBOX,"");
+			jo.put(BlueboxMessage.COUNT,0);
+			@SuppressWarnings("unchecked")
+			List<String> inboxes = db.getCollection(TABLE_NAME).distinct(BlueboxMessage.INBOX);
+			long currcount, maxcount = 0;
+			for (String inbox : inboxes) {
+				currcount = this.getMailCount(new InboxAddress(inbox), BlueboxMessage.State.NORMAL);
+				if (currcount>maxcount) {
+					jo.put(BlueboxMessage.INBOX,inbox);
+					jo.put(BlueboxMessage.COUNT,currcount);
+					maxcount = currcount;
+				}
+			}
+		}
+		catch (Throwable je) {
+			je.printStackTrace();
+		}
+		return jo;
 	}
+
+	//	@SuppressWarnings("unchecked")
+	//	@Override
+	//	public List<String> listUniqueInboxes() {
+	//		List<String> inboxes = db.getCollection(TABLE_NAME).distinct(BlueboxMessage.INBOX);
+	//		return inboxes;
+	//	}
 
 	@Override
 	public void runMaintenance() throws Exception {
@@ -474,7 +499,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		createIndexes();
 	}
 
-	
+
 
 
 

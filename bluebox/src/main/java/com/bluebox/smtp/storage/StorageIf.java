@@ -14,31 +14,31 @@ import com.bluebox.smtp.InboxAddress;
 
 public interface StorageIf {
 
-	public abstract void start() throws Exception;
+	public void start() throws Exception;
 
-	public abstract void stop() throws Exception;
+	public void stop() throws Exception;
 	
-	public abstract BlueboxMessage store(InboxAddress inbox, String from, MimeMessage bbmm)
+	public BlueboxMessage store(InboxAddress inbox, String from, MimeMessage bbmm)
 			throws Exception;
 
-	public abstract BlueboxMessage retrieve(String uid)
+	public BlueboxMessage retrieve(String uid)
 			throws Exception;
 
-	public abstract void deleteAll(InboxAddress inbox) throws Exception;
+	public void deleteAll(InboxAddress inbox) throws Exception;
 
-	public abstract void deleteAll() throws Exception;
+	public void deleteAll() throws Exception;
 
-	public abstract long getMailCount(BlueboxMessage.State state)
+	public long getMailCount(BlueboxMessage.State state)
 			throws Exception;
 	
-	public abstract long getMailCount(InboxAddress inbox, BlueboxMessage.State state)
+	public long getMailCount(InboxAddress inbox, BlueboxMessage.State state)
 			throws Exception;
 
-	public abstract List<BlueboxMessage> listMail(InboxAddress inbox, BlueboxMessage.State state,
+	public List<BlueboxMessage> listMail(InboxAddress inbox, BlueboxMessage.State state,
 			int start, int count, String orderBy, boolean ascending)
 			throws Exception;
 	
-	public abstract List<JSONObject> listMailLite(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception;
+	public List<JSONObject> listMailLite(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception;
 
 
 	/*
@@ -46,11 +46,11 @@ public interface StorageIf {
 	 * then sending it over the wire at the end.
 	 * It should allow for larger streams to be sent, more efficiently.
 	 */
-	public abstract void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer,
+	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer,
 			int start, int count, String orderBy, boolean ascending, Locale locale)
 			throws Exception;
 	
-	public abstract void setState(String uid, BlueboxMessage.State state)
+	public void setState(String uid, BlueboxMessage.State state)
 			throws Exception;
 	
 	public String getProperty(String key, String defaultValue);
@@ -59,17 +59,26 @@ public interface StorageIf {
 
 	public boolean hasProperty(String key);
 		
-	public abstract void logError(String title, InputStream content);
+	public void logError(String title, InputStream content);
 	
-	public abstract int logErrorCount();
+	public int logErrorCount();
 	
-	public abstract void logErrorClear();
+	public void logErrorClear();
 	
-	public abstract JSONArray logErrorList(int start, int count);
+	public JSONArray logErrorList(int start, int count);
 	
-	public abstract String logErrorContent(String id);
+	public String logErrorContent(String id);
 
-	public abstract List<String> listUniqueInboxes();
+	/*
+	 * Return a JSONObject with the most active inbox as follows :
+	 * {
+	 * 	Count : <value>,
+	 * 	Inbox : <email>
+	 * }
+	 */
+	public JSONObject getMostActive();
+		
+//	public List<String> listUniqueInboxes();
 
 	public void delete(String uid) throws Exception;
 	

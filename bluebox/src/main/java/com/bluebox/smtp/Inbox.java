@@ -497,29 +497,33 @@ public class Inbox implements SimpleMessageListener {
 	private JSONObject updateStatsActive(InboxAddress lastInbox) {
 		JSONObject jo = new JSONObject();
 		try {	
-			List<String> inboxes = StorageFactory.getInstance().listUniqueInboxes();
-			long count = 0;
-			String inbox = "";
-			for (String currInbox : inboxes) {
-				// this next code simply ensures we only actually calculate the count if a mail was added
-				// else just use a cached prop for each value
-				long t;
-
-				if (currInbox.equals(lastInbox.getAddress())) {
-					t = getMailCount(new InboxAddress(currInbox), BlueboxMessage.State.NORMAL);
-					StorageFactory.getInstance().setProperty(currInbox+"_count",Long.toString(t));
-				}
-				else {
-					t = Long.parseLong(StorageFactory.getInstance().getProperty(currInbox+"_count","0"));
-				}
-				if (t>count) {
-					count = t;
-					inbox = currInbox;
-				}
-			}
-
-			jo.put(BlueboxMessage.COUNT, count);
-			jo.put(BlueboxMessage.INBOX, inbox);
+//			List<String> inboxes = StorageFactory.getInstance().listUniqueInboxes();
+//			long count = 0;
+//			String inbox = "";
+//			for (String currInbox : inboxes) {
+//				// this next code simply ensures we only actually calculate the count if a mail was added
+//				// else just use a cached prop for each value
+//				long t;
+//
+//				if (currInbox.equals(lastInbox.getAddress())) {
+//					t = getMailCount(new InboxAddress(currInbox), BlueboxMessage.State.NORMAL);
+//					StorageFactory.getInstance().setProperty(currInbox+"_count",Long.toString(t));
+//				}
+//				else {
+//					t = Long.parseLong(StorageFactory.getInstance().getProperty(currInbox+"_count","0"));
+//				}
+//				if (t>count) {
+//					count = t;
+//					inbox = currInbox;
+//				}
+//			}
+//			jo.put(BlueboxMessage.COUNT, count);
+//			jo.put(BlueboxMessage.INBOX, inbox);
+			jo = StorageFactory.getInstance().getMostActive();
+//			if (active==null)
+//				active = lastInbox;
+//			jo.put(BlueboxMessage.COUNT, StorageFactory.getInstance().getMailCount(active, BlueboxMessage.State.NORMAL));
+//			jo.put(BlueboxMessage.INBOX, active);
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();
@@ -548,18 +552,6 @@ public class Inbox implements SimpleMessageListener {
 			e1.printStackTrace();
 		}
 
-		//		try {
-		//			List<MessageImpl> msgs = StorageFactory.getInstance().listMail(null, MessageImpl.State.NORMAL, 0, 1, MessageImpl.RECEIVED, false);
-		//			if (msgs.size()>0) {
-		//				MessageImpl msg = msgs.get(0);
-		//				jo.put(MessageImpl.SUBJECT, msg.getBlueBoxMimeMessage().getSubject());
-		//				jo.put(MessageImpl.TO, msg.getInbox());
-		//				jo.put(MessageImpl.FROM, msg.getBlueBoxMimeMessage().getFrom()[0].toString());
-		//			}
-		//		} 
-		//		catch (Throwable e) {
-		//			e.printStackTrace();
-		//		}
 		StorageFactory.getInstance().setProperty("stats_recent",jo.toString());
 		return jo;
 	}

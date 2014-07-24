@@ -177,7 +177,7 @@ public class SearchIndexer {
 				curr.put(BlueboxMessage.FROM, hits[i].get(SearchFields.FROM.name()));
 				curr.put(BlueboxMessage.SUBJECT, hits[i].get(SearchFields.SUBJECT.name()));
 				curr.put(BlueboxMessage.RECEIVED, new Date(Long.parseLong(hits[i].get(SearchFields.RECEIVED.name()))));
-				curr.put(BlueboxMessage.SIZE, hits[i].get(SearchFields.SIZE.name())+"K");
+				curr.put(BlueboxMessage.SIZE, (Long.parseLong(hits[i].get(SearchFields.SIZE.name()))/1000)+"K");
 				curr.put(BlueboxMessage.UID, uid);
 				writer.write(curr.toString(3));
 				if (i < hits.length-1) {
