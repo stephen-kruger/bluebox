@@ -228,7 +228,12 @@
 							displayAttachments(uid,"Attachment",data.Attachment);
 						}
 						
-						setBodyContent(data.<%=BlueboxMessage.HTML_BODY%>,data.<%=BlueboxMessage.TEXT_BODY%>,"<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+uid);
+						setBodyContent(
+								data.<%=BlueboxMessage.HTML_BODY%>,
+								data.<%=BlueboxMessage.TEXT_BODY%>,
+								data.<%=JSONMessageHandler.SECURITY%>,
+								"<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+uid
+								);
 		
 					},
 					error: function (error) {
@@ -255,7 +260,7 @@
 		}
 	}
 	
-	function setBodyContent(htmlContent, textContent, rawurl) {
+	function setBodyContent(htmlContent, textContent, securityContent, rawurl) {
 		try {
 			require(["dijit/registry","dojo/aspect"],
 		            function(registry,aspect) {
@@ -273,7 +278,15 @@
 				}
 				else {
 					alert("error getting text tab");
-				}			
+				}	
+				var securitytab = registry.byId("security-tab");
+				if (securitytab) {
+					securitytab.setValue(securityContent);
+					securitytab.resize();
+				}
+				else {
+					alert("error getting security tab");
+				}	
 				var tabs = registry.byId("mail-tab");
 				aspect.after(tabs, "selectChild", function (event) {
 					if (tabs.selectedChildWidget.id=="raw-tab") {
@@ -352,6 +365,13 @@
 			         class:"textBody"
 			    });
 			    tc.addChild(cp3);
+			    
+			    var cp4 = new Textarea({
+			         title: "Security",
+			         id : "security-tab",
+			         class:"textBody"
+			    });
+			    tc.addChild(cp4);
 
 			    
 			    tc.startup();

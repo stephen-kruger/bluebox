@@ -25,6 +25,11 @@
 				<updatePolicy>always</updatePolicy>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>maven-org</id>
+			<name>Maven Repo</name>
+			<url>http://repo1.maven.org/maven2/</url>
+		</repository>
 	</repositories>
 
 	<build>
@@ -211,6 +216,13 @@
 			<artifactId>derbyclient</artifactId>
 			<version>${derby_version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.owasp.antisamy</groupId>
+			<artifactId>antisamy</artifactId>
+			<version>1.5.3</version>
+		</dependency>
+
 	</dependencies>
 
 	<scm>
