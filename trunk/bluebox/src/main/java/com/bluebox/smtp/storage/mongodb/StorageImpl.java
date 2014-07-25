@@ -3,6 +3,7 @@ package com.bluebox.smtp.storage.mongodb;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -14,6 +15,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Config;
@@ -24,6 +26,7 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
+import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
@@ -460,6 +463,63 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public JSONObject getMostActive() {
+		if (1<2)
+			return getMostActiveOld();
+		JSONObject jo = new JSONObject();
+		try {
+			jo.put(BlueboxMessage.INBOX,"");
+			jo.put(BlueboxMessage.COUNT,0);
+		} 
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		//		db.website.aggregate(
+		//			    { 
+		//				$group : {_id : "$hosting", total : { $sum : 1 }}
+		//			    }
+		//			  );
+
+		// create our pipeline operations, first with the $match
+		DBObject match = new BasicDBObject("$match", new BasicDBObject(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.name()));
+
+		// build the $projection operation
+		DBObject fields = new BasicDBObject("$"+BlueboxMessage.INBOX, 1);
+		fields.put("amount", 1);
+		fields.put("_id", 0);
+		DBObject project = new BasicDBObject("$project", fields );
+
+		// Now the $group operation
+		DBObject groupFields = new BasicDBObject( "_id", "$"+BlueboxMessage.INBOX);
+		groupFields.put("total", new BasicDBObject( "$sum", "1"));
+		DBObject group = new BasicDBObject("$group", groupFields);
+
+		// Finally the $sort operation
+		DBObject sort = new BasicDBObject("$sort", new BasicDBObject("amount", -1));
+
+		// run aggregation
+		List<DBObject> pipeline = Arrays.asList(match, project, group, sort);
+	
+		AggregationOutput output = db.getCollection(TABLE_NAME).aggregate(pipeline);
+
+		for (DBObject result : output.results()) {
+			System.out.println(result);
+		}
+
+		// for later Mongodb use Cursor 
+//		AggregationOptions aggregationOptions = AggregationOptions.builder()
+//				.batchSize(100)
+//				.outputMode(AggregationOptions.OutputMode.CURSOR)
+//				.allowDiskUse(true)
+//				.build();
+		//		Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
+		//		while (cursor.hasNext()) {
+		//		    System.out.println(cursor.next());
+		//		}
+		return jo;
+	}
+
+	public JSONObject getMostActiveOld() {
 		//TODO - optimise this using Mongo aggregate functionality
 		JSONObject jo = new JSONObject();
 		try {

@@ -242,6 +242,7 @@ public class BlueboxMessage {
 				ja.put(d.getName());
 			}
 			json.put(ATTACHMENT, ja);
+			
 			json.put(BlueboxMessage.HTML_BODY, getHtml());
 			json.put(BlueboxMessage.TEXT_BODY, getText());
 

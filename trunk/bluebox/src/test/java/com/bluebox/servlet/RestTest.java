@@ -14,6 +14,7 @@ import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.rest.json.JSONInlineHandler;
+import com.bluebox.rest.json.JSONMessageHandler;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
@@ -122,7 +123,7 @@ public class RestTest extends BaseServletTest {
 		Utils.uploadEML(emlStream);
 		Utils.waitFor(1);
 		assertEquals("Mail was not delivered",1,Inbox.getInstance().getMailCount(State.ANY));
-		
+
 		List<BlueboxMessage> messages = Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
 		BlueboxMessage msg = messages.get(0);
 		HttpTester request = new HttpTester();
@@ -136,7 +137,7 @@ public class RestTest extends BaseServletTest {
 		response.parse(getTester().getResponses(request.generate()));
 
 		assertEquals(200,response.getStatus());
-		
+
 		// now retrieve the atachment by uid
 		request.setMethod("GET");
 		request.setHeader("HOST","127.0.0.1");
@@ -147,6 +148,16 @@ public class RestTest extends BaseServletTest {
 		response.parse(getTester().getResponses(request.generate()));
 
 		assertEquals(200,response.getStatus());
+	}
+
+	public void testJSONMessageHandler() throws IOException, Exception {
+		List<BlueboxMessage> messages = Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
+		for (BlueboxMessage message : messages) {
+			String url = "/"+JSONMessageHandler.JSON_ROOT+"/"+message.getIdentifier();
+			JSONObject js = getRestJSON(url);
+			
+			log.info(js.toString(3));
+		}
 	}
 
 }

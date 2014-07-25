@@ -121,7 +121,6 @@ public class StorageTest extends TestCase {
 		BlueboxMessage stored = StorageFactory.getInstance().retrieve(bbm.getIdentifier());
 		assertEquals("Identifiers did not match",bbm.getIdentifier(),stored.getIdentifier());
 		MimeMessage storedMM = stored.getBlueBoxMimeMessage();
-
 		assertEquals("MimeMessage subjects did not match",message.getSubject(),storedMM.getSubject());
 		assertEquals("Inbox address did not match",inbox.getAddress(),stored.getInbox().getAddress());
 		assertEquals("Received time did not match",bbm.getLongProperty(BlueboxMessage.RECEIVED),stored.getLongProperty(BlueboxMessage.RECEIVED));

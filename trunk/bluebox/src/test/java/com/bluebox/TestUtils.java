@@ -10,9 +10,8 @@ import javax.mail.internet.MimeMessage;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.mail.Email;
 import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.SimpleEmail;
+import org.apache.commons.mail.HtmlEmail;
 
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
@@ -64,7 +63,7 @@ public class TestUtils extends TestCase {
 	}
 
 	public static void sendMailSMTP(String from, String to, String cc, String bcc, String subject, String body) throws EmailException {
-		Email email = new SimpleEmail();
+		HtmlEmail email = new HtmlEmail();
 		email.setHostName("localhost");
 		email.setSmtpPort(Config.getInstance().getInt(Config.BLUEBOX_PORT));
 		//email.setAuthenticator(new DefaultAuthenticator("username", "password"));
@@ -72,6 +71,7 @@ public class TestUtils extends TestCase {
 		email.setFrom(from);
 		email.setSubject(subject);
 		email.setMsg(body);
+		email.setHtmlMsg("<html><head><script>alert('crap');</script></head><body>"+body+"</body></html>");
 		if (to!=null)
 			email.addTo(to);
 		if (cc!=null)

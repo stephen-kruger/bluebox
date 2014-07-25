@@ -522,7 +522,7 @@ public class Utils {
 
 			// create the html message part 
 			MimeBodyPart htmlBodyPart = new MimeBodyPart();
-			htmlBodyPart.setContent("<font color=\"red\">"+body.replaceAll("\n", "</br>")+"</font>","text/html; charset=\""+UTF8+"\"");
+			htmlBodyPart.setContent("<html><head><script>alert('gotcha!');</script></head><body><font color=\"red\">"+body.replaceAll("\n", "</br>")+"</font></body></html>","text/html; charset=\""+UTF8+"\"");
 
 			//htmlBodyPart.setHeader("Content-Type","text/plain; charset=\"utf-8\"");
 			//htmlBodyPart.setHeader("Content-Transfer-Encoding", "quoted-printable");
