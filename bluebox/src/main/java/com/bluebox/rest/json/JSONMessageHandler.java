@@ -63,15 +63,18 @@ public class JSONMessageHandler extends AbstractHandler {
 				p = new FileInputStream("src/main/webapp/WEB-INF/antisamy-anythinggoes-1.4.4.xml");
 			String html = json.getString(BlueboxMessage.HTML_BODY);
 			
-			System.out.println("before:"+html);
+			log.fine("before:"+html);
 			Policy policy = Policy.getInstance(p);
 			AntiSamy as = new AntiSamy();
 			CleanResults cr = as.scan(html, policy);
-			System.out.println("after:"+cr.getCleanHTML());
+			log.fine("after:"+cr.getCleanHTML());
 			System.out.println("errors:"+cr.getNumberOfErrors());
 			StringBuffer sec = new StringBuffer();
+			sec.append("Security scan issues ("+cr.getNumberOfErrors()+")\n");
+			sec.append("--------------------\n");
+			int count = 1;
 			for (String error : cr.getErrorMessages())
-				sec.append(error+"\n");
+				sec.append((count++)+") "+error+"\n");
 			json.put(BlueboxMessage.HTML_BODY, cr.getCleanHTML());
 			json.put(SECURITY, sec.toString());
 		}
