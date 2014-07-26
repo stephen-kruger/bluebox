@@ -20,7 +20,7 @@
 				var queryResults = jStore.fetch({
 					  onComplete : 
 						  	function(queryResults, request) {
-								document.getElementById("stats_recent").innerHTML = '<a href="inbox.jsp?Email='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
+								document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML = '<a href="inbox.jsp?Email='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
 							}
 				});
 			});
@@ -38,7 +38,8 @@
 				var queryResults = jStore.fetch({
 					  onComplete : 
 						  	function(queryResults, request) {
-								document.getElementById("stats_active").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a>';
+						  document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
+							document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.sender.<%=BlueboxMessage.FROM%>+'">'+queryResults.sender.<%=BlueboxMessage.FROM%>+'</a><span class="badge">'+queryResults.sender.<%=BlueboxMessage.COUNT%>+'</span>';
 							}
 				});
 			});
@@ -58,8 +59,9 @@
 				var queryResults = jStore.fetch({
 					  onComplete : 
 						  	function(queryResults, request) {
-								document.getElementById("stats_recent").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
-								document.getElementById("stats_active").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a>';
+								document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
+								document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
+								document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.sender.<%=BlueboxMessage.FROM%>+'">'+queryResults.sender.<%=BlueboxMessage.FROM%>+'</a><span class="badge">'+queryResults.sender.<%=BlueboxMessage.COUNT%>+'</span>';
 								document.getElementById("statsGlobalCount").innerHTML = '<%= statsResource.getString("traffic_text1") %> <span id="statsGlobalCount">'+queryResults.<%=BlueboxMessage.COUNT%>+'</span> <%= statsResource.getString("traffic_text2") %>';
 							}
 				});
@@ -88,7 +90,13 @@
 
 	<h2><%= statsResource.getString("active_title") %></h2>
 	<p>
-		<span id="stats_active" style="white-space: nowrap;"><img
+		<span id="<%=JSONStatsHandler.ACTIVE_STAT %>" style="white-space: nowrap;"><img
+			src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/loading.gif"></span>
+	</p>
+	
+	<h2><%= statsResource.getString("sender_title") %></h2>
+	<p>
+		<span id="<%=JSONStatsHandler.SENDER_STAT %>" style="white-space: nowrap;"><img
 			src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/loading.gif"></span>
 	</p>
 

@@ -76,9 +76,17 @@ public interface StorageIf {
 	 * 	Inbox : <email>
 	 * }
 	 */
-	public JSONObject getMostActive();
+	public JSONObject getMostActiveInbox();
+	
+	/*
+	 * Return a JSONObject with the most active sender as follows :
+	 * {
+	 * 	Count : <value>,
+	 * 	Sender : <email>
+	 * }
+	 */
+	public JSONObject getMostActiveSender();
 		
-//	public List<String> listUniqueInboxes();
 
 	public void delete(String uid) throws Exception;
 	

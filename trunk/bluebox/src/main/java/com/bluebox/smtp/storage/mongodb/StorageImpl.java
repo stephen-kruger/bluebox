@@ -462,7 +462,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public JSONObject getMostActive() {
+	public JSONObject getMostActiveInbox() {
 		JSONObject jo = new JSONObject();
 		try {
 			jo.put(BlueboxMessage.INBOX,"");
@@ -506,6 +506,51 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return jo;
 	}
 
+	@Override
+	public JSONObject getMostActiveSender() {
+		JSONObject jo = new JSONObject();
+		try {
+			jo.put(BlueboxMessage.INBOX,"");
+			jo.put(BlueboxMessage.COUNT,0);
+		} 
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		DBObject sum = new BasicDBObject();sum.put("$sum", 1);
+		DBObject group = new BasicDBObject();
+		group.put("_id", "$"+BlueboxMessage.FROM);
+		group.put(BlueboxMessage.COUNT, sum);
+		DBObject all = new BasicDBObject();
+		all.put("$group", group);
+		DBObject sort = new BasicDBObject("$sort", new BasicDBObject(BlueboxMessage.COUNT, -1));
+		List<DBObject> pipeline = Arrays.asList(all, sort);
+		AggregationOutput output = db.getCollection(TABLE_NAME).aggregate(pipeline);
+
+		for (DBObject result : output.results()) {
+			try {
+				jo.put(BlueboxMessage.FROM,new JSONArray(result.get("_id").toString()).get(0));
+				jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
+				break;// only care about first result
+			} 
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// for later Mongodb use Cursor 
+//				AggregationOptions aggregationOptions = AggregationOptions.builder()
+//						.batchSize(100)
+//						.outputMode(AggregationOptions.OutputMode.CURSOR)
+//						.allowDiskUse(true)
+//						.build();
+//				Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
+//				while (cursor.hasNext()) {
+//				    System.out.println(cursor.next());
+//				}
+		return jo;
+	}
+	
 //	public JSONObject getMostActiveOld() {
 //		JSONObject jo = new JSONObject();
 //		try {

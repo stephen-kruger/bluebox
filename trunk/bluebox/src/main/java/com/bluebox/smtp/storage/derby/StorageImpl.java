@@ -575,7 +575,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public JSONObject getMostActive() {
+	public JSONObject getMostActiveInbox() {
 		JSONObject jo = new JSONObject();
 		try {
 			jo.put(BlueboxMessage.COUNT, 0);
@@ -587,19 +587,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				try {
 					Statement s = connection.createStatement();
 					PreparedStatement ps;
-					ps = connection.prepareStatement("SELECT "+BlueboxMessage.INBOX+", COUNT(*) FROM "+INBOX_TABLE+" GROUP BY "+BlueboxMessage.INBOX);
+					ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.INBOX+", COUNT(*) FROM "+INBOX_TABLE+" GROUP BY "+BlueboxMessage.INBOX+" ORDER BY COUNT(*) DESC");
 					ps.execute();
 					ResultSet result = ps.getResultSet();
-					String curremail;
-					long currcount, maxcount=0;
+
 					while (result.next()) {
-						curremail = result.getString(1);					
-						currcount = result.getLong(2);
-						if (currcount>maxcount) {
-							jo.put(BlueboxMessage.INBOX,curremail);
-							jo.put(BlueboxMessage.COUNT,currcount);
-							maxcount = currcount;
-						}
+						jo.put(BlueboxMessage.INBOX,result.getString(1));
+						jo.put(BlueboxMessage.COUNT,result.getLong(2));
+						break; // list is already ordered, so first one is biggest
 					}
 					ps.close();
 					s.close();
@@ -626,49 +621,94 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return jo;
 	}
 
-//	@Override
-//	public List<String> listUniqueInboxes() {
-//		List<String> inboxes = new ArrayList<String>();
-//		// list unique mails, then count each one
-//		Connection connection = null;
-//		try {
-//			connection = getConnection();
-//			try {
-//				Statement s = connection.createStatement();
-//				PreparedStatement ps;
-//				ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.INBOX+" from "+INBOX_TABLE);
-//				ps.execute();
-//				ResultSet result = ps.getResultSet();
-//				while (result.next()) {
-//					String currInbox = result.getString(BlueboxMessage.INBOX);
-//					inboxes.add(currInbox);						
-//				}
-//				ps.close();
-//				s.close();
-//			}
-//			catch (Throwable t) {
-//				t.printStackTrace();
-//			}
-//		}
-//		catch (Throwable t) {
-//			t.printStackTrace();
-//		}
-//		finally {
-//			try {
-//				connection.close();
-//			} 
-//			catch (SQLException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		return inboxes;
-//	}
+	@Override
+	public JSONObject getMostActiveSender() {
+		JSONObject jo = new JSONObject();
+		try {
+			jo.put(BlueboxMessage.COUNT, 0);
+			jo.put(BlueboxMessage.INBOX, "");
+
+			Connection connection = null;
+			try {
+				connection = getConnection();
+				try {
+					Statement s = connection.createStatement();
+					PreparedStatement ps;
+					ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.FROM+", COUNT(*) FROM "+INBOX_TABLE+" GROUP BY "+BlueboxMessage.FROM+" ORDER BY COUNT(*) DESC");
+					ps.execute();
+					ResultSet result = ps.getResultSet();
+
+					while (result.next()) {
+						jo.put(BlueboxMessage.FROM,result.getString(1));
+						jo.put(BlueboxMessage.COUNT,result.getLong(2));
+						break; // list is already ordered, so first one is biggest
+					}
+					ps.close();
+					s.close();
+				}
+				catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+			catch (Throwable t) {
+				t.printStackTrace();
+			}
+			finally {
+				try {
+					connection.close();
+				} 
+				catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		catch (JSONException je) {
+			je.printStackTrace();
+		}
+		return jo;
+	}
+
+	//	@Override
+	//	public List<String> listUniqueInboxes() {
+	//		List<String> inboxes = new ArrayList<String>();
+	//		// list unique mails, then count each one
+	//		Connection connection = null;
+	//		try {
+	//			connection = getConnection();
+	//			try {
+	//				Statement s = connection.createStatement();
+	//				PreparedStatement ps;
+	//				ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.INBOX+" from "+INBOX_TABLE);
+	//				ps.execute();
+	//				ResultSet result = ps.getResultSet();
+	//				while (result.next()) {
+	//					String currInbox = result.getString(BlueboxMessage.INBOX);
+	//					inboxes.add(currInbox);						
+	//				}
+	//				ps.close();
+	//				s.close();
+	//			}
+	//			catch (Throwable t) {
+	//				t.printStackTrace();
+	//			}
+	//		}
+	//		catch (Throwable t) {
+	//			t.printStackTrace();
+	//		}
+	//		finally {
+	//			try {
+	//				connection.close();
+	//			} 
+	//			catch (SQLException e) {
+	//				e.printStackTrace();
+	//			}
+	//		}
+	//		return inboxes;
+	//	}
 
 	@Override
 	public void runMaintenance() throws Exception {
 		setupTables();		
 	}
-
-
 
 }
