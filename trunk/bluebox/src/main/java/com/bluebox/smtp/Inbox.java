@@ -40,7 +40,7 @@ public class Inbox implements SimpleMessageListener {
 	public static final String ORDERBY = "OrderBy";
 	private static final Logger log = Logger.getAnonymousLogger();
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
-
+	private Date lastUpdated = new Date(0);
 	private static Timer timer = null;
 	private static Inbox inbox;
 
@@ -59,7 +59,7 @@ public class Inbox implements SimpleMessageListener {
 
 	private void start() {
 		log.info("Starting inbox");
-		
+
 		// ensure storage instance if loaded and started
 		try {
 			StorageFactory.getInstance().start();
@@ -163,7 +163,7 @@ public class Inbox implements SimpleMessageListener {
 	public void delete(String uid) throws Exception {
 		StorageFactory.getInstance().delete(uid);
 	}
-	
+
 	public void deleteAll() {
 		try {
 			StorageFactory.getInstance().deleteAll();
@@ -353,12 +353,15 @@ public class Inbox implements SimpleMessageListener {
 			log.severe(t.getMessage());
 			t.printStackTrace();
 		}
-		// now update all our stats trackers
-		incrementGlobalCount();
-		updateStatsActive(new InboxAddress(recipient));
-		updateStatsRecent(message.getProperty(BlueboxMessage.INBOX),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT));
+		// now update all our stats trackers, but only every 30 seconds
+		if ((new Date().getTime()-lastUpdated.getTime())>=30000) {
+			incrementGlobalCount();
+			updateStatsActive(new InboxAddress(recipient));
+			updateStatsRecent(message.getProperty(BlueboxMessage.INBOX),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT));
+			lastUpdated = new Date();
+		}
 	}
-	
+
 	public void clearErrors() throws Exception {
 		StorageFactory.getInstance().logErrorClear();
 	}
@@ -388,50 +391,50 @@ public class Inbox implements SimpleMessageListener {
 		JSONObject curr;
 		JSONArray children = new JSONArray();
 		// no need to include wildcard
-//		if (hint.contains("*")) {
-//			hint=hint.substring(0,hint.indexOf('*'));
-//		}
+		//		if (hint.contains("*")) {
+		//			hint=hint.substring(0,hint.indexOf('*'));
+		//		}
 		if (hint.length()==0)
 			hint = "*";
 		// ensure we check for all substrings
 		if (!hint.startsWith("*"))
 			hint = "*"+hint;
-//		if (hint.length()==1)
-//			return children;
+		//		if (hint.length()==1)
+		//			return children;
 
-//			hint = QueryParser.escape(hint);
-			SearchIndexer search = SearchIndexer.getInstance();
-			Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENTS, (int)start, (int)count, SearchIndexer.SearchFields.RECEIVED);
-			for (int i = 0; i < results.length;i++) {
-				String uid = results[i].get(SearchFields.UID.name());
-//				BlueboxMessage message = retrieve(uid);
-//				if (message!=null) {
-//					String name = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.INBOX));
-//					String label = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.TO));
-//					String identifier = uid;
-//					curr = new JSONObject();
-//					curr.put("name", name);
-//					curr.put("label", label);
-//					curr.put("identifier", identifier);
-//					if (!contains(children,name))
-//						children.put(curr);
-//				}
-//				else {
-//					log.severe("Sync error between search indexes and derby tables");		
-//				}
-				curr = new JSONObject();
-				InboxAddress inbox;
-				inbox = new InboxAddress(results[i].get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
-				curr.put("name", inbox.getAddress());
-//				curr.put("label", Utils.decodeRFC2407(results[i].get(SearchFields.INBOX.name())));
-				curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENTS.name())).getFullAddress());
-				curr.put("identifier", uid);
-				if (!contains(children,curr.getString("name")))
-					children.put(curr);
-				
-				if (children.length()>=count)
-					break;
-			}
+		//			hint = QueryParser.escape(hint);
+		SearchIndexer search = SearchIndexer.getInstance();
+		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENTS, (int)start, (int)count, SearchIndexer.SearchFields.RECEIVED);
+		for (int i = 0; i < results.length;i++) {
+			String uid = results[i].get(SearchFields.UID.name());
+			//				BlueboxMessage message = retrieve(uid);
+			//				if (message!=null) {
+			//					String name = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.INBOX));
+			//					String label = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.TO));
+			//					String identifier = uid;
+			//					curr = new JSONObject();
+			//					curr.put("name", name);
+			//					curr.put("label", label);
+			//					curr.put("identifier", identifier);
+			//					if (!contains(children,name))
+			//						children.put(curr);
+			//				}
+			//				else {
+			//					log.severe("Sync error between search indexes and derby tables");		
+			//				}
+			curr = new JSONObject();
+			InboxAddress inbox;
+			inbox = new InboxAddress(results[i].get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
+			curr.put("name", inbox.getAddress());
+			//				curr.put("label", Utils.decodeRFC2407(results[i].get(SearchFields.INBOX.name())));
+			curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENTS.name())).getFullAddress());
+			curr.put("identifier", uid);
+			if (!contains(children,curr.getString("name")))
+				children.put(curr);
+
+			if (children.length()>=count)
+				break;
+		}
 
 		return children;
 	}
@@ -497,33 +500,7 @@ public class Inbox implements SimpleMessageListener {
 	private JSONObject updateStatsActive(InboxAddress lastInbox) {
 		JSONObject jo = new JSONObject();
 		try {	
-//			List<String> inboxes = StorageFactory.getInstance().listUniqueInboxes();
-//			long count = 0;
-//			String inbox = "";
-//			for (String currInbox : inboxes) {
-//				// this next code simply ensures we only actually calculate the count if a mail was added
-//				// else just use a cached prop for each value
-//				long t;
-//
-//				if (currInbox.equals(lastInbox.getAddress())) {
-//					t = getMailCount(new InboxAddress(currInbox), BlueboxMessage.State.NORMAL);
-//					StorageFactory.getInstance().setProperty(currInbox+"_count",Long.toString(t));
-//				}
-//				else {
-//					t = Long.parseLong(StorageFactory.getInstance().getProperty(currInbox+"_count","0"));
-//				}
-//				if (t>count) {
-//					count = t;
-//					inbox = currInbox;
-//				}
-//			}
-//			jo.put(BlueboxMessage.COUNT, count);
-//			jo.put(BlueboxMessage.INBOX, inbox);
 			jo = StorageFactory.getInstance().getMostActive();
-//			if (active==null)
-//				active = lastInbox;
-//			jo.put(BlueboxMessage.COUNT, StorageFactory.getInstance().getMailCount(active, BlueboxMessage.State.NORMAL));
-//			jo.put(BlueboxMessage.INBOX, active);
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();
