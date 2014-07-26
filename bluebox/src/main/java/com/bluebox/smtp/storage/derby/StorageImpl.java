@@ -177,7 +177,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
 		ps.setString(1, id);
 		ps.setString(2, inbox.getAddress());
-		//		ps.setString(3, inbox.getFullAddress());
 		ps.setString(3, from);
 		ps.setString(4, subject);
 		ps.setTimestamp(5, new Timestamp(date.getTime()));
