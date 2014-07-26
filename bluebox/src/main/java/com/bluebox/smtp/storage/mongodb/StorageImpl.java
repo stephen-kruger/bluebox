@@ -463,8 +463,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public JSONObject getMostActive() {
-		if (1<2)
-			return getMostActiveOld();
 		JSONObject jo = new JSONObject();
 		try {
 			jo.put(BlueboxMessage.INBOX,"");
@@ -474,74 +472,62 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			e.printStackTrace();
 		}
 
-		//		db.website.aggregate(
-		//			    { 
-		//				$group : {_id : "$hosting", total : { $sum : 1 }}
-		//			    }
-		//			  );
-
-		// create our pipeline operations, first with the $match
-		DBObject match = new BasicDBObject("$match", new BasicDBObject(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.name()));
-
-		// build the $projection operation
-		DBObject fields = new BasicDBObject("$"+BlueboxMessage.INBOX, 1);
-		fields.put("amount", 1);
-		fields.put("_id", 0);
-		DBObject project = new BasicDBObject("$project", fields );
-
-		// Now the $group operation
-		DBObject groupFields = new BasicDBObject( "_id", "$"+BlueboxMessage.INBOX);
-		groupFields.put("total", new BasicDBObject( "$sum", "1"));
-		DBObject group = new BasicDBObject("$group", groupFields);
-
-		// Finally the $sort operation
-		DBObject sort = new BasicDBObject("$sort", new BasicDBObject("amount", -1));
-
-		// run aggregation
-		List<DBObject> pipeline = Arrays.asList(match, project, group, sort);
-	
+		DBObject sum = new BasicDBObject();sum.put("$sum", 1);
+		DBObject group = new BasicDBObject();
+		group.put("_id", "$"+BlueboxMessage.INBOX);
+		group.put(BlueboxMessage.COUNT, sum);
+		DBObject all = new BasicDBObject();
+		all.put("$group", group);
+		DBObject sort = new BasicDBObject("$sort", new BasicDBObject(BlueboxMessage.COUNT, -1));
+		List<DBObject> pipeline = Arrays.asList(all, sort);
 		AggregationOutput output = db.getCollection(TABLE_NAME).aggregate(pipeline);
 
 		for (DBObject result : output.results()) {
-			System.out.println(result);
+			try {
+				jo.put(BlueboxMessage.INBOX,result.get("_id"));
+				jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
+				break;// only care about first result
+			} 
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 
 		// for later Mongodb use Cursor 
-//		AggregationOptions aggregationOptions = AggregationOptions.builder()
-//				.batchSize(100)
-//				.outputMode(AggregationOptions.OutputMode.CURSOR)
-//				.allowDiskUse(true)
-//				.build();
-		//		Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
-		//		while (cursor.hasNext()) {
-		//		    System.out.println(cursor.next());
-		//		}
+//				AggregationOptions aggregationOptions = AggregationOptions.builder()
+//						.batchSize(100)
+//						.outputMode(AggregationOptions.OutputMode.CURSOR)
+//						.allowDiskUse(true)
+//						.build();
+//				Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
+//				while (cursor.hasNext()) {
+//				    System.out.println(cursor.next());
+//				}
 		return jo;
 	}
 
-	public JSONObject getMostActiveOld() {
-		//TODO - optimise this using Mongo aggregate functionality
-		JSONObject jo = new JSONObject();
-		try {
-			jo.put(BlueboxMessage.INBOX,"");
-			jo.put(BlueboxMessage.COUNT,0);
-			@SuppressWarnings("unchecked")
-			List<String> inboxes = db.getCollection(TABLE_NAME).distinct(BlueboxMessage.INBOX);
-			long currcount, maxcount = 0;
-			for (String inbox : inboxes) {
-				currcount = getMailCount(new InboxAddress(inbox), BlueboxMessage.State.NORMAL);
-				if (currcount>maxcount) {
-					jo.put(BlueboxMessage.INBOX,inbox);
-					jo.put(BlueboxMessage.COUNT,currcount);
-					maxcount = currcount;
-				}
-			}
-		}
-		catch (Throwable je) {
-			je.printStackTrace();
-		}
-		return jo;
-	}
+//	public JSONObject getMostActiveOld() {
+//		JSONObject jo = new JSONObject();
+//		try {
+//			jo.put(BlueboxMessage.INBOX,"");
+//			jo.put(BlueboxMessage.COUNT,0);
+//			@SuppressWarnings("unchecked")
+//			List<String> inboxes = db.getCollection(TABLE_NAME).distinct(BlueboxMessage.INBOX);
+//			long currcount, maxcount = 0;
+//			for (String inbox : inboxes) {
+//				currcount = getMailCount(new InboxAddress(inbox), BlueboxMessage.State.NORMAL);
+//				if (currcount>maxcount) {
+//					jo.put(BlueboxMessage.INBOX,inbox);
+//					jo.put(BlueboxMessage.COUNT,currcount);
+//					maxcount = currcount;
+//				}
+//			}
+//		}
+//		catch (Throwable je) {
+//			je.printStackTrace();
+//		}
+//		return jo;
+//	}
 
 	//	@SuppressWarnings("unchecked")
 	//	@Override

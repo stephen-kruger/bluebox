@@ -4,6 +4,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
@@ -36,7 +38,7 @@ public class JSONMessageHandler extends AbstractHandler {
 			String uid = extractUid(req.getRequestURI(),JSON_ROOT);
 			BlueboxMessage message = inbox.retrieve(uid);
 			JSONObject json = new JSONObject(message.toJSON(req.getLocale(),false));
-			json = securityScan(req.getSession().getServletContext(),json);
+			json = securityScan(req,json);
 			out.write(json.toString());
 			out.flush();
 		}
@@ -55,7 +57,9 @@ public class JSONMessageHandler extends AbstractHandler {
 		resp.flushBuffer();
 	}
 
-	private JSONObject securityScan(ServletContext context, JSONObject json) {
+	private JSONObject securityScan(HttpServletRequest request, JSONObject json) {
+		ResourceBundle mailDetailsResource = ResourceBundle.getBundle("mailDetails",request.getLocale());
+		ServletContext context = request.getSession().getServletContext();
 		try {
 			// perform security scan on html content
 			InputStream p = context.getResourceAsStream("WEB-INF/antisamy-anythinggoes-1.4.4.xml");
@@ -68,10 +72,10 @@ public class JSONMessageHandler extends AbstractHandler {
 			AntiSamy as = new AntiSamy();
 			CleanResults cr = as.scan(html, policy);
 			log.fine("after:"+cr.getCleanHTML());
-			System.out.println("errors:"+cr.getNumberOfErrors());
 			StringBuffer sec = new StringBuffer();
-			sec.append("Security scan issues ("+cr.getNumberOfErrors()+")\n");
-			sec.append("--------------------\n");
+			;
+			sec.append(MessageFormat.format(mailDetailsResource.getString("scantitle"), cr.getNumberOfErrors())+"\n");
+			sec.append(mailDetailsResource.getString("scantitleunderline")+"\n");
 			int count = 1;
 			for (String error : cr.getErrorMessages())
 				sec.append((count++)+") "+error+"\n");
