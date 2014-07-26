@@ -16,6 +16,11 @@ public class InboxAddressTest extends TestCase {
 		assertEquals("Expected clean email address","steve@nowhere.com",a.getAddress());
 	}
 	
+	public void testDisplayName() throws AddressException {
+		InboxAddress a = new InboxAddress("Steve Johnson <steve@nowhere.com>");
+		assertEquals("Expected display name","Steve Johnson",a.getDisplayName());
+	}
+	
 	public void testNotesAddress() throws AddressException {
 		InboxAddress a = new InboxAddress("Steve Johnson/MA/XXX");
 		assertEquals("Expected clean email address","Steve_Johnson@MA.XXX",a.getAddress());

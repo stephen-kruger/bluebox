@@ -90,7 +90,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		message.setInbox(inbox);
 		message.setBlueBoxMimeMessage(from, bbmm);
 		DBCollection coll = db.getCollection(TABLE_NAME);
-		DBObject bson = ( DBObject ) JSON.parse( message.toJSON(true) );
+		DBObject bson = ( DBObject ) JSON.parse( message.toJSON() );
 		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(message.getRawMessage()));
 		BasicDBObject doc = new BasicDBObject();
 		doc.putAll(bson);

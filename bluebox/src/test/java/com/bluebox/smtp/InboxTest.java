@@ -94,6 +94,7 @@ public class InboxTest extends TestCase {
 		for (int i = 0; i <2; i++) {
 			TestUtils.sendMailSMTP(new InternetAddress(email3), new InternetAddress(email3), null, null, "subject", "body");
 		}
+		inbox.updateStats(null, "", true);
 		JSONObject jo = inbox.getStatsActive();
 		assertEquals("Incorrectly reported most active inbox",new InboxAddress(email1).getAddress(),jo.getString(BlueboxMessage.INBOX));
 		assertEquals("Incorrectly reported most active inbox count",10,jo.getInt(BlueboxMessage.COUNT));
