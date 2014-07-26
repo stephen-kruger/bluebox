@@ -142,18 +142,18 @@ public class BlueboxMessage {
 		}
 		return ja;
 	}
-	
-	private JSONArray toJSONArrayDisplay(Address[] r) {
-		JSONArray ja = new JSONArray();
-		try {
-			if (r!=null)
-				for (int i = 0; i < r.length;i++)
-					ja.put(new InboxAddress(r[i].toString()).getDisplayName());
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
-		return ja;
-	}
+
+//	private JSONArray toJSONArrayDisplay(Address[] r) {
+//		JSONArray ja = new JSONArray();
+//		try {
+//			if (r!=null)
+//				for (int i = 0; i < r.length;i++)
+//					ja.put(new InboxAddress(r[i].toString()).getDisplayName());
+//		} catch (Throwable e) {
+//			e.printStackTrace();
+//		}
+//		return ja;
+//	}
 
 	public String getIdentifier() {
 		return getProperty(UID);
@@ -238,14 +238,14 @@ public class BlueboxMessage {
 				ja.put(d.getName());
 			}
 			json.put(ATTACHMENT, ja);
-			
+
 			json.put(BlueboxMessage.HTML_BODY, getHtml());
 			json.put(BlueboxMessage.TEXT_BODY, getText());
 
 			json.put(UID,properties.get(UID));
 			json.put(TO,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));
 			json.put(CC,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
-			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
+			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));				
 			json.put(SUBJECT,getBlueBoxMimeMessage().getSubject());
 			json.put(INBOX,properties.get(INBOX));
 			json.put(RECEIVED,properties.getLong(RECEIVED));
