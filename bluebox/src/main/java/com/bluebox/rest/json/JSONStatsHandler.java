@@ -45,6 +45,7 @@ public class JSONStatsHandler extends AbstractHandler {
 	public static final String GLOBAL_STAT = "stats_global";
 	public static final String RECENT_STAT = "stats_recent";
 	public static final String ACTIVE_STAT = "stats_active";
+	public static final String SENDER_STAT = "stats_sender";
 	public static final String COMBINED_STAT = "stats_combined";
 
 	public void doGet(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -60,6 +61,10 @@ public class JSONStatsHandler extends AbstractHandler {
 			log.fine("Process active stat");
 			doGetActiveStats(inbox,req,resp);
 		}
+		if (extractFragment(req.getRequestURI(),1).equals(SENDER_STAT)) {
+			log.fine("Process active senderstat");
+			doGetSenderStats(inbox,req,resp);
+		}
 		if (extractFragment(req.getRequestURI(),1).equals(COMBINED_STAT)) {
 			log.fine("Process combined stat");
 			doGetCombinedStats(inbox,req,resp);
@@ -73,7 +78,8 @@ public class JSONStatsHandler extends AbstractHandler {
 			result.put(BlueboxMessage.COUNT,inbox.getStatsGlobalCount());
 			result.put("countAll",inbox.getMailCount(BlueboxMessage.State.ANY));
 			result.put("recent",inbox.getStatsRecent());
-			result.put("active",inbox.getStatsActive());
+			result.put("active",inbox.getStatsActiveInbox());
+			result.put("sender",inbox.getStatsActiveSender());
 
 			Writer writer = resp.getWriter();
 			writer.write(result.toString(3));
@@ -129,7 +135,25 @@ public class JSONStatsHandler extends AbstractHandler {
 		setDefaultHeaders(resp);
 		try {
 			JSONObject result = new JSONObject();
-			result.put("active",inbox.getStatsActive());
+			result.put("active",inbox.getStatsActiveInbox());
+
+			Writer writer = resp.getWriter();
+			writer.write(result.toString(3));
+			writer.flush();
+			writer.close();
+		}
+		catch (Throwable t) {
+			log.severe(t.getMessage());
+			t.printStackTrace();
+		}
+		resp.flushBuffer();
+	}
+	
+	private void doGetSenderStats(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		setDefaultHeaders(resp);
+		try {
+			JSONObject result = new JSONObject();
+			result.put("sender",inbox.getStatsActiveSender());
 
 			Writer writer = resp.getWriter();
 			writer.write(result.toString(3));

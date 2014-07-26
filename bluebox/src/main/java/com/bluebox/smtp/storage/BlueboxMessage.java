@@ -131,17 +131,17 @@ public class BlueboxMessage {
 		return new InternetAddress(inbox.getFullAddress());
 	}
 
-//	private JSONArray toJSONArray(Address[] r) {
-//		JSONArray ja = new JSONArray();
-//		try {
-//			if (r!=null)
-//				for (int i = 0; i < r.length;i++)
-//					ja.put(r[i].toString());
-//		} catch (Throwable e) {
-//			e.printStackTrace();
-//		}
-//		return ja;
-//	}
+	private JSONArray toJSONArray(Address[] r) {
+		JSONArray ja = new JSONArray();
+		try {
+			if (r!=null)
+				for (int i = 0; i < r.length;i++)
+					ja.put(r[i].toString());
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return ja;
+	}
 	
 	private JSONArray toJSONArrayDisplay(Address[] r) {
 		JSONArray ja = new JSONArray();
@@ -243,9 +243,9 @@ public class BlueboxMessage {
 			json.put(BlueboxMessage.TEXT_BODY, getText());
 
 			json.put(UID,properties.get(UID));
-			json.put(TO,toJSONArrayDisplay(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));
-			json.put(CC,toJSONArrayDisplay(getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
-			json.put(FROM,toJSONArrayDisplay(getBlueBoxMimeMessage().getFrom()));
+			json.put(TO,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));
+			json.put(CC,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
+			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
 			json.put(SUBJECT,getBlueBoxMimeMessage().getSubject());
 			json.put(INBOX,properties.get(INBOX));
 			json.put(RECEIVED,properties.getLong(RECEIVED));
@@ -314,7 +314,6 @@ public class BlueboxMessage {
 
 	public void setInbox(InboxAddress inbox) {
 		setProperty(INBOX,inbox.getAddress());
-//		setProperty(TO,inbox.getFullAddress());
 	}
 
 	public static String getFrom(String from, MimeMessage bbmm) throws MessagingException {

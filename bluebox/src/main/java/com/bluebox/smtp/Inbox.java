@@ -478,8 +478,12 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 
-	public JSONObject getStatsActive() {	
-		return StorageFactory.getInstance().getMostActive();
+	public JSONObject getStatsActiveInbox() {	
+		return StorageFactory.getInstance().getMostActiveInbox();
+	}
+	
+	public JSONObject getStatsActiveSender() {	
+		return StorageFactory.getInstance().getMostActiveSender();
 	}
 
 	private JSONObject updateStatsRecent(String to, String from, String subject) {
