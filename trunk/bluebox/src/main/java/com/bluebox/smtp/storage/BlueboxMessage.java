@@ -131,23 +131,24 @@ public class BlueboxMessage {
 		return new InternetAddress(inbox.getFullAddress());
 	}
 
-//	private JSONArray getRecipient(RecipientType rtype) {
+//	private JSONArray toJSONArray(Address[] r) {
 //		JSONArray ja = new JSONArray();
 //		try {
-//			Address[] r = getBlueBoxMimeMessage().getRecipients(rtype);
-//			return toJSONArray(r);
+//			if (r!=null)
+//				for (int i = 0; i < r.length;i++)
+//					ja.put(r[i].toString());
 //		} catch (Throwable e) {
 //			e.printStackTrace();
 //		}
 //		return ja;
 //	}
-
-	private JSONArray toJSONArray(Address[] r) {
+	
+	private JSONArray toJSONArrayDisplay(Address[] r) {
 		JSONArray ja = new JSONArray();
 		try {
 			if (r!=null)
 				for (int i = 0; i < r.length;i++)
-					ja.put(r[i].toString());
+					ja.put(new InboxAddress(r[i].toString()).getDisplayName());
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
@@ -222,19 +223,14 @@ public class BlueboxMessage {
 		}
 	}
 
-	public String toJSON(boolean lite) throws Exception {
-		return toJSON(Locale.getDefault(),lite);
+	public String toJSON() throws Exception {
+		return toJSON(Locale.getDefault());
 	}
 
-	public String toJSON(Locale locale, boolean lite) throws Exception {
+	public String toJSON(Locale locale) throws Exception {
 		JSONObject json;
 		try {
-			//			if (lite) {
-			//				json = new JSONObject();				
-			//			}
-			//			else {
 			json = new JSONObject();				
-			//				json = getBlueBoxMimeMessage().toJSON(getProperty(UID),locale);	
 
 			List<DataSource> ds = getParser().getAttachmentList();
 			JSONArray ja = new JSONArray();
@@ -247,9 +243,9 @@ public class BlueboxMessage {
 			json.put(BlueboxMessage.TEXT_BODY, getText());
 
 			json.put(UID,properties.get(UID));
-			json.put(TO,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));
-			json.put(CC,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
-			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
+			json.put(TO,toJSONArrayDisplay(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));
+			json.put(CC,toJSONArrayDisplay(getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
+			json.put(FROM,toJSONArrayDisplay(getBlueBoxMimeMessage().getFrom()));
 			json.put(SUBJECT,getBlueBoxMimeMessage().getSubject());
 			json.put(INBOX,properties.get(INBOX));
 			json.put(RECEIVED,properties.getLong(RECEIVED));

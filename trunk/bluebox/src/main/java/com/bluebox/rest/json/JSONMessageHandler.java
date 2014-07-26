@@ -37,7 +37,7 @@ public class JSONMessageHandler extends AbstractHandler {
 		try {
 			String uid = extractUid(req.getRequestURI(),JSON_ROOT);
 			BlueboxMessage message = inbox.retrieve(uid);
-			JSONObject json = new JSONObject(message.toJSON(req.getLocale(),false));
+			JSONObject json = new JSONObject(message.toJSON(req.getLocale()));
 			json = securityScan(req,json);
 			out.write(json.toString());
 			out.flush();

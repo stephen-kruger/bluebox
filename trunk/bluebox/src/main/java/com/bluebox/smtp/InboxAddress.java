@@ -67,7 +67,7 @@ public class InboxAddress extends Object {
 
 	public String getDisplayName() {
 		try {
-			String p = new InternetAddress(address).getAddress();
+			String p = new InternetAddress(address).getPersonal();
 			if (p!=null)
 				if (p.length()>0)
 					return p;

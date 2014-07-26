@@ -12,6 +12,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 
+import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -32,7 +33,9 @@ import com.bluebox.smtp.storage.StorageFactory;
 
 public class Inbox implements SimpleMessageListener {
 	private static final String GLOBAL_COUNT_NODE = "global_message_count";
-
+	private long globalCount = -1;
+	private Date lastUpdated = new Date(0);
+	private JSONObject recentStats = new JSONObject();
 
 	public static final String EMAIL = "Email";
 	public static final String START = "Start";
@@ -40,7 +43,7 @@ public class Inbox implements SimpleMessageListener {
 	public static final String ORDERBY = "OrderBy";
 	private static final Logger log = Logger.getAnonymousLogger();
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
-	private Date lastUpdated = new Date(0);
+
 	private static Timer timer = null;
 	private static Inbox inbox;
 
@@ -353,13 +356,13 @@ public class Inbox implements SimpleMessageListener {
 			log.severe(t.getMessage());
 			t.printStackTrace();
 		}
-		// now update all our stats trackers, but only every 30 seconds
-		if ((new Date().getTime()-lastUpdated.getTime())>=30000) {
-			incrementGlobalCount();
-			updateStatsActive(new InboxAddress(recipient));
-			updateStatsRecent(message.getProperty(BlueboxMessage.INBOX),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT));
-			lastUpdated = new Date();
-		}
+		updateStats(message, recipient, false);
+	}
+
+	public void updateStats(BlueboxMessage message, String recipient, boolean force) throws AddressException {
+		incrementGlobalCount();
+		if (message!=null)
+			updateStatsRecent(message.getProperty(BlueboxMessage.INBOX),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT));	
 	}
 
 	public void clearErrors() throws Exception {
@@ -454,83 +457,42 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public long getStatsGlobalCount() {
-		return Long.parseLong(StorageFactory.getInstance().getProperty(GLOBAL_COUNT_NODE,"0"));	
+		if (globalCount<0)
+			globalCount = Long.parseLong(StorageFactory.getInstance().getProperty(GLOBAL_COUNT_NODE,"0"));	
+		return globalCount;
 	}
 
 	public void setStatsGlobalCount(long count) {
-		StorageFactory.getInstance().setProperty(GLOBAL_COUNT_NODE,Long.toString(count));	
+		globalCount = count;
+		if ((new Date().getTime()-lastUpdated.getTime())>=30000) {
+			StorageFactory.getInstance().setProperty(GLOBAL_COUNT_NODE,Long.toString(globalCount));
+		}
 	}
 
 	private void incrementGlobalCount() {
-		long newCount = getStatsGlobalCount()+1;
-		StorageFactory.getInstance().setProperty(GLOBAL_COUNT_NODE,Long.toString(newCount));
+		setStatsGlobalCount(globalCount+1);
 	}
 
 	public JSONObject getStatsRecent() {
-		JSONObject jo=null;
-		try {
-			String prop = StorageFactory.getInstance().getProperty("stats_recent", "{}");
-			if ((prop==null)||(prop=="{}")) {
-				return updateStatsRecent("","","");
-			}
-			return new JSONObject(prop);
-		} 
-		catch (JSONException e2) {
-			e2.printStackTrace();
-			return jo;
-		}
+		return recentStats;
 	}
 
 
-	public JSONObject getStatsActive() {
-		JSONObject jo=null;
-		try {
-			String prop = StorageFactory.getInstance().getProperty("stats_active", "{}");
-			if ((prop==null)||(prop=="{}")) {
-				return updateStatsActive(null);
-			}
-			return new JSONObject(prop);
-		} 
-		catch (JSONException e2) {
-			e2.printStackTrace();
-			return jo;
-		}		
-	}
-
-	private JSONObject updateStatsActive(InboxAddress lastInbox) {
-		JSONObject jo = new JSONObject();
-		try {	
-			jo = StorageFactory.getInstance().getMostActive();
-		} 
-		catch (Throwable e) {
-			e.printStackTrace();
-			try {
-				jo.put(BlueboxMessage.COUNT, 0);
-				jo.put(BlueboxMessage.INBOX, "");
-			} 
-			catch (JSONException e1) {
-				e1.printStackTrace();
-			}			
-		}
-
-		StorageFactory.getInstance().setProperty("stats_active",jo.toString());
-		return jo;
+	public JSONObject getStatsActive() {	
+		return StorageFactory.getInstance().getMostActive();
 	}
 
 	private JSONObject updateStatsRecent(String to, String from, String subject) {
-		JSONObject jo = new JSONObject();
-
 		try {
-			jo.put(BlueboxMessage.SUBJECT, subject);
-			jo.put(BlueboxMessage.INBOX, to);
-			jo.put(BlueboxMessage.FROM, from);
+			recentStats.put(BlueboxMessage.SUBJECT, subject);
+			recentStats.put(BlueboxMessage.INBOX, to);
+			recentStats.put(BlueboxMessage.FROM, from);
 		} 
 		catch (JSONException e1) {
 			e1.printStackTrace();
 		}
 
-		StorageFactory.getInstance().setProperty("stats_recent",jo.toString());
-		return jo;
+		return recentStats;
 	}
 
 	public void rebuildSearchIndexes() {

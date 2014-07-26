@@ -96,14 +96,14 @@ public class StorageTest extends TestCase {
 		assertEquals("Expected to find our mail added",1,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.ANY));
 		List<BlueboxMessage> list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.ANY, 0, 12, BlueboxMessage.RECEIVED, true);
 		assertEquals("Expected to find our mail added",1,list.size());
-		for (BlueboxMessage m : list) {
-			try {
-				log.info(m.toJSON(true));
-			} 
-			catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
+//		for (BlueboxMessage m : list) {
+//			try {
+//				log.info(m.toJSON());
+//			} 
+//			catch (JSONException e) {
+//				e.printStackTrace();
+//			}
+//		}
 	}
 
 	public void testAddAndRetrieve() throws Exception {
@@ -127,7 +127,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Subjects did not match",bbm.getProperty(BlueboxMessage.SUBJECT),stored.getProperty(BlueboxMessage.SUBJECT));
 		assertEquals("Subjects did not match",message.getSubject(),storedMM.getSubject());
 		assertEquals("From did not match",bbm.getProperty(BlueboxMessage.FROM),stored.getProperty(BlueboxMessage.FROM));
-		log.info(stored.toJSON(true));
+//		log.info(stored.toJSON());
 	}
 	
 	public void testInboxAndFullName() throws Exception {
@@ -232,11 +232,14 @@ public class StorageTest extends TestCase {
 		int count = 2;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.ANY));
 		TestUtils.addRandom(StorageFactory.getInstance(),count);
-		InboxAddress email = new InboxAddress("steve@here.com");
-		List<BlueboxMessage> mail = StorageFactory.getInstance().listMail(email, BlueboxMessage.State.ANY, 0,SIZE,BlueboxMessage.RECEIVED, true);
+		List<BlueboxMessage> mail = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.ANY, 0,SIZE,BlueboxMessage.RECEIVED, true);
 
 		for (BlueboxMessage message : mail) {
-			log.info(message.toJSON(true));
+			JSONObject jo = new JSONObject(message.toJSON());
+			assertTrue(jo.has(BlueboxMessage.UID));
+			assertTrue(jo.has(BlueboxMessage.INBOX));
+			assertTrue(jo.has(BlueboxMessage.RECEIVED));
+			assertTrue(jo.has(BlueboxMessage.SIZE));
 		}
 	}
 
