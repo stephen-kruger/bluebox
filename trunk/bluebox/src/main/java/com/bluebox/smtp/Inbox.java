@@ -109,6 +109,14 @@ public class Inbox implements SimpleMessageListener {
 			timer.cancel();
 			timer = null;
 		}
+		log.info("Stopping search engine");
+		try {
+			SearchIndexer.getInstance().stop();
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+			log.severe("Error stopping search engine :"+e.getMessage());
+		}
 		inbox = null;
 	}
 
@@ -407,7 +415,7 @@ public class Inbox implements SimpleMessageListener {
 
 		//			hint = QueryParser.escape(hint);
 		SearchIndexer search = SearchIndexer.getInstance();
-		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENTS, (int)start, (int)count, SearchIndexer.SearchFields.RECEIVED);
+		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENTS, (int)start, (int)count, SearchIndexer.SearchFields.RECEIVED,false);
 		for (int i = 0; i < results.length;i++) {
 			String uid = results[i].get(SearchFields.UID.name());
 			//				BlueboxMessage message = retrieve(uid);
@@ -481,7 +489,7 @@ public class Inbox implements SimpleMessageListener {
 	public JSONObject getStatsActiveInbox() {	
 		return StorageFactory.getInstance().getMostActiveInbox();
 	}
-	
+
 	public JSONObject getStatsActiveSender() {	
 		return StorageFactory.getInstance().getMostActiveSender();
 	}
