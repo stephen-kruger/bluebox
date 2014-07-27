@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
-
+<!DOCTYPE project>
 
 <!--
 W3C rules retrieved from:
@@ -7,8 +7,7 @@ http://www.w3.org/TR/html401/struct/global.html
 -->
 
 
-<anti-samy-rules xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:noNamespaceSchemaLocation="antisamy.xsd">
+<anti-samy-rules xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" >
 
 	<directives>
 		<directive name="omitXmlDeclaration" value="true"/>

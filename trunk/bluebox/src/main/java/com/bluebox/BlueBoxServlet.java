@@ -53,59 +53,59 @@ public class BlueBoxServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		log.info(req.getRequestURI());
+		log.fine(req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
-			log.info("doGetMessageDetail");
+			log.fine("doGetMessageDetail");
 			new JSONMessageHandler().doGetMessageDetail(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONAutoCompleteHandler.JSON_ROOT)>=0){
-			log.info("JSONAutoCompleteHandler");
+			log.fine("JSONAutoCompleteHandler");
 			new JSONAutoCompleteHandler().doAutoComplete(Inbox.getInstance(), req, resp);
 			return;
 		}	
 		if (req.getRequestURI().indexOf(JSONInlineHandler.JSON_ROOT)>=0){
-			log.info("doGetInlineAttachment");
+			log.fine("doGetInlineAttachment");
 			new JSONInlineHandler().doGetInlineAttachment(Inbox.getInstance(),req,resp);
 			return;
 		}		
 		if (req.getRequestURI().indexOf(JSONAttachmentHandler.JSON_ROOT)>=0){
-			log.info("doGetMessageAttachment");
+			log.fine("doGetMessageAttachment");
 			new JSONAttachmentHandler().doGetMessageAttachment(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONRawMessageHandler.JSON_ROOT)>=0){
-			log.info("doGetRawDetail");
+			log.fine("doGetRawDetail");
 			new JSONRawMessageHandler().doGetRawDetail(Inbox.getInstance(),req,resp);
 			return;
 		}		
 		if (req.getRequestURI().indexOf(JSONInboxHandler.JSON_ROOT)>=0){
-			log.info("doGetInbox");
+			log.fine("doGetInbox");
 			new JSONInboxHandler().doGetInbox(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONSearchHandler.JSON_ROOT)>=0){
-			log.info("doSearchInbox");
+			log.fine("doSearchInbox");
 			new JSONSearchHandler().doSearchInbox(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONFolderHandler.JSON_ROOT)>=0){
-			log.info("doGetFolder");
+			log.fine("doGetFolder");
 			new JSONFolderHandler().doGetFolder(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONStatsHandler.JSON_ROOT)>=0){
-			log.info("doGetStats");
+			log.fine("doGetStats");
 			new JSONStatsHandler().doGet(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONErrorHandler.JSON_DETAIL_ROOT)>=0){
-			log.info("doGetErrorDetail");
+			log.fine("doGetErrorDetail");
 			new JSONErrorHandler().doGetDetail(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONErrorHandler.JSON_ROOT)>=0){
-			log.info("doGetErrors");
+			log.fine("doGetErrors");
 			new JSONErrorHandler().doGet(Inbox.getInstance(),req,resp);
 			return;
 		}
@@ -125,7 +125,7 @@ public class BlueBoxServlet extends HttpServlet {
 			return;
 		}
 		if (req.getRequestURI().indexOf("rest/admin/prune")>=0){
-			log.info("Prune");
+			log.fine("Prune");
 			try {
 				Inbox.getInstance().cleanUp();
 				resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
@@ -219,7 +219,7 @@ public class BlueBoxServlet extends HttpServlet {
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 	throws ServletException, IOException {
-		log.info("doDelete :"+req.getRequestURI());
+		log.fine("doDelete :"+req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
 			new JSONMessageHandler().doDelete(Inbox.getInstance(),req,resp);
 			return;

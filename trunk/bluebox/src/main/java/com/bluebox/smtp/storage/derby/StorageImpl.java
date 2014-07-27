@@ -460,7 +460,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		log.fine("Update mail entry "+uid+" to "+state);
 	}
 
-	@Override
 	public void setProperty(String key, String value) {
 		if (value.length()>512) {
 			value = value.substring(0,512);
@@ -488,7 +487,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-	@Override
 	public String getProperty(String key, String defaultValue) {
 		String value = defaultValue;
 		try {
@@ -509,7 +507,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return value;
 	}
 
-	@Override
 	public boolean hasProperty(String key) {
 		String r = Long.toString(new Random().nextLong());
 		return !getProperty(key,r).equals(r);		
@@ -575,6 +572,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public JSONObject getMostActiveInbox() {
+		long start = new Date().getTime();
+
 		JSONObject jo = new JSONObject();
 		try {
 			jo.put(BlueboxMessage.COUNT, 0);
@@ -617,6 +616,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (JSONException je) {
 			je.printStackTrace();
 		}
+		log.fine("Calculated active inbox count in "+(new Date().getTime()-start)+"ms");
 		return jo;
 	}
 

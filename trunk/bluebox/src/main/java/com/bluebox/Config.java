@@ -3,14 +3,13 @@ package com.bluebox;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
-
-import com.bluebox.smtp.storage.StorageFactory;
 
 public class Config extends CompositeConfiguration {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -30,6 +29,8 @@ public class Config extends CompositeConfiguration {
 	public static final String BLUEBOX_STORAGE_HOME     = "bluebox_storage_home";
 	public static final String BLUEBOX_STORAGE_CONFIG   = "bluebox_storage_config";
 	public static final String BLUEBOX_STRICT_CHECKING  = "bluebox_strict";
+
+	Preferences prefs = Preferences.systemNodeForPackage(Config.class);
 
 	private Config() {
 		addConfiguration(new SystemConfiguration());
@@ -90,7 +91,7 @@ public class Config extends CompositeConfiguration {
 	
 	public void setString(String key, String value) {
 		// save the setting so it's available across restarts
-		StorageFactory.getInstance().setProperty(key, value);
+		prefs.put(key, value);
 		super.setProperty(key, value);
 	}
 	
