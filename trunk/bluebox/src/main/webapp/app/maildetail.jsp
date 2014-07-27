@@ -11,6 +11,78 @@
 	ResourceBundle mailDetailsResource = ResourceBundle.getBundle("mailDetails",request.getLocale());
 	Config bbconfig = Config.getInstance();
 %>
+
+<style>
+.mailDate {
+	align: right;
+}
+
+.headerLabel {
+	font-weight: normal;
+	padding-left: 5px;
+	padding-right: 5px;
+	color: Gray;
+	display: inline-table !important;
+}
+
+.attachmentsEmail {
+	color: #E26200;
+	font-weight: normal;
+	display: inline;
+	display: inline-table !important;
+}
+
+.toEmail {
+	font-weight: bold;
+	display: inline;
+	color: #000000;
+	display: inline-table !important;
+}
+
+.ccEmail {
+	font-weight: bold;
+	display: inline;
+	color: Gray;
+	display: inline-table !important;
+}
+
+.fromEmail {
+	font-weight: bold;
+	display: inline;
+	color: #E26200;
+	display: inline-table !important;
+}
+
+.subject {
+	font-weight: bold;
+	font-size: 1.5em;
+	float: left;
+}
+
+.headerBox {
+	padding: 20px;
+}
+
+.headerBoxTable {
+	width: 100%;
+	border: 0;
+}
+
+.textBody {
+	border: 0;
+	overflow: auto;
+	position: relative;
+	min-height: 400px;
+	width: 100%;
+	vertical-align: top;
+}
+
+.htmlBody {
+	width: 100%;
+	height: 100%;
+	border: 0;
+}
+</style>
 <script type="text/javascript" charset="utf-8">
 
 	 
@@ -89,7 +161,7 @@
 			var str = "";
 			var base = "<%=JSONAttachmentHandler.JSON_ROOT%>/"+uid+"/";
 			for (var i=0; i < attachmentArray.length; i++ ) {
-				str += "&nbsp;<a href=\"<%=request.getContextPath()%>/"+base+i+"/"+attachmentArray[i]+"\" target=\"_blank\"><img class='attachmentIcon' src='"+getAttachmentIcon(attachmentArray[i])+"'/>"+attachmentArray[i]+"</a>&nbsp;";
+				str += "&nbsp;<a class='attachmentsEmail' href=\"<%=request.getContextPath()%>/"+base+i+"/"+attachmentArray[i]+"\" target=\"_blank\"><img class='attachmentIcon' src='"+getAttachmentIcon(attachmentArray[i])+"'/>"+attachmentArray[i]+"</a>&nbsp;";
 			}
 			attachmenDiv = document.getElementById(id);
 			attachmenDiv.innerHTML = str;
@@ -120,6 +192,7 @@
 		loadInboxAndFolder(currentInbox);
 	}
 	
+	/*
 	function displayArrayButton(parentId, array) {
 		try {
 			var parentNode = document.getElementById(parentId);
@@ -138,21 +211,22 @@
 			alert("maildetail2:"+err);
 		}
 	}
+	*/
 	
 	function removeQuotes(str) {
 		return str.replace(/['"]/g,'');
 	}
 	
 	/* This is for the detail section of the viewed email message */
-	function displayArray(label, array) {
+	function displayArray(label, array, classname) {
 		if (array) {
 			var str = "";
 			for (var i = 0; i < array.length; i++) {
 				if (i>0) {
-					str += ", <a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/mailSmall.png\"/></a>"+encodeMyHtml(array[i]);
+					str += ", <a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/mailSmall.png\"/>"+encodeMyHtml(array[i],classname)+"</a>";
 				}
 				else {
-					str += "<a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/mailSmall.png\"/></a>"+encodeMyHtml(array[i]);
+					str += "<a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/mailSmall.png\"/>"+encodeMyHtml(array[i], classname)+"</a>";
 				}
 			}
 			label.innerHTML = str;
@@ -201,14 +275,14 @@
 					load: function(data) {
 						document.getElementById("subjectIcon").style.display="block";
 						if (data.<%=BlueboxMessage.TO%>){
-							displayArray(document.getElementById("To"), data.<%=BlueboxMessage.TO%>);
+							displayArray(document.getElementById("To"), data.<%=BlueboxMessage.TO%>, 'toEmail');
 						}
 						if (data.<%=BlueboxMessage.CC%>){
 							document.getElementById("CcLabel").style.display="block";
-							displayArray(document.getElementById("Cc"), data.<%=BlueboxMessage.CC%>);
+							displayArray(document.getElementById("Cc"), data.<%=BlueboxMessage.CC%>, 'ccEmail');
 						}
 						if (data.<%=BlueboxMessage.FROM%>){
-							displayArray(document.getElementById("From"), data.<%=BlueboxMessage.FROM%>);
+							displayArray(document.getElementById("From"), data.<%=BlueboxMessage.FROM%>, 'fromEmail');
 						}
 						if (data.Inbox){
 							currentInbox = data.Inbox;
@@ -219,11 +293,10 @@
 						else
 							document.getElementById("Subject").innerHTML = "";
 						// date field may be null
-						if (data.Date)
-							document.getElementById("Date").innerHTML = data.Date[0];
+						if (data.<%=BlueboxMessage.RECEIVED%>)
+							document.getElementById("Date").innerHTML = data.<%=BlueboxMessage.RECEIVED%>;
 						else
 							document.getElementById("Date").innerHTML = "";
-		
 						if (data.Attachment){
 							displayAttachments(uid,"Attachment",data.Attachment);
 						}
@@ -248,12 +321,17 @@
 		}
 	}
 	
-	function encodeMyHtml(str) {
+	function encodeMyHtml(str, classname) {
 		try {
-		   var div = document.createElement("div");
-		   var text = document.createTextNode(str);
-		   div.appendChild(text);
-		   return div.innerHTML;
+			var div = document.createElement("div");
+			var span = document.createElement("span");
+			var attClass = document.createAttribute('class');
+			attClass.nodeValue = classname;
+			span.setAttributeNode(attClass);
+			var text = document.createTextNode(str);
+			span.appendChild(text);
+			div.appendChild(span);
+			return div.innerHTML;
 		}
 		catch (err) {
 			alert("maildetail6:"+err);
@@ -403,61 +481,7 @@
 				}
 			});
 </script>
-<style>
-.mailDate {
-	align: right;
-}
 
-.headerValue {
-	display: inline;
-	font-weight: bold;
-}
-
-.headerLabel {
-	font-weight: normal;
-	padding-left: 5px;
-	padding-right: 5px;
-	color: Gray;
-	display: inline-table !important;
-}
-
-.fromHeaderValue {
-	font-weight: bold;
-	display: inline;
-	color: #E26200;
-	display: inline-table !important;
-}
-
-.subject {
-	font-weight: bold;
-	font-size: 1.5em;
-	float: left;
-}
-
-.headerBox {
-	padding: 20px;
-}
-
-.headerBoxTable {
-	width: 100%;
-	border: 0;
-}
-
-.textBody {
-	border: 0;
-	overflow: auto;
-	position: relative;
-	min-height: 400px;
-	width: 100%;
-	vertical-align: top;
-}
-
-.htmlBody {
-	width: 100%;
-	height: 100%;
-	border: 0;
-}
-</style>
 <div id="mailHeaderBlock" class="headerBox" style="padding-top: 10px">
 	<table class="headerBoxTable">
 		<tr>
@@ -470,21 +494,21 @@
 						<td><span id="Subject" class="subject"></span></td>
 					</tr>
 					<tr>
-						<td align="left"><span id="From" class="fromHeaderValue"></span>&nbsp;
+						<td align="left"><span id="From"></span>&nbsp;
 						
 						<td align="right"><span id="Date" class="mailDate"></span></td>
 					</tr>
 					<tr>
 						<td align="left"><span class="headerLabel">&nbsp;<%= mailDetailsResource.getString("to") %></span>&nbsp;
-							<span id="To" class="headerValue"></span></td>
+							<span id="To"></span></td>
 					</tr>
 					<tr>
 						<td align="left"><span id="CcLabel" class="headerLabel">&nbsp;<%= mailDetailsResource.getString("cc") %></span>&nbsp;
-							<span id="Cc" class="fromHeaderValue"></span></td>
+							<span id="Cc"></span></td>
 					</tr>
 					<tr>
 						<td align="left"><span class="headerLabel"><%= mailDetailsResource.getString("attachments") %></span>&nbsp;
-							<div id="Attachment" class="fromHeaderValue"
+							<div id="Attachment" class="attachmentsEmail"
 								data-dojo-type="dijit/layout/ContentPane"
 								style="padding: 0px 0px 0px 0px; display: none;"></div></td>
 					</tr>

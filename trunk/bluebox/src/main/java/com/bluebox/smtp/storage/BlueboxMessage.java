@@ -248,7 +248,7 @@ public class BlueboxMessage {
 			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));				
 			json.put(SUBJECT,getBlueBoxMimeMessage().getSubject());
 			json.put(INBOX,properties.get(INBOX));
-			json.put(RECEIVED,properties.getLong(RECEIVED));
+			json.put(RECEIVED,properties.get(RECEIVED));
 			json.put(STATE,properties.get(STATE));
 			json.put(SIZE,properties.get(SIZE));
 
