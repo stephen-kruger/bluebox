@@ -116,27 +116,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 	}
 
-	private void createIndexes(String table, String[] indexes) throws Exception {
-		Connection connection = getConnection();
-		Statement s = connection.createStatement();
-		for (int i = 0; i < indexes.length; i++) {
-			try {
-				s.executeUpdate("CREATE INDEX "+indexes[i]+"_INDEX_ASC ON "+table+"("+indexes[i]+" ASC)");
-			}
-			catch (Throwable t) {
-				log.fine("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
-			}
-			try {
-				s.executeUpdate("CREATE INDEX "+indexes[i]+"_INDEX_DESC ON "+table+"("+indexes[i]+" DESC)");
-			}
-			catch (Throwable t) {
-				log.fine("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
-			}
-		}
-		s.close();
-		connection.close();
-	}
-
 	private void setupTables() throws Exception {
 		Connection connection = getConnection();
 		Statement s = connection.createStatement();
@@ -165,13 +144,34 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 		connection.close();
 
-		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED};
+		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED};
 		createIndexes(INBOX_TABLE,indexes);
 
 		indexes = new String[]{KEY,VALUE};
 		createIndexes(PROPS_TABLE,indexes);
 	}
 
+	private void createIndexes(String table, String[] indexes) throws Exception {
+		Connection connection = getConnection();
+		Statement s = connection.createStatement();
+		for (int i = 0; i < indexes.length; i++) {
+			try {
+				s.executeUpdate("CREATE INDEX "+indexes[i]+"_INDEX_ASC ON "+table+"("+indexes[i]+" ASC)");
+			}
+			catch (Throwable t) {
+				log.fine("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
+			}
+			try {
+				s.executeUpdate("CREATE INDEX "+indexes[i]+"_INDEX_DESC ON "+table+"("+indexes[i]+" DESC)");
+			}
+			catch (Throwable t) {
+				log.fine("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
+			}
+		}
+		s.close();
+		connection.close();
+	}
+	
 	private String add(String id, InboxAddress inbox, String from, String subject, Date date, State state, long size, InputStream blob) throws Exception {
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
@@ -384,7 +384,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return count;
 	}
 
-	private ResultSet listMailCommon(Connection connection, InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
+	private ResultSet listMailCommon(String cols, Connection connection, InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		if (count<0)
 			count = Integer.MAX_VALUE;
 		String orderStr;
@@ -397,22 +397,23 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				email=null;
 		Statement s = connection.createStatement();
 		PreparedStatement ps;
+
 		if (email==null) {
 			if (state==State.ANY) {
-				ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+				ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 			}
 			else {
-				ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.STATE+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+				ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.STATE+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 				ps.setInt(1, state.ordinal());
 			}
 		}
 		else {
 			if (state==State.ANY) {
-				ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.INBOX+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+				ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.INBOX+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 				ps.setString(1, email.getAddress());
 			}
 			else {
-				ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.INBOX+"=? AND "+BlueboxMessage.STATE+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+				ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.INBOX+"=? AND "+BlueboxMessage.STATE+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 				ps.setString(1, email.getAddress());
 				ps.setInt(2, state.ordinal());
 			}
@@ -424,7 +425,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public List<BlueboxMessage> listMail(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		Connection connection = getConnection();
-		ResultSet result = listMailCommon(connection, email, state, start, count, orderBy, ascending);
+		ResultSet result = listMailCommon("*",connection, email, state, start, count, orderBy, ascending);
 
 		List<BlueboxMessage> list = new ArrayList<BlueboxMessage>();
 		while (result.next()) {
@@ -438,7 +439,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public List<JSONObject> listMailLite(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
 		Connection connection = getConnection();
-		ResultSet result = listMailCommon(connection, email, state, start, count, orderBy, ascending);
+		String cols = 	BlueboxMessage.UID+","+
+				BlueboxMessage.INBOX+","+
+				BlueboxMessage.FROM+","+
+				BlueboxMessage.SUBJECT+","+
+				BlueboxMessage.RECEIVED+","+
+				BlueboxMessage.STATE+","+
+				BlueboxMessage.SIZE;
+		ResultSet result = listMailCommon(cols,connection, email, state, start, count, orderBy, ascending);
 		List<JSONObject> list = new ArrayList<JSONObject>();
 		while (result.next()) {
 			JSONObject message = loadMessageJSON(result,locale);			
