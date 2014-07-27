@@ -73,8 +73,18 @@ public class SearchIndexer {
 		config = new IndexWriterConfig(version, analyzer);
 		indexWriter = new IndexWriter(index, config);
 	}
+	
+	public void stop() {
+		try {
+			indexWriter.close();
+			index.close();
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
-	public Document[] search(String querystr, SearchFields fields, int start, int count, SearchFields orderBy) throws ParseException, IOException {
+	public Document[] search(String querystr, SearchFields fields, int start, int count, SearchFields orderBy, boolean ascending) throws ParseException, IOException {
 		//		querystr = QueryParser.escape(querystr);
 		//		querystr = "*"+QueryParser.escape(querystr)+"*";
 		//		querystr = "*"+querystr+"*";
@@ -88,12 +98,6 @@ public class SearchIndexer {
 					SearchFields.SUBJECT.name()},
 					analyzer);
 			break;
-			//		case TO :
-			//			queryParser = new MultiFieldQueryParser(version,
-			//					new String[] {
-			//					SearchFields.TO.name()},
-			//					analyzer);
-			//			break;
 		case BODY :
 			queryParser = new MultiFieldQueryParser(version,
 					new String[] {
@@ -138,11 +142,17 @@ public class SearchIndexer {
 
 			Sort sort;
 			try {
-				sort = new Sort(new SortField(orderBy.name(),SortField.Type.STRING));
+				SortField.Type type;
+				if ((orderBy==SearchFields.RECEIVED)||(orderBy==SearchFields.SIZE))
+					type = SortField.Type.LONG;
+				else
+					type = SortField.Type.STRING;
+				sort = new Sort(new SortField(orderBy.name(),type,ascending));
 			}
 			catch (Throwable t) {
+				t.printStackTrace();
 				log.warning("Unsupported orderBy value :"+orderBy);
-				sort = new Sort(new SortField(SearchFields.RECEIVED.name(),SortField.Type.LONG));
+				sort = new Sort(new SortField(SearchFields.RECEIVED.name(),SortField.Type.LONG,ascending));
 			}
 			// if count is 0, then return only total number of hits, without sending all the data.
 			// used to calculate number of search results
@@ -167,7 +177,7 @@ public class SearchIndexer {
 	}
 
 	public long searchInboxes(String search, Writer writer, int start,	int count, SearchFields fields, SearchFields orderBy, boolean ascending) throws ParseException, IOException {
-		Document[] hits = search(search, fields, start, count, orderBy);
+		Document[] hits = search(search, fields, start, count, orderBy, ascending);
 		JSONObject curr;
 		writer.write("[");
 		for (int i = 0; i < hits.length; i++) {

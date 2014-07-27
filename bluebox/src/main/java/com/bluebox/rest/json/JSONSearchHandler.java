@@ -44,7 +44,7 @@ public class JSONSearchHandler extends AbstractHandler {
 		String searchScope = extractFragment(req.getRequestURI(), 2);
 		// check sort order, which comes in a strange format "sort(-Subject)=null"
 		SearchIndexer.SearchFields orderBy = SearchIndexer.SearchFields.RECEIVED;
-		boolean ascending = false;
+		boolean ascending = true;
 		String n;
 		for (
 		@SuppressWarnings("unchecked")
@@ -78,7 +78,7 @@ public class JSONSearchHandler extends AbstractHandler {
 			
 		try {
 			// tell the grid how many items we have
-			log.info("Sending JSON search view for "+search+" first="+first+" last="+last);
+			log.info("Sending JSON search view for "+search+" first="+first+" last="+last+" orderby="+orderBy.name());
 			Writer writer = resp.getWriter();
 			long totalCount = inbox.searchInbox(search, writer, first, last-first, SearchIndexer.SearchFields.valueOf(searchScope), orderBy, ascending);
 			log.info("Total result set was length "+totalCount);

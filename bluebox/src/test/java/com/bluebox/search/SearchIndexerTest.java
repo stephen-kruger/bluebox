@@ -43,53 +43,53 @@ public class SearchIndexerTest extends TestCase {
 	}
 
 	public void testHtmlSearch() throws IOException, ParseException {
-		assertEquals("Missing expected search results",4,si.search("sender",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
+		assertEquals("Missing expected search results",4,si.search("sender",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 	}
 
 	public void testMultiWord() throws IOException, ParseException {
-		assertEquals("Missing expected search results",1,si.search("Art of Computer",SearchIndexer.SearchFields.BODY,0,10,SearchIndexer.SearchFields.BODY).length);
-		assertEquals("Missing expected search results",1,si.search("for dummies",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT).length);
-		assertEquals("Missing expected search results",1,si.search("in action",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT).length);
-		assertEquals("Missing expected search results",1,si.search("Subject in action",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT).length);
-		assertEquals("Missing expected search results",0,si.search("Subject in action",SearchIndexer.SearchFields.BODY,0,10,SearchIndexer.SearchFields.BODY).length);
+		assertEquals("Missing expected search results",1,si.search("Art of Computer",SearchIndexer.SearchFields.BODY,0,10,SearchIndexer.SearchFields.BODY,false).length);
+		assertEquals("Missing expected search results",1,si.search("for dummies",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,si.search("in action",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,si.search("Subject in action",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",0,si.search("Subject in action",SearchIndexer.SearchFields.BODY,0,10,SearchIndexer.SearchFields.BODY,false).length);
 	}
 
 	public void testSubjectSearch() throws IOException, ParseException {
-		assertEquals("Missing expected search results",1,si.search("action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
-		assertEquals("Missing expected search results",1,si.search("action",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT).length);
+		assertEquals("Missing expected search results",1,si.search("action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,si.search("action",SearchIndexer.SearchFields.SUBJECT,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 	}
 
 	public void testFromSearch() throws IOException, ParseException {
-		assertEquals("Missing expected search results",1,si.search("johnson",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
-		assertEquals("Missing expected search results",1,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
-		assertEquals("Missing expected search results",1,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
+		assertEquals("Missing expected search results",1,si.search("johnson",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 	}
 	
 	public void testRecipientSearch() throws IOException, ParseException {
-		assertEquals("Missing expected search results",1,si.search("receiever1",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED).length);
-		assertEquals("Missing expected search results",1,si.search("receiever1@here.com",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED).length);
-		assertEquals("Missing expected search results",1,si.search("receiever2",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED).length);
-//		assertEquals("Missing expected search results",4,si.search("receiever",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED).length);
+		assertEquals("Missing expected search results",1,si.search("receiever1",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,si.search("receiever1@here.com",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,si.search("receiever2",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED,false).length);
+//		assertEquals("Missing expected search results",4,si.search("receiever",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED,false).length);
 	}
 
 	public void testMailIndexing() throws Exception {
 		Inbox.getInstance();
 		BlueboxMessage msg = TestUtils.addRandom(StorageFactory.getInstance());
 		si.indexMail(msg);
-		assertEquals("Missing expected search results",1,si.search(msg.getProperty(BlueboxMessage.SUBJECT),SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
-		assertEquals("Missing expected search results",1,si.search("steve",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
+		assertEquals("Missing expected search results",1,si.search(msg.getProperty(BlueboxMessage.SUBJECT),SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,si.search("steve",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 		Inbox.getInstance().stop();
 	}
 
 	public void testDelete() throws IOException, ParseException {
 		si.deleteDoc("55063554A");
-		assertEquals("Missing expected search results",0,si.search("johnson",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
-		assertEquals("Missing expected search results",0,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
-		assertEquals("Missing expected search results",1,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT).length);
+		assertEquals("Missing expected search results",0,si.search("johnson",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",0,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 	}
 
 	public void testTextSearch() throws IOException, ParseException {
-		Document[] hits = si.search("lucene",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT);
+		Document[] hits = si.search("lucene",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false);
 		assertEquals("Missing expected search results",3,hits.length);
 		for(int i=0;i<hits.length;++i) {
 			log.info((i + 1) + ". " + hits[i].get(SearchIndexer.SearchFields.UID.name()));
@@ -103,9 +103,9 @@ public class SearchIndexerTest extends TestCase {
 	}
 
 	public void testTypeAhead() throws ParseException, IOException {
-		Document[] results = si.search("receiever*", SearchIndexer.SearchFields.RECIPIENTS, 0, 199, SearchIndexer.SearchFields.RECEIVED);
+		Document[] results = si.search("receiever*", SearchIndexer.SearchFields.RECIPIENTS, 0, 199, SearchIndexer.SearchFields.RECEIVED,false);
 		assertTrue("Missing autocomplete results",results.length==4);
-		results = si.search("receiever1*", SearchIndexer.SearchFields.RECIPIENTS, 0, 199, SearchIndexer.SearchFields.RECEIVED);
+		results = si.search("receiever1*", SearchIndexer.SearchFields.RECIPIENTS, 0, 199, SearchIndexer.SearchFields.RECEIVED,false);
 		assertTrue("Missing autocomplete results",results.length>0);
 	}
 
