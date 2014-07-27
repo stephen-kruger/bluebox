@@ -331,7 +331,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		cursor.close();
 	}
 
-	@Override
 	public void setProperty(String key, String value) {
 		//not allowed to have '.'s in field names
 		key = key.replace('.', 'x');
@@ -360,7 +359,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-	@Override
 	public String getProperty(String key, String defaultValue) {
 		//not allowed to have '.'s in field names
 		key = key.replace('.', 'x');
@@ -372,7 +370,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return defaultValue;
 	}
 
-	@Override
 	public boolean hasProperty(String key) {
 		String r = Long.toString(new Random().nextLong());
 		return !getProperty(key,r).equals(r);		

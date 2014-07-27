@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -33,8 +34,7 @@ import com.bluebox.smtp.storage.StorageFactory;
 
 public class Inbox implements SimpleMessageListener {
 	private static final String GLOBAL_COUNT_NODE = "global_message_count";
-	private long globalCount = -1;
-	private Date lastUpdated = new Date(0);
+	Preferences prefs = Preferences.systemNodeForPackage(Inbox.class);
 	private JSONObject recentStats = new JSONObject();
 
 	public static final String EMAIL = "Email";
@@ -465,20 +465,15 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public long getStatsGlobalCount() {
-		if (globalCount<0)
-			globalCount = Long.parseLong(StorageFactory.getInstance().getProperty(GLOBAL_COUNT_NODE,"0"));	
-		return globalCount;
+		return prefs.getLong(GLOBAL_COUNT_NODE, 0);	
 	}
 
 	public void setStatsGlobalCount(long count) {
-		globalCount = count;
-		if ((new Date().getTime()-lastUpdated.getTime())>=30000) {
-			StorageFactory.getInstance().setProperty(GLOBAL_COUNT_NODE,Long.toString(globalCount));
-		}
+		prefs.putLong(GLOBAL_COUNT_NODE,count);
 	}
 
 	private void incrementGlobalCount() {
-		setStatsGlobalCount(globalCount+1);
+		setStatsGlobalCount(getStatsGlobalCount()+1);
 	}
 
 	public JSONObject getStatsRecent() {

@@ -78,6 +78,7 @@ public class SearchIndexer {
 		try {
 			indexWriter.close();
 			index.close();
+			si = null;
 		} 
 		catch (IOException e) {
 			e.printStackTrace();
