@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.text.MessageFormat;
+import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -20,6 +21,7 @@ import org.owasp.validator.html.CleanResults;
 import org.owasp.validator.html.Policy;
 
 import com.bluebox.smtp.Inbox;
+import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONMessageHandler extends AbstractHandler {
@@ -38,6 +40,7 @@ public class JSONMessageHandler extends AbstractHandler {
 			String uid = extractUid(req.getRequestURI(),JSON_ROOT);
 			BlueboxMessage message = inbox.retrieve(uid);
 			JSONObject json = new JSONObject(message.toJSON(req.getLocale()));
+			json.put(BlueboxMessage.RECEIVED, AbstractStorage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
 			json = securityScan(req,json);
 			out.write(json.toString());
 			out.flush();

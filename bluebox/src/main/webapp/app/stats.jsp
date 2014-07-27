@@ -38,8 +38,8 @@
 				var queryResults = jStore.fetch({
 					  onComplete : 
 						  	function(queryResults, request) {
-						  document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
-							document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.sender.<%=BlueboxMessage.FROM%>+'">'+queryResults.sender.<%=BlueboxMessage.FROM%>+'</a><span class="badge">'+queryResults.sender.<%=BlueboxMessage.COUNT%>+'</span>';
+						  		document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
+								document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.sender.<%=BlueboxMessage.FROM%>+'">'+queryResults.sender.<%=BlueboxMessage.FROM%>+'</a><span class="badge">'+queryResults.sender.<%=BlueboxMessage.COUNT%>+'</span>';
 							}
 				});
 			});
@@ -59,7 +59,12 @@
 				var queryResults = jStore.fetch({
 					  onComplete : 
 						  	function(queryResults, request) {
-								document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
+						  		if (queryResults.recent.<%=BlueboxMessage.SUBJECT%>) {
+									document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
+						  		}
+						  		else {
+									document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML="<%= statsResource.getString("no_update") %>";						  			
+						  		}
 								document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
 								document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.sender.<%=BlueboxMessage.FROM%>+'">'+queryResults.sender.<%=BlueboxMessage.FROM%>+'</a><span class="badge">'+queryResults.sender.<%=BlueboxMessage.COUNT%>+'</span>';
 								document.getElementById("statsGlobalCount").innerHTML = '<%= statsResource.getString("traffic_text1") %> <span id="statsGlobalCount">'+queryResults.<%=BlueboxMessage.COUNT%>+'</span> <%= statsResource.getString("traffic_text2") %>';
