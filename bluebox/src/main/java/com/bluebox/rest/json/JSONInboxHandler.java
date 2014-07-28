@@ -2,7 +2,6 @@ package com.bluebox.rest.json;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Enumeration;
 import java.util.logging.Logger;
 
 import javax.mail.internet.AddressException;
@@ -57,51 +56,51 @@ public class JSONInboxHandler extends AbstractHandler {
 		BlueboxMessage.State state = extractState(req.getRequestURI(),JSON_ROOT);
 
 		// check sort order, which comes in a strange format "sort(-Subject)=null"
-		String orderBy = BlueboxMessage.RECEIVED;
-		boolean ascending = false;
-		String n;
-		for (
-		@SuppressWarnings("unchecked")
-		Enumeration<String> names = req.getParameterNames(); names.hasMoreElements();) {
-			n = names.nextElement();
-			if (n.contains("sort")) {
-				if (n.contains("-")) {
-					ascending = false;
-				}
-				else {
-					ascending = true;
-				}
-			}
-			if (n.contains(BlueboxMessage.RECEIVED)) {
-				orderBy = BlueboxMessage.RECEIVED;
-				break;
-			}
-			if (n.contains(BlueboxMessage.FROM)) {
-				orderBy = BlueboxMessage.FROM;
-				break;
-			}
-			if (n.contains(BlueboxMessage.SUBJECT)) {
-				orderBy = BlueboxMessage.SUBJECT;
-				break;
-			}
-			if (n.contains(BlueboxMessage.SIZE)) {
-				orderBy = BlueboxMessage.SIZE;
-				break;
-			}			
-		}
-
-		// process the paging params "Range: items=0-24"
-		String contentHeader = req.getHeader("Range");
-		int first = getStart(contentHeader);
-		int last = getEnd(contentHeader);
-
+//		String orderBy = BlueboxMessage.RECEIVED;
+//		boolean ascending = false;
+//		String n;
+//		for (
+//		@SuppressWarnings("unchecked")
+//		Enumeration<String> names = req.getParameterNames(); names.hasMoreElements();) {
+//			n = names.nextElement();
+//			if (n.contains("sort")) {
+//				if (n.contains("-")) {
+//					ascending = false;
+//				}
+//				else {
+//					ascending = true;
+//				}
+//			}
+//			if (n.contains(BlueboxMessage.RECEIVED)) {
+//				orderBy = BlueboxMessage.RECEIVED;
+//				break;
+//			}
+//			if (n.contains(BlueboxMessage.FROM)) {
+//				orderBy = BlueboxMessage.FROM;
+//				break;
+//			}
+//			if (n.contains(BlueboxMessage.SUBJECT)) {
+//				orderBy = BlueboxMessage.SUBJECT;
+//				break;
+//			}
+//			if (n.contains(BlueboxMessage.SIZE)) {
+//				orderBy = BlueboxMessage.SIZE;
+//				break;
+//			}			
+//		}
+//
+//		// process the paging params "Range: items=0-24"
+//		String contentHeader = req.getHeader("Range");
+//		int first = getStart(contentHeader);
+//		int last = getEnd(contentHeader);
+		DojoPager pager = new DojoPager(req,BlueboxMessage.RECEIVED);
 		try {
 			// tell the grid how many items we have
 			long totalCount = inbox.getMailCount(inboxAddress, state);
-			resp.setHeader("Content-Range", "items "+first+"-"+last+"/"+totalCount);//Content-Range: items 0-24/66
-			log.info("Sending JSON inbox view for "+inboxAddress+" first="+first+" last="+last);
+			pager.setRange(resp, totalCount);
+			log.info("Sending JSON inbox view for "+inboxAddress+" first="+pager.getFirst()+" last="+pager.getLast());
 			Writer writer = resp.getWriter();
-			inbox.listInbox(inboxAddress, state, writer, first, last-first+1, orderBy, ascending, resp.getLocale());
+			inbox.listInbox(inboxAddress, state, writer, pager.getFirst(), pager.getCount(), pager.getOrderBy().get(0), pager.isAscending(0), resp.getLocale());
 			writer.flush();
 		}
 		catch (Throwable t) {
@@ -124,30 +123,30 @@ public class JSONInboxHandler extends AbstractHandler {
 		return BlueboxMessage.State.NORMAL;
 	}
 
-	private int getStart(String contentHeader) {
-		try {
-			// items=0-24, return 0
-			int s = contentHeader.indexOf('=')+1;
-			int e = contentHeader.indexOf("-", s);
-			return Integer.parseInt(contentHeader.substring(s,e));
-		}
-		catch (Throwable t) {
-			log.warning("Invalid Content header :"+contentHeader);
-			return 0;
-		}
-	}
-
-	private int getEnd(String contentHeader) {
-		try {
-			// items=0-24, return 24
-			int s = contentHeader.indexOf('-')+1;
-			int e = contentHeader.length();
-			return Integer.parseInt(contentHeader.substring(s,e));
-		}
-		catch (Throwable t) {
-			log.warning("Invalid Content header :"+contentHeader);
-			return Integer.MAX_VALUE;
-		}
-	}
+//	private int getStart(String contentHeader) {
+//		try {
+//			// items=0-24, return 0
+//			int s = contentHeader.indexOf('=')+1;
+//			int e = contentHeader.indexOf("-", s);
+//			return Integer.parseInt(contentHeader.substring(s,e));
+//		}
+//		catch (Throwable t) {
+//			log.warning("Invalid Content header :"+contentHeader);
+//			return 0;
+//		}
+//	}
+//
+//	private int getEnd(String contentHeader) {
+//		try {
+//			// items=0-24, return 24
+//			int s = contentHeader.indexOf('-')+1;
+//			int e = contentHeader.length();
+//			return Integer.parseInt(contentHeader.substring(s,e));
+//		}
+//		catch (Throwable t) {
+//			log.warning("Invalid Content header :"+contentHeader);
+//			return Integer.MAX_VALUE;
+//		}
+//	}
 
 }

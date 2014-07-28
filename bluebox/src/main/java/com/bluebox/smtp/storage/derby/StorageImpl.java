@@ -675,44 +675,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return jo;
 	}
 
-	//	@Override
-	//	public List<String> listUniqueInboxes() {
-	//		List<String> inboxes = new ArrayList<String>();
-	//		// list unique mails, then count each one
-	//		Connection connection = null;
-	//		try {
-	//			connection = getConnection();
-	//			try {
-	//				Statement s = connection.createStatement();
-	//				PreparedStatement ps;
-	//				ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.INBOX+" from "+INBOX_TABLE);
-	//				ps.execute();
-	//				ResultSet result = ps.getResultSet();
-	//				while (result.next()) {
-	//					String currInbox = result.getString(BlueboxMessage.INBOX);
-	//					inboxes.add(currInbox);						
-	//				}
-	//				ps.close();
-	//				s.close();
-	//			}
-	//			catch (Throwable t) {
-	//				t.printStackTrace();
-	//			}
-	//		}
-	//		catch (Throwable t) {
-	//			t.printStackTrace();
-	//		}
-	//		finally {
-	//			try {
-	//				connection.close();
-	//			} 
-	//			catch (SQLException e) {
-	//				e.printStackTrace();
-	//			}
-	//		}
-	//		return inboxes;
-	//	}
-
 	@Override
 	public void runMaintenance() throws Exception {
 		setupTables();		

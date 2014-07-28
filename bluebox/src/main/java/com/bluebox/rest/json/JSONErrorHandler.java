@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.codehaus.jettison.json.JSONArray;
 
 import com.bluebox.smtp.Inbox;
+import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONErrorHandler extends AbstractHandler {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -19,18 +20,15 @@ public class JSONErrorHandler extends AbstractHandler {
 	public void doGet(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		setDefaultHeaders(resp);
 		
-		// process the paging params "Range: items=0-24"
-		String contentHeader = req.getHeader("Range");
-		int first = getStart(contentHeader);
-		int last = getEnd(contentHeader);
+		DojoPager pager = new DojoPager(req,BlueboxMessage.RECEIVED);
 
 		try {
 			// tell the grid how many items we have
 			long totalCount = inbox.errorCount();
-			resp.setHeader("Content-Range", "items "+first+"-"+last+"/"+totalCount);//Content-Range: items 0-24/66
-			log.info("Sending JSON error view first="+first+" last="+last);
+			pager.setRange(resp, totalCount);
+			log.info("Sending JSON error view first="+pager.getFirst()+" last="+pager.getLast());
 			Writer writer = resp.getWriter();
-			JSONArray result = inbox.errorCount(first, last-first+1);
+			JSONArray result = inbox.errorCount(pager.getFirst(), pager.getCount());
 			writer.write(result.toString());
 			writer.flush();
 			writer.close();
@@ -40,32 +38,6 @@ public class JSONErrorHandler extends AbstractHandler {
 			t.printStackTrace();
 		}
 		resp.flushBuffer();
-	}
-
-	private int getStart(String contentHeader) {
-		try {
-			// items=0-24, return 0
-			int s = contentHeader.indexOf('=')+1;
-			int e = contentHeader.indexOf("-", s);
-			return Integer.parseInt(contentHeader.substring(s,e));
-		}
-		catch (Throwable t) {
-			log.warning("Invalid Content header :"+contentHeader);
-			return 0;
-		}
-	}
-
-	private int getEnd(String contentHeader) {
-		try {
-			// items=0-24, return 24
-			int s = contentHeader.indexOf('-')+1;
-			int e = contentHeader.length();
-			return Integer.parseInt(contentHeader.substring(s,e));
-		}
-		catch (Throwable t) {
-			log.warning("Invalid Content header :"+contentHeader);
-			return Integer.MAX_VALUE;
-		}
 	}
 
 	public void doGetDetail(Inbox instance, HttpServletRequest req, HttpServletResponse resp) throws IOException {
