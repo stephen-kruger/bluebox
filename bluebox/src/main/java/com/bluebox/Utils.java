@@ -46,6 +46,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.servlet.ServletRequest;
 
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.apache.commons.fileupload.util.mime.MimeUtility;
@@ -278,9 +279,9 @@ public class Utils {
 	//		}
 	//	}
 
-	public static void test(Inbox inbox, String sz) {
+	public static void test(ServletRequest req, String sz) {
 		log.info("Into test");
-		sendMessage(Integer.parseInt(sz));
+		sendMessage(req,Integer.parseInt(sz));
 	}
 
 	public static InternetAddress[] getRandomAddresses(int count) throws AddressException {
@@ -371,7 +372,7 @@ public class Utils {
 	//			}
 	//		}
 	//	}
-	public static void sendMessage(final int count) {
+	public static void sendMessage(final ServletRequest req, final int count) {
 		ExecutorService threadPool = Executors.newFixedThreadPool(10);
 		for (int j = 0; j < count/6; j++) {
 			log.info("Sending message "+j);
@@ -384,7 +385,7 @@ public class Utils {
 					while ((!sent)&&(retryCount-->0)) {
 						log.info("Sending message");
 						try {
-							MimeMessage msg = createMessage(null,
+							MimeMessage msg = createMessage(req,
 									getRandomAddress(),  
 									getRandomAddresses(2),//to
 									getRandomAddresses(2),//cc
@@ -480,7 +481,7 @@ public class Utils {
 		}
 	}
 
-	public static MimeMessage createMessage(Session session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
+	public static MimeMessage createMessage(ServletRequest req, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
 		InternetAddress[] toa=new InternetAddress[0], cca=new InternetAddress[0], bcca=new InternetAddress[0];
 		if (to!=null)
 			toa = new InternetAddress[]{new InternetAddress(to)};
@@ -488,7 +489,7 @@ public class Utils {
 			cca = new InternetAddress[]{new InternetAddress(cc)};
 		if (bcc!=null)
 			bcca = new InternetAddress[]{new InternetAddress(bcc)};
-		return createMessage(session, 
+		return createMessage(req, 
 				new InternetAddress(from),
 				toa,
 				cca,
@@ -498,9 +499,10 @@ public class Utils {
 				false);
 	}
 
-	public static MimeMessage createMessage(Session session, InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body, boolean attachment) 
+	public static MimeMessage createMessage(ServletRequest req, InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body, boolean attachment) 
 			throws MessagingException, IOException {
-		MimeMessage msg = new MimeMessage(session);
+		Session s = null;
+		MimeMessage msg = new MimeMessage(s);
 		msg.setFrom(from);
 		msg.setSubject(subject,UTF8);
 		msg.setSentDate(new Date());
@@ -531,7 +533,7 @@ public class Utils {
 			// randomly create up to 5 attachment
 			int attachmentCount = new Random().nextInt(5);
 			for (int i = 0; i < attachmentCount; i++)
-				multipart.addBodyPart(createAttachment());
+				multipart.addBodyPart(createAttachment(req));
 
 			// Put parts in message
 			msg.setContent(multipart);
@@ -542,7 +544,7 @@ public class Utils {
 		return msg;
 	}
 
-	private static MimeBodyPart createAttachment() throws MessagingException, IOException {
+	private static MimeBodyPart createAttachment(ServletRequest req) throws MessagingException, IOException {
 		Random r = new Random();
 		String[] names = new String[] {
 				"MyDocument.odt",
@@ -583,7 +585,8 @@ public class Utils {
 
 		if (!cachedFiles.containsKey(name)) {
 			try {
-				URL u = new URL("http://"+Utils.getHostName()+":8080/bluebox/data/"+names[index]);
+				System.out.println("http://"+req.getServerName()+':'+req.getServerPort()+"/bluebox/data/"+names[index]);
+				URL u = new URL("http://"+req.getServerName()+':'+req.getServerPort()+"/bluebox/data/"+names[index]);
 				URLConnection uc = u.openConnection();
 				uc.connect();
 				InputStream in = uc.getInputStream();

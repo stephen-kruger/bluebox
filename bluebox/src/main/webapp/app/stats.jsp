@@ -28,27 +28,6 @@
 		catch (err) {
 			alert("stats1:"+err);
 		}
-	}	
-	
-	function loadActive() {
-		try {
-			require(["dojox/data/JsonRestStore"], function () {
-				var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.ACTIVE_STAT %>";
-				var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
-				var queryResults = jStore.fetch({
-					  onComplete : 
-						  	function(queryResults, request) {
-						  		document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
-								document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.sender.<%=BlueboxMessage.FROM%>+'">'+queryResults.sender.<%=BlueboxMessage.FROM%>+'</a><span class="badge">'+queryResults.sender.<%=BlueboxMessage.COUNT%>+'</span>';
-							}
-				});
-			});
-			
-		}
-		catch (err) {
-			alert("stats2"+err);
-		}
-	
 	}
 	
 	function loadCombined() {
@@ -65,8 +44,18 @@
 						  		else {
 									document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML="<%= statsResource.getString("no_update") %>";						  			
 						  		}
-								document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
-								document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.sender.<%=BlueboxMessage.FROM%>+'">'+queryResults.sender.<%=BlueboxMessage.FROM%>+'</a><span class="badge">'+queryResults.sender.<%=BlueboxMessage.COUNT%>+'</span>';
+						  		if (queryResults.active.<%=BlueboxMessage.INBOX%>) {
+									document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
+						  		}
+						  		else {
+						  			document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = "<%= statsResource.getString("no_update") %>";
+						  		}
+								if (queryResults.sender.<%=BlueboxMessage.FROM%>) {
+									document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.sender.<%=BlueboxMessage.FROM%>+'">'+queryResults.sender.<%=BlueboxMessage.FROM%>+'</a><span class="badge">'+queryResults.sender.<%=BlueboxMessage.COUNT%>+'</span>';
+								}
+								else {
+									document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = "<%= statsResource.getString("no_update") %>";
+								}
 								document.getElementById("statsGlobalCount").innerHTML = '<%= statsResource.getString("traffic_text1") %> <span id="statsGlobalCount">'+queryResults.<%=BlueboxMessage.COUNT%>+'</span> <%= statsResource.getString("traffic_text2") %>';
 							}
 				});

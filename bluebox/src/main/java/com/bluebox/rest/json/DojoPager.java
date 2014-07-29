@@ -69,7 +69,6 @@ public class DojoPager {
 		resp.setHeader("Content-Range", "items "+getFirst()+"-"+getLast()+"/"+totalCount);//Content-Range: items 0-24/66
 	}
 
-
 	public boolean isAscending(int index) {
 		return ascending.get(index);
 	}

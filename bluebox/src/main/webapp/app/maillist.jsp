@@ -313,23 +313,23 @@
 			<div class="navcontainer">
 				<ul>
 					<li><a href="javascript:;" onclick="loadAll()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/iconMail.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbAll.png"
 							alt="<%=inboxDetailsResource.getString("allTooltip")%>" /><%=inboxDetailsResource.getString("all")%>
 					</a></li>
 					<li><a href="javascript:;" onclick="loadRaw()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/download.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbDownload.png"
 							alt="<%=inboxDetailsResource.getString("downloadTooltip")%>" /><%=inboxDetailsResource.getString("download")%></a>
 					</li>
 					<li><a href="javascript:;" onclick="refresh()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/refresh.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbRefresh.png"
 							alt="<%=inboxDetailsResource.getString("refreshTooltip")%>" /><%=inboxDetailsResource.getString("refresh")%></a>
 					</li>
 					<li><a href="javascript:;" onclick="atomFeed()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/rss.png"
+							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbRss.png"
 							alt="<%=inboxDetailsResource.getString("atomTooltip")%>" /><%=inboxDetailsResource.getString("atom")%></a>
 					</li>
 					<li><a href="javascript:;" onclick="deleteSelectedRows()">
-							<img class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/inboxTrash.png"
+							<img class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbDelete.png"
 							alt="<%=inboxDetailsResource.getString("deleteTooltip")%>" /><%=inboxDetailsResource.getString("delete")%></a>
 					</li>
 				</ul>
