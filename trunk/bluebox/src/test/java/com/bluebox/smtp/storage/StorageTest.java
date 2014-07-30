@@ -62,13 +62,14 @@ public class StorageTest extends TestCase {
 	@Test
 	public void testAutoComplete2() throws Exception {
 		String email = "\"First Name\" <stephen.johnson@mail.com>";
-		MimeMessage message = TestUtils.createMail(
+		MimeMessage message = Utils.createMessage(null,
 				Utils.getRandomAddress(), 
 				new InternetAddress[]{new InternetAddress(email)}, 
 				Utils.getRandomAddresses(0), 
 				Utils.getRandomAddresses(0), 
 				"subjStr",
-				"bodyStr");
+				"bodyStr",
+				false);
 		InboxAddress ia = new InboxAddress(email);
 		BlueboxMessage m1 = StorageFactory.getInstance().store(ia, email, message);
 		SearchIndexer.getInstance().indexMail(m1);
@@ -110,13 +111,14 @@ public class StorageTest extends TestCase {
 		StorageFactory.getInstance().deleteAll();
 		InboxAddress inbox = new InboxAddress("Stephen johnson <steve.johnson@test.com>");
 		String from = "sender@nowhere.com";
-		MimeMessage message = TestUtils.createMail(
+		MimeMessage message = Utils.createMessage(null,
 				new InternetAddress(from), 
 				new InternetAddress[]{new InternetAddress(inbox.getFullAddress())}, 
 				Utils.getRandomAddresses(0), 
 				Utils.getRandomAddresses(0), 
 				"subjStr",
-				"bodyStr");
+				"bodyStr",
+				false);
 		BlueboxMessage bbm = StorageFactory.getInstance().store(inbox, from, message);
 		BlueboxMessage stored = StorageFactory.getInstance().retrieve(bbm.getIdentifier());
 		assertEquals("Identifiers did not match",bbm.getIdentifier(),stored.getIdentifier());
@@ -132,13 +134,14 @@ public class StorageTest extends TestCase {
 	
 	public void testInboxAndFullName() throws Exception {
 		InboxAddress inbox = new InboxAddress("Stephen johnson <steve@test.com>");
-		MimeMessage message = TestUtils.createMail(
+		MimeMessage message = Utils.createMessage(null,
 				Utils.getRandomAddress(), 
 				new InternetAddress[]{new InternetAddress(inbox.getFullAddress())}, 
 				Utils.getRandomAddresses(0), 
 				Utils.getRandomAddresses(0), 
 				"subjStr",
-				"bodyStr");
+				"bodyStr",
+				false);
 		BlueboxMessage bbm = StorageFactory.getInstance().store(inbox, inbox.getAddress(), message);
 		BlueboxMessage stored = StorageFactory.getInstance().retrieve(bbm.getIdentifier());
 //		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
@@ -310,13 +313,14 @@ public class StorageTest extends TestCase {
 		String name = "Monica Smith";
 		InboxAddress email = new InboxAddress(name+" <monica.smith@test.com>");
 
-		MimeMessage message = TestUtils.createMail(
+		MimeMessage message = Utils.createMessage(null,
 				Utils.getRandomAddress(), 
 				new InternetAddress[]{new InternetAddress(email.getFullAddress())}, 
 				Utils.getRandomAddresses(0), 
 				Utils.getRandomAddresses(0), 
 				"subjStr",
-				"bodyStr");
+				"bodyStr",
+				false);
 		BlueboxMessage m1 = StorageFactory.getInstance().store(email, email.getAddress(), message);
 		BlueboxMessage m2 = StorageFactory.getInstance().store(email, email.getAddress(), message);
 		BlueboxMessage m3 = StorageFactory.getInstance().store(email, email.getAddress(), message);
@@ -365,13 +369,14 @@ public class StorageTest extends TestCase {
 		String name = "Another Name";
 		String email = name+" <"+inbox.getAddress()+">";
 		InternetAddress to = new InternetAddress(email);
-		MimeMessage message = TestUtils.createMail(
+		MimeMessage message = Utils.createMessage(null,
 				Utils.getRandomAddress(), 
 				new InternetAddress[]{to}, 
 				Utils.getRandomAddresses(0), 
 				Utils.getRandomAddresses(0), 
 				"subjStr",
-				"bodyStr");
+				"bodyStr",
+				false);
 		SearchIndexer.getInstance().indexMail(StorageFactory.getInstance().store(inbox, inbox.getAddress(), message));
 		SearchIndexer.getInstance().indexMail(StorageFactory.getInstance().store(inbox, inbox.getAddress(), message));
 		SearchIndexer.getInstance().indexMail(StorageFactory.getInstance().store(inbox, inbox.getAddress(), message));

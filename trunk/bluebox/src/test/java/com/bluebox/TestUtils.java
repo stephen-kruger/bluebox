@@ -29,7 +29,7 @@ public class TestUtils extends TestCase {
 	public static void sendMailDirect(StorageIf storage, String to, String from) throws Exception {
 		log.fine("Delivering mail to "+to);
 		Inbox inbox = Inbox.getInstance();
-		MimeMessage message = createMail(from, to, null,null, Utils.randomLine(25), Utils.randomLine(25));
+		MimeMessage message = Utils.createMessage(null,from, to, null,null, Utils.randomLine(25), Utils.randomLine(25));
 		inbox.deliver(from, to, Utils.streamMimeMessage(message));
 	}
 
@@ -43,7 +43,7 @@ public class TestUtils extends TestCase {
 	public static BlueboxMessage addRandom(StorageIf storage) throws Exception {
 		BlueboxMessage message = storage.store(new InboxAddress("steve@here.com"),
 				"steve@there.com",
-				TestUtils.createMail("steve@there.com", "steve@here.com", "steve@here.com", "steve@here.com", Utils.randomLine(25), Utils.randomLine(25)));
+				Utils.createMessage(null,"steve@there.com", "steve@here.com", "steve@here.com", "steve@here.com", Utils.randomLine(25), Utils.randomLine(25)));
 		return message;
 	}
 
@@ -81,11 +81,58 @@ public class TestUtils extends TestCase {
 		email.send();
 	}
 
-	public static MimeMessage createMail(String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
-		return Utils.createMessage(null, from, to, cc, bcc, subject, body);
-	}
+//	public static MimeMessage createMail(String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException, EmailException {
+//		return Utils.createMessage(null, from, to, cc, bcc, subject, body);
+//	}
+//
+//	public static MimeMessage createMail(InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body) throws IOException, MessagingException, EmailException {		return Utils.createMessage(null, from, to, cc, bcc, subject, body, false);
+//	}
 
-	public static MimeMessage createMail(InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body) throws IOException, MessagingException {		return Utils.createMessage(null, from, to, cc, bcc, subject, body, false);
-	}
-
+//	private static MimeBodyPart createAttachment(HttpServletRequest req) throws MessagingException, IOException, EmailException {
+//		String[] names = new String[] {
+//				"MyDocument.odt",
+//				"MyPresentation.odp",
+//				"MySpreadsheet.ods",
+//				"GettingStarted.txt",
+//				"message.png",
+//				"bigpic.jpg",
+//				"BlueBox.png",
+//				"cv-template-Marketing-Manager.doc"
+//		}; 
+//		String[] extensions = new String[] {
+//				".odt",
+//				".odp",
+//				".ods",
+//				".txt",
+//				".png",
+//				".jpg",
+//				".png",
+//				"doc"
+//		}; 
+//		String[] mime = new String[] {
+//				"application/document odt ODT",
+//				"application/presentation odp ODP",
+//				"application/spreadsheet ods ODS",
+//				"text/plain txt TXT",
+//				"image/png png PNG",
+//				"image/jpeg jpg JPG",
+//				"image/png png PNG",
+//				"application/document doc DOC"
+//		}; 
+//
+//		if (req!=null) {
+//			Random r = new Random();
+//			int index = r.nextInt(extensions.length); 
+//			String name = Integer.toString(r.nextInt(99))+"-"+names[index];
+//			String mimeType = mime[index];
+//			InputStream content = req.getSession().getServletContext().getResourceAsStream("data/"+names[index]);
+//
+//			MimeBodyPart mbp = new MimeBodyPart(content);
+//			mbp.setFileName(name);
+//			
+//			mbp.setDisposition(mimeType);
+//			return mbp;
+//		}
+//		return null;
+//	}
 }
