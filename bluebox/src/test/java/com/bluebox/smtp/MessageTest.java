@@ -21,6 +21,7 @@ import javax.mail.internet.MimeMultipart;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.util.MimeMessageUtils;
 
 import com.bluebox.MimeMessageParser;
@@ -38,7 +39,7 @@ public class MessageTest extends TestCase {
 	protected void tearDown() throws Exception {
 	}
 
-	public void testProperties() throws AddressException, MessagingException, IOException {
+	public void testProperties() throws AddressException, MessagingException, IOException, EmailException {
 		log.info("Doing nothing");
 		MimeMessage message = Utils.createMessage(null,
 				Utils.getRandomAddress(), 
@@ -56,7 +57,7 @@ public class MessageTest extends TestCase {
 		assertTrue("Header was missing values",message.getHeader("name").length==3);
 	}
 
-	public void testBlueBoxMessage() throws AddressException, MessagingException, IOException {
+	public void testBlueBoxMessage() throws AddressException, MessagingException, IOException, EmailException {
 		String bodyStr = "\nThis is a body\n with line feeds";
 		String subjStr = "This is the subject";
 		MimeMessage message = Utils.createMessage(null,

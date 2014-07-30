@@ -3,26 +3,20 @@ package com.bluebox;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.net.ConnectException;
 import java.net.InetAddress;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.StringTokenizer;
@@ -32,7 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 import javax.activation.DataHandler;
-import javax.activation.FileDataSource;
+import javax.activation.DataSource;
 import javax.activation.FileTypeMap;
 import javax.activation.MimetypesFileTypeMap;
 import javax.mail.Address;
@@ -46,7 +40,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-import javax.servlet.ServletRequest;
+import javax.mail.util.ByteArrayDataSource;
+import javax.servlet.ServletContext;
 
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.apache.commons.fileupload.util.mime.MimeUtility;
@@ -61,8 +56,6 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 public class Utils {
 	public static final String UTF8 = "UTF-8";
 	private static final Logger log = Logger.getAnonymousLogger();
-	//	private static Config config = Config.getInstance();
-	private static Map<String,File> cachedFiles = new HashMap<String,File>();
 	private static int counter=0;
 
 	public static String getHostName() {
@@ -279,9 +272,9 @@ public class Utils {
 	//		}
 	//	}
 
-	public static void test(ServletRequest req, String sz) {
+	public static void test(ServletContext session, String sz) {
 		log.info("Into test");
-		sendMessage(req,Integer.parseInt(sz));
+		sendMessage(session,Integer.parseInt(sz));
 	}
 
 	public static InternetAddress[] getRandomAddresses(int count) throws AddressException {
@@ -372,7 +365,7 @@ public class Utils {
 	//			}
 	//		}
 	//	}
-	public static void sendMessage(final ServletRequest req, final int count) {
+	public static void sendMessage(final ServletContext session, final int count) {
 		ExecutorService threadPool = Executors.newFixedThreadPool(10);
 		for (int j = 0; j < count/6; j++) {
 			log.info("Sending message "+j);
@@ -385,7 +378,7 @@ public class Utils {
 					while ((!sent)&&(retryCount-->0)) {
 						log.info("Sending message");
 						try {
-							MimeMessage msg = createMessage(req,
+							MimeMessage msg = createMessage(session,
 									getRandomAddress(),  
 									getRandomAddresses(2),//to
 									getRandomAddresses(2),//cc
@@ -399,6 +392,7 @@ public class Utils {
 
 						} 
 						catch (Throwable e) {
+							e.printStackTrace();
 							// server overloaded, try again later
 							try {
 								log.info("Waiting to deliver ("+e.getMessage()+")");
@@ -481,7 +475,7 @@ public class Utils {
 		}
 	}
 
-	public static MimeMessage createMessage(ServletRequest req, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
+	public static MimeMessage createMessage(ServletContext session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
 		InternetAddress[] toa=new InternetAddress[0], cca=new InternetAddress[0], bcca=new InternetAddress[0];
 		if (to!=null)
 			toa = new InternetAddress[]{new InternetAddress(to)};
@@ -489,7 +483,7 @@ public class Utils {
 			cca = new InternetAddress[]{new InternetAddress(cc)};
 		if (bcc!=null)
 			bcca = new InternetAddress[]{new InternetAddress(bcc)};
-		return createMessage(req, 
+		return createMessage(session, 
 				new InternetAddress(from),
 				toa,
 				cca,
@@ -499,7 +493,7 @@ public class Utils {
 				false);
 	}
 
-	public static MimeMessage createMessage(ServletRequest req, InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body, boolean attachment) 
+	public static MimeMessage createMessage(ServletContext session, InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body, boolean attachment) 
 			throws MessagingException, IOException {
 		Session s = null;
 		MimeMessage msg = new MimeMessage(s);
@@ -533,7 +527,7 @@ public class Utils {
 			// randomly create up to 5 attachment
 			int attachmentCount = new Random().nextInt(5);
 			for (int i = 0; i < attachmentCount; i++)
-				multipart.addBodyPart(createAttachment(req));
+				multipart.addBodyPart(createAttachment(session));
 
 			// Put parts in message
 			msg.setContent(multipart);
@@ -544,7 +538,7 @@ public class Utils {
 		return msg;
 	}
 
-	private static MimeBodyPart createAttachment(ServletRequest req) throws MessagingException, IOException {
+	private static MimeBodyPart createAttachment(ServletContext session) throws MessagingException, IOException {
 		Random r = new Random();
 		String[] names = new String[] {
 				"MyDocument.odt",
@@ -566,8 +560,18 @@ public class Utils {
 				".png",
 				"doc"
 		}; 
-
-		String root = "src/main/resources/data/";
+		String[] mime = new String[] {
+				"application/document",
+				"application/presentation",
+				"application/spreadsheet",
+				"text/plain",
+				"image/png",
+				"image/jpeg",
+				"image/png",
+				"application/document"
+		}; 
+		
+//		String root = "src/main/webapp/data/";
 
 		int index = r.nextInt(extensions.length); 
 		String name = Integer.toString(r.nextInt(99))+"-"+names[index];
@@ -583,39 +587,21 @@ public class Utils {
 		ftm.addMimeTypes("application/zip zip ZIP");
 		FileTypeMap.setDefaultFileTypeMap(ftm);
 
-		if (!cachedFiles.containsKey(name)) {
-			try {
-				System.out.println("http://"+req.getServerName()+':'+req.getServerPort()+"/bluebox/data/"+names[index]);
-				URL u = new URL("http://"+req.getServerName()+':'+req.getServerPort()+"/bluebox/data/"+names[index]);
-				URLConnection uc = u.openConnection();
-				uc.connect();
-				InputStream in = uc.getInputStream();
-				File tmpFile = File.createTempFile("blueboxmail", extensions[r.nextInt(extensions.length)]);
-				tmpFile.deleteOnExit();
-				FileOutputStream out = new FileOutputStream(tmpFile);
-				final int BUF_SIZE = 1 << 8;
-				byte[] buffer = new byte[BUF_SIZE];
-				int bytesRead = -1;
-				while((bytesRead = in.read(buffer)) > -1) {
-					out.write(buffer, 0, bytesRead);
-				}
-				in.close();
-				out.close();
-				cachedFiles.put(name, tmpFile);
-			}
-			catch (ConnectException ce) {
-				// we are running in localtest, so read files off disk
-				cachedFiles.put(name, new File(root+names[index]));
-			}
-		}
-
 		MimeBodyPart messageBodyPart = new MimeBodyPart();
-		FileDataSource source = new javax.activation.FileDataSource(cachedFiles.get(name));
-		source.setFileTypeMap(ftm);
+		InputStream content;
+		if (session!=null) {
+			content = session.getResourceAsStream("data/"+names[index]);
+		}
+		else {
+			content = new FileInputStream("src/main/webapp/data/"+names[index]);
+		}
+		DataSource source = new ByteArrayDataSource(content,mime[index]);
+//		source.setFileTypeMap(ftm);
 		messageBodyPart.setFileName(name);
 		messageBodyPart.setContentID(UUID.randomUUID().toString());
 		messageBodyPart.setDataHandler(new DataHandler(source));
 		messageBodyPart.setHeader("Content-Type", ftm.getContentType(name)); 
+		
 		return messageBodyPart;
 	}
 

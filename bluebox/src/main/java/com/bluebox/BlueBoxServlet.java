@@ -110,7 +110,7 @@ public class BlueBoxServlet extends HttpServlet {
 			return;
 		}
 		if (req.getRequestURI().indexOf("rest/admin/test")>=0){
-			Utils.test(req, req.getParameter("count"));
+			Utils.test(req.getSession().getServletContext(), req.getParameter("count"));
 			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
 			return;
 		}	
