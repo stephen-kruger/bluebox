@@ -19,10 +19,10 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.mortbay.jetty.HttpStatus;
 
 import com.bluebox.MimeMessageParser;
 import com.bluebox.Utils;
@@ -216,7 +216,7 @@ public class BlueboxMessage {
 		catch (Throwable t) {
 			log.severe(t.getMessage());
 			t.printStackTrace();
-			resp.sendError(HttpStatus.ORDINAL_404_Not_Found, t.getMessage());
+			resp.sendError(HttpStatus.SC_NOT_FOUND, t.getMessage());
 		}
 		finally {
 			resp.flushBuffer();
