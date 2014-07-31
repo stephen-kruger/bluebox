@@ -9,7 +9,6 @@
 <%@ page import="com.bluebox.rest.json.JSONInboxHandler"%>
 
 <%
-	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
 	ResourceBundle inboxDetailsResource = ResourceBundle.getBundle("inboxDetails", request.getLocale());
 %>
 
@@ -85,7 +84,14 @@
 		
 		require(["dojox/data/JsonRestStore"]);
 	
+		function loadInbox(email) {
+			console.log("loadInbox:"+email+" "+"<%= BlueboxMessage.State.NORMAL.name()%>"+" "+currentState);
+			loadInbox(email,"<%= BlueboxMessage.State.NORMAL.name()%>");
+		}
+		
 		function loadInbox(email, state) {
+			currentState = state;
+			console.log("loadInbox2:"+email+" >"+state+"<");
 			try {
 				require(["dijit/registry"], function(registry){
 				    grid = registry.byId("grid");
@@ -147,7 +153,7 @@
 						if (items.length>1) {
 							inbox.selection.clear();
 						}
-						loadInboxAndFolder(currentEmail);
+						loadInboxAndFolder(currentEmail, currentState);
 					}
 					else {
 						alert("<%=inboxDetailsResource.getString("error.noselection")%>");
@@ -160,7 +166,8 @@
 		}
 	
 		function refresh() {
-			loadInboxAndFolder(currentEmail);
+			console.log("refresh "+currentEmail+ " "+currentState);
+			loadInboxAndFolder(currentEmail, currentState);
 		}
 	
 		function loadAll() {
@@ -176,7 +183,7 @@
 							handleAs: "json",
 							preventCache: true,
 							load: function(data) {
-								loadInboxAndFolder(currentEmail);
+								loadInboxAndFolder(currentEmail, currentState);
 								clearDetail();
 							},
 							error: function (error) {

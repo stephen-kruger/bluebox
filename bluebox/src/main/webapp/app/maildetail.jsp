@@ -26,7 +26,7 @@
 }
 
 .attachmentsEmail {
-	color: #E26200;
+	color: #000000;
 	font-weight: normal;
 	display: inline;
 	display: inline-table !important;
@@ -297,8 +297,8 @@
 							document.getElementById("Date").innerHTML = data.<%=BlueboxMessage.RECEIVED%>;
 						else
 							document.getElementById("Date").innerHTML = "";
-						if (data.Attachment){
-							displayAttachments(uid,"Attachment",data.Attachment);
+						if (data.<%=BlueboxMessage.ATTACHMENT%>){
+							displayAttachments(uid,"Attachment",data.<%=BlueboxMessage.ATTACHMENT%>);
 						}
 						
 						setBodyContent(
@@ -471,7 +471,7 @@
 						setupPage();
 						require(["dojo/has", "dojo/_base/sniff"], function(has){
 							  if(has("ie")) {
-								  parser.parse();
+								  //parser.parse();
 							  }
 			
 							});
