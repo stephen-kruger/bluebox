@@ -42,7 +42,7 @@ import com.mongodb.util.JSON;
 public class StorageImpl extends AbstractStorage implements StorageIf {
 	// 1224264 
 	private static final Logger log = Logger.getAnonymousLogger();
-	private static final String DB_NAME = "bluebox";
+	private static final String DB_NAME = "bluebox400";
 	private static final String DB_ERR_NAME = "bluebox_errors";
 	private static final String TABLE_NAME = "inbox";
 	private static final String PROPS_TABLE_NAME = "properties";

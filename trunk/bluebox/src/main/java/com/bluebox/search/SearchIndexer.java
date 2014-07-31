@@ -306,7 +306,7 @@ public class SearchIndexer {
 
 	public static File createTempDirectory()  throws IOException {
 		//File tmpDir = (File)getServletContext().getAttribute(ServletContext.TEMPDIR);
-		File temp = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.lucene");
+		File temp = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox4.lucene");
 
 
 		log.info("Preparing search indexes in "+temp.getCanonicalPath());

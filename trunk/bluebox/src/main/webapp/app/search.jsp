@@ -33,7 +33,7 @@
 <script type="text/javascript">
 		
 			var currentUid;
-			var currentEmail;
+			var currentEmail, currentState;
 			var searchScope = "<%=SearchIndexer.SearchFields.ANY%>";
 			
 			function searchInbox(searchString) {

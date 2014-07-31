@@ -237,7 +237,8 @@ public class BlueboxMessage {
 			for (DataSource d : ds) {
 				ja.put(d.getName());
 			}
-			json.put(ATTACHMENT, ja);
+			if (ja.length()>0)
+				json.put(ATTACHMENT, ja);
 
 			json.put(BlueboxMessage.HTML_BODY, getHtml());
 			json.put(BlueboxMessage.TEXT_BODY, getText());
