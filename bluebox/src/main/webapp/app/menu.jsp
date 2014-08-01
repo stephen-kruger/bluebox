@@ -124,12 +124,13 @@
 </style>
 
 <script type="text/javascript">		
+		require(["dojo/parser", "dijit/Tooltip", "dijit/form/Button"]);
 			function selectMenu(id) {
 				try {
 					document.getElementById(id).className = "menuselected";
 				}
 				catch (err) {
-					alert("menu1:"+err);
+					console.log("menu1:"+err);
 				}
 			}
 			
@@ -149,7 +150,7 @@
 					});
 				}
 				catch (err) {
-					alert("menu2:"+err);
+					console.log("menu2:"+err);
 				}
 			}
 			
@@ -165,7 +166,7 @@
 					});
 				}
 				catch (err) {
-					alert("menu3:"+err);
+					console.log("menu3:"+err);
 				}
 			}
 			
@@ -176,9 +177,9 @@
 			});
 					
 	// Load the Tooltip widget class
-	require(["dijit/Tooltip",  "dojo/parser", "dojo/domReady!"], function(Tooltip, parser, domReady){
-		parser.parse();
-	});
+	//require(["dijit/Tooltip",  "dojo/parser", "dojo/domReady!"], function(Tooltip, parser, domReady){
+		//parser.parse();
+	//});
 </script>
 	    	    
 <!-- draw the bluebox logo and title -->

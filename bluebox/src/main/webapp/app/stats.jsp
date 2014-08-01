@@ -26,7 +26,7 @@
 			});
 		}
 		catch (err) {
-			alert("stats1:"+err);
+			console.log("stats1:"+err);
 		}
 	}
 	
@@ -62,7 +62,7 @@
 			});
 		}
 		catch (err) {
-			alert("stats3:"+err);
+			console.log("stats3:"+err);
 		}
 	}	
 	
