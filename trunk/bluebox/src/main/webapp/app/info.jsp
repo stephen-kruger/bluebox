@@ -77,6 +77,17 @@
 						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_AGE) %>
 					</td>
 				</tr>
+				
+				<tr>
+					<td><br/></td>
+				</tr>
+				<tr>
+					<td><label><%=infoResource.getString("messagemax")%></label></td>
+					<td>
+						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_MAX) %>
+					</td>
+				</tr>
+				
 				<tr>
 					<td><br/></td>
 				</tr>

@@ -22,6 +22,7 @@ public class Config extends CompositeConfiguration {
 	public static final String BLUEBOX_FROMWHITELIST	= "bluebox_from_whitelist";
 	public static final String BLUEBOX_MAXCONNECTIONS 	= "bluebox_maxconnections";
 	public static final String BLUEBOX_MESSAGE_AGE  	= "bluebox_message_age";
+	public static final String BLUEBOX_MESSAGE_MAX  	= "bluebox_message_max";
 	public static final String BLUEBOX_TRASH_AGE	 	= "bluebox_trash_age";
 	public static final String BLUEBOX_DAEMON_DELAY	 	= "bluebox_daemon_delay";
 	public static final String BLUEBOX_STORAGE          = "bluebox_storage";
