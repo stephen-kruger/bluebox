@@ -23,7 +23,6 @@
 		.inboxGrid {
 			width:100%;
 			height:30%;
-			display:table-row;
 		}
 		
 		.dojoxGridCell {
@@ -131,7 +130,7 @@
 				loadStats();
 			}
 			catch (err) {
-				alert("maillist1:"+err);
+				console.log("maillist1:"+err);
 			}
 	
 		}
@@ -156,12 +155,12 @@
 						loadInboxAndFolder(currentEmail, currentState);
 					}
 					else {
-						alert("<%=inboxDetailsResource.getString("error.noselection")%>");
+						console.log("<%=inboxDetailsResource.getString("error.noselection")%>");
 					}
 				});
 			}
 			catch (err) {
-				alert("maillist2:"+err);
+				console.log("maillist2:"+err);
 			}
 		}
 	
@@ -187,18 +186,18 @@
 								clearDetail();
 							},
 							error: function (error) {
-								alert("<%=inboxDetailsResource.getString("error.unknown")%>"+error);
+								console.log("<%=inboxDetailsResource.getString("error.unknown")%>"+error);
 							}
 					};
 		
 					dojo.xhrDelete(xhrArgs);		
 				}
 				else {
-					alert("<%=inboxDetailsResource.getString("error.noselection")%>");
+					console.log("<%=inboxDetailsResource.getString("error.noselection")%>");
 				}
 			}
 			catch (err) {
-				alert("maillist3:"+err);
+				console.log("maillist3:"+err);
 			}
 		}
 	
@@ -211,7 +210,7 @@
 			    });
 			}
 			catch (err) {
-				alert("maillist4:"+err);
+				console.log("maillist4:"+err);
 			}
 	
 		}
@@ -222,7 +221,7 @@
 		
 		function loadRaw() {
 			if (currentUid==null) {
-				alert("<%=inboxDetailsResource.getString("error.noselection")%>");
+				console.log("<%=inboxDetailsResource.getString("error.noselection")%>");
 			}
 			else {
 				var load = window.open("<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+currentUid,'','scrollbars=yes,menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
@@ -243,7 +242,7 @@
 				    return store;
 			}
 			catch (err) {
-				alert("Error loading store :"+err);
+				console.log("Error loading store :"+err);
 				return null;
 			}
 		    
@@ -302,7 +301,7 @@
 		      });
 			}
 			catch (err) {
-				alert("setupTable:"+err);
+				console.log("setupTable:"+err);
 			}
 		}
 		

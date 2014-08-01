@@ -81,7 +81,7 @@
 				    	dialog(title,content);
 				    },
 				    error: function(error){
-				      alert("An unexpected error occurred: " + error);
+				      console.log("An unexpected error occurred: " + error);
 				    }
 				  }
 

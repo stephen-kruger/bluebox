@@ -24,7 +24,7 @@
 	rel="stylesheet" rel="stylesheet" type="text/css" />	
 	
 <!-- Load Dojo, Dijit, and DojoX resources from Google CDN -->
-<script data-dojo-config="parseOnLoad:false, locale: 'en-us',extraLocale: ['fr','de','zn']" src="<%=bbconfig.getString("dojo_base")%>/dojo/dojo.js"></script>
+<script data-dojo-config="parseOnLoad:true, locale: 'en-us',extraLocale: ['fr','de','zn']" src="<%=bbconfig.getString("dojo_base")%>/dojo/dojo.js"></script>
 
 <!--  load google web fonts  -->
 <link type="text/css" href='http://fonts.googleapis.com/css?family=Roboto:700,400&subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic' rel='stylesheet'>

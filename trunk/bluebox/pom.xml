@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.0.0</version>
+	<version>4.0.1</version>
 	<name>BlueBox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
@@ -29,6 +29,11 @@
 			<id>maven-org</id>
 			<name>Maven Repo</name>
 			<url>http://repo1.maven.org/maven2/</url>
+		</repository>
+		<repository>
+			<id>maven-central</id>
+			<name>Maven Central</name>
+			<url>http://central.maven.org/maven2/</url>
 		</repository>
 	</repositories>
 
@@ -105,7 +110,7 @@
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>
 			<artifactId>jsp-2.1</artifactId>
-			<version>6.1.11</version>
+			<version>6.1.14</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -171,9 +176,9 @@
 			<version>1.3.3</version>
 		</dependency>
 		<dependency>
-			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>3.2.1</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-configuration</groupId>
@@ -187,12 +192,10 @@
 			<version>6.1.26</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- <dependency> <groupId>com.h2database</groupId> <artifactId>h2</artifactId> 
-			<version>1.3.171</version> <scope>compile</scope> </dependency> -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
-			<artifactId>servlet-api</artifactId>
-			<version>2.5</version>
+			<artifactId>javax.servlet-api</artifactId>
+			<version>3.1.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>

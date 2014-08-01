@@ -83,7 +83,7 @@
 		      });
 			}
 			catch (err) {
-				alert("setupTable:"+err);
+				console.log("setupTable:"+err);
 			}
 		}
 		

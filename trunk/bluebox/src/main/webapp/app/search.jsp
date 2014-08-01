@@ -60,7 +60,7 @@
 				    });
 				}
 				catch (err) {
-					alert("search1:"+err);
+					console.log("search1:"+err);
 				}
 			}
 				

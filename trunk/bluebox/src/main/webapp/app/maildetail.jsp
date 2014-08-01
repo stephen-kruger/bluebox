@@ -183,7 +183,7 @@
 			});
 		}
 		catch (err) {
-			alert("maildetail1:"+err);
+			console.log("maildetail1:"+err);
 		}
 		
 	}
@@ -208,7 +208,7 @@
 			}
 		}
 		catch (err) {
-			alert("maildetail2:"+err);
+			console.log("maildetail2:"+err);
 		}
 	}
 	*/
@@ -249,7 +249,7 @@
 			document.getElementById("Attachment").innerHTML="";
 		}
 		catch (err) {
-			alert("maildetail3:"+err);
+			console.log("maildetail3:"+err);
 		}
 	}
 	
@@ -259,7 +259,7 @@
 			document.getElementById("mailToggleBlock").style.display="block";
 		}
 		catch (err) {
-			alert("maildetail4:"+err);
+			console.log("maildetail4:"+err);
 		}
 	}
 	
@@ -310,14 +310,14 @@
 		
 					},
 					error: function (error) {
-						alert("Something veeery bad happened :"+error);
+						console.log("Something veeery bad happened :"+error);
 					}
 			};
 		
 			dojo.xhrGet(xhrArgs);
 		}
 		catch (err) {
-			alert("maildetail5:"+err);
+			console.log("maildetail5:"+err);
 		}
 	}
 	
@@ -326,7 +326,7 @@
 			var div = document.createElement("div");
 			var span = document.createElement("span");
 			var attClass = document.createAttribute('class');
-			attClass.nodeValue = classname;
+			attClass.value = classname;
 			span.setAttributeNode(attClass);
 			var text = document.createTextNode(str);
 			span.appendChild(text);
@@ -334,7 +334,7 @@
 			return div.innerHTML;
 		}
 		catch (err) {
-			alert("maildetail6:"+err);
+			console.log("maildetail6:"+err);
 		}
 	}
 	
@@ -347,7 +347,7 @@
 					htmltab.setContent(htmlContent);
 				}
 				else {
-					alert("error getting html tab");
+					console.log("error getting html tab");
 				}
 				var texttab = registry.byId("text-tab");
 				if (texttab) {
@@ -355,7 +355,7 @@
 					texttab.resize();
 				}
 				else {
-					alert("error getting text tab");
+					console.log("error getting text tab");
 				}	
 				var securitytab = registry.byId("security-tab");
 				if (securitytab) {
@@ -363,7 +363,7 @@
 					securitytab.resize();
 				}
 				else {
-					alert("error getting security tab");
+					console.log("error getting security tab");
 				}	
 				var tabs = registry.byId("mail-tab");
 				aspect.after(tabs, "selectChild", function (event) {
@@ -396,7 +396,7 @@
 			}
 		}
 		catch (err) {
-			alert("maildetail7:"+err);
+			console.log("maildetail7:"+err);
 		}
 	}
 	
@@ -410,7 +410,7 @@
 			});
 		}
 		catch (err) {
-			alert("maildetail8:"+err);
+			console.log("maildetail8:"+err);
 		}
 	}
 	
@@ -459,7 +459,7 @@
 			});	
 		}
 		catch (err) {
-			alert("maildetail9:"+err);
+			console.log("maildetail9:"+err);
 		}
 		
 	}
@@ -477,12 +477,12 @@
 							});
 				}
 				catch (err) {
-					alert("maildetail10:"+err)
+					console.log("maildetail10:"+err)
 				}
 			});
 </script>
 
-<div id="mailHeaderBlock" class="headerBox" style="padding-top: 10px">
+<div id="mailHeaderBlock" class="headerBox" style="padding-top: 10px;">
 	<table class="headerBoxTable">
 		<tr>
 			<td valign="top"><img id="subjectIcon"

@@ -71,11 +71,6 @@ require([
              _setEmailAttr: { node: "emailNode", type: "innerHTML" }
          });
          
-         ready(function(){
-             // Call the parser manually so it runs after our widget is defined, and page has finished loading
-             parser.parse();
-         });
-         
          
      });
 

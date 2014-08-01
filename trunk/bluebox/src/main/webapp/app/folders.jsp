@@ -20,7 +20,7 @@
 			document.getElementById("inboxCount").innerHTML = count;		
 		}
 		catch (err) {
-			alert("folders1:"+err);
+			console.log("folders1:"+err);
 		}
 	}
 	
@@ -29,7 +29,7 @@
 			document.getElementById("deletedCount").innerHTML = count;			
 		}
 		catch (err) {
-			alert("folders2:"+err);
+			console.log("folders2:"+err);
 		}
 	}
 	
@@ -53,7 +53,7 @@
 			});
 		}
 		catch (err) {
-			alert("folders3:"+err);
+			console.log("folders3:"+err);
 		}
 	}
 	
@@ -64,7 +64,7 @@
 			}
 		}
 		catch (err) {
-			alert("folders4:"+err);
+			console.log("folders4:"+err);
 		}
 	}
 	

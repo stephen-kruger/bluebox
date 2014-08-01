@@ -44,7 +44,7 @@
 			submitForm();
 		}
 		catch (err) {
-			alert("check1:"+err);
+			console.log("check1:"+err);
 		}
 	}
 	
@@ -53,7 +53,7 @@
 			document.getElementById('checkemail').submit();
 		}
 		catch (err) {
-			alert("check2:"+err);
+			console.log("check2:"+err);
 		}
 	}
 			
@@ -80,7 +80,7 @@
 			});
 		}
 		catch (err) {
-			alert("check3:"+err);
+			console.log("check3:"+err);
 		}
     }
 	
