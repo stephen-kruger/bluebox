@@ -19,20 +19,20 @@
 		<url-pattern>/rest/*</url-pattern>
 	</servlet-mapping>
 
-	<!-- the Atom feed servlet -->
+	<!-- the RSS feed servlet -->
 	<servlet>
-		<servlet-name>atom</servlet-name>
-		<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-		<init-param>
-			<param-name>javax.ws.rs.Application</param-name>
-			<param-value>com.bluebox.feed.ATOMApplication</param-value>
-		</init-param>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>atom</servlet-name>
-		<url-pattern>/atom/*</url-pattern>
-	</servlet-mapping>
+        <servlet-name>FeedServlet</servlet-name>
+        <servlet-class>com.bluebox.feed.FeedServlet</servlet-class>
+        <init-param>
+            <param-name>default.feed.type</param-name>
+            <param-value>rss_2.0</param-value>
+        </init-param>
+    </servlet>
+ 
+    <servlet-mapping>
+         <servlet-name>FeedServlet</servlet-name>
+         <url-pattern>/feed/*</url-pattern>
+    </servlet-mapping>
 	
 	<!-- the file upload servlets -->
 	<servlet>

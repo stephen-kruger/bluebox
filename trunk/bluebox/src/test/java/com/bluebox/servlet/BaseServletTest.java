@@ -22,7 +22,7 @@ public abstract class BaseServletTest extends TestCase {
 	private ServletTester tester;
 	private String baseURL;
 	private String contextPath = "/";
-	public ServletHolder bbs;
+	public ServletHolder bbs, feeds;
 	public static final Logger log = Logger.getAnonymousLogger();
 	public static final int COUNT = 5;
 	public static final String RECIPIENT = "user@there.com";
@@ -34,8 +34,9 @@ public abstract class BaseServletTest extends TestCase {
 		tester.setContextPath(contextPath);
 		//ServletHolder jsp = tester.addServlet(org.apache.jasper.servlet.JspServlet.class, "*.jsp");
 		bbs = tester.addServlet(com.bluebox.BlueBoxServlet.class, "/rest/*");
-		ServletHolder atom = tester.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/atom/*");
-		atom.setInitParameter("javax.ws.rs.Application", "com.bluebox.feed.ATOMApplication");
+		feeds = tester.addServlet(com.bluebox.feed.FeedServlet.class, "/feed/*");
+//		ServletHolder atom = tester.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/atom/*");
+//		atom.setInitParameter("javax.ws.rs.Application", "com.bluebox.feed.ATOMApplication");
 
 		tester.setResourceBase("WebContent");
 		//		tester.addServlet(DefaultServlet.class, "/");

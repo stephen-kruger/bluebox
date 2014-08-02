@@ -228,8 +228,8 @@
 			}
 		}
 		
-		function atomFeed() {
-			window.open("<%=request.getContextPath()%>/atom/inbox?email="+encodeURIComponent(currentEmail));
+		function rssFeed() {
+			window.open("<%=request.getContextPath()%>/feed/inbox?email="+encodeURIComponent(currentEmail));
 		}
 		
 		function getStore(email, state) {
@@ -330,9 +330,9 @@
 							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbRefresh.png"
 							alt="<%=inboxDetailsResource.getString("refreshTooltip")%>" /><%=inboxDetailsResource.getString("refresh")%></a>
 					</li>
-					<li><a href="javascript:;" onclick="atomFeed()"> <img
+					<li><a href="javascript:;" onclick="rssFeed()"> <img
 							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbRss.png"
-							alt="<%=inboxDetailsResource.getString("atomTooltip")%>" /><%=inboxDetailsResource.getString("atom")%></a>
+							alt="<%=inboxDetailsResource.getString("rssTooltip")%>" /><%=inboxDetailsResource.getString("rss")%></a>
 					</li>
 					<li><a href="javascript:;" onclick="deleteSelectedRows()">
 							<img class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbDelete.png"
