@@ -152,6 +152,11 @@ public class Inbox implements SimpleMessageListener {
 		log.fine("Sending inbox contents for "+inbox);
 		return StorageFactory.getInstance().listMail(inbox, state, start, count, orderBy, ascending);
 	}
+	
+	public List<JSONObject> listInboxLite(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale loc) throws Exception {
+		log.fine("Sending inbox contents for "+inbox);
+		return StorageFactory.getInstance().listMailLite(inbox, state, start, count, orderBy, ascending, loc);
+	}
 
 	public long searchInbox(String search, Writer writer, int start, int count, SearchIndexer.SearchFields searchScope, SearchIndexer.SearchFields orderBy, boolean ascending) throws Exception {
 		log.fine("Searching for "+search+" ordered by "+orderBy);
