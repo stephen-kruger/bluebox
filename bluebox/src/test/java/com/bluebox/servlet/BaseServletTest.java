@@ -35,8 +35,6 @@ public abstract class BaseServletTest extends TestCase {
 		//ServletHolder jsp = tester.addServlet(org.apache.jasper.servlet.JspServlet.class, "*.jsp");
 		bbs = tester.addServlet(com.bluebox.BlueBoxServlet.class, "/rest/*");
 		feeds = tester.addServlet(com.bluebox.feed.FeedServlet.class, "/feed/*");
-//		ServletHolder atom = tester.addServlet(org.glassfish.jersey.servlet.ServletContainer.class, "/atom/*");
-//		atom.setInitParameter("javax.ws.rs.Application", "com.bluebox.feed.ATOMApplication");
 
 		tester.setResourceBase("WebContent");
 		//		tester.addServlet(DefaultServlet.class, "/");

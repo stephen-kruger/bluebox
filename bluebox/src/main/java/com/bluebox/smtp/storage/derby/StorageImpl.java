@@ -216,11 +216,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		log.fine("Removed mail entry "+id);
 	}
 
-	//	public MessageImpl store(String recipient, MimeMessageWrapper message)throws Exception {
-	////		MimeMessageWrapper message = rawMessage.getMimeMessage();
-	//		return store(new InternetAddress(recipient).getAddress(),recipient,message);
-	//	}
-
 	public BlueboxMessage retrieve(String uid) throws Exception {
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.UID+"=?");

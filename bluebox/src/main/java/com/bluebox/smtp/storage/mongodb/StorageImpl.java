@@ -1,6 +1,5 @@
 package com.bluebox.smtp.storage.mongodb;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -91,7 +90,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		message.setBlueBoxMimeMessage(from, bbmm);
 		DBCollection coll = db.getCollection(TABLE_NAME);
 		DBObject bson = ( DBObject ) JSON.parse( message.toJSON() );
-		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(message.getRawMessage()));
+		//		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
+		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
+		GridFSInputFile gfsFile = gfsRaw.createFile(Utils.streamMimeMessage(bbmm));
+		gfsFile.setFilename(message.getIdentifier());
+		gfsFile.save();
+		//		bson.put(BlueboxMessage.RAW, new BasicBSONDecoder().readObject(Utils.streamMimeMessage(bbmm)));
 		coll.insert(bson);
 		return message;
 	}
@@ -153,10 +157,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return new Date(mo.getLong(key));
 	}
 
-	public InputStream getDBORaw(Object dbo, String key) {
-		DBObject mo = (DBObject)dbo;
+	public InputStream getDBORaw(Object dbo, String uid) {
 		try {
-			return new ByteArrayInputStream( mo.get(key).toString().getBytes("UTF-8") );
+			//return new ByteArrayInputStream( mo.get(key).toString().getBytes("UTF-8") );
+			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
+			GridFSDBFile imageForOutput = gfsRaw.findOne(uid);
+			return imageForOutput.getInputStream();
 		}
 		catch (Throwable t) {
 			log.severe(t.getMessage());
@@ -219,12 +225,34 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void delete(String uid) {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
-		db.getCollection(TABLE_NAME).remove(query);		
+		db.getCollection(TABLE_NAME).remove(query);	
+		// remove the RAW blob too
+		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
+		gfsRaw.remove(gfsRaw.findOne(uid));
 	}
 
 	public void deleteAll(InboxAddress inbox) throws Exception {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.INBOX, inbox.getAddress());
-		db.getCollection(TABLE_NAME).remove(query);	
+		db.getCollection(TABLE_NAME).remove(query);
+		cleanRaw();
+	}
+
+	private void cleanRaw() {
+		log.info("Looking for orphaned blobs");
+		// clean up any blobs who have no associated inbox message
+		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
+		DBCursor cursor = gfsRaw.getFileList();
+		DBObject dbo;
+		while(cursor.hasNext()) {
+			dbo = cursor.next();
+			BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, dbo.get("filename").toString());
+			if (db.getCollection(TABLE_NAME).findOne(query)==null) {
+				log.info("Removing orphaned blob "+dbo.get("filename"));
+				gfsRaw.remove(dbo);
+			}
+		}
+		cursor.close();
+		log.info("Finished looking for orphaned blobs");
 	}
 
 	@Override
@@ -241,6 +269,16 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		else {
 			log.severe("Cannot delete from closed inbox");
 		}
+		// remove all blobs
+		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
+		DBCursor cursor = gfsRaw.getFileList();
+		DBObject dbo;
+		while(cursor.hasNext()) {
+			dbo = cursor.next();
+			log.fine("Deleting raw "+dbo.get("filename"));
+			gfsRaw.remove(dbo);
+		}
+		cursor.close();
 	}
 
 	@Override
@@ -484,15 +522,15 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 
 		// for later Mongodb use Cursor 
-//				AggregationOptions aggregationOptions = AggregationOptions.builder()
-//						.batchSize(100)
-//						.outputMode(AggregationOptions.OutputMode.CURSOR)
-//						.allowDiskUse(true)
-//						.build();
-//				Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
-//				while (cursor.hasNext()) {
-//				    System.out.println(cursor.next());
-//				}
+		//				AggregationOptions aggregationOptions = AggregationOptions.builder()
+		//						.batchSize(100)
+		//						.outputMode(AggregationOptions.OutputMode.CURSOR)
+		//						.allowDiskUse(true)
+		//						.build();
+		//				Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
+		//				while (cursor.hasNext()) {
+		//				    System.out.println(cursor.next());
+		//				}
 		return jo;
 	}
 
@@ -529,40 +567,40 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 
 		// for later Mongodb use Cursor 
-//				AggregationOptions aggregationOptions = AggregationOptions.builder()
-//						.batchSize(100)
-//						.outputMode(AggregationOptions.OutputMode.CURSOR)
-//						.allowDiskUse(true)
-//						.build();
-//				Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
-//				while (cursor.hasNext()) {
-//				    System.out.println(cursor.next());
-//				}
+		//				AggregationOptions aggregationOptions = AggregationOptions.builder()
+		//						.batchSize(100)
+		//						.outputMode(AggregationOptions.OutputMode.CURSOR)
+		//						.allowDiskUse(true)
+		//						.build();
+		//				Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
+		//				while (cursor.hasNext()) {
+		//				    System.out.println(cursor.next());
+		//				}
 		return jo;
 	}
-	
-//	public JSONObject getMostActiveOld() {
-//		JSONObject jo = new JSONObject();
-//		try {
-//			jo.put(BlueboxMessage.INBOX,"");
-//			jo.put(BlueboxMessage.COUNT,0);
-//			@SuppressWarnings("unchecked")
-//			List<String> inboxes = db.getCollection(TABLE_NAME).distinct(BlueboxMessage.INBOX);
-//			long currcount, maxcount = 0;
-//			for (String inbox : inboxes) {
-//				currcount = getMailCount(new InboxAddress(inbox), BlueboxMessage.State.NORMAL);
-//				if (currcount>maxcount) {
-//					jo.put(BlueboxMessage.INBOX,inbox);
-//					jo.put(BlueboxMessage.COUNT,currcount);
-//					maxcount = currcount;
-//				}
-//			}
-//		}
-//		catch (Throwable je) {
-//			je.printStackTrace();
-//		}
-//		return jo;
-//	}
+
+	//	public JSONObject getMostActiveOld() {
+	//		JSONObject jo = new JSONObject();
+	//		try {
+	//			jo.put(BlueboxMessage.INBOX,"");
+	//			jo.put(BlueboxMessage.COUNT,0);
+	//			@SuppressWarnings("unchecked")
+	//			List<String> inboxes = db.getCollection(TABLE_NAME).distinct(BlueboxMessage.INBOX);
+	//			long currcount, maxcount = 0;
+	//			for (String inbox : inboxes) {
+	//				currcount = getMailCount(new InboxAddress(inbox), BlueboxMessage.State.NORMAL);
+	//				if (currcount>maxcount) {
+	//					jo.put(BlueboxMessage.INBOX,inbox);
+	//					jo.put(BlueboxMessage.COUNT,currcount);
+	//					maxcount = currcount;
+	//				}
+	//			}
+	//		}
+	//		catch (Throwable je) {
+	//			je.printStackTrace();
+	//		}
+	//		return jo;
+	//	}
 
 	//	@SuppressWarnings("unchecked")
 	//	@Override
@@ -573,11 +611,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void runMaintenance() throws Exception {
-		List<DBObject> indexes = db.getCollection(TABLE_NAME).getIndexInfo();
-		for (DBObject index : indexes) {
-			db.getCollection(TABLE_NAME).remove(index);
-		}
-		createIndexes();
+		cleanRaw();
 	}
 
 
