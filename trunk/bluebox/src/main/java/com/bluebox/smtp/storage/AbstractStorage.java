@@ -51,7 +51,8 @@ public abstract class AbstractStorage implements StorageIf {
 		message.setLongProperty(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED).getTime());
 		message.setProperty(BlueboxMessage.STATE,getDBOString(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.name()));
 		message.setProperty(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
-		message.loadBlueBoxMimeMessage(Utils.loadEML(getDBORaw(dbo,BlueboxMessage.RAW)));
+		message.loadBlueBoxMimeMessage(Utils.loadEML(getDBORaw(dbo,uid)));
+		
 		long size = getDBOLong(dbo,BlueboxMessage.SIZE,0)/1000;
 		if (size==0)
 			size = 1;
