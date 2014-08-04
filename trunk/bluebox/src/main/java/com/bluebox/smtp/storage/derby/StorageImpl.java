@@ -88,7 +88,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			throw e;
 		}
 		System.setProperty("derby.language.logQueryPlan", "false");
-		String url = "jdbc:derby:bluebox.derby;create=true";
+		String url = "jdbc:derby:"+DB_NAME+";create=true";
 		Connection conn = DriverManager.getConnection(url);
 		return conn;
 	}
@@ -673,6 +673,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void runMaintenance() throws Exception {
 		setupTables();		
+	}
+
+	@Override
+	public void migrate(String version) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

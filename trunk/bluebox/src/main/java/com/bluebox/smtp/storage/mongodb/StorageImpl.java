@@ -1,5 +1,6 @@
 package com.bluebox.smtp.storage.mongodb;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,9 +40,7 @@ import com.mongodb.gridfs.GridFSInputFile;
 import com.mongodb.util.JSON;
 
 public class StorageImpl extends AbstractStorage implements StorageIf {
-	// 1224264 
 	private static final Logger log = Logger.getAnonymousLogger();
-	private static final String DB_NAME = "bluebox400";
 	private static final String DB_ERR_NAME = "bluebox_errors";
 	private static final String TABLE_NAME = "inbox";
 	private static final String PROPS_TABLE_NAME = "properties";
@@ -55,6 +54,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		errorFS = new GridFS(mongoClient.getDB(DB_ERR_NAME),DB_ERR_NAME);
 
 		createIndexes();
+
+		migrate();
 
 		log.fine("Started MongoDB connection");
 	}
@@ -90,6 +91,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		message.setBlueBoxMimeMessage(from, bbmm);
 		DBCollection coll = db.getCollection(TABLE_NAME);
 		DBObject bson = ( DBObject ) JSON.parse( message.toJSON() );
+
 		//		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
 		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
 		GridFSInputFile gfsFile = gfsRaw.createFile(Utils.streamMimeMessage(bbmm));
@@ -170,57 +172,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return null;
 		}
 	}
-
-	//	public BlueboxMessage loadMessage(DBObject dbo) throws Exception {
-	//		//		MimeMessageWrapper mmwDbo = new MimeMessageWrapper(null, new ByteArrayInputStream(dbo.get(MessageImpl.BINARY_CONTENT).toString().getBytes("UTF-8")));
-	//		String uid = getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString());
-	//		BlueboxMessage message = new BlueboxMessage(uid);
-	//		if (dbo.containsField(BlueboxMessage.TO))
-	//			message.setProperty(BlueboxMessage.TO,getDBOString(dbo,BlueboxMessage.TO,"bluebox@bluebox.com"));
-	//		else {
-	//			log.warning("Missing field "+BlueboxMessage.TO);
-	//		}
-	//		if (dbo.containsField(BlueboxMessage.AUTO_COMPLETE))
-	//			message.setProperty(BlueboxMessage.AUTO_COMPLETE,getDBOString(dbo,BlueboxMessage.AUTO_COMPLETE,"bluebox@bluebox.com"));
-	//		else
-	//			log.warning("Missing field "+BlueboxMessage.AUTO_COMPLETE);
-	//
-	//		if (dbo.containsField(BlueboxMessage.FROM))
-	//			message.setProperty(BlueboxMessage.FROM,getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com"));
-	//		else
-	//			log.warning("Missing field "+BlueboxMessage.FROM);
-	//
-	//		if (dbo.containsField(BlueboxMessage.SUBJECT))
-	//			message.setProperty(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
-	//		else
-	//			log.warning("Missing field "+BlueboxMessage.SUBJECT);
-	//
-	//		if (dbo.containsField(BlueboxMessage.RECEIVED))
-	//			message.setProperty(BlueboxMessage.RECEIVED,getDBOString(dbo,BlueboxMessage.RECEIVED,""));
-	//		else
-	//			log.warning("Missing field "+BlueboxMessage.RECEIVED);
-	//
-	//		if (dbo.containsField(BlueboxMessage.STATE))
-	//			message.setProperty(BlueboxMessage.STATE,getDBOString(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.name()));
-	//		else
-	//			log.warning("Missing field "+BlueboxMessage.STATE);
-	//
-	//		if (dbo.containsField(BlueboxMessage.INBOX))
-	//			message.setProperty(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
-	//		else
-	//			log.warning("Missing field "+BlueboxMessage.INBOX);
-	//
-	//		if (dbo.containsField(BlueboxMessage.SIZE))
-	//			message.setProperty(BlueboxMessage.SIZE,getDBOString(dbo,BlueboxMessage.SIZE,"0"));
-	//		else
-	//			log.warning("Missing field "+BlueboxMessage.SIZE);
-	//		//		if (dbo.containsField(MessageImpl.BINARY_CONTENT))
-	//		//			message.setProperty(MessageImpl.BINARY_CONTENT,dbo.get(MessageImpl.BINARY_CONTENT).toString());
-	//		//		else
-	//		//			log.warning("Missing field "+MessageImpl.BINARY_CONTENT);
-	//		message.loadBlueBoxMimeMessage(new MimeMessageWrapper(null, new ByteArrayInputStream(dbo.get(BlueboxMessage.RAW).toString().getBytes("UTF-8"))));
-	//		return message;
-	//	}
 
 	@Override
 	public void delete(String uid) {
@@ -612,6 +563,43 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void runMaintenance() throws Exception {
 		cleanRaw();
+	}
+
+	@Override
+	public void migrate(String version) {
+		try {
+			MongoClient mongoClient = new MongoClient(Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST));
+			if (version.equals("bluebox400")) {
+				log.info("Migrating db version "+version+" to "+DB_NAME);
+				DB oldDb = mongoClient.getDB(version);
+				DBCollection coll = oldDb.getCollection(TABLE_NAME);
+				DBCursor cursor = coll.find();
+				DBObject msg;
+				while (cursor.hasNext()) {
+					msg = cursor.next();
+					try {
+						if (msg.containsField(BlueboxMessage.RAW)) {
+							MimeMessage mimeMessage = Utils.loadEML(new ByteArrayInputStream( msg.get(BlueboxMessage.RAW).toString().getBytes("UTF-8") ));
+							store(new InboxAddress(getDBOString(msg,BlueboxMessage.INBOX,"")), 
+									getDBOString(msg,BlueboxMessage.FROM,""), 
+									mimeMessage);
+						}
+					}
+					catch (Throwable t) {
+						log.severe("Error migrating message :"+t.getMessage());
+						t.printStackTrace();
+					}
+				}
+
+				cursor.close();
+			}
+			mongoClient.close();
+			log.info("Migration complete");
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+			log.severe(t.getMessage());
+		}
 	}
 
 

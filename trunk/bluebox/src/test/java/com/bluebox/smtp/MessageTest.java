@@ -112,6 +112,18 @@ public class MessageTest extends TestCase {
 		InternetAddress add = BlueboxMessage.getRecipient(new InboxAddress("xxx@xxx.com"), message);
 		assertEquals("Should not have any recipient fields",add.getAddress(),"xxx@xxx.com");
 	}
+	
+	public void testEncodedContent() throws Exception {
+		InputStream is = new FileInputStream(new File("src/test/resources/test-data/bodybreaker.eml"));
+		MimeMessage message =Utils.loadEML(is);
+		is.close();
+		MimeMessageParser parser = new MimeMessageParser(message);
+		parser.parse();
+		log.info(message.getSubject());
+		log.info(parser.getSubject());
+//		log.info(parser.getPlainContent());
+//		log.info(parser.getHtmlContent());
+	}
 
 	public List<String> listCids(MimeMessage mm) throws MessagingException {
 		List<String> cids = new ArrayList<String>();

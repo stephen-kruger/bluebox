@@ -215,7 +215,7 @@ public class BlueboxMessage {
 		}
 		catch (Throwable t) {
 			log.severe(t.getMessage());
-			t.printStackTrace();
+//			t.printStackTrace();
 			resp.sendError(HttpStatus.SC_NOT_FOUND, t.getMessage());
 		}
 		finally {
@@ -240,8 +240,8 @@ public class BlueboxMessage {
 			if (ja.length()>0)
 				json.put(ATTACHMENT, ja);
 
-			json.put(BlueboxMessage.HTML_BODY, getHtml());
-			json.put(BlueboxMessage.TEXT_BODY, getText());
+//			json.put(BlueboxMessage.HTML_BODY, getHtml());
+//			json.put(BlueboxMessage.TEXT_BODY, getText());
 
 			json.put(UID,properties.get(UID));
 			json.put(TO,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));

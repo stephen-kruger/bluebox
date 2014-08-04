@@ -17,7 +17,17 @@ import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public abstract class AbstractStorage implements StorageIf {
 	private static final Logger log = Logger.getAnonymousLogger();
-
+	public static final String DB_NAME = "bluebox401";
+	private static final String[] supportedVersions = new String[] {"bluebox400"};
+	
+	public void migrate() {
+		for (int i = 0; i < supportedVersions.length;i++) {
+			migrate(supportedVersions[i]);
+		}
+	}
+	
+	public abstract void migrate(String version);
+	
 	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
 		long startTime = new Date().getTime();
 		List<JSONObject> mail = listMailLite(inbox, state, start, count, orderBy, ascending, locale);
