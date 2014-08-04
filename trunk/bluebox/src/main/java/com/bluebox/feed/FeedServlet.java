@@ -76,12 +76,7 @@ public class FeedServlet extends HttpServlet {
 		feed.setTitle("Inbox for "+email);
 		feed.setAuthor(email);
 		feed.setLink(req.getContextPath()+"../app/inbox.jsp?email="+URLEncoder.encode(email,"UTF-8"));
-		System.out.println(req.getServletPath());
-		System.out.println(req.getRequestURI());
-		System.out.println(req.getPathInfo());
-		System.out.println(req.getPathTranslated());
-		System.out.println(req.getContextPath());
-		System.out.println(req.getSession().getServletContext().getRealPath("bluebox"));
+
 		try {
 			InboxAddress inbox = new InboxAddress(email);
 			List<BlueboxMessage> messages = Inbox.getInstance().listInbox(inbox, BlueboxMessage.State.NORMAL, 0, 10, BlueboxMessage.RECEIVED, false);

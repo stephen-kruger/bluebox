@@ -42,7 +42,6 @@ public class JSONMessageHandler extends AbstractHandler {
 			JSONObject json = new JSONObject(message.toJSON(req.getLocale()));
 			json.put(BlueboxMessage.RECEIVED, AbstractStorage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
 			json = securityScan(req,message,json);
-			System.out.println(json.toString(3));
 			out.write(json.toString());
 			out.flush();
 		}

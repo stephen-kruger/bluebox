@@ -480,7 +480,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		//						.build();
 		//				Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
 		//				while (cursor.hasNext()) {
-		//				    System.out.println(cursor.next());
+		//				    log.info(cursor.next());
 		//				}
 		return jo;
 	}
@@ -525,7 +525,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		//						.build();
 		//				Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
 		//				while (cursor.hasNext()) {
-		//				    System.out.println(cursor.next());
+		//				    log.info(cursor.next());
 		//				}
 		return jo;
 	}
