@@ -225,10 +225,9 @@ public class Utils {
 
 	public static MimeMessage loadEML(InputStream emlStream) throws MessagingException, IOException {
 		//				Session sess = getSession();
+		log.info("Loading message");
 		MimeMessage message = new MimeMessage(null,emlStream);
 		emlStream.close();
-		if (message.getSubject()==null)
-			new Exception().printStackTrace();
 		return message;
 	}
 
@@ -412,6 +411,7 @@ public class Utils {
 	}
 
 	private static void sendMessageDirect(MimeMessage msg) throws Exception {
+		log.info("Sending message direct to "+msg.getAllRecipients().length+" recipients");
 		Address[] to = msg.getRecipients(RecipientType.TO);
 		Address[] cc = msg.getRecipients(RecipientType.CC);
 		Address[] bcc = msg.getRecipients(RecipientType.BCC);
@@ -425,7 +425,12 @@ public class Utils {
 		if (bcc!=null)
 			for (int i = 0; i < bcc.length;i++)
 				recipients.add(bcc[i].toString());
+		
+		// if we load emails from file, there might not be a recipient (bcc)
+		if (recipients.size()==0)
+			recipients.add("anonymous@bluebox.lotus.com");
 		for (String recipient : recipients) {
+			log.info("Sending message to "+recipient);
 			if (Inbox.getInstance().accept(msg.getFrom()[0].toString(), recipient)) {
 				Inbox.getInstance().deliver(msg.getFrom()[0].toString(), recipient, Utils.streamMimeMessage(msg));
 			}

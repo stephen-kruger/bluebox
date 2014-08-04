@@ -87,7 +87,10 @@
 
 	 
 	function getAttachmentIcon(attachmentName) {
-		attachmentName = attachmentName.toLowerCase();
+		if (attachmentName)
+			attachmentName = attachmentName.toLowerCase();
+		else
+			attachmentName = "";
 		
 		if (attachmentName.indexOf(".pdf")>0) {
 			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftPdf16.png";
@@ -157,15 +160,24 @@
 	
 	// create a link to rest service using */uid/attachment_index/filename
 	function displayAttachments(uid, id, attachmentArray) {
-		if (attachmentArray!=null) {
-			var str = "";
-			var base = "<%=JSONAttachmentHandler.JSON_ROOT%>/"+uid+"/";
-			for (var i=0; i < attachmentArray.length; i++ ) {
-				str += "&nbsp;<a class='attachmentsEmail' href=\"<%=request.getContextPath()%>/"+base+i+"/"+attachmentArray[i]+"\" target=\"_blank\"><img class='attachmentIcon' src='"+getAttachmentIcon(attachmentArray[i])+"'/>"+attachmentArray[i]+"</a>&nbsp;";
+		try {
+			if (attachmentArray!=null) {
+				var str = "";
+				var base = "<%=JSONAttachmentHandler.JSON_ROOT%>/"+uid+"/";
+				for (var i=0; i < attachmentArray.length; i++ ) {
+					if (attachmentArray[i])
+						str += "&nbsp;<a class='attachmentsEmail' href=\"<%=request.getContextPath()%>/"+base+i+"/"+attachmentArray[i]+"\" target='_blank'><img class='attachmentIcon' src='"+getAttachmentIcon(attachmentArray[i])+"'/>"+attachmentArray[i]+"</a>&nbsp;";
+				}
+				attachmenDiv = document.getElementById(id);
+				if (attachmenDiv) {
+					attachmenDiv.innerHTML = str;
+					attachmenDiv.style.display="block";
+				}
+
 			}
-			attachmenDiv = document.getElementById(id);
-			attachmenDiv.innerHTML = str;
-			attachmenDiv.style.display="block";
+		}
+		catch (err) {
+			console.log("maildetail11:"+err);
 		}
 	}
 	
@@ -300,7 +312,7 @@
 						if (data.<%=BlueboxMessage.ATTACHMENT%>){
 							displayAttachments(uid,"Attachment",data.<%=BlueboxMessage.ATTACHMENT%>);
 						}
-						
+
 						setBodyContent(
 								data.<%=BlueboxMessage.HTML_BODY%>,
 								data.<%=BlueboxMessage.TEXT_BODY%>,
@@ -388,6 +400,10 @@
 				});
 			});
 			// show the table with the most content by default
+			if (!htmlContent)
+				htmlContent = "";
+			if (!textContent)
+				textContent = "";
 			if (htmlContent.length>textContent.length) {
 				selectMailTab("html-tab");
 			}

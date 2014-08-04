@@ -41,7 +41,8 @@ public class JSONMessageHandler extends AbstractHandler {
 			BlueboxMessage message = inbox.retrieve(uid);
 			JSONObject json = new JSONObject(message.toJSON(req.getLocale()));
 			json.put(BlueboxMessage.RECEIVED, AbstractStorage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
-			json = securityScan(req,json);
+			json = securityScan(req,message,json);
+			System.out.println(json.toString(3));
 			out.write(json.toString());
 			out.flush();
 		}
@@ -60,7 +61,7 @@ public class JSONMessageHandler extends AbstractHandler {
 		resp.flushBuffer();
 	}
 
-	private JSONObject securityScan(HttpServletRequest request, JSONObject json) {
+	private JSONObject securityScan(HttpServletRequest request, BlueboxMessage message, JSONObject json) {
 		ResourceBundle mailDetailsResource = ResourceBundle.getBundle("mailDetails",request.getLocale());
 		ServletContext context = request.getSession().getServletContext();
 		try {
@@ -68,7 +69,7 @@ public class JSONMessageHandler extends AbstractHandler {
 			InputStream p = context.getResourceAsStream("WEB-INF/antisamy-anythinggoes-1.4.4.xml");
 			if (p==null)
 				p = new FileInputStream("src/main/webapp/WEB-INF/antisamy-anythinggoes-1.4.4.xml");
-			String html = json.getString(BlueboxMessage.HTML_BODY);
+			String html = message.getHtml();//json.getString(BlueboxMessage.HTML_BODY);
 			
 			log.fine("before:"+html);
 			Policy policy = Policy.getInstance(p);
