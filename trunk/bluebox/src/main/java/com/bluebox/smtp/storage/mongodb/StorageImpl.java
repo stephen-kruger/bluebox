@@ -1,6 +1,5 @@
 package com.bluebox.smtp.storage.mongodb;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -572,26 +571,27 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			if (version.equals("bluebox400")) {
 				log.info("Migrating db version "+version+" to "+DB_NAME);
 				DB oldDb = mongoClient.getDB(version);
-				DBCollection coll = oldDb.getCollection(TABLE_NAME);
-				DBCursor cursor = coll.find();
-				DBObject msg;
-				while (cursor.hasNext()) {
-					msg = cursor.next();
-					try {
-						if (msg.containsField(BlueboxMessage.RAW)) {
-							MimeMessage mimeMessage = Utils.loadEML(new ByteArrayInputStream( msg.get(BlueboxMessage.RAW).toString().getBytes("UTF-8") ));
-							store(new InboxAddress(getDBOString(msg,BlueboxMessage.INBOX,"")), 
-									getDBOString(msg,BlueboxMessage.FROM,""), 
-									mimeMessage);
-						}
-					}
-					catch (Throwable t) {
-						log.severe("Error migrating message :"+t.getMessage());
-						t.printStackTrace();
-					}
-				}
-
-				cursor.close();
+				oldDb.dropDatabase();
+//				DBCollection coll = oldDb.getCollection(TABLE_NAME);
+//				DBCursor cursor = coll.find();
+//				DBObject msg;
+//				while (cursor.hasNext()) {
+//					msg = cursor.next();
+//					try {
+//						if (msg.containsField(BlueboxMessage.RAW)) {
+//							MimeMessage mimeMessage = Utils.loadEML(new ByteArrayInputStream( msg.get(BlueboxMessage.RAW).toString().getBytes("UTF-8") ));
+//							store(new InboxAddress(getDBOString(msg,BlueboxMessage.INBOX,"")), 
+//									getDBOString(msg,BlueboxMessage.FROM,""), 
+//									mimeMessage);
+//						}
+//					}
+//					catch (Throwable t) {
+//						log.severe("Error migrating message :"+t.getMessage());
+//						t.printStackTrace();
+//					}
+//				}
+//
+//				cursor.close();
 			}
 			mongoClient.close();
 			log.info("Migration complete");

@@ -224,8 +224,6 @@ public class Utils {
 	}
 
 	public static MimeMessage loadEML(InputStream emlStream) throws MessagingException, IOException {
-		//				Session sess = getSession();
-		log.info("Loading message");
 		MimeMessage message = new MimeMessage(null,emlStream);
 		emlStream.close();
 		return message;

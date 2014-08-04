@@ -1,7 +1,5 @@
 package com.bluebox.smtp;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -163,12 +161,12 @@ public class MessageTest extends TestCase {
 
 	}
 	
-	public void testScratch() throws MessagingException, IOException {
-		InputStream is = new FileInputStream(new File("src/test/resources/test-data/no-recipient.eml"));
+	public void testScratch() throws Exception {
+		InputStream is = new FileInputStream(new File("src/test/resources/test-data/nobodyshown.eml"));
 		MimeMessage message =Utils.loadEML(is);
 		is.close();
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		message.writeTo(os);
-		log.info(Utils.convertStreamToString(new ByteArrayInputStream(os.toByteArray())));
+		MimeMessageParser parser = new MimeMessageParser(message);
+		parser.parse();
+		log.info(parser.getPlainContent());
 	}
 }
