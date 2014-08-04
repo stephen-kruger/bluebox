@@ -68,22 +68,36 @@ public class JSONMessageHandler extends AbstractHandler {
 			InputStream p = context.getResourceAsStream("WEB-INF/antisamy-anythinggoes-1.4.4.xml");
 			if (p==null)
 				p = new FileInputStream("src/main/webapp/WEB-INF/antisamy-anythinggoes-1.4.4.xml");
+
+			// scan html for malicious content
 			String html = message.getHtml();//json.getString(BlueboxMessage.HTML_BODY);
-			
-			log.fine("before:"+html);
 			Policy policy = Policy.getInstance(p);
 			AntiSamy as = new AntiSamy();
 			CleanResults cr = as.scan(html, policy);
-			log.fine("after:"+cr.getCleanHTML());
 			StringBuffer sec = new StringBuffer();
-			;
-			sec.append(MessageFormat.format(mailDetailsResource.getString("scantitle"), cr.getNumberOfErrors())+"\n");
-			sec.append(mailDetailsResource.getString("scantitleunderline")+"\n");
+			
 			int count = 1;
 			for (String error : cr.getErrorMessages())
 				sec.append((count++)+") "+error+"\n");
 			json.put(BlueboxMessage.HTML_BODY, cr.getCleanHTML());
-			json.put(SECURITY, sec.toString());
+
+			// scan subject for malicious content
+			cr = as.scan(message.getProperty(BlueboxMessage.SUBJECT), policy);
+			json.put(BlueboxMessage.SUBJECT, cr.getCleanHTML());
+			for (String error : cr.getErrorMessages())
+				sec.append((count++)+") "+error+"\n");
+
+			// scan text body for malicious content
+			cr = as.scan(message.getText(), policy);
+			json.put(BlueboxMessage.TEXT_BODY, cr.getCleanHTML());
+			for (String error : cr.getErrorMessages())
+				sec.append((count++)+") "+error+"\n");
+			
+			StringBuffer title = new StringBuffer();
+			title.append(MessageFormat.format(mailDetailsResource.getString("scantitle"), count-1)+"\n");
+			title.append(mailDetailsResource.getString("scantitleunderline")+"\n");
+			json.put(SECURITY, title.toString()+sec.toString());
+
 		}
 		catch (Throwable t) {
 			t.printStackTrace();

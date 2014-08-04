@@ -21,6 +21,7 @@ public abstract class AbstractStorage implements StorageIf {
 	private static final String[] supportedVersions = new String[] {"bluebox400"};
 	
 	public void migrate() {
+		log.info("Migrating");
 		for (int i = 0; i < supportedVersions.length;i++) {
 			migrate(supportedVersions[i]);
 		}
@@ -29,7 +30,6 @@ public abstract class AbstractStorage implements StorageIf {
 	public abstract void migrate(String version);
 	
 	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
-		long startTime = new Date().getTime();
 		List<JSONObject> mail = listMailLite(inbox, state, start, count, orderBy, ascending, locale);
 		int index = 0;
 		writer.write("[");
@@ -41,7 +41,6 @@ public abstract class AbstractStorage implements StorageIf {
 		}
 		writer.write("]");
 		writer.flush();
-		log.info("Served inbox contents in "+(new Date().getTime()-startTime)+"ms");
 	}
 	
 	public abstract List<JSONObject> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception;

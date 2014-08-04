@@ -2,6 +2,7 @@ package com.bluebox.rest.json;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.mail.internet.AddressException;
@@ -42,6 +43,7 @@ public class JSONInboxHandler extends AbstractHandler {
 	}
 
 	public void doGetInbox(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		long startTime = new Date().getTime();
 		setDefaultHeaders(resp);
 		// get the desired email
 		InboxAddress inboxAddress;
@@ -98,7 +100,6 @@ public class JSONInboxHandler extends AbstractHandler {
 			// tell the grid how many items we have
 			long totalCount = inbox.getMailCount(inboxAddress, state);
 			pager.setRange(resp, totalCount);
-			log.info("Sending JSON inbox view for "+inboxAddress+" first="+pager.getFirst()+" last="+pager.getLast());
 			Writer writer = resp.getWriter();
 			inbox.listInbox(inboxAddress, state, writer, pager.getFirst(), pager.getCount(), pager.getOrderBy().get(0), pager.isAscending(0), resp.getLocale());
 			writer.flush();
@@ -108,6 +109,7 @@ public class JSONInboxHandler extends AbstractHandler {
 			t.printStackTrace();
 		}
 		resp.flushBuffer();
+		log.info("Served inbox contents in for "+inboxAddress+" first="+pager.getFirst()+" last="+pager.getLast()+" in "+(new Date().getTime()-startTime)+"ms");
 	}
 
 	private BlueboxMessage.State extractState(String uri, String jsonRoot) {

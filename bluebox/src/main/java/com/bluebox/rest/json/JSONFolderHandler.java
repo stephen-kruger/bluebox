@@ -81,7 +81,7 @@ public class JSONFolderHandler extends AbstractHandler {
 			InboxAddress email = new InboxAddress(extractEmail(uri,JSON_ROOT));
 			if (email.getAddress().startsWith("*@"))
 				email = null;
-			log.info("Serving folder count for "+email);
+			log.fine("Serving folder count for "+email);
 			ResourceBundle rb = ResourceBundle.getBundle("folderDetails",req.getLocale());
 
 			JSONObject result = new JSONObject();
