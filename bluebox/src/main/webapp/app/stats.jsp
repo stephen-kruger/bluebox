@@ -11,7 +11,25 @@
 	ResourceBundle statsResource = ResourceBundle.getBundle("stats",request.getLocale());
 	ResourceBundle footerResource = ResourceBundle.getBundle("footer",request.getLocale());
 %>
-<script>		
+<script>	
+
+	function isFunctionDefined(functionName) {
+	    if(eval("typeof(" + functionName + ") == typeof(Function)")) {
+	        return true;
+	    }
+	}
+	
+	function loadEmail(email, uid) {
+		if (isFunctionDefined("loadInbox")) {
+			loadInbox(email);
+			loadDetail(uid);
+		}
+		else {
+			// functions not defined, so navigate to this inbox instead
+			window.location.href = "inbox.jsp?<%=Inbox.EMAIL%>="+email;
+		}
+	}
+	
 	function loadRecent() {
 		try {
 			require(["dojox/data/JsonRestStore"], function () {
@@ -39,7 +57,8 @@
 					  onComplete : 
 						  	function(queryResults, request) {
 						  		if (queryResults.recent.<%=BlueboxMessage.SUBJECT%>) {
-									document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
+									//document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'&<%=BlueboxMessage.UID%>='+queryResults.recent.<%=BlueboxMessage.UID%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
+									document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML = '<a href="#" onclick="loadEmail(\''+queryResults.recent.<%=BlueboxMessage.INBOX%>+'\',\''+queryResults.recent.<%=BlueboxMessage.UID%>+'\');">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
 						  		}
 						  		else {
 									document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML="<%= statsResource.getString("no_update") %>";						  			

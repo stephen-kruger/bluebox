@@ -82,7 +82,7 @@
 	<script type="text/javascript" charset="utf-8">
 		
 		require(["dojox/data/JsonRestStore"]);
-	
+		
 		function loadInbox(email) {
 			console.log("loadInbox:"+email+" "+"<%= BlueboxMessage.State.NORMAL.name()%>"+" "+currentState);
 			loadInbox(email,"<%= BlueboxMessage.State.NORMAL.name()%>");

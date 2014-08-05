@@ -235,7 +235,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public long getMailCount(BlueboxMessage.State state) throws Exception {
 		BasicDBObject query = new BasicDBObject();
 		if (state != BlueboxMessage.State.ANY)
-			query.append(BlueboxMessage.STATE, state.name());
+			query.append(BlueboxMessage.STATE, state.ordinal());
 		return db.getCollection(TABLE_NAME).count(query);
 	}
 
@@ -245,7 +245,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return getMailCount(state);
 		BasicDBObject query = new BasicDBObject();
 		if (state != BlueboxMessage.State.ANY)
-			query.append(BlueboxMessage.STATE, state.name());
+			query.append(BlueboxMessage.STATE, state.ordinal());
 		if (inbox!=null)
 			query.append(BlueboxMessage.INBOX, inbox.getAddress());
 		long start = new Date().getTime();
@@ -257,7 +257,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public DBCursor listMailCommon(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		BasicDBObject query = new BasicDBObject();
 		if (state != BlueboxMessage.State.ANY)
-			query.append(BlueboxMessage.STATE, state.name());
+			query.append(BlueboxMessage.STATE, state.ordinal());
 		if ((inbox!=null)&&(inbox.getFullAddress().length()>0))
 			query.append(BlueboxMessage.INBOX, inbox.getAddress());
 		int sortBit;
@@ -313,7 +313,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		DBCursor cursor = db.getCollection(TABLE_NAME).find(query);
 		if (cursor.hasNext()) {
 			DBObject dbo = cursor.next();
-			dbo.put(BlueboxMessage.STATE, state.name());
+			dbo.put(BlueboxMessage.STATE, state.ordinal());
 			db.getCollection(TABLE_NAME).update(query, dbo);
 		}
 		cursor.close();

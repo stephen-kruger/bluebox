@@ -393,7 +393,7 @@ public class Inbox implements SimpleMessageListener {
 	public void updateStats(BlueboxMessage message, String recipient, boolean force) throws AddressException {
 		incrementGlobalCount();
 		if (message!=null)
-			updateStatsRecent(message.getProperty(BlueboxMessage.INBOX),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT));	
+			updateStatsRecent(message.getProperty(BlueboxMessage.INBOX),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT),message.getProperty(BlueboxMessage.UID));	
 	}
 
 	public void clearErrors() throws Exception {
@@ -512,11 +512,12 @@ public class Inbox implements SimpleMessageListener {
 		return StorageFactory.getInstance().getMostActiveSender();
 	}
 
-	private JSONObject updateStatsRecent(String to, String from, String subject) {
+	private JSONObject updateStatsRecent(String to, String from, String subject, String uid) {
 		try {
 			recentStats.put(BlueboxMessage.SUBJECT, subject);
 			recentStats.put(BlueboxMessage.INBOX, to);
 			recentStats.put(BlueboxMessage.FROM, from);
+			recentStats.put(BlueboxMessage.UID, uid);
 		} 
 		catch (JSONException e1) {
 			e1.printStackTrace();
