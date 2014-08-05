@@ -79,6 +79,7 @@ public class InboxTest extends TestCase {
 		log.info(json.toString(3));
 		assertEquals("Incorrectly reported recent stats recipient",new InboxAddress(email3).getAddress(),json.getString(BlueboxMessage.INBOX));
 		assertEquals("Incorrectly reported recent stats sender","from@from.com",json.getString(BlueboxMessage.FROM));
+		assertNotNull("Unset UID",json.getString(BlueboxMessage.UID));
 	}
 
 	public void testActiveStats() throws AddressException, MessagingException, IOException, Exception {

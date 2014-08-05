@@ -74,7 +74,7 @@ public class BlueboxMessage {
 		setProperty(SUBJECT, bbmm.getSubject());
 		setLongProperty(RECEIVED, new Date().getTime());
 		setProperty(RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
-		setProperty(STATE, State.NORMAL.name());
+		setProperty(STATE, State.NORMAL.ordinal());
 		setProperty(SIZE, bbmm.getSize());
 	}
 

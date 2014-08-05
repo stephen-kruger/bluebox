@@ -70,7 +70,7 @@ public class JSONMessageHandler extends AbstractHandler {
 				p = new FileInputStream("src/main/webapp/WEB-INF/antisamy-anythinggoes-1.4.4.xml");
 
 			// scan html for malicious content
-			String html = message.getHtml();//json.getString(BlueboxMessage.HTML_BODY);
+			String html = message.getHtml();
 			Policy policy = Policy.getInstance(p);
 			AntiSamy as = new AntiSamy();
 			CleanResults cr = as.scan(html, policy);
@@ -78,20 +78,17 @@ public class JSONMessageHandler extends AbstractHandler {
 			
 			int count = 1;
 			for (String error : cr.getErrorMessages())
-				sec.append((count++)+") "+error+"\n");
+				sec.append((count++)+"(body) "+error+"\n");
 			json.put(BlueboxMessage.HTML_BODY, cr.getCleanHTML());
 
 			// scan subject for malicious content
 			cr = as.scan(message.getProperty(BlueboxMessage.SUBJECT), policy);
 			json.put(BlueboxMessage.SUBJECT, cr.getCleanHTML());
 			for (String error : cr.getErrorMessages())
-				sec.append((count++)+") "+error+"\n");
+				sec.append((count++)+"(subject) "+error+"\n");
 
-			// scan text body for malicious content
-			cr = as.scan(message.getText(), policy);
-			json.put(BlueboxMessage.TEXT_BODY, cr.getCleanHTML());
-			for (String error : cr.getErrorMessages())
-				sec.append((count++)+") "+error+"\n");
+			// don't scan text body for malicious content, it renders as text only
+			json.put(BlueboxMessage.TEXT_BODY, message.getText());
 			
 			StringBuffer title = new StringBuffer();
 			title.append(MessageFormat.format(mailDetailsResource.getString("scantitle"), count-1)+"\n");

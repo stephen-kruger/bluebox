@@ -85,7 +85,6 @@
 </style>
 <script type="text/javascript" charset="utf-8">
 
-	 
 	function getAttachmentIcon(attachmentName) {
 		if (attachmentName)
 			attachmentName = attachmentName.toLowerCase();
