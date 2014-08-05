@@ -135,8 +135,9 @@ public class BlueboxMessage {
 		JSONArray ja = new JSONArray();
 		try {
 			if (r!=null)
-				for (int i = 0; i < r.length;i++)
-					ja.put(r[i].toString());
+				for (int i = 0; i < r.length;i++) {
+					ja.put(Utils.decodeQuotedPrintable(r[i].toString()));
+				}
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
@@ -239,9 +240,6 @@ public class BlueboxMessage {
 			}
 			if (ja.length()>0)
 				json.put(ATTACHMENT, ja);
-
-//			json.put(BlueboxMessage.HTML_BODY, getHtml());
-//			json.put(BlueboxMessage.TEXT_BODY, getText());
 
 			json.put(UID,properties.get(UID));
 			json.put(TO,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));

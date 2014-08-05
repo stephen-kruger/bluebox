@@ -4,7 +4,7 @@
 	Config bbconfig = Config.getInstance();
 %>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
-<link rel="SHORTCUT ICON" href="<%=bbconfig.getString("bluebox_theme")%>/favicon.ico" />
+<link rel="SHORTCUT ICON" href="/app/<%=bbconfig.getString("bluebox_theme")%>/favicon.ico" />
 
 <!-- core dojo style sheets -->
 <link
