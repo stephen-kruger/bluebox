@@ -152,7 +152,7 @@ public class Inbox implements SimpleMessageListener {
 		log.fine("Sending inbox contents for "+inbox);
 		return StorageFactory.getInstance().listMail(inbox, state, start, count, orderBy, ascending);
 	}
-	
+
 	public List<JSONObject> listInboxLite(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale loc) throws Exception {
 		log.fine("Sending inbox contents for "+inbox);
 		return StorageFactory.getInstance().listMailLite(inbox, state, start, count, orderBy, ascending, loc);
@@ -238,7 +238,14 @@ public class Inbox implements SimpleMessageListener {
 				}
 			}
 			catch (Throwable t) {
-				log.warning("Problem cleaning up message "+msg.getString(BlueboxMessage.UID)+" "+t.getMessage());
+				log.warning("Problem cleaning up message "+msg.getString(BlueboxMessage.UID)+" "+t.getMessage()+" - forcing delete");
+				try {
+					StorageFactory.getInstance().delete(msg.getString(BlueboxMessage.UID));
+					SearchIndexer.getInstance().deleteDoc(msg.getString(BlueboxMessage.UID));
+				}
+				catch (Throwable t2) {
+					log.severe("Forced delete failed :"+t2.getMessage());
+				}
 			}
 		}
 		log.info("Cleaned up "+count+" messages");
