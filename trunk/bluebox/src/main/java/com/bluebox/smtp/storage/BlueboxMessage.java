@@ -160,6 +160,10 @@ public class BlueboxMessage {
 		return getProperty(UID);
 	}
 
+	public Date getReceived() {
+		return new Date(getLongProperty(RECEIVED));
+	}
+	
 	public String getPropertyString(String name) {
 		try {
 			return properties.getString(name);

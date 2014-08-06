@@ -220,44 +220,37 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	private void expire(Date messageExpireDate, Date trashExpireDate) throws Exception {
-		List<JSONObject> list;
+		List<BlueboxMessage> list;
 
 		long count = 0;
 
 		log.info("Cleaning messages received before "+messageExpireDate);
-		list = StorageFactory.getInstance().listMailLite(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true,Locale.getDefault());
+		list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Date received;
-		for (JSONObject msg : list) {
+		for (BlueboxMessage msg : list) {
 			try {
-				if ((received = new Date(msg.getLong(BlueboxMessage.RECEIVED))).before(messageExpireDate)) {
-					StorageFactory.getInstance().delete(msg.getString(BlueboxMessage.UID));
-					SearchIndexer.getInstance().deleteDoc(msg.getString(BlueboxMessage.UID));
+				if ((received = msg.getReceived()).before(messageExpireDate)) {
+					StorageFactory.getInstance().delete(msg.getIdentifier());
+					SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
 				}
 				else {
 					log.fine("Not deleting since received:"+received+" but expiry window:"+messageExpireDate);
 				}
 			}
 			catch (Throwable t) {
-				log.warning("Problem cleaning up message "+msg.getString(BlueboxMessage.UID)+" "+t.getMessage()+" - forcing delete");
-				try {
-					StorageFactory.getInstance().delete(msg.getString(BlueboxMessage.UID));
-					SearchIndexer.getInstance().deleteDoc(msg.getString(BlueboxMessage.UID));
-				}
-				catch (Throwable t2) {
-					log.severe("Forced delete failed :"+t2.getMessage());
-				}
+				log.warning("Problem cleaning up message "+msg.getIdentifier()+" "+t.getMessage());
 			}
 		}
 		log.info("Cleaned up "+count+" messages");
 
 		log.info("Cleaning deleted messages received before "+trashExpireDate);
 		count  = 0;
-		list = StorageFactory.getInstance().listMailLite(null, BlueboxMessage.State.DELETED, 0, -1, BlueboxMessage.RECEIVED, true,Locale.getDefault());
-		for (JSONObject msg : list) {
+		list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.DELETED, 0, -1, BlueboxMessage.RECEIVED, true);
+		for (BlueboxMessage msg : list) {
 			try {
-				if ((received = new Date(msg.getLong(BlueboxMessage.RECEIVED))).before(trashExpireDate)) {
-					StorageFactory.getInstance().delete(msg.getString(BlueboxMessage.UID));
-					SearchIndexer.getInstance().deleteDoc(msg.getString(BlueboxMessage.UID));
+				if ((received = msg.getReceived()).before(trashExpireDate)) {
+					StorageFactory.getInstance().delete(msg.getIdentifier());
+					SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
 					count++;
 				}
 				else {
@@ -265,7 +258,7 @@ public class Inbox implements SimpleMessageListener {
 				}				
 			}
 			catch (Throwable t) {
-				log.warning("Problem cleaning up message "+msg.getString(BlueboxMessage.UID));
+				log.warning("Problem cleaning up message "+msg.getIdentifier());
 			}
 		}
 		log.info("Cleaned up "+count+" deleted messages");
