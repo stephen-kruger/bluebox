@@ -1,5 +1,4 @@
-<%@ page language="java" pageEncoding="utf-8"
-	contentType="text/html;charset=utf-8"%>
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="com.bluebox.smtp.Inbox"%>
 <%@ page import="com.bluebox.rest.json.JSONAutoCompleteHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONStatsHandler"%>

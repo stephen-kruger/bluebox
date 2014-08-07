@@ -60,7 +60,7 @@
 }
 
 .headerBox {
-	padding: 20px;
+	padding-top: 10px;
 }
 
 .headerBoxTable {
@@ -497,7 +497,7 @@
 			});
 </script>
 
-<div id="mailHeaderBlock" class="headerBox" style="padding-top: 10px;">
+<div id="mailHeaderBlock" class="headerBox">
 	<table class="headerBoxTable">
 		<tr>
 			<td valign="top"><img id="subjectIcon"

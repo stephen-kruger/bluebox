@@ -66,13 +66,13 @@ public class BlueboxMessage {
 		return mmw;
 	}
 
-	public void setBlueBoxMimeMessage(String from, MimeMessage bbmm) throws IOException, MessagingException, SQLException {
+	public void setBlueBoxMimeMessage(String from, Date received, MimeMessage bbmm) throws IOException, MessagingException, SQLException {
 		mmw = bbmm;
 		log.fine("Persisting mime message");
 		setProperty(BlueboxMessage.FROM, BlueboxMessage.getFrom(from, bbmm));
 		setProperty(INBOX, getInbox().getAddress());
 		setProperty(SUBJECT, bbmm.getSubject());
-		setLongProperty(RECEIVED, new Date().getTime());
+		setLongProperty(RECEIVED, received.getTime());
 		setProperty(RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
 		setProperty(STATE, State.NORMAL.ordinal());
 		setProperty(SIZE, bbmm.getSize());

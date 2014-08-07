@@ -208,8 +208,8 @@ public class SearchIndexer {
 		//		JSONObject json = new JSONObject(message.toJSON(false));
 		addDoc(message.getIdentifier(),
 				message.getInbox().getFullAddress(),
-				message.getProperty(BlueboxMessage.FROM),
-				message.getProperty(BlueboxMessage.SUBJECT),
+				Utils.decodeQuotedPrintable(message.getProperty(BlueboxMessage.FROM)),
+				Utils.decodeQuotedPrintable(message.getProperty(BlueboxMessage.SUBJECT)),
 				message.getHtml(),
 				message.getText(),
 				getRecipients(message),
@@ -241,7 +241,7 @@ public class SearchIndexer {
 		Address[] addr = bbmm.getAllRecipients();
 		if (addr!=null) {
 			for (int i = 0; i < addr.length;i++) {
-				sb.append(addr[i].toString()).append(",");
+				sb.append(Utils.decodeQuotedPrintable(addr[i].toString())).append(",");
 			}
 		}
 		return sb.toString().trim();

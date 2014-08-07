@@ -2,6 +2,7 @@ package com.bluebox.smtp.storage;
 
 import java.io.InputStream;
 import java.io.Writer;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -18,7 +19,7 @@ public interface StorageIf {
 
 	public void stop() throws Exception;
 	
-	public BlueboxMessage store(InboxAddress inbox, String from, MimeMessage bbmm)
+	public BlueboxMessage store(InboxAddress inbox, String from, Date received, MimeMessage bbmm)
 			throws Exception;
 
 	public BlueboxMessage retrieve(String uid)

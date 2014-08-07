@@ -45,7 +45,18 @@
 		
 		function dbMaintenance() {
 			genericGet("<%=request.getContextPath()%>/rest/admin/dbmaintenance","Maintenance requested","OK");
-
+		}
+		
+		function dbBackup() {
+			genericGet("<%=request.getContextPath()%>/rest/admin/backup","Backup requested","Server responded");
+		}
+		
+		function dbRestore() {
+			genericGet("<%=request.getContextPath()%>/rest/admin/restore","Restore requested","Server responded");
+		}
+		
+		function dbClean() {
+			genericGet("<%=request.getContextPath()%>/rest/admin/clean","Clean backups requested","Server responded");
 		}
 		
 		function dialog(title, content) {
@@ -53,7 +64,7 @@
 	    	    myDialog = new Dialog({
 	    	        title: title,
 	    	        content: content,
-	    	        style: "width: 300px"
+	    	        style: "width: 450px"
 	    	    });
 	    	    
 	    	    var div = dojo.create('div', {}, myDialog.containerNode);
@@ -78,7 +89,7 @@
 				    url: url,
 				    handleAs: "text",
 				    load: function(data){
-				    	dialog(title,content);
+				    	dialog(title,content+"<br/>"+data);
 				    },
 				    error: function(error){
 				      console.log("An unexpected error occurred: " + error);
@@ -165,6 +176,30 @@
 					<td><label>Perform DB maintenance</label></td>
 					<td></td>
 					<td><button onclick="dbMaintenance()" data-dojo-type="dijit/form/Button" type="button">Go</button></td>
+				</tr>
+				<tr>
+				<td><br/></td>
+				</tr>
+				<tr>
+					<td><label>Backup mail db</label></td>
+					<td></td>
+					<td><button onclick="dbBackup()" data-dojo-type="dijit/form/Button" type="button">Backup</button></td>
+				</tr>
+				<tr>
+				<td><br/></td>
+				</tr>
+				<tr>
+					<td><label>Restore mail db</label></td>
+					<td></td>
+					<td><button onclick="dbRestore()" data-dojo-type="dijit/form/Button" type="button">Restore</button></td>
+				</tr>
+				<tr>
+				<td><br/></td>
+				</tr>
+				<tr>
+					<td><label>Clean mail backup</label></td>
+					<td></td>
+					<td><button onclick="dbClean()" data-dojo-type="dijit/form/Button" type="button">Clean</button></td>
 				</tr>
 				<tr>
 				<td><br/></td>
