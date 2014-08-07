@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
 
 public class AbstractHandler {
@@ -19,7 +20,7 @@ public class AbstractHandler {
 		
 		resp.setHeader("Cache-Control", "no-cache");
 		resp.setContentType("application/json");
-		resp.setCharacterEncoding("utf-8");
+		resp.setCharacterEncoding(Utils.UTF8);
 	}
 
 	/*
@@ -73,7 +74,7 @@ public class AbstractHandler {
 
 	protected static String extractEmail(String emailFragment) {
 		try {
-			emailFragment = URLDecoder.decode(emailFragment,"UTF-8");
+			emailFragment = URLDecoder.decode(emailFragment,Utils.UTF8);
 			if ((emailFragment == null)||(emailFragment.trim().length()==0)||emailFragment.equals("*")) {
 				return emailFragment = "";
 			}

@@ -1,5 +1,6 @@
 package com.bluebox;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -8,6 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.io.FileUtils;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
 import com.bluebox.rest.json.JSONAttachmentHandler;
@@ -111,50 +113,49 @@ public class BlueBoxServlet extends HttpServlet {
 		}
 		if (req.getRequestURI().indexOf("rest/admin/test")>=0){
 			Utils.test(req.getSession().getServletContext(), req.getParameter("count"));
-			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
+			resp.getWriter().print(req.getParameter("count")+" mails generated");	
 			return;
 		}	
 		if (req.getRequestURI().indexOf("rest/admin/setbasecount")>=0){
 			Inbox.getInstance().setStatsGlobalCount(Long.parseLong(req.getParameter("count")));
-			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
+			resp.getWriter().print("Set to "+req.getParameter("count"));	
 			return;
 		}	
 		if (req.getRequestURI().indexOf("rest/admin/rebuildsearchindexes")>=0){
-			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
 			Inbox.getInstance().rebuildSearchIndexes();
+			resp.getWriter().print("Rebuilding search indexes");	
 			return;
 		}
 		if (req.getRequestURI().indexOf("rest/admin/prune")>=0){
 			log.fine("Prune");
 			try {
 				Inbox.getInstance().cleanUp();
-				resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
+				resp.getWriter().print("Pruning");	
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
-				resp.sendRedirect(req.getContextPath()+"/app/admin.jsp?"+e.getMessage());
+				resp.getWriter().print(e.getMessage());	
 			}
 			return;
 		}							
 		if (req.getRequestURI().indexOf("rest/admin/errors")>=0){
 			try {
 				Inbox.getInstance().clearErrors();
-				resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
+				resp.getWriter().print("Cleared errors");	
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
-				resp.sendRedirect(req.getContextPath()+"/app/admin.jsp?"+e.getMessage());
+				resp.getWriter().print(e.getMessage());	
 			}
 			return;
 		}	
 		if (req.getRequestURI().indexOf("rest/admin/clear")>=0){
 			try {
 				Inbox.getInstance().deleteAll();
-				resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
-			} 
+				resp.getWriter().print("Cleaned");			} 
 			catch (Exception e) {
 				e.printStackTrace();
-				resp.sendRedirect(req.getContextPath()+"/app/admin.jsp?"+e.getMessage());
+				resp.getWriter().print(e.getMessage());	
 			}
 			return;
 		}	
@@ -165,7 +166,47 @@ public class BlueBoxServlet extends HttpServlet {
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
-				resp.sendRedirect(req.getContextPath()+"/app/admin.jsp?"+e.getMessage());
+				resp.getWriter().print(e.getMessage());	
+			}
+			return;
+		}	
+		if (req.getRequestURI().indexOf("rest/admin/backup")>=0){
+			try {
+				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
+				f.mkdir();
+				Inbox.getInstance().backup(f);
+				resp.getWriter().print("Backed up to "+f.getCanonicalPath());
+				resp.flushBuffer();
+			} 
+			catch (Exception e) {
+				e.printStackTrace();
+				resp.getWriter().print(e.getMessage());
+			}
+			return;
+		}	
+		if (req.getRequestURI().indexOf("rest/admin/restore")>=0){
+			try {
+				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
+				Inbox.getInstance().restore(f);
+				resp.getWriter().print("Restored from "+f.getCanonicalPath());
+				resp.flushBuffer();
+			} 
+			catch (Exception e) {
+				e.printStackTrace();
+				resp.getWriter().print(e.getMessage());
+			}
+			return;
+		}	
+		if (req.getRequestURI().indexOf("rest/admin/clean")>=0){
+			try {
+				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
+				FileUtils.deleteDirectory(f);
+				resp.getWriter().print("Cleaned "+f.getCanonicalPath());
+				resp.flushBuffer();
+			} 
+			catch (Exception e) {
+				e.printStackTrace();
+				resp.getWriter().print(e.getMessage());
 			}
 			return;
 		}	
@@ -183,7 +224,7 @@ public class BlueBoxServlet extends HttpServlet {
 			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
 			return;
 		}
-		
+
 		if (req.getRequestURI().indexOf("rest/admin/settowhitelist")>=0){
 			String whitelist = req.getParameter("whitelist");
 			Config.getInstance().setString(Config.BLUEBOX_TOWHITELIST, whitelist);
@@ -204,21 +245,21 @@ public class BlueBoxServlet extends HttpServlet {
 
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
-	throws ServletException, IOException {
+			throws ServletException, IOException {
 		log.warning("Unimplemented doPut :"+req.getRequestURI());
 		super.doPut(req, resp);
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-	throws ServletException, IOException {
+			throws ServletException, IOException {
 		log.warning("Unimplemented doPost :"+req.getRequestURI());
 		super.doPost(req, resp);
 	}
 
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
-	throws ServletException, IOException {
+			throws ServletException, IOException {
 		log.fine("doDelete :"+req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
 			new JSONMessageHandler().doDelete(Inbox.getInstance(),req,resp);
@@ -227,16 +268,16 @@ public class BlueBoxServlet extends HttpServlet {
 	}
 
 
-//	public static final void main(String[] args) {
-//		try {
-//			StorageImpl.backup(new File("C:\\eclipse.helios\\backup\\repository"), new File("C:\\eclipse.helios\\repository"));
-//		} catch (RepositoryException e) {
-//			e.printStackTrace();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//
-//	}
+	//	public static final void main(String[] args) {
+	//		try {
+	//			StorageImpl.backup(new File("C:\\eclipse.helios\\backup\\repository"), new File("C:\\eclipse.helios\\repository"));
+	//		} catch (RepositoryException e) {
+	//			e.printStackTrace();
+	//		} catch (IOException e) {
+	//			e.printStackTrace();
+	//		}
+	//
+	//	}
 
 
 }

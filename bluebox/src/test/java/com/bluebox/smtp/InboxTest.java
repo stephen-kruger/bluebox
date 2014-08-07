@@ -1,5 +1,6 @@
 package com.bluebox.smtp;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -111,6 +112,19 @@ public class InboxTest extends TestCase {
 		jo = inbox.getStatsActiveSender();
 		assertEquals("Incorrectly reported most active sender",new InboxAddress(email1).getAddress(),new InboxAddress(jo.getString(BlueboxMessage.FROM)).getAddress());
 		assertEquals("Incorrectly reported most active sender count",10,jo.getInt(BlueboxMessage.COUNT));
+	}
+	
+	public void testBackup() throws Exception {
+		String email1 = "aaading@kkddf.com";
+		String email2 = "aaading@kkddf.com";
+		String email3 = "aaading@kkddf.com";
+		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email1), null, null, "subject", "body");
+		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email2), null, null, "subject", "body");
+		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email3), null, null, "subject", "body");
+		File dir = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
+		dir.mkdirs();
+		Inbox.getInstance().backup(dir);
+		Inbox.getInstance().restore(dir);
 	}
 
 }

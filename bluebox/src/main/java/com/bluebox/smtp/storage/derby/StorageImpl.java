@@ -191,15 +191,15 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return id;
 	}
 
-	public BlueboxMessage store(InboxAddress inbox, String from, MimeMessage bbmm) throws Exception {
+	public BlueboxMessage store(InboxAddress inbox, String from, Date received, MimeMessage bbmm) throws Exception {
 		String uid = UUID.randomUUID().toString();
 		BlueboxMessage message = new BlueboxMessage(uid,inbox);
-		message.setBlueBoxMimeMessage(from, bbmm);
+		message.setBlueBoxMimeMessage(from, received, bbmm);
 		add(uid, 
 				inbox, 
 				BlueboxMessage.getFrom(from, bbmm),
 				bbmm.getSubject(),
-				new Date(Long.parseLong(message.getProperty(BlueboxMessage.RECEIVED))), 
+				received, 
 				State.NORMAL, 
 				Long.parseLong(message.getProperty(BlueboxMessage.SIZE)),
 				Utils.streamMimeMessage(bbmm));

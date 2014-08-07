@@ -2,6 +2,7 @@ package com.bluebox;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
@@ -43,6 +44,7 @@ public class TestUtils extends TestCase {
 	public static BlueboxMessage addRandom(StorageIf storage) throws Exception {
 		BlueboxMessage message = storage.store(new InboxAddress("steve@here.com"),
 				"steve@there.com",
+				new Date(),
 				Utils.createMessage(null,"steve@there.com", "steve@here.com", "steve@here.com", "steve@here.com", Utils.randomLine(25), Utils.randomLine(25)));
 		return message;
 	}

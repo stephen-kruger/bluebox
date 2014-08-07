@@ -84,10 +84,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		StorageFactory.clearInstance();
 	}
 
-	public BlueboxMessage store(InboxAddress inbox, String from, MimeMessage bbmm) throws Exception {
+	public BlueboxMessage store(InboxAddress inbox, String from, Date received, MimeMessage bbmm) throws Exception {
 		BlueboxMessage message = new BlueboxMessage(UUID.randomUUID().toString());
 		message.setInbox(inbox);
-		message.setBlueBoxMimeMessage(from, bbmm);
+		message.setBlueBoxMimeMessage(from, received, bbmm);
 		DBCollection coll = db.getCollection(TABLE_NAME);
 		DBObject bson = ( DBObject ) JSON.parse( message.toJSON() );
 

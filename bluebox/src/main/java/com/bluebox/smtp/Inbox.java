@@ -1,7 +1,13 @@
 package com.bluebox.smtp;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
@@ -378,6 +384,7 @@ public class Inbox implements SimpleMessageListener {
 		InboxAddress inbox = new InboxAddress(BlueboxMessage.getRecipient(new InboxAddress(recipient), mmessage).toString());
 		BlueboxMessage message = StorageFactory.getInstance().store(inbox, 
 				from,
+				new Date(),
 				mmessage);
 		// ensure the content is indexed
 		try {
@@ -581,6 +588,58 @@ public class Inbox implements SimpleMessageListener {
 
 	public void runMaintenance() throws Exception {
 		StorageFactory.getInstance().runMaintenance();
+	}
+
+	public void backup(File dir) throws Exception {
+		log.info("Backing up mail to "+dir.getCanonicalPath());
+		List<BlueboxMessage> mail;
+		int start = 0;
+		int count = 100;
+		do {
+			mail = this.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
+			if (mail.size()>0) {
+				log.info("Backing up from "+start+" to "+(start+count));
+				for (BlueboxMessage msg : mail) {
+					try {
+						OutputStream fos = new BufferedOutputStream(new FileOutputStream(new File(dir,msg.getIdentifier()+".eml")));
+						Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()),fos);
+						fos.close();
+
+						fos = new BufferedOutputStream(new FileOutputStream(new File(dir.getCanonicalFile(),msg.getIdentifier()+".json")));
+						fos.write(msg.toJSON().getBytes());
+						fos.close();
+					}
+					catch (Throwable t) {
+						log.warning(t.getMessage());
+					}
+				}
+			}
+			start += mail.size();
+		} while (mail.size()>0);
+
+	}
+
+	public void restore(File dir) throws Exception {
+		log.info("Restoring mail from "+dir.getCanonicalPath());
+		if (dir.exists()) {
+			File[] files = dir.listFiles();
+			for (int i = 0; i < files.length;i++) {
+				if (files[i].getName().endsWith("eml")) {
+					try {
+						MimeMessage mm = Utils.loadEML(new BufferedInputStream(new FileInputStream(files[i])));
+						JSONObject jo = new JSONObject(Utils.convertStreamToString(new BufferedInputStream(new FileInputStream(files[i].getCanonicalPath().substring(0, files[i].getCanonicalPath().length()-4)+".json"))));
+						BlueboxMessage message = StorageFactory.getInstance().store(new InboxAddress(jo.getString(BlueboxMessage.INBOX)), jo.getJSONArray(BlueboxMessage.FROM).getString(0), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
+						SearchIndexer.getInstance().indexMail(message);
+					}
+					catch (Throwable t) {
+						log.warning(t.getMessage());
+					}
+				}
+			}
+		}
+		else {
+			throw new Exception("Problem accessing directory "+dir.getCanonicalPath());
+		}
 	}
 
 
