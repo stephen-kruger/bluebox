@@ -1,11 +1,10 @@
-<%@ page language="java" pageEncoding="utf-8"
-	contentType="text/html;charset=utf-8"%>
-<%@ page import="com.bluebox.smtp.Inbox"%>
-<%@ page import="com.bluebox.Config"%>
-<%@ page import="com.bluebox.rest.json.JSONStatsHandler"%>
-<%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
-<%@ page language="java" import="java.util.ResourceBundle"%>
-<%@ page import="com.bluebox.BlueBoxServlet"%>
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
+<%@ page import="com.bluebox.smtp.Inbox" language="java"%>
+<%@ page import="com.bluebox.Config" language="java"%>
+<%@ page import="com.bluebox.rest.json.JSONStatsHandler" language="java"%>
+<%@ page import="com.bluebox.smtp.storage.BlueboxMessage" language="java"%>
+<%@ page import="java.util.ResourceBundle" language="java"%>
+<%@ page import="com.bluebox.BlueBoxServlet" language="java"%>
 <% 
 	Config bbconfig = Config.getInstance(); 
 	ResourceBundle statsResource = ResourceBundle.getBundle("stats",request.getLocale());

@@ -17,7 +17,44 @@
 			selectMenu("admin");
 		});
 		
-		require(["dojo/parser", "dijit/form/Button", "dijit/form/NumberTextBox"]);
+		
+		require(["dojo/parser", "dijit/ProgressBar", "dijit/form/Button", "dijit/form/NumberTextBox"]);
+		
+		// start the refresh timer
+		require(["dojox/timing"], function(registry){
+			var t = new dojox.timing.Timer(5000);
+			t.onTick = function() {
+				updateWorkers();
+			};
+			t.start();
+		});
+		
+		function updateWorkers() {
+			try {
+				require(["dojox/data/JsonRestStore"], function () {
+					var urlStr = "<%=request.getContextPath()%>/rest/admin/workerstats";
+					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
+					var queryResults = jStore.fetch({
+						  onComplete : 
+							  	function(queryResults, request) {
+							  if (queryResults.backup)
+									backup.set({value: queryResults.backup});
+							  if (queryResults.restore)
+									restore.set({value: queryResults.restore});
+							  if (queryResults.reindex)
+									reindex.set({value: queryResults.reindex});
+								},
+							onError :
+								function(error) {
+									console.log(error);
+								}
+					});
+				});
+			}
+			catch (err) {
+				alert(err);
+			}
+		}
 		
 		function generateEmails() {
 			genericGet("<%=request.getContextPath()%>/rest/admin/test?count="+document.getElementById('count').value,"Email generation","Scheduled generation of "+document.getElementById('count').value+" emails");
@@ -168,6 +205,7 @@
 					<td><label>Rebuild search indexes</label></td>
 					<td></td>
 					<td><button onclick="rebuildSearchIndexes();" data-dojo-type="dijit/form/Button" type="button">Go</button></td>
+					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="reindex" id="reindexProgress" data-dojo-props="maximum:100"></div></td>
 				</tr>
 				<tr>
 				<td><br/></td>
@@ -184,6 +222,7 @@
 					<td><label>Backup mail db</label></td>
 					<td></td>
 					<td><button onclick="dbBackup()" data-dojo-type="dijit/form/Button" type="button">Backup</button></td>
+					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="backup" id="backupProgress" data-dojo-props="maximum:100"></div></td>
 				</tr>
 				<tr>
 				<td><br/></td>
@@ -192,6 +231,7 @@
 					<td><label>Restore mail db</label></td>
 					<td></td>
 					<td><button onclick="dbRestore()" data-dojo-type="dijit/form/Button" type="button">Restore</button></td>
+					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="restore" id="restoreProgress" data-dojo-props="maximum:100"></div></td>
 				</tr>
 				<tr>
 				<td><br/></td>

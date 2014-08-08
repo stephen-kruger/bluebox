@@ -33,6 +33,7 @@ import org.subethamail.smtp.helper.SimpleMessageListener;
 
 import com.bluebox.Config;
 import com.bluebox.Utils;
+import com.bluebox.WorkerThread;
 import com.bluebox.search.SearchIndexer;
 import com.bluebox.search.SearchIndexer.SearchFields;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -172,12 +173,8 @@ public class Inbox implements SimpleMessageListener {
 		catch (IndexNotFoundException inf) {
 			log.info("Detected index problems - rebuilding search indexes");
 			// indexes messed up, so try auto-heal
-			Thread searchIndexes = new Thread() {
-				public void run() {
-					rebuildSearchIndexes();
-				}
-			};
-			searchIndexes.start();
+			WorkerThread wt = rebuildSearchIndexes();
+			new Thread(wt).start();
 			return 0;
 		}
 	}
@@ -533,33 +530,45 @@ public class Inbox implements SimpleMessageListener {
 		return recentStats;
 	}
 
-	public void rebuildSearchIndexes() {
-		try {
-			SearchIndexer searchIndexer = SearchIndexer.getInstance();
-			searchIndexer.deleteIndexes();
-			long mailCount = getMailCount(BlueboxMessage.State.ANY);
-			int start = 0;
-			int blocksize = 100;
-			while (start<mailCount) {
-				log.info("Indexing mail batch "+start+" to "+(start+blocksize)+" of "+mailCount);
+	public WorkerThread rebuildSearchIndexes() {
+
+		WorkerThread wt = new WorkerThread("reindex") {
+
+			@Override
+			public void run() {
 				try {
-					List<BlueboxMessage> messages = listInbox(null, BlueboxMessage.State.ANY, start, blocksize, BlueboxMessage.RECEIVED, true);
-					for (BlueboxMessage message : messages) {
-						searchIndexer.indexMail(message);
+					SearchIndexer searchIndexer = SearchIndexer.getInstance();
+					searchIndexer.deleteIndexes();
+					long mailCount = getMailCount(BlueboxMessage.State.ANY);
+					int start = 0;
+					int blocksize = 100;
+					while (start<mailCount) {
+						log.info("Indexing mail batch "+start+" to "+(start+blocksize)+" of "+mailCount);
+						setProgress((int)(start*100/mailCount));
+						try {
+							List<BlueboxMessage> messages = listInbox(null, BlueboxMessage.State.ANY, start, blocksize, BlueboxMessage.RECEIVED, true);
+							for (BlueboxMessage message : messages) {
+								searchIndexer.indexMail(message);
+							}
+						} 
+						catch (Exception e) {
+							e.printStackTrace();
+						}
+						start += blocksize;
 					}
 				} 
-				catch (Exception e) {
+				catch (IOException e) {
 					e.printStackTrace();
 				}
-				start += blocksize;
+				finally {
+					log.info("Finished rebuilding search indexes");
+					setProgress(100);
+				}
+
 			}
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		finally {
-			log.info("Finished rebuilding search indexes");
-		}
+
+		};
+		return wt;
 	}
 
 	public void addToWhiteList(String goodDomain) {
@@ -590,56 +599,86 @@ public class Inbox implements SimpleMessageListener {
 		StorageFactory.getInstance().runMaintenance();
 	}
 
-	public void backup(File dir) throws Exception {
+	public WorkerThread backup(final File dir) throws Exception {
 		log.info("Backing up mail to "+dir.getCanonicalPath());
-		List<BlueboxMessage> mail;
-		int start = 0;
-		int count = 100;
-		do {
-			mail = this.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
-			if (mail.size()>0) {
-				log.info("Backing up from "+start+" to "+(start+count));
-				for (BlueboxMessage msg : mail) {
-					try {
-						OutputStream fos = new BufferedOutputStream(new FileOutputStream(new File(dir,msg.getIdentifier()+".eml")));
-						Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()),fos);
-						fos.close();
+		final Inbox inbox = Inbox.getInstance();
+		WorkerThread wt = new WorkerThread("backup") {
 
-						fos = new BufferedOutputStream(new FileOutputStream(new File(dir.getCanonicalFile(),msg.getIdentifier()+".json")));
-						fos.write(msg.toJSON().getBytes());
-						fos.close();
-					}
-					catch (Throwable t) {
-						log.warning(t.getMessage());
-					}
+			@Override
+			public void run() {
+				try {
+					List<BlueboxMessage> mail;
+					int start = 0;
+					int count = 100;
+					do {
+						setProgress((int)(((start+1)*100)/inbox.getMailCount(BlueboxMessage.State.ANY)));
+						log.info(">>>>>>>>>>>>>>>>>>>>>"+getProgress());
+						mail = inbox.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
+						if (mail.size()>0) {
+							log.info("Backing up from "+start+" to "+(start+count));
+							for (BlueboxMessage msg : mail) {
+								try {
+									OutputStream fos = new BufferedOutputStream(new FileOutputStream(new File(dir,msg.getIdentifier()+".eml")));
+									Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()),fos);
+									fos.close();
+
+									fos = new BufferedOutputStream(new FileOutputStream(new File(dir.getCanonicalFile(),msg.getIdentifier()+".json")));
+									fos.write(msg.toJSON().getBytes());
+									fos.close();
+								}
+								catch (Throwable t) {
+									log.warning(t.getMessage());
+								}
+							}
+						}
+						start += mail.size();
+					} while (mail.size()>0);	
+				}
+				catch (Throwable t) {
+					t.printStackTrace();
+				}
+				finally {
+					setProgress(100);					
 				}
 			}
-			start += mail.size();
-		} while (mail.size()>0);
 
+		};
+
+		return wt;
 	}
 
-	public void restore(File dir) throws Exception {
+	public WorkerThread restore(final File dir) throws Exception {
 		log.info("Restoring mail from "+dir.getCanonicalPath());
-		if (dir.exists()) {
-			File[] files = dir.listFiles();
-			for (int i = 0; i < files.length;i++) {
-				if (files[i].getName().endsWith("eml")) {
-					try {
-						MimeMessage mm = Utils.loadEML(new BufferedInputStream(new FileInputStream(files[i])));
-						JSONObject jo = new JSONObject(Utils.convertStreamToString(new BufferedInputStream(new FileInputStream(files[i].getCanonicalPath().substring(0, files[i].getCanonicalPath().length()-4)+".json"))));
-						BlueboxMessage message = StorageFactory.getInstance().store(new InboxAddress(jo.getString(BlueboxMessage.INBOX)), jo.getJSONArray(BlueboxMessage.FROM).getString(0), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
-						SearchIndexer.getInstance().indexMail(message);
-					}
-					catch (Throwable t) {
-						log.warning(t.getMessage());
+		WorkerThread wt = new WorkerThread("restore") {
+
+			@Override
+			public void run() {
+				if (dir.exists()) {
+					File[] files = dir.listFiles();
+					for (int i = 0; i < files.length;i++) {
+						setProgress(i*100/files.length);
+						if (files[i].getName().endsWith("eml")) {
+							try {
+								MimeMessage mm = Utils.loadEML(new BufferedInputStream(new FileInputStream(files[i])));
+								JSONObject jo = new JSONObject(Utils.convertStreamToString(new BufferedInputStream(new FileInputStream(files[i].getCanonicalPath().substring(0, files[i].getCanonicalPath().length()-4)+".json"))));
+								BlueboxMessage message = StorageFactory.getInstance().store(new InboxAddress(jo.getString(BlueboxMessage.INBOX)), jo.getJSONArray(BlueboxMessage.FROM).getString(0), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
+								SearchIndexer.getInstance().indexMail(message);
+							}
+							catch (Throwable t) {
+								log.warning(t.getMessage());
+							}
+						}
 					}
 				}
+				else {
+					log.severe("Could not access");
+				}
+				setProgress(100);
 			}
-		}
-		else {
-			throw new Exception("Problem accessing directory "+dir.getCanonicalPath());
-		}
+
+		};
+		return wt;
+
 	}
 
 
