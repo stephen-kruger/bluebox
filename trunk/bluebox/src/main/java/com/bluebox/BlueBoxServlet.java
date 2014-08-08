@@ -2,6 +2,8 @@ package com.bluebox;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -10,6 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
 import com.bluebox.rest.json.JSONAttachmentHandler;
@@ -30,6 +34,7 @@ public class BlueBoxServlet extends HttpServlet {
 	private static final long serialVersionUID = 1015755960967873612L;
 	public static final String VERSION = Config.getInstance().getString(Config.BLUEBOX_VERSION);
 	private BlueBoxSMTPServer smtpServer;
+	private Map<String,WorkerThread> workers = new HashMap<String,WorkerThread>();
 
 	@Override
 	public void init() throws ServletException {
@@ -122,8 +127,9 @@ public class BlueBoxServlet extends HttpServlet {
 			return;
 		}	
 		if (req.getRequestURI().indexOf("rest/admin/rebuildsearchindexes")>=0){
-			Inbox.getInstance().rebuildSearchIndexes();
-			resp.getWriter().print("Rebuilding search indexes");	
+			WorkerThread wt = Inbox.getInstance().rebuildSearchIndexes();
+			startWorker(wt, resp);
+			resp.flushBuffer();
 			return;
 		}
 		if (req.getRequestURI().indexOf("rest/admin/prune")>=0){
@@ -174,8 +180,9 @@ public class BlueBoxServlet extends HttpServlet {
 			try {
 				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
 				f.mkdir();
-				Inbox.getInstance().backup(f);
-				resp.getWriter().print("Backed up to "+f.getCanonicalPath());
+				WorkerThread wt = Inbox.getInstance().backup(f);
+				startWorker(wt, resp);
+				
 				resp.flushBuffer();
 			} 
 			catch (Exception e) {
@@ -187,8 +194,8 @@ public class BlueBoxServlet extends HttpServlet {
 		if (req.getRequestURI().indexOf("rest/admin/restore")>=0){
 			try {
 				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
-				Inbox.getInstance().restore(f);
-				resp.getWriter().print("Restored from "+f.getCanonicalPath());
+				WorkerThread wt = Inbox.getInstance().restore(f);
+				startWorker(wt, resp);
 				resp.flushBuffer();
 			} 
 			catch (Exception e) {
@@ -239,9 +246,41 @@ public class BlueBoxServlet extends HttpServlet {
 			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
 			return;
 		}
+		if (req.getRequestURI().indexOf("rest/admin/workerstats")>=0){
+			try {
+				resp.getWriter().print(getWorkerStatus().toString());
+				resp.flushBuffer();
+			} 
+			catch (Exception e) {
+				e.printStackTrace();
+				resp.getWriter().print(e.getMessage());
+			}
+			return;
+		}
 		log.warning("No handler for "+req.getRequestURI()+" expected :"+req.getContextPath());
 		super.doGet(req, resp);
 	}
+
+	private void startWorker(WorkerThread wt, HttpServletResponse resp) throws IOException {
+		// check for running or expired works under this id
+		if (workers.containsKey(wt.getId())) {
+			WorkerThread old = workers.get(wt.getId());
+			if (old.getProgress()>=100) {
+				workers.remove(old.getId());
+			}
+		}
+		if (!workers.containsKey(wt.getId())) {
+			workers.put(wt.getId(),wt);
+			new Thread(wt).start();
+			resp.getWriter().print("Task started");
+		}
+		else {
+			resp.getWriter().print("Task aborted - already running");					
+		}
+		
+	}
+
+
 
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
@@ -265,6 +304,18 @@ public class BlueBoxServlet extends HttpServlet {
 			new JSONMessageHandler().doDelete(Inbox.getInstance(),req,resp);
 			return;
 		}
+	}
+
+	public JSONObject getWorkerStatus() throws JSONException {
+		JSONObject jo = new JSONObject();
+		//jo.put("backup", 50);
+		for (WorkerThread tw : workers.values()) {
+			if (tw.getProgress()<=100) {
+				jo.put(tw.getId(), tw.getProgress());
+			}
+		}
+		log.info(jo.toString());
+		return jo;
 	}
 
 
