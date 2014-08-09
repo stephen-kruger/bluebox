@@ -11,9 +11,12 @@ import javax.mail.internet.MimeMessage;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.bluebox.WorkerThread;
 import com.bluebox.smtp.InboxAddress;
 
 public interface StorageIf {
+
+	public static final String WT_NAME = "dbmaintenance";
 
 	public void start() throws Exception;
 
@@ -94,5 +97,5 @@ public interface StorageIf {
 	/*
 	 * Called to perform housekeep tasks on the underlying storage, such as rebuilding indexes.
 	 */
-	public void runMaintenance() throws Exception;
+	public WorkerThread runMaintenance() throws Exception;
 }

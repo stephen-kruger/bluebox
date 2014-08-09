@@ -362,6 +362,39 @@ public class Utils {
 	//			}
 	//		}
 	//	}
+	
+	public static WorkerThread generate(final ServletContext session, final int count) {
+		WorkerThread wt = new WorkerThread("generate") {
+
+			@Override
+			public void run() {
+				try {
+					for (int i = 0; i < count/6; i++) {
+						MimeMessage msg = createMessage(session,
+								getRandomAddress(),  
+								getRandomAddresses(2),//to
+								getRandomAddresses(2),//cc
+								getRandomAddresses(2),//bcc
+								(counter++)+" "+randomLine(35), 
+								randomText(14),
+								true);
+
+						sendMessageDirect(msg);
+						setProgress((i*10*6)/count);
+					}
+				}
+				catch (Throwable t) {
+					t.printStackTrace();
+				}
+				finally {
+					setProgress(100);
+				}
+			}
+
+		};
+		return wt;
+	}
+	
 	public static void sendMessage(final ServletContext session, final int count) {
 		ExecutorService threadPool = Executors.newFixedThreadPool(10);
 		for (int j = 0; j < count/6; j++) {

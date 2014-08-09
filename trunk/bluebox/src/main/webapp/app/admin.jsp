@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle"%>
+<%@ page import="com.bluebox.smtp.storage.StorageIf"%>
 <%@ page import="com.bluebox.Config"%>
 <%
 	Config bbconfig = Config.getInstance();
@@ -37,12 +38,18 @@
 					var queryResults = jStore.fetch({
 						  onComplete : 
 							  	function(queryResults, request) {
-							  if (queryResults.backup)
-									backup.set({value: queryResults.backup});
-							  if (queryResults.restore)
-									restore.set({value: queryResults.restore});
-							  if (queryResults.reindex)
-									reindex.set({value: queryResults.reindex});
+								  if (queryResults.backup)
+										backup.set({value: queryResults.backup});
+								  if (queryResults.restore)
+										restore.set({value: queryResults.restore});
+								  if (queryResults.reindex)
+										reindex.set({value: queryResults.reindex});
+								  if (queryResults.<%=StorageIf.WT_NAME %>)
+									  <%=StorageIf.WT_NAME %>.set({value: queryResults.<%=StorageIf.WT_NAME %>});
+								  if (queryResults.cleanup)
+									  cleanup.set({value: queryResults.cleanup});
+								  if (queryResults.generate)
+									  generate.set({value: queryResults.generate});
 								},
 							onError :
 								function(error) {
@@ -57,7 +64,7 @@
 		}
 		
 		function generateEmails() {
-			genericGet("<%=request.getContextPath()%>/rest/admin/test?count="+document.getElementById('count').value,"Email generation","Scheduled generation of "+document.getElementById('count').value+" emails");
+			genericGet("<%=request.getContextPath()%>/rest/admin/generate?count="+document.getElementById('count').value,"Email generation","Scheduled generation of "+document.getElementById('count').value+" emails");
 		}
 
 		function setBaseCount() {
@@ -153,11 +160,12 @@
 				<tr>
 					<td><label>Generate fake emails</label></td>
 					<td>
-					<form id="generate" method="get" action="<%=request.getContextPath()%>/rest/admin/test">
+					<form id="generate" method="get" action="<%=request.getContextPath()%>/rest/admin/generate">
 						<input id="count" type="text" data-dojo-type="dijit/form/NumberTextBox" name= "count" value="10" data-dojo-props="constraints:{min:10,max:5000,places:0,pattern:'#'},  invalidMessage:'Please enter a value between 10 and 5000'" />
 					</form>
 					</td>
 					<td><button onclick="generateEmails();" data-dojo-type="dijit/form/Button" type="button">Go</button></td>
+					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="generate" id="generateProgress" data-dojo-props="maximum:100"></div></td>
 				</tr>
 				<tr>
 				<td><br/></td>
@@ -182,6 +190,7 @@
 					<td><label>Prune expired emails and empty inboxes</label></td>
 					<td></td>
 					<td><button onclick="pruneMail()" data-dojo-type="dijit/form/Button" type="button">Go</button></td>
+					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="cleanup" id="cleanupProgress" data-dojo-props="maximum:100"></div></td>
 				</tr>	
 				<tr>
 				<td><br/></td>
@@ -214,6 +223,7 @@
 					<td><label>Perform DB maintenance</label></td>
 					<td></td>
 					<td><button onclick="dbMaintenance()" data-dojo-type="dijit/form/Button" type="button">Go</button></td>
+					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="<%=StorageIf.WT_NAME %>" id="<%=StorageIf.WT_NAME %>Progress" data-dojo-props="maximum:100"></div></td>
 				</tr>
 				<tr>
 				<td><br/></td>

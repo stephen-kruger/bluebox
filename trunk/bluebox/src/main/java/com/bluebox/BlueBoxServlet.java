@@ -59,7 +59,7 @@ public class BlueBoxServlet extends HttpServlet {
 
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(final HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		log.fine(req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
 			log.fine("doGetMessageDetail");
@@ -116,9 +116,10 @@ public class BlueBoxServlet extends HttpServlet {
 			new JSONErrorHandler().doGet(Inbox.getInstance(),req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf("rest/admin/test")>=0){
-			Utils.test(req.getSession().getServletContext(), req.getParameter("count"));
-			resp.getWriter().print(req.getParameter("count")+" mails generated");	
+		if (req.getRequestURI().indexOf("rest/admin/generate")>=0){
+			WorkerThread wt = Utils.generate(req.getSession().getServletContext(), Integer.parseInt(req.getParameter("count")));
+			startWorker(wt, resp);
+			resp.flushBuffer();	
 			return;
 		}	
 		if (req.getRequestURI().indexOf("rest/admin/setbasecount")>=0){
@@ -135,8 +136,9 @@ public class BlueBoxServlet extends HttpServlet {
 		if (req.getRequestURI().indexOf("rest/admin/prune")>=0){
 			log.fine("Prune");
 			try {
-				Inbox.getInstance().cleanUp();
-				resp.getWriter().print("Pruning");	
+				WorkerThread wt = Inbox.getInstance().cleanUp();
+				startWorker(wt, resp);
+				resp.flushBuffer();
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
@@ -167,8 +169,9 @@ public class BlueBoxServlet extends HttpServlet {
 		}	
 		if (req.getRequestURI().indexOf("rest/admin/dbmaintenance")>=0){
 			try {
-				Inbox.getInstance().runMaintenance();
-				resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
+				WorkerThread wt = Inbox.getInstance().runMaintenance();
+				startWorker(wt, resp);
+				resp.flushBuffer();
 			} 
 			catch (Exception e) {
 				e.printStackTrace();
@@ -182,7 +185,7 @@ public class BlueBoxServlet extends HttpServlet {
 				f.mkdir();
 				WorkerThread wt = Inbox.getInstance().backup(f);
 				startWorker(wt, resp);
-				
+
 				resp.flushBuffer();
 			} 
 			catch (Exception e) {
@@ -277,7 +280,7 @@ public class BlueBoxServlet extends HttpServlet {
 		else {
 			resp.getWriter().print("Task aborted - already running");					
 		}
-		
+
 	}
 
 
@@ -308,13 +311,12 @@ public class BlueBoxServlet extends HttpServlet {
 
 	public JSONObject getWorkerStatus() throws JSONException {
 		JSONObject jo = new JSONObject();
-		//jo.put("backup", 50);
 		for (WorkerThread tw : workers.values()) {
 			if (tw.getProgress()<=100) {
 				jo.put(tw.getId(), tw.getProgress());
 			}
 		}
-		log.info(jo.toString());
+//		log.info(jo.toString());
 		return jo;
 	}
 
