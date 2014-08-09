@@ -19,6 +19,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Config;
 import com.bluebox.Utils;
+import com.bluebox.WorkerThread;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -184,25 +185,44 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public void deleteAll(InboxAddress inbox) throws Exception {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.INBOX, inbox.getAddress());
 		db.getCollection(TABLE_NAME).remove(query);
-		cleanRaw();
+		new Thread(cleanRaw()).start();
 	}
 
-	private void cleanRaw() {
-		log.info("Looking for orphaned blobs");
-		// clean up any blobs who have no associated inbox message
-		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
-		DBCursor cursor = gfsRaw.getFileList();
-		DBObject dbo;
-		while(cursor.hasNext()) {
-			dbo = cursor.next();
-			BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, dbo.get("filename").toString());
-			if (db.getCollection(TABLE_NAME).findOne(query)==null) {
-				log.info("Removing orphaned blob "+dbo.get("filename"));
-				gfsRaw.remove(dbo);
+	private WorkerThread cleanRaw() {
+		WorkerThread wt = new WorkerThread(StorageIf.WT_NAME) {
+
+			@Override
+			public void run() {
+				setProgress(0);
+				try {
+					log.info("Looking for orphaned blobs");
+					// clean up any blobs who have no associated inbox message
+					GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
+					DBCursor cursor = gfsRaw.getFileList();
+					DBObject dbo;
+					int count = 0;
+					while(cursor.hasNext()) {
+						dbo = cursor.next();
+						BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, dbo.get("filename").toString());
+						if (db.getCollection(TABLE_NAME).findOne(query)==null) {
+							log.info("Removing orphaned blob "+dbo.get("filename"));
+							gfsRaw.remove(dbo);
+						}
+						count++;
+						setProgress(count*100/cursor.count());
+					}
+					cursor.close();
+					log.info("Finished looking for orphaned blobs");
+				}
+				catch (Throwable t) {
+					t.printStackTrace();
+				}
+				finally {
+					setProgress(100);
+				}
 			}
-		}
-		cursor.close();
-		log.info("Finished looking for orphaned blobs");
+		};
+		return wt;
 	}
 
 	@Override
@@ -560,8 +580,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	//	}
 
 	@Override
-	public void runMaintenance() throws Exception {
-		cleanRaw();
+	public WorkerThread runMaintenance() throws Exception {
+		return cleanRaw();
 	}
 
 	@Override

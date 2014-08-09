@@ -193,11 +193,30 @@ public class Inbox implements SimpleMessageListener {
 		}
 	}
 
-	public void cleanUp() throws Exception {
-		// remove old messages
-		expire();
-		// trim total mailbox size
-		trim();
+	public WorkerThread cleanUp() throws Exception {
+		WorkerThread wt = new WorkerThread("cleanup") {
+
+			@Override
+			public void run() {
+				try {
+					setProgress(30);
+					// remove old messages
+					expire();
+					setProgress(60);
+					// trim total mailbox size
+					trim();
+				}
+				catch (Throwable t) {
+					t.printStackTrace();
+				}
+				finally {
+					setProgress(100);
+				}
+			}
+
+		};
+
+		return wt;
 	}
 
 	private void trim() {
@@ -595,8 +614,8 @@ public class Inbox implements SimpleMessageListener {
 		fromWhiteList = Config.getInstance().getStringList(Config.BLUEBOX_FROMWHITELIST);		
 	}
 
-	public void runMaintenance() throws Exception {
-		StorageFactory.getInstance().runMaintenance();
+	public WorkerThread runMaintenance() throws Exception {
+		return StorageFactory.getInstance().runMaintenance();
 	}
 
 	public WorkerThread backup(final File dir) throws Exception {

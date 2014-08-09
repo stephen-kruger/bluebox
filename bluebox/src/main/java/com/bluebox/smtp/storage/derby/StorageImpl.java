@@ -23,6 +23,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Utils;
+import com.bluebox.WorkerThread;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -671,8 +672,25 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public void runMaintenance() throws Exception {
-		setupTables();		
+	public WorkerThread runMaintenance() throws Exception {
+		WorkerThread wt = new WorkerThread(StorageIf.WT_NAME) {
+
+			@Override
+			public void run() {
+				setProgress(0);
+				try {
+					setupTables();
+				} 
+				catch (Exception e) {
+					e.printStackTrace();
+				}	
+				finally {
+					setProgress(100);
+				}
+			}
+			
+		};
+		return wt;
 	}
 
 	@Override
