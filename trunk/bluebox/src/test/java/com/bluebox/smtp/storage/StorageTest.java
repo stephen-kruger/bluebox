@@ -42,7 +42,7 @@ public class StorageTest extends TestCase {
 		catch (Throwable t) {
 			log.warning("Tables not created");
 		}
-		Inbox.getInstance().rebuildSearchIndexes();
+		Inbox.getInstance().deleteAll();
 	}
 
 	@Override
@@ -55,15 +55,15 @@ public class StorageTest extends TestCase {
 		catch (Throwable t) {
 			log.warning("Tables not created");
 		}
-		
 		Inbox.getInstance().stop();
 	}
 
 	@Test
 	public void testAutoComplete2() throws Exception {
 		String email = "\"First Name\" <stephen.johnson@mail.com>";
+		String from = "\"Jack Jones\" <jack.jones@mail.com>";
 		MimeMessage message = Utils.createMessage(null,
-				Utils.getRandomAddress(), 
+				new InternetAddress(from), 
 				new InternetAddress[]{new InternetAddress(email)}, 
 				Utils.getRandomAddresses(0), 
 				Utils.getRandomAddresses(0), 
@@ -380,7 +380,6 @@ public class StorageTest extends TestCase {
 		SearchIndexer.getInstance().indexMail(StorageFactory.getInstance().store(inbox, inbox.getAddress(), new Date(), message));
 		SearchIndexer.getInstance().indexMail(StorageFactory.getInstance().store(inbox, inbox.getAddress(), new Date(), message));
 		SearchIndexer.getInstance().indexMail(StorageFactory.getInstance().store(inbox, inbox.getAddress(), new Date(), message));
-
 
 		// check for empty string
 		JSONArray ja = Inbox.getInstance().autoComplete("", 0, 10);

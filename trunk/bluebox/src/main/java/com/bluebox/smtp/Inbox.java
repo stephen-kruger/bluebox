@@ -41,7 +41,7 @@ import com.bluebox.smtp.storage.StorageFactory;
 
 public class Inbox implements SimpleMessageListener {
 	private static final String GLOBAL_COUNT_NODE = "global_message_count";
-	Preferences prefs = Preferences.systemNodeForPackage(Inbox.class);
+	Preferences prefs = Preferences.userNodeForPackage(Inbox.class);
 	private JSONObject recentStats = new JSONObject();
 
 	public static final String EMAIL = "Email";
@@ -462,32 +462,19 @@ public class Inbox implements SimpleMessageListener {
 		//			hint = QueryParser.escape(hint);
 		SearchIndexer search = SearchIndexer.getInstance();
 		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENTS, (int)start, (int)count, SearchIndexer.SearchFields.RECEIVED,false);
+		System.out.println("-------------------");
 		for (int i = 0; i < results.length;i++) {
 			String uid = results[i].get(SearchFields.UID.name());
-			//				BlueboxMessage message = retrieve(uid);
-			//				if (message!=null) {
-			//					String name = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.INBOX));
-			//					String label = Utils.decodeRFC2407(message.getProperty(BlueboxMessage.TO));
-			//					String identifier = uid;
-			//					curr = new JSONObject();
-			//					curr.put("name", name);
-			//					curr.put("label", label);
-			//					curr.put("identifier", identifier);
-			//					if (!contains(children,name))
-			//						children.put(curr);
-			//				}
-			//				else {
-			//					log.severe("Sync error between search indexes and derby tables");		
-			//				}
 			curr = new JSONObject();
 			InboxAddress inbox;
 			inbox = new InboxAddress(results[i].get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
 			curr.put("name", inbox.getAddress());
-			//				curr.put("label", Utils.decodeRFC2407(results[i].get(SearchFields.INBOX.name())));
 			curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENTS.name())).getFullAddress());
 			curr.put("identifier", uid);
-			if (!contains(children,curr.getString("name")))
+			if (!contains(children,curr.getString("name"))) {
 				children.put(curr);
+				System.out.println(">>>>"+inbox.getFullAddress());
+			}
 
 			if (children.length()>=count)
 				break;

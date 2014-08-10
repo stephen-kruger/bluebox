@@ -31,23 +31,23 @@ public class InboxTest extends TestCase {
 		inbox.deleteAll();
 		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(inbox));
 		smtpServer.start();
-		int max = 10;
-		do {
-			// give thread time to start up
-			Thread.sleep(500);
-		} while ((max-- > 0)&&(!smtpServer.isRunning()));
+//		int max = 10;
+//		do {
+//			// give thread time to start up
+//			Thread.sleep(500);
+//		} while ((max-- > 0)&&(!smtpServer.isRunning()));
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		smtpServer.stop();
-		int max = 10;
-		do {
-			// give thread time to close down
-			Thread.sleep(500);
-		}
-		while ((max-- > 0)&&(smtpServer.isRunning()));
+//		int max = 10;
+//		do {
+//			// give thread time to close down
+//			Thread.sleep(500);
+//		}
+//		while ((max-- > 0)&&(smtpServer.isRunning()));
 		inbox.deleteAll();
 		inbox.stop();
 	}
