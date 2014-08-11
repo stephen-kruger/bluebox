@@ -84,8 +84,8 @@
 		require(["dojox/data/JsonRestStore"]);
 		
 		function loadInbox(email) {
-			console.log("loadInbox:"+email+" "+"<%= BlueboxMessage.State.NORMAL.name()%>"+" "+currentState);
-			loadInbox(email,"<%= BlueboxMessage.State.NORMAL.name()%>");
+			console.log("loadInbox:"+email+" "+"<%= BlueboxMessage.State.NORMAL.ordinal()%>"+" "+currentState);
+			loadInbox(email,"<%= BlueboxMessage.State.NORMAL.ordinal()%>");
 		}
 		
 		function loadInbox(email, state) {
@@ -118,13 +118,13 @@
 			   		document.getElementById('<%=Inbox.EMAIL%>').value = "";
 				
 				// set the selected folder style
-				if (state=="<%=BlueboxMessage.State.NORMAL%>") {
-					document.getElementById('<%=BlueboxMessage.State.NORMAL%>').className = "selectedFolder";
-					document.getElementById('<%=BlueboxMessage.State.DELETED%>').className = "unselectedFolder";
+				if (state=="<%=BlueboxMessage.State.NORMAL.ordinal()%>") {
+					document.getElementById('<%=BlueboxMessage.State.NORMAL.ordinal()%>').className = "selectedFolder";
+					document.getElementById('<%=BlueboxMessage.State.DELETED.ordinal()%>').className = "unselectedFolder";
 				}
-				if (state=="<%=BlueboxMessage.State.DELETED%>") {
-					document.getElementById('<%=BlueboxMessage.State.NORMAL%>').className = "unselectedFolder";
-					document.getElementById('<%=BlueboxMessage.State.DELETED%>').className = "selectedFolder";	
+				if (state=="<%=BlueboxMessage.State.DELETED.ordinal()%>") {
+					document.getElementById('<%=BlueboxMessage.State.NORMAL.ordinal()%>').className = "unselectedFolder";
+					document.getElementById('<%=BlueboxMessage.State.DELETED.ordinal()%>').className = "selectedFolder";	
 				}
 				currentEmail = email;
 				loadStats();
@@ -310,8 +310,8 @@
 	    	var email = "<%=request.getParameter(Inbox.EMAIL)%>";
 			if (email=="null")
 				email = "";
-			setupTable(email,"<%=BlueboxMessage.State.NORMAL%>");
-			loadInbox(email,"<%=BlueboxMessage.State.NORMAL%>");
+			setupTable(email,"<%=BlueboxMessage.State.NORMAL.ordinal()%>");
+			loadInbox(email,"<%=BlueboxMessage.State.NORMAL.ordinal()%>");
 		});
 	</script>	
 		

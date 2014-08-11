@@ -693,10 +693,4 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return wt;
 	}
 
-	@Override
-	public void migrate(String version) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

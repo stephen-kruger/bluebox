@@ -74,10 +74,17 @@ public class BlueboxMessage {
 		setProperty(SUBJECT, bbmm.getSubject());
 		setLongProperty(RECEIVED, received.getTime());
 		setProperty(RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
-		setProperty(STATE, State.NORMAL.ordinal());
+		setIntProperty(STATE, State.NORMAL.ordinal());
 		setProperty(SIZE, bbmm.getSize());
 	}
-
+	public State getState() {
+		return State.values()[getIntProperty(STATE)];
+	}
+	
+	public void setState(State state) {
+		setIntProperty(STATE,state.ordinal());
+	}
+	
 	public void loadBlueBoxMimeMessage(MimeMessage bbmm) {
 		mmw = bbmm;
 	}
@@ -144,17 +151,17 @@ public class BlueboxMessage {
 		return ja;
 	}
 
-//	private JSONArray toJSONArrayDisplay(Address[] r) {
-//		JSONArray ja = new JSONArray();
-//		try {
-//			if (r!=null)
-//				for (int i = 0; i < r.length;i++)
-//					ja.put(new InboxAddress(r[i].toString()).getDisplayName());
-//		} catch (Throwable e) {
-//			e.printStackTrace();
-//		}
-//		return ja;
-//	}
+	//	private JSONArray toJSONArrayDisplay(Address[] r) {
+	//		JSONArray ja = new JSONArray();
+	//		try {
+	//			if (r!=null)
+	//				for (int i = 0; i < r.length;i++)
+	//					ja.put(new InboxAddress(r[i].toString()).getDisplayName());
+	//		} catch (Throwable e) {
+	//			e.printStackTrace();
+	//		}
+	//		return ja;
+	//	}
 
 	public String getIdentifier() {
 		return getProperty(UID);
@@ -163,7 +170,7 @@ public class BlueboxMessage {
 	public Date getReceived() {
 		return new Date(getLongProperty(RECEIVED));
 	}
-	
+
 	public String getPropertyString(String name) {
 		try {
 			return properties.getString(name);
@@ -220,7 +227,7 @@ public class BlueboxMessage {
 		}
 		catch (Throwable t) {
 			log.severe(t.getMessage());
-//			t.printStackTrace();
+			//			t.printStackTrace();
 			resp.sendError(HttpStatus.SC_NOT_FOUND, t.getMessage());
 		}
 		finally {
@@ -304,6 +311,25 @@ public class BlueboxMessage {
 	public long getLongProperty(String name) {
 		try {
 			return properties.getLong(name);
+		} 
+		catch (JSONException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	public void setIntProperty(String name, int value) {
+		try {
+			properties.put(name, value);
+		} 
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public int getIntProperty(String name) {
+		try {
+			return properties.getInt(name);
 		} 
 		catch (JSONException e) {
 			e.printStackTrace();
