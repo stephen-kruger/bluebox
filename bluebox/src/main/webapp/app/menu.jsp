@@ -17,6 +17,8 @@
 	.menu {
 		height:100%;
 		width:100%;
+	    padding-top:0.5em;
+	    padding-bottom:0.5em;
 		padding-left:1em;
 	    vertical-align: middle;
 	    display: table;
@@ -59,18 +61,18 @@
 	.logoBox {
 	    display: table;
 	    vertical-align:middle;
-	    padding:0.5em;
 	}
 	
 	.logo {
 		width:1.7em;
 		height:1.7em;
-		border:1px solid white;
+		border:none;
 		background: #107bbb; /* fallback for silly old IE */
-		background: -webkit-linear-gradient(left top, lightBlue , #107bbb); /* For Safari 5.1 to 6.0 */
-		background: -o-linear-gradient(bottom right, lightBlue, #107bbb); /* For Opera 11.1 to 12.0 */
-		background: -moz-linear-gradient(bottom right, lightBlue, #107bbb); /* For Firefox 3.6 to 15 */
-		background: linear-gradient(to bottom right, lightBlue , #107bbb); /* Standard syntax */
+		background: -webkit-linear-gradient(top, #107bbb, black); /* For Safari 5.1 to 6.0 */
+		background: -o-linear-gradient(top, #107bbb, black); /* For Opera 11.1 to 12.0 */
+		background: -moz-linear-gradient(top, #107bbb, black); /* For Firefox 3.6 to 15 */
+		background: linear-gradient(top, #107bbb, black); /* Standard syntax */
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#107bbb', endColorstr='#000000');
 		display: table-cell;
 	}
 	
@@ -199,6 +201,7 @@
 		<a id="info" class="menulink" href="<%=request.getContextPath()%>/app/info.jsp"><%= menuResource.getString("info") %></a>
 	</div>
 	<div class="menu3">
+		<a id="docs" class="menulink" href="<%=request.getContextPath()%>/app/docs.jsp"><%= menuResource.getString("docs") %></a>
 		<a id="admin" class="menulink" href="<%=request.getContextPath()%>/app/admin.jsp"><%= menuResource.getString("admin") %></a>
 		<a id="help" class="helpIcon" href="<%=request.getContextPath()%>/app/help.jsp" onmouseover="dijit.Tooltip.defaultPosition=['below']">?</a>
 		<div class="dijitHidden"><span data-dojo-type="dijit.Tooltip" data-dojo-props="connectId:'help'"><%= menuResource.getString("help") %></span></div>
