@@ -473,7 +473,6 @@ public class Inbox implements SimpleMessageListener {
 			curr.put("identifier", uid);
 			if (!contains(children,curr.getString("name"))) {
 				children.put(curr);
-				System.out.println(">>>>"+inbox.getFullAddress());
 			}
 
 			if (children.length()>=count)
@@ -618,7 +617,6 @@ public class Inbox implements SimpleMessageListener {
 					int count = 100;
 					do {
 						setProgress((int)(((start+1)*100)/inbox.getMailCount(BlueboxMessage.State.ANY)));
-						log.info(">>>>>>>>>>>>>>>>>>>>>"+getProgress());
 						mail = inbox.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
 						if (mail.size()>0) {
 							log.info("Backing up from "+start+" to "+(start+count));
