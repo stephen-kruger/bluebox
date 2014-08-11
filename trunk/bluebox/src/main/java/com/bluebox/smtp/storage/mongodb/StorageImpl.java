@@ -55,8 +55,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		createIndexes();
 
-		migrate();
-
 		log.fine("Started MongoDB connection");
 	}
 
@@ -583,47 +581,4 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public WorkerThread runMaintenance() throws Exception {
 		return cleanRaw();
 	}
-
-	@Override
-	public void migrate(String version) {
-		try {
-			MongoClient mongoClient = new MongoClient(Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST));
-			if (version.equals("bluebox400")) {
-				log.info("Migrating db version "+version+" to "+DB_NAME);
-				DB oldDb = mongoClient.getDB(version);
-				oldDb.dropDatabase();
-//				DBCollection coll = oldDb.getCollection(TABLE_NAME);
-//				DBCursor cursor = coll.find();
-//				DBObject msg;
-//				while (cursor.hasNext()) {
-//					msg = cursor.next();
-//					try {
-//						if (msg.containsField(BlueboxMessage.RAW)) {
-//							MimeMessage mimeMessage = Utils.loadEML(new ByteArrayInputStream( msg.get(BlueboxMessage.RAW).toString().getBytes("UTF-8") ));
-//							store(new InboxAddress(getDBOString(msg,BlueboxMessage.INBOX,"")), 
-//									getDBOString(msg,BlueboxMessage.FROM,""), 
-//									mimeMessage);
-//						}
-//					}
-//					catch (Throwable t) {
-//						log.severe("Error migrating message :"+t.getMessage());
-//						t.printStackTrace();
-//					}
-//				}
-//
-//				cursor.close();
-			}
-			mongoClient.close();
-			log.info("Migration complete");
-		}
-		catch (Throwable t) {
-			t.printStackTrace();
-			log.severe(t.getMessage());
-		}
-	}
-
-
-
-
-
 }

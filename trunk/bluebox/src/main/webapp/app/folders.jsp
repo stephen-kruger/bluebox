@@ -80,13 +80,13 @@
 <div>
 	<ul>
 		<li style="list-style-type:none;cursor:pointer;padding:0.4em;">
-		  	<a id="<%=BlueboxMessage.State.NORMAL%>" class="selectedFolder" onclick="loadInbox(folderEmail, '<%=BlueboxMessage.State.NORMAL.name()%>');">
+		  	<a id="<%=BlueboxMessage.State.NORMAL.ordinal()%>" class="selectedFolder" onclick="loadInbox(folderEmail, '<%=BlueboxMessage.State.NORMAL.ordinal()%>');">
 			  	<img style="padding-right : 5px;" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/inboxNormal.png" alt="<%= folderDetailResource.getString("inbox") %>"/><%= folderDetailResource.getString("inbox") %>
 			  	<span id="inboxCount" class="badgeDown">?</span>
 		  	</a>
 		</li>
   		<li style="list-style-type:none;cursor:pointer;padding:0.4em;">
-		  	<a id="<%=BlueboxMessage.State.DELETED%>" class="unselectedFolder" onclick="loadInbox(folderEmail, '<%=BlueboxMessage.State.DELETED.name()%>');">
+		  	<a id="<%=BlueboxMessage.State.DELETED.ordinal()%>" class="unselectedFolder" onclick="loadInbox(folderEmail, '<%=BlueboxMessage.State.DELETED.ordinal()%>');">
 		  		<img style="padding-right : 5px;" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/inboxTrash.png" alt="<%= folderDetailResource.getString("inbox") %>"/><%= folderDetailResource.getString("trash") %>
 		  		<span id="deletedCount" class="badgeDown">?</span>
 		  	</a>
