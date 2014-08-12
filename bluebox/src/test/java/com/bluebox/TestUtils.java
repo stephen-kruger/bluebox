@@ -73,7 +73,7 @@ public class TestUtils extends TestCase {
 		email.setFrom(from);
 		email.setSubject(subject);
 		email.setMsg(body);
-		email.setHtmlMsg("<html><head><script>alert('crap');</script></head><body>"+body+"</body></html>");
+		email.setHtmlMsg("<html><head><script>alert('crap');</script></head><body><a href='http://test1.com'>test1</a>"+body+"<a href='http://test2.com'>test2</a></body></html>");
 		if (to!=null)
 			email.addTo(to);
 		if (cc!=null)
