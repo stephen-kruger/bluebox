@@ -23,6 +23,7 @@ import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.rest.json.JSONInboxHandler;
 import com.bluebox.rest.json.JSONInlineHandler;
 import com.bluebox.rest.json.JSONMessageHandler;
+import com.bluebox.rest.json.JSONMessageUtilHandler;
 import com.bluebox.rest.json.JSONRawMessageHandler;
 import com.bluebox.rest.json.JSONSearchHandler;
 import com.bluebox.rest.json.JSONStatsHandler;
@@ -114,6 +115,11 @@ public class BlueBoxServlet extends HttpServlet {
 		if (req.getRequestURI().indexOf(JSONErrorHandler.JSON_ROOT)>=0){
 			log.fine("doGetErrors");
 			new JSONErrorHandler().doGet(Inbox.getInstance(),req,resp);
+			return;
+		}
+		if (req.getRequestURI().indexOf(JSONMessageUtilHandler.JSON_ROOT)>=0){
+			log.fine("doGetErrors");
+			new JSONMessageUtilHandler().doGet(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf("rest/admin/generate")>=0){
