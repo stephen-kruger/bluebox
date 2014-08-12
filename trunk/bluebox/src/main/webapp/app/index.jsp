@@ -21,8 +21,7 @@
 			<jsp:include page="check.jsp" />
 		</div>
 			
-		<div class="centerCol">
-			<br/><br/><br/><br/><br/><br/><br/>
+		<div class="centerCol" style="display: table-cell;vertical-align: middle;">
 			<h1>Welcome to bluebox</h1>
 		</div>
 			

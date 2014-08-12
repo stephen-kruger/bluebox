@@ -65,7 +65,7 @@
 
 .headerBoxTable {
 	width: 100%;
-	border: 0;
+	align:left;
 }
 
 .textBody {
@@ -433,7 +433,6 @@
 		try {
 			require(["dijit/layout/TabContainer", "dijit/layout/ContentPane", "dijit/form/Textarea", "dojo/domReady!"], function(TabContainer, ContentPane, Textarea, domReady){
 			    var tc = new TabContainer({
-			        style: "width: 100%; height: 100%;",
 			        tabPosition:"right-h",
 			        doLayout:"false"
 			    }, "mail-tab");
@@ -500,9 +499,9 @@
 <div id="mailHeaderBlock" class="headerBox">
 	<table class="headerBoxTable">
 		<tr>
-			<td valign="top"><img id="subjectIcon"
-				src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/message.png"
-				align="top" /></td>
+			<td valign="top" style="width:0px;white-space:nowrap;">
+				<img id="subjectIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/message.png" align="top" />
+			</td>
 			<td>
 				<table class="headerBoxTable">
 					<tr>
@@ -534,8 +533,6 @@
 </div>
 
 
-<!-- the Text vs Html view selector -->
-<br />
 <div id="mailToggleBlock">
 	<div style="width: 100%; height: 480px; text-align: left;">
 		<div id="mail-tab"></div>
