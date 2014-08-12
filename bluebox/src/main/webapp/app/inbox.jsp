@@ -27,7 +27,6 @@
 		.detailPane {
 			width:100%;
 			height:70%;
-			display:table-row;
 		}
 			
 		.seperator {
