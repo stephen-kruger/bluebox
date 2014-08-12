@@ -14,7 +14,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
-public class JSONRawMessageHandler {
+public class JSONRawMessageHandler extends AbstractHandler {
 	private static final Logger log = Logger.getAnonymousLogger();
 	public static final String JSON_ROOT = "rest/json/inbox/raw";
 
@@ -23,8 +23,9 @@ public class JSONRawMessageHandler {
 	 */
 	public void doGetRawDetail(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		try {
-			String uri = req.getRequestURI();
-			String uid = uri.substring(uri.lastIndexOf("/")+1,uri.length());
+//			String uri = req.getRequestURI();
+			String uid = extractFragment(req.getRequestURI(), 0);
+			//uri.substring(uri.lastIndexOf("/")+1,uri.length());
 			log.info("Serving raw message for "+uid);
 			BlueboxMessage message = inbox.retrieve(uid);
 			MimeMessage bbm = message.getBlueBoxMimeMessage();
