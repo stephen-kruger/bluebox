@@ -31,6 +31,7 @@
 						<li style="list-style-type:none;">For feature requests, info etc contact me directly via the <a href="https://code.google.com/p/bluebox/">Bluebox Project</a> site</li>
 						<li style="list-style-type:none;">To report rendering defects, bugs etc, please use the <a href="https://code.google.com/p/bluebox/issues/list">defect tracking</a> system</li>
 						<li style="list-style-type:none;">Please try and attach the offending .eml file whenever possible to help in reproducing</li>
+						<li style="list-style-type:none;">Developer and REST api documentation can be found <a href="docs.jsp">here</a></li>
 					</ol>
 					<h2>What is it?</h2>
 					<ol>
