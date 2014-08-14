@@ -5,7 +5,6 @@ import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.testing.HttpTester;
