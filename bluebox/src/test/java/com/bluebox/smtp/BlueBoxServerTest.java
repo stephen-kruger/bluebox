@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 import javax.activation.DataHandler;
 import javax.mail.Message;
 import javax.mail.Message.RecipientType;
-import javax.mail.MessagingException;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -59,7 +58,7 @@ public class BlueBoxServerTest extends TestCase {
 		Inbox.getInstance().stop();
 	}
 
-	public void testCrash() throws IOException, MessagingException, InterruptedException {
+	public void testCrash() throws Exception {
 		assertEquals("Mailbox was not cleared",0,Inbox.getInstance().getMailCount(State.ANY));
 		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"crashfix.eml");
 		Utils.uploadEML(emlStream);
@@ -299,7 +298,7 @@ public class BlueBoxServerTest extends TestCase {
 		//		assertTrue(email.getContent().toString().equals("Test Body"));
 	}
 
-	public void testSendToBCCAndCC() {
+	public void testSendToBCCAndCC() throws Exception {
 		Inbox inbox = Inbox.getInstance();
 		String testBody = "testSend Test Body";
 		try {

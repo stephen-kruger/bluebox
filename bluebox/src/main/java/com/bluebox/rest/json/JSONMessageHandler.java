@@ -105,7 +105,7 @@ public class JSONMessageHandler extends AbstractHandler {
 	///bluebox/rest/json/inbox/f0f3bd84-0ccf-4cf1-839c-22d43f9e20c4
 	public void doDelete(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		try {
-			String uidList = extractFragment(req.getRequestURI(),0);
+			String uidList = extractFragment(req.getRequestURI(),JSON_ROOT,0);
 			StringTokenizer uidArray = new StringTokenizer(uidList,",");
 			String uid;
 			while (uidArray.hasMoreTokens()) {

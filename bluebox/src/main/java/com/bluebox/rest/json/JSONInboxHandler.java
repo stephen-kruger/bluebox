@@ -73,7 +73,7 @@ public class JSONInboxHandler extends AbstractHandler {
 
 	private BlueboxMessage.State extractState(String uri, String jsonRoot) {
 		try {
-			return BlueboxMessage.State.values()[Integer.parseInt(extractFragment(uri, 1))];
+			return BlueboxMessage.State.values()[Integer.parseInt(extractFragment(uri,JSON_ROOT, 1))];
 		}
 		catch (Throwable t) {
 			return BlueboxMessage.State.NORMAL;

@@ -462,7 +462,6 @@ public class Inbox implements SimpleMessageListener {
 		//			hint = QueryParser.escape(hint);
 		SearchIndexer search = SearchIndexer.getInstance();
 		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENTS, (int)start, (int)count, SearchIndexer.SearchFields.RECEIVED,false);
-		System.out.println("-------------------");
 		for (int i = 0; i < results.length;i++) {
 			String uid = results[i].get(SearchFields.UID.name());
 			curr = new JSONObject();

@@ -47,8 +47,8 @@
 				var urlStr = "<%=request.getContextPath()%>/<%=JSONFolderHandler.JSON_ROOT%>/"+encodeURI(newEmail);
 				var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:true});
 				var queryResults = jStore.fetch({}).results;
-				setInboxCount(queryResults.items[0].children[0].count);
-				setDeletedCount(queryResults.items[0].children[1].count);
+				setInboxCount(queryResults.NORMAL.count);
+				setDeletedCount(queryResults.DELETED.count);
 				folderEmail = newEmail;
 			});
 		}

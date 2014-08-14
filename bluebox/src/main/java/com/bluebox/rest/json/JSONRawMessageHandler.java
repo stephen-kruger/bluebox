@@ -24,7 +24,7 @@ public class JSONRawMessageHandler extends AbstractHandler {
 	public void doGetRawDetail(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		try {
 //			String uri = req.getRequestURI();
-			String uid = extractFragment(req.getRequestURI(), 0);
+			String uid = extractFragment(req.getRequestURI(), JSON_ROOT, 0);
 			//uri.substring(uri.lastIndexOf("/")+1,uri.length());
 			log.info("Serving raw message for "+uid);
 			BlueboxMessage message = inbox.retrieve(uid);

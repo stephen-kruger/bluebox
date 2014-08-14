@@ -52,68 +52,33 @@ public class RestTest extends BaseServletTest {
 		String inboxURL = "/"+JSONFolderHandler.JSON_ROOT;
 		log.info("Checking URL:"+inboxURL);
 		JSONObject js = getRestJSON(inboxURL);
-		JSONArray items = js.getJSONArray("items");
-		for (int i = 0; i < items.length(); i++) {
-			JSONObject item = items.getJSONObject(i);
-			assertTrue(item.has("id"));
-			assertTrue(item.has("name"));
-			assertTrue(item.has("type"));
-			assertTrue(item.has("style"));
-			JSONArray children = item.getJSONArray("children");
-			for (int j = 0; j < children.length();j++) {
-				JSONObject child = children.getJSONObject(j);
-				assertTrue(child.has("id"));
-				assertTrue(child.has("name"));
-				assertTrue(child.has("style"));
-				assertTrue(child.has("count"));
-				assertTrue(child.has("state"));
-				assertTrue(child.has("email"));
-				if ((child.get("id").equals("All"))||(child.get("id").equals("Inbox"))) {
-					assertEquals("Missing mails",COUNT,child.getInt("count"));
-				}
-				else {
-					assertEquals("Missing mails",0,child.getInt("count"));					
-				}
-			}
-		}
-		log.info(js.toString(3));
-
-		//		{
-		//			   "identifier": "id",
-		//			   "label": "name",
-		//			   "items": [{
-		//			      "id": "Overview",
-		//			      "name": "Inbox for \/NORMAL@XHOSA",
-		//			      "type": "folder",
-		//			      "style": "rootFolder",
-		//			      "children": [
-		//			         {
-		//			            "id": "Inbox",
-		//			            "name": "Inbox (0)",
-		//			            "count": 0,
-		//			            "email": "\/NORMAL@XHOSA",
-		//			            "state": "NORMAL",
-		//			            "style": "inboxFolder"
-		//			         },
-		//			         {
-		//			            "id": "Trash",
-		//			            "name": "Trash (0)",
-		//			            "count": 0,
-		//			            "email": "\/NORMAL@XHOSA",
-		//			            "state": "DELETED",
-		//			            "style": "trashFolder"
-		//			         },
-		//			         {
-		//			            "id": "All",
-		//			            "name": "All documents (0)",
-		//			            "count": 0,
-		//			            "email": "\/NORMAL@XHOSA",
-		//			            "state": "ANY",
-		//			            "style": "allFolder"
-		//			         }
-		//			      ]
-		//			   }]
-		//			}		
+		
+		JSONObject child = js.getJSONObject(BlueboxMessage.State.ANY.name());
+		assertEquals("Missing mails",COUNT,child.getInt("count"));
+		assertTrue(child.has("id"));
+		assertTrue(child.has("name"));
+		assertTrue(child.has("style"));
+		assertTrue(child.has("count"));
+		assertTrue(child.has("state"));
+		assertTrue(child.has("email"));
+		
+		child = js.getJSONObject(BlueboxMessage.State.NORMAL.name());
+		assertEquals("Missing mails",COUNT,child.getInt("count"));
+		assertTrue(child.has("id"));
+		assertTrue(child.has("name"));
+		assertTrue(child.has("style"));
+		assertTrue(child.has("count"));
+		assertTrue(child.has("state"));
+		assertTrue(child.has("email"));
+		
+		child = js.getJSONObject(BlueboxMessage.State.DELETED.name());
+		assertEquals("Missing mails",0,child.getInt("count"));
+		assertTrue(child.has("id"));
+		assertTrue(child.has("name"));
+		assertTrue(child.has("style"));
+		assertTrue(child.has("count"));
+		assertTrue(child.has("state"));
+		assertTrue(child.has("email"));
 	}
 
 	public void testInlineHandler() throws Exception {

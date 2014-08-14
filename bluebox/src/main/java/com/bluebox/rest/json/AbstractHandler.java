@@ -1,5 +1,6 @@
 package com.bluebox.rest.json;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,10 +18,17 @@ public class AbstractHandler {
 	protected void setDefaultHeaders(HttpServletResponse resp) {
 		resp.setHeader("Pragma", "No-cache");
 		resp.setDateHeader("Expires", 0);
-		
+
 		resp.setHeader("Cache-Control", "no-cache");
 		resp.setContentType("application/json");
 		resp.setCharacterEncoding(Utils.UTF8);
+	}
+
+	/*
+	 * This will extract the fragment following an expected root prefix
+	 */
+	public static String extractFragment(String uri, String root, int index) {
+		return extractFragment(uri.substring(uri.indexOf(root)+root.length()),index);
 	}
 
 	/*
@@ -35,20 +43,32 @@ public class AbstractHandler {
 	 * extractFragment(1) = "ddd"
 	 */
 	public static String extractFragment(String uri, int index) {
-		if (uri.endsWith("/")) {
-			if (index==0) {
-				return "";
+		try {
+			if (uri.endsWith("/")) {
+				if (index==0) {
+					return "";
+				}
+				else {
+					index--;
+				}
 			}
-			else {
-				index--;
+			StringTokenizer tok = new StringTokenizer(uri,"/",false);
+			List<String> list = new ArrayList<String>();
+			String token;
+			while (tok.hasMoreTokens()) {
+				token = tok.nextToken();
+				try {
+					list.add(URLDecoder.decode(token,Utils.UTF8));
+				} catch (UnsupportedEncodingException e) {
+					list.add(token);
+					e.printStackTrace();
+				}
 			}
+			return list.get(list.size()-index-1);
 		}
-		StringTokenizer tok = new StringTokenizer(uri,"/",false);
-		List<String> list = new ArrayList<String>();
-		while (tok.hasMoreTokens()) {
-			list.add(tok.nextToken());
+		catch (ArrayIndexOutOfBoundsException ex) {
+			return "";
 		}
-		return list.get(list.size()-index-1);
 	}
 
 	/*
