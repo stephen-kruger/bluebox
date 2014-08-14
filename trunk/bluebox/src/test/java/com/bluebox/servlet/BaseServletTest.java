@@ -102,15 +102,7 @@ public abstract class BaseServletTest extends TestCase {
 	public int getMailCount(BlueboxMessage.State state) {
 		String url = "/"+JSONFolderHandler.JSON_ROOT;
 		try {
-			JSONObject js = getRestJSON(url);
-			JSONArray children = js.getJSONArray("items").getJSONObject(0).getJSONArray("children");
-			for (int i = 0; i < children.length();i++) {
-				JSONObject stateC = children.getJSONObject(i);
-				if (BlueboxMessage.State.valueOf(stateC.getString("state"))==state) {
-					return stateC.getInt("count");
-				}
-			}
-			return 0;
+			return getRestJSON(url).getJSONObject(state.name()).getInt("count");
 		}
 		catch (Throwable t) {
 			t.printStackTrace();

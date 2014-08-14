@@ -41,7 +41,7 @@ public class JSONErrorHandler extends AbstractHandler {
 	}
 
 	public void doGetDetail(Inbox instance, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String id = extractFragment(req.getRequestURI(),0);
+		String id = extractFragment(req.getRequestURI(),JSON_ROOT,0);
 		log.info("Serving error detail for id="+id);
 		resp.setContentType("application/text");
 		Writer writer = resp.getWriter();

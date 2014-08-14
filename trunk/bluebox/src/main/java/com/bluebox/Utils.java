@@ -484,22 +484,25 @@ public class Utils {
 	//		Transport.send(msg);
 	//	}
 
-	public static void waitFor(int i) {
+	public static void waitFor(int count) throws Exception {
 		Inbox inbox = Inbox.getInstance();
 		int retryCount = 5;
-		while ((retryCount-->0)&&(inbox.getMailCount(BlueboxMessage.State.NORMAL)<i)) {
+		while ((retryCount-->0)&&(inbox.getMailCount(BlueboxMessage.State.NORMAL)<count)) {
 			try {
-				log.info("Waiting for delivery "+i);
+				log.info("Waiting for delivery "+count);
 				Thread.sleep(250);
 			} 
 			catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		if (retryCount<=0)
+		if (retryCount<=0) {
 			log.warning("Timed out waiting for messages to arrive");
-		else
+			throw new Exception("Timed out waiting for "+count+"messages to arrive");
+		}
+		else {
 			log.info("Found expected message count received");
+		}
 	}
 
 	public static String trimURLParam(String p) {
@@ -663,15 +666,18 @@ public class Utils {
 		}
 	}
 
+	/*
+	 * A Notes address can be detected by the lack of '@' character, as well as the presence of forward-slashes.
+	 */
 	public static boolean isNotesAddress(String email) {
-		return ((email.indexOf('@')<0)&&((email.indexOf('/')>0)||(email.indexOf('%')>0)));
+		return ((email.indexOf('@')<0)&&(email.indexOf('/')>0));
 	}
 
 	public static String convertNotesAddress(String notes) {
-		if (notes.indexOf('/')>0)
-			notes = notes.replaceAll("%", ".");
-		else
-			notes = notes.replaceAll("%", "/");
+//		if (notes.indexOf('/')>0)
+//			notes = notes.replaceAll("%", ".");
+//		else
+//			notes = notes.replaceAll("%", "/");
 		String domain = AbstractHandler.extractFragment(notes, 0);
 		String subdomain = AbstractHandler.extractFragment(notes, 1);
 		String name = AbstractHandler.extractFragment(notes, 2);

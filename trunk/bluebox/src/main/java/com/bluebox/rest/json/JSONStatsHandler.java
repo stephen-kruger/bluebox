@@ -49,23 +49,23 @@ public class JSONStatsHandler extends AbstractHandler {
 	public static final String COMBINED_STAT = "stats_combined";
 
 	public void doGet(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		if (extractFragment(req.getRequestURI(),1).equals(GLOBAL_STAT)) {
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(GLOBAL_STAT)) {
 			log.fine("Process global stat");
 			doGetGlobalStats(inbox,req,resp);
 		}
-		if (extractFragment(req.getRequestURI(),1).equals(RECENT_STAT)) {
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(RECENT_STAT)) {
 			log.fine("Process recent stat");
 			doGetRecentStats(inbox,req,resp);
 		}
-		if (extractFragment(req.getRequestURI(),1).equals(ACTIVE_STAT)) {
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(ACTIVE_STAT)) {
 			log.fine("Process active stat");
 			doGetActiveStats(inbox,req,resp);
 		}
-		if (extractFragment(req.getRequestURI(),1).equals(SENDER_STAT)) {
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(SENDER_STAT)) {
 			log.fine("Process active senderstat");
 			doGetSenderStats(inbox,req,resp);
 		}
-		if (extractFragment(req.getRequestURI(),1).equals(COMBINED_STAT)) {
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(COMBINED_STAT)) {
 			log.fine("Process combined stat");
 			doGetCombinedStats(inbox,req,resp);
 		}

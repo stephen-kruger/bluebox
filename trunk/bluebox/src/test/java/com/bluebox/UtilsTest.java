@@ -6,12 +6,11 @@ import java.util.logging.Logger;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import junit.framework.TestCase;
+
 import org.subethamail.smtp.util.Base64;
 
-import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
-
-import junit.framework.TestCase;
 
 public class UtilsTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -33,7 +32,7 @@ public class UtilsTest extends TestCase {
 		assertEquals("UTF-8 was not correctly  decoded",src2,Utils.decodeQuotedPrintable(encodedStr));
 	}
 
-	public void testNotesAddressConversion() throws AddressException {
+	public void testNotesAddressConversion() throws AddressException, UnsupportedEncodingException {
 		String notes = "Stephen Johnson/Ireland/XXX";
 		String email = Utils.convertNotesAddress(notes);
 		log.info(email);
@@ -41,7 +40,7 @@ public class UtilsTest extends TestCase {
 		assertNotNull("No display name set", ia.getPersonal());
 		assertNotNull("No address set", ia.getAddress());
 
-		notes = "Stephen_Johnson/Ireland/XXX%XXXIE";
+		notes = "Stephen_Johnson/Ireland/XXX";
 		email = Utils.convertNotesAddress(notes);
 		log.info(email);
 		ia = new InternetAddress(email);
@@ -49,7 +48,7 @@ public class UtilsTest extends TestCase {
 		assertNotNull("No address set", ia.getAddress());
 
 		//1>>>>/bluebox/rest/json/folder/all_groups_2011_10_25%25XXXUS%25XXXGB
-		notes = "all_groups_2011_10_25%XXXUS%XXXGB";
+		notes = "all_groups_2011_10_25/XXXUS/XXXGB";
 		email = Utils.convertNotesAddress(notes);
 		log.info(email);
 		ia = new InternetAddress(email);

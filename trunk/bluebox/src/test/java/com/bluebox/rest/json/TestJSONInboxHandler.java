@@ -15,11 +15,11 @@ public class TestJSONInboxHandler extends TestCase {
 		uri = "/bluebox/rest/json/inbox/bluemail%20team%20%3Cbluemail@us.xxx.com%3E/undefined/";
 		assertEquals("Email was not properly extracted","bluemail@us.xxx.com",JSONInboxHandler.extractEmail(uri, "rest/json/inbox"));
 		
-		uri = "/bluebox/rest/json/inbox/Stephen_Johnson/Ireland/xxx%25xxxIE/undefined/";
-		assertEquals("Email was not properly extracted","Stephen_Johnson@Ireland.xxx.xxxIE",JSONInboxHandler.extractEmail(uri, "rest/json/inbox"));
+		uri = "/bluebox/rest/json/inbox/Stephen_Johnson/Ireland/xxx/undefined/";
+		assertEquals("Email was not properly extracted","Stephen_Johnson@Ireland.xxx",JSONInboxHandler.extractEmail(uri, "rest/json/inbox"));
 		
 		uri = "/BlueBox/rest/json/inbox/xxx@xxx.com/&Start=0&Count=-1/";
-		assertEquals("Email was not properly extracted","xxx@xxx.com",AbstractHandler.extractFragment(uri, 2));
+		assertEquals("Email was not properly extracted","xxx@xxx.com",AbstractHandler.extractFragment(uri, "rest/json/inbox",2));
 
 		uri = "/BlueBox/rest/json/inbox/xxx/&Start=0&Count=-1/";
 		assertEquals("Email was not properly extracted","xxx@"+Utils.getHostName(),JSONInboxHandler.extractEmail(uri,"rest/json/inbox"));
