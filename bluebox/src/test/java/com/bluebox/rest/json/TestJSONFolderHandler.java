@@ -6,7 +6,6 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Locale;
 
-import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Utils;
@@ -35,6 +34,16 @@ public class TestJSONFolderHandler extends BaseServletTest {
 		assertEquals("Missing mails",COUNT,list.size());
 		String url = "/"+JSONFolderHandler.JSON_ROOT;
 		JSONObject js = getRestJSON(url);
+		assertEquals("Incorrect All count",list.size(),js.getJSONObject(BlueboxMessage.State.ANY.name()).getInt("count"));
+		assertEquals("Incorrect Normal count",list.size(),js.getJSONObject(BlueboxMessage.State.NORMAL.name()).getInt("count"));
+		assertEquals("Incorrect Deleted count",0,js.getJSONObject(BlueboxMessage.State.DELETED.name()).getInt("count"));
+		
+		// now delete 1 mail
+		Inbox.getInstance().setState(list.get(0).getString(BlueboxMessage.UID),BlueboxMessage.State.DELETED);
+		js = getRestJSON(url);
+		assertEquals("Incorrect All count",list.size(),js.getJSONObject(BlueboxMessage.State.ANY.name()).getInt("count"));
+		assertEquals("Incorrect Normal count",list.size()-1,js.getJSONObject(BlueboxMessage.State.NORMAL.name()).getInt("count"));
+		assertEquals("Incorrect Deleted count",1,js.getJSONObject(BlueboxMessage.State.DELETED.name()).getInt("count"));
 //		JSONArray items = js.getJSONArray("items").get;
 //		for (int i = 0; i < items.length(); i++) {
 //			
