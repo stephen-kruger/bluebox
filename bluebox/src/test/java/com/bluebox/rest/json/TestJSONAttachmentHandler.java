@@ -9,11 +9,11 @@ public class TestJSONAttachmentHandler extends TestCase {
 	public void testGetEmail() {
 		String uri = "/bluebox/rest/json/inbox/attachment/26e3a411-f456-4c5f-a531-3b73f43ecf7f/1";
 		// Form 1
-		assertEquals("Uid was not properly extracted","26e3a411-f456-4c5f-a531-3b73f43ecf7f",AbstractHandler.extractUid(uri,"json/inbox/attachment"));
+		assertEquals("Uid was not properly extracted","26e3a411-f456-4c5f-a531-3b73f43ecf7f",AbstractHandler.extractFragment(uri,JSONAttachmentHandler.JSON_ROOT,1));
 		assertEquals("Index was not properly extracted","1",AbstractHandler.extractFragment(uri,"/bluebox/rest/json/inbox/attachment",0));
 		// Form 2
 		uri = "/bluebox/rest/json/inbox/attachment/26e3a411-f456-4c5f-a531-3b73f43ecf7f";
-		assertEquals("Uid was not properly extracted","26e3a411-f456-4c5f-a531-3b73f43ecf7f",AbstractHandler.extractUid(uri,"json/inbox/attachment"));
+		assertEquals("Uid was not properly extracted","26e3a411-f456-4c5f-a531-3b73f43ecf7f",AbstractHandler.extractFragment(uri,JSONAttachmentHandler.JSON_ROOT,0));
 	}
 	
 	public void testExtractFragment() {
