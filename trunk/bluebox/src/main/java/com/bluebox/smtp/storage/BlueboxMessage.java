@@ -222,6 +222,7 @@ public class BlueboxMessage {
 		try {
 			if (ds==null)
 				throw new Exception("No attachment found");
+			log.info("Setting mime type to "+ds.getContentType());
 			resp.setContentType(ds.getContentType());
 			Utils.copy(ds.getInputStream(),resp.getOutputStream());		
 		}

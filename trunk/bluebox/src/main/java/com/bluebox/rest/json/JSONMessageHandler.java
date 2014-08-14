@@ -37,7 +37,7 @@ public class JSONMessageHandler extends AbstractHandler {
 		log.info("doGetMessageDetail");
 		Writer out = resp.getWriter();
 		try {
-			String uid = extractUid(req.getRequestURI(),JSON_ROOT);
+			String uid = extractFragment(req.getRequestURI(),JSON_ROOT,0);
 			BlueboxMessage message = inbox.retrieve(uid);
 			JSONObject json = new JSONObject(message.toJSON(req.getLocale()));
 			json.put(BlueboxMessage.RECEIVED, AbstractStorage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
