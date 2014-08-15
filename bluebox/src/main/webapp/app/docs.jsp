@@ -52,11 +52,11 @@
 								<code class="json">
 [{
    "Uid": "bd222e31-e3a2-42fd-a6a1-6b27b75ce53d",
-   "Sender": "Display Name",
+   "Sender": "Display Name &lt;test@test.com&gt;",
    "Subject": "Mail Subject",
    "Received": "8\/8\/14 2:06 AM",
    "State": 1,
-   "Inbox": "&lt;email&gt;",
+   "Inbox": "recipient@test.com",
    "Size": "21K"
 }]
 								</code>
@@ -88,7 +88,7 @@
 								<h3>Get email html content links</h3>
 								This method parses the email html body (if it exists) and returns any links found<br/>
 								<br/>
-								http://[hostname]/bluebox/<%=JSONMessageUtilHandler.JSON_ROOT %>/[Uid]/[links]
+								http://[hostname]/bluebox/<%=JSONMessageUtilHandler.JSON_ROOT %>/[Uid]/links
 								<br/><br/>
 								<pre class="json">
 								<code class="json">

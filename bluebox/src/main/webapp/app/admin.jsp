@@ -13,11 +13,7 @@
 <head>
 	<title><%=headerResource.getString("welcome")%></title>
 	<jsp:include page="dojo.jsp" />
-	<script>
-		require(["dojo/domReady!"], function(){
-			selectMenu("admin");
-		});
-		
+	<script>		
 		
 		require(["dojo/parser", "dijit/ProgressBar", "dijit/form/Button", "dijit/form/NumberTextBox"]);
 		
@@ -145,6 +141,10 @@
 				});
 		}
 		
+		require(["dojo/domReady!"], function(){
+			selectMenu("admin");
+			updateWorkers();
+		});
 	</script>
 </head>
 <body class="<%=bbconfig.getString("dojo_style")%>">

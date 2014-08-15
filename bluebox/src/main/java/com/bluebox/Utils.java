@@ -442,7 +442,6 @@ public class Utils {
 	}
 
 	private static void sendMessageDirect(MimeMessage msg) throws Exception {
-		log.info("Sending message direct to "+msg.getAllRecipients().length+" recipients");
 		Address[] to = msg.getRecipients(RecipientType.TO);
 		Address[] cc = msg.getRecipients(RecipientType.CC);
 		Address[] bcc = msg.getRecipients(RecipientType.BCC);
