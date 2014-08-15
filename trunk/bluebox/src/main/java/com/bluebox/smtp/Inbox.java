@@ -635,6 +635,7 @@ public class Inbox implements SimpleMessageListener {
 							}
 						}
 						start += mail.size();
+
 					} while (mail.size()>0);	
 				}
 				catch (Throwable t) {

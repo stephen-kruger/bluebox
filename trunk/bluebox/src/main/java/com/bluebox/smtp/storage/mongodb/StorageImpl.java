@@ -290,12 +290,17 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public List<BlueboxMessage> listMail(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		List<BlueboxMessage> results = new ArrayList<BlueboxMessage>();
-		DBCursor cursor = this.listMailCommon(inbox, state, start, count, orderBy, ascending);
+		DBCursor cursor = listMailCommon(inbox, state, start, count, orderBy, ascending);
 		try {
 			while (cursor.hasNext()) {
-				DBObject dbo = cursor.next();
-				BlueboxMessage m = loadMessage(dbo);
-				results.add(m);
+				try {
+					DBObject dbo = cursor.next();
+					BlueboxMessage m = loadMessage(dbo);
+					results.add(m);
+				}
+				catch (Throwable t) {
+					log.severe("Nasty problem loading message:"+t.getMessage());;
+				}
 			}
 		} 
 		catch (Throwable t) {
