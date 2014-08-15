@@ -17,36 +17,14 @@ public class JSONInboxHandler extends AbstractHandler {
 	private static final Logger log = Logger.getAnonymousLogger();
 	public static final String JSON_ROOT = "rest/json/inbox";
 
-	protected static String extractEmail(String uri, String fragment) {
-		try {
-			String email;
-			if (uri.endsWith(fragment)) {
-				log.info("No email found in uri :"+uri);
-				return "";
-			}
-			else {
-				int pos1 = uri.indexOf(fragment)+fragment.length()+1;
-				int pos2 = uri.lastIndexOf('/');
-				uri = uri.substring(pos1,pos2);
-				pos2 = uri.lastIndexOf('/');
-				email = uri.substring(0,pos2);
-				return extractEmail(email);
-			}
-		}
-		catch (Throwable e) {
-			e.printStackTrace();
-			log.severe("No email specified in "+uri);
-			return "";
-		}
-	}
-
 	public void doGetInbox(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		long startTime = new Date().getTime();
 		setDefaultHeaders(resp);
 		// get the desired email
 		InboxAddress inboxAddress;
 		try {
-			inboxAddress= new InboxAddress(extractEmail(req.getRequestURI(),JSON_ROOT));
+			String emailStr = extractEmail(extractFragment(req.getRequestURI(),JSON_ROOT,2));
+			inboxAddress = new InboxAddress(emailStr);
 		}
 		catch (AddressException e) {
 			inboxAddress = null;
