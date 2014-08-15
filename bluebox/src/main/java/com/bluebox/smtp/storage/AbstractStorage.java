@@ -36,7 +36,7 @@ public abstract class AbstractStorage implements StorageIf {
 	public abstract String getDBOString(Object dbo, String key, String def);
 	public abstract int getDBOInt(Object dbo, String key, int def);
 	public abstract long getDBOLong(Object dbo, String key, long def);
-	public abstract Date getDBODate(Object dbo, String key);
+	public abstract Date getDBODate(Object dbo, String key, Date def);
 	public abstract InputStream getDBORaw(Object dbo, String key);
 	
 	public BlueboxMessage loadMessage(Object dbo) throws Exception {
@@ -45,7 +45,7 @@ public abstract class AbstractStorage implements StorageIf {
 //		message.setProperty(BlueboxMessage.TO,getDBOString(dbo,BlueboxMessage.TO,"bluebox@bluebox.com"));
 		message.setProperty(BlueboxMessage.FROM,getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com"));
 		message.setProperty(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
-		message.setLongProperty(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED).getTime());
+		message.setLongProperty(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()).getTime());
 		message.setLongProperty(BlueboxMessage.STATE,getDBOLong(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
 		message.setProperty(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
 		message.loadBlueBoxMimeMessage(Utils.loadEML(getDBORaw(dbo,uid)));
@@ -66,7 +66,7 @@ public abstract class AbstractStorage implements StorageIf {
 		message.put(BlueboxMessage.UID,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()));
 		message.put(BlueboxMessage.FROM,new InboxAddress(getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com")).getDisplayName());
 		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
-		message.put(BlueboxMessage.RECEIVED,dateToString(getDBODate(dbo,BlueboxMessage.RECEIVED),locale));
+		message.put(BlueboxMessage.RECEIVED,dateToString(getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()),locale));
 		message.put(BlueboxMessage.STATE,getDBOLong(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
 		message.put(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
 		long size = getDBOLong(dbo,BlueboxMessage.SIZE,0)/1000;
