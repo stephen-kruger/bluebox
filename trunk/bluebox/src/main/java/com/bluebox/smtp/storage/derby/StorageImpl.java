@@ -272,7 +272,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-	public Date getDBODate(Object dbo, String key) {
+	public Date getDBODate(Object dbo, String key, Date def) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
 			return mo.getTimestamp(key);
@@ -280,7 +280,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (SQLException e) {
 			e.printStackTrace();
 		}
-		return null;
+		return def;
 	}
 
 	public InputStream getDBORaw(Object dbo, String key) {

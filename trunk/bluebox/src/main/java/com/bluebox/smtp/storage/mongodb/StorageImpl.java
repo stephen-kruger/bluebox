@@ -152,9 +152,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 
-	public Date getDBODate(Object dbo, String key) {
+	public Date getDBODate(Object dbo, String key, Date def) {
 		BasicDBObject mo = (BasicDBObject)dbo;
-		return new Date(mo.getLong(key));
+		if (mo.containsField(key))
+			return new Date(mo.getLong(key));
+		else
+			return def;
 	}
 
 	public InputStream getDBORaw(Object dbo, String uid) {
