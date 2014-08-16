@@ -73,32 +73,27 @@ public class NaiveSSLSocketFactory extends SSLSocketFactory {
 	@Override
 	public Socket createSocket(String arg0, int arg1) throws IOException,
 			UnknownHostException {
-		log.info("E>>>>>>>>>>>>>>>");
 		return sslSocketFactory.createSocket(arg0, arg1); 
 	}
 
 	@Override
 	public Socket createSocket(InetAddress arg0, int arg1) throws IOException {
-		log.info("D>>>>>>>>>>>>>>>");
 		return sslSocketFactory.createSocket(arg0, arg1); 
 	}
 
 	@Override
 	public Socket createSocket(String arg0, int arg1, InetAddress arg2, int arg3)
 			throws IOException, UnknownHostException {
-		log.info("C>>>>>>>>>>>>>>>");
 		return sslSocketFactory.createSocket(arg0, arg1, arg2, arg3); 
 	}
 
 	@Override
 	public Socket createSocket(InetAddress arg0, int arg1, InetAddress arg2, int arg3) throws IOException {
-		log.info("B>>>>>>>>>>>>>>>");
 		return sslSocketFactory.createSocket(arg0, arg1, arg2, arg3); 
 	}
 
 	@Override
 	public Socket createSocket(Socket s, String host, int port, boolean autoClose) throws IOException {
-		log.info("A>>>>>>>>>>>>>>>");
 		return sslSocketFactory.createSocket(s, host, port, autoClose);
 	}
 

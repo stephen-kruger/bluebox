@@ -47,7 +47,7 @@ public class UtilsTest extends TestCase {
 		assertNotNull("No display name set", ia.getPersonal());
 		assertNotNull("No address set", ia.getAddress());
 
-		//1>>>>/bluebox/rest/json/folder/all_groups_2011_10_25%25XXXUS%25XXXGB
+		// /bluebox/rest/json/folder/all_groups_2011_10_25%25XXXUS%25XXXGB
 		notes = "all_groups_2011_10_25/XXXUS/XXXGB";
 		email = Utils.convertNotesAddress(notes);
 		log.info(email);

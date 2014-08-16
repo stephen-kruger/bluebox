@@ -20,6 +20,7 @@ import org.codehaus.jettison.json.JSONObject;
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
+import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -83,10 +84,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		StorageFactory.clearInstance();
 	}
 
-	public BlueboxMessage store(InboxAddress inbox, String from, Date received, MimeMessage bbmm) throws Exception {
+	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
 		BlueboxMessage message = new BlueboxMessage(UUID.randomUUID().toString());
-		message.setInbox(inbox);
-		message.setBlueBoxMimeMessage(from, received, bbmm);
+		message.setInbox(recipient);
+		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
 		DBCollection coll = db.getCollection(TABLE_NAME);
 		DBObject bson = ( DBObject ) JSON.parse( message.toJSON() );
 
@@ -469,34 +470,40 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public JSONObject getMostActiveInbox() {
 		JSONObject jo = new JSONObject();
 		try {
-			jo.put(BlueboxMessage.INBOX,"");
+			jo.put(Inbox.EMAIL,"");
+			jo.put(BlueboxMessage.RECIPIENT,"");
 			jo.put(BlueboxMessage.COUNT,0);
 		} 
 		catch (JSONException e) {
 			e.printStackTrace();
 		}
 
-		DBObject sum = new BasicDBObject();sum.put("$sum", 1);
+		DBObject sum = new BasicDBObject();
+		sum.put("$sum", 1);
+		
 		DBObject group = new BasicDBObject();
-		group.put("_id", "$"+BlueboxMessage.INBOX);
+		group.put("_id", "$"+BlueboxMessage.RECIPIENT);
 		group.put(BlueboxMessage.COUNT, sum);
+		
 		DBObject all = new BasicDBObject();
 		all.put("$group", group);
+		
 		DBObject sort = new BasicDBObject("$sort", new BasicDBObject(BlueboxMessage.COUNT, -1));
 		List<DBObject> pipeline = Arrays.asList(all, sort);
 		AggregationOutput output = db.getCollection(TABLE_NAME).aggregate(pipeline);
 
 		for (DBObject result : output.results()) {
 			try {
-				jo.put(BlueboxMessage.INBOX,result.get("_id"));
+				InboxAddress ia = new InboxAddress(result.get("_id").toString());
+				jo.put(Inbox.EMAIL,ia.getFullAddress());
+				jo.put(BlueboxMessage.RECIPIENT,ia.getDisplayName());
 				jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
 				break;// only care about first result
 			} 
-			catch (JSONException e) {
+			catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}
-
 		// for later Mongodb use Cursor 
 		//				AggregationOptions aggregationOptions = AggregationOptions.builder()
 		//						.batchSize(100)

@@ -22,7 +22,7 @@ public interface StorageIf {
 
 	public void stop() throws Exception;
 	
-	public BlueboxMessage store(InboxAddress inbox, String from, Date received, MimeMessage bbmm)
+	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm)
 			throws Exception;
 
 	public BlueboxMessage retrieve(String uid)

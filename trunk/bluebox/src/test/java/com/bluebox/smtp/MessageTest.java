@@ -12,7 +12,6 @@ import javax.activation.DataSource;
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
@@ -24,7 +23,6 @@ import org.apache.commons.mail.util.MimeMessageUtils;
 
 import com.bluebox.MimeMessageParser;
 import com.bluebox.Utils;
-import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class MessageTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -102,14 +100,14 @@ public class MessageTest extends TestCase {
 	//		assertEquals("Incorrect charset detected","GB2312",MimeMessageWrapper.getCharset(contentType));
 	//	}
 
-	public void testNoRecipient() throws MessagingException, IOException {
-		InputStream is = new FileInputStream(new File("src/test/resources/test-data/no-recipient.eml"));
-		MimeMessage message =Utils.loadEML(is);
-		is.close();
-
-		InternetAddress add = BlueboxMessage.getRecipient(new InboxAddress("xxx@xxx.com"), message);
-		assertEquals("Should not have any recipient fields",add.getAddress(),"xxx@xxx.com");
-	}
+//	public void testNoRecipient() throws MessagingException, IOException {
+//		InputStream is = new FileInputStream(new File("src/test/resources/test-data/no-recipient.eml"));
+//		MimeMessage message =Utils.loadEML(is);
+//		is.close();
+//
+//		InternetAddress add = BlueboxMessage.getRecipient(new InboxAddress("xxx@xxx.com"), message);
+//		assertEquals("Should not have any recipient fields",add.getAddress(),"xxx@xxx.com");
+//	}
 	
 	public void testEncodedContent() throws Exception {
 		InputStream is = new FileInputStream(new File("src/test/resources/test-data/bodybreaker.eml"));
@@ -146,7 +144,7 @@ public class MessageTest extends TestCase {
 		for (String cid : parser.getCids()) {
 			DataSource ds = parser.getDataSourceForCid(cid);
 			assertNotNull(ds);
-			log.info(ds.getName()+">>>>>>>>>>"+cid);	
+			log.info(ds.getName()+"="+cid);	
 		}
 		//		listCids(mm);
 		//		String html = parser.getHtmlContent();
@@ -154,7 +152,7 @@ public class MessageTest extends TestCase {
 		//		log.info(mm.getClass().getName());
 		//		List<DataSource> attachments = parser.getAttachmentList();
 		//		for (DataSource ds : attachments) {
-		//			log.info(ds.getClass().getName()+">>>>>"+ds.getName()+" "+ds.getContentType());
+		//			log.info(ds.getClass().getName()+"="+ds.getName()+" "+ds.getContentType());
 		//			//			html = convertCidLinks(ds.getName(),html);
 		//		}	
 		//		log.info(parser.findAttachmentByName("cid:ii_hxqkskb21_147462ce25a92ebf"));

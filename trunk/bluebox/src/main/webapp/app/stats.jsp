@@ -62,8 +62,8 @@
 						  		else {
 									document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML="<%= statsResource.getString("no_update") %>";						  			
 						  		}
-						  		if (queryResults.active.<%=BlueboxMessage.INBOX%>) {
-									document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=BlueboxMessage.INBOX%>+'">'+queryResults.active.<%=BlueboxMessage.INBOX%>+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
+						  		if (queryResults.active.<%=Inbox.EMAIL%>) {
+									document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+queryResults.active.<%=Inbox.EMAIL%>+'">'+queryResults.active.<%=BlueboxMessage.RECIPIENT%>+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
 						  		}
 						  		else {
 						  			document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = "<%= statsResource.getString("no_update") %>";

@@ -19,6 +19,7 @@ import java.util.TimerTask;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
+import javax.mail.Address;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -395,11 +396,13 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public void deliver(String from, String recipient, MimeMessage mmessage) throws Exception {
+		from = getFullAddress(from, mmessage.getFrom());
+		recipient = getFullAddress(recipient, mmessage.getAllRecipients());
 		log.info("Delivering mail for "+recipient+" from "+from);
-
-		InboxAddress inbox = new InboxAddress(BlueboxMessage.getRecipient(new InboxAddress(recipient), mmessage).toString());
-		BlueboxMessage message = StorageFactory.getInstance().store(inbox, 
+		//		InboxAddress inbox = new InboxAddress(BlueboxMessage.getRecipient(new InboxAddress(recipient), mmessage).toString());
+		BlueboxMessage message = StorageFactory.getInstance().store( 
 				from,
+				new InboxAddress(recipient),
 				new Date(),
 				mmessage);
 		// ensure the content is indexed
@@ -411,6 +414,23 @@ public class Inbox implements SimpleMessageListener {
 			t.printStackTrace();
 		}
 		updateStats(message, recipient, false);
+	}
+
+	/*
+	 * When mail is delivered, the personal name is not included, so parse the mail to fill it back in
+	 */
+	private String getFullAddress(String from,Address[] addresses) {
+		try {
+			for (int i = 0; i < addresses.length;i++) {
+				if (((InternetAddress)addresses[i]).getAddress().equals(from)) {
+					return addresses[i].toString();
+				}
+			}
+			return from;
+		}
+		catch (Throwable t) {
+			return from;
+		}
 	}
 
 	public void updateStats(BlueboxMessage message, String recipient, boolean force) throws AddressException {
@@ -665,7 +685,13 @@ public class Inbox implements SimpleMessageListener {
 							try {
 								MimeMessage mm = Utils.loadEML(new BufferedInputStream(new FileInputStream(files[i])));
 								JSONObject jo = new JSONObject(Utils.convertStreamToString(new BufferedInputStream(new FileInputStream(files[i].getCanonicalPath().substring(0, files[i].getCanonicalPath().length()-4)+".json"))));
-								BlueboxMessage message = StorageFactory.getInstance().store(new InboxAddress(jo.getString(BlueboxMessage.INBOX)), jo.getJSONArray(BlueboxMessage.FROM).getString(0), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
+								BlueboxMessage message;
+								// backwards compat workaround for backups prior to introduction of RECIPIENT field
+								// default to INBOX if doesn't exist
+								if (jo.has(BlueboxMessage.RECIPIENT))
+									message = StorageFactory.getInstance().store(jo.getString(BlueboxMessage.FROM), new InboxAddress(jo.getString(BlueboxMessage.RECIPIENT)), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
+								else
+									message = StorageFactory.getInstance().store(jo.getString(BlueboxMessage.FROM), new InboxAddress(jo.getString(BlueboxMessage.INBOX)), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
 								SearchIndexer.getInstance().indexMail(message);
 							}
 							catch (Throwable t) {

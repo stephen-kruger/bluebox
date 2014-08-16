@@ -21,11 +21,9 @@ public class InboxAddress extends Object {
 		this(req.getParameter(Inbox.EMAIL));
 	}
 
-
-
 	@Override
 	public String toString() {
-		return getAddress();
+		return getFullAddress();
 	}
 
 	public String getAddress() {

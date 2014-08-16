@@ -31,23 +31,23 @@ public class InboxTest extends TestCase {
 		inbox.deleteAll();
 		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(inbox));
 		smtpServer.start();
-//		int max = 10;
-//		do {
-//			// give thread time to start up
-//			Thread.sleep(500);
-//		} while ((max-- > 0)&&(!smtpServer.isRunning()));
+		//		int max = 10;
+		//		do {
+		//			// give thread time to start up
+		//			Thread.sleep(500);
+		//		} while ((max-- > 0)&&(!smtpServer.isRunning()));
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		smtpServer.stop();
-//		int max = 10;
-//		do {
-//			// give thread time to close down
-//			Thread.sleep(500);
-//		}
-//		while ((max-- > 0)&&(smtpServer.isRunning()));
+		//		int max = 10;
+		//		do {
+		//			// give thread time to close down
+		//			Thread.sleep(500);
+		//		}
+		//		while ((max-- > 0)&&(smtpServer.isRunning()));
 		inbox.deleteAll();
 		inbox.stop();
 	}
@@ -106,14 +106,16 @@ public class InboxTest extends TestCase {
 		}
 		inbox.updateStats(null, "", true);
 		JSONObject jo = inbox.getStatsActiveInbox();
-		assertEquals("Incorrectly reported most active inbox",new InboxAddress(email1).getAddress(),jo.getString(BlueboxMessage.INBOX));
+		assertEquals("Incorrectly reported most active inbox",new InboxAddress(email1).getFullAddress(),jo.getString(Inbox.EMAIL));
+
+		assertEquals("Incorrectly reported most active recipient",new InboxAddress(email1).getDisplayName(),jo.getString(BlueboxMessage.RECIPIENT));
 		assertEquals("Incorrectly reported most active inbox count",10,jo.getInt(BlueboxMessage.COUNT));
-		
+
 		jo = inbox.getStatsActiveSender();
 		assertEquals("Incorrectly reported most active sender",new InboxAddress(email1).getAddress(),new InboxAddress(jo.getString(BlueboxMessage.FROM)).getAddress());
 		assertEquals("Incorrectly reported most active sender count",10,jo.getInt(BlueboxMessage.COUNT));
 	}
-	
+
 	public void testBackup() throws Exception {
 		String email1 = "aaading@kkddf.com";
 		String email2 = "aaading@kkddf.com";
