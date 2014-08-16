@@ -24,6 +24,7 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
+import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -125,7 +126,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					" ("+
 					BlueboxMessage.UID+" VARCHAR(36), "+
 					BlueboxMessage.INBOX+" VARCHAR(255), "+
-					//					BlueboxMessage.TO+" VARCHAR(255), "+
+					BlueboxMessage.RECIPIENT+" VARCHAR(255), "+
 					BlueboxMessage.FROM+" VARCHAR(255), "+
 					BlueboxMessage.SUBJECT+" VARCHAR(255), "+
 					BlueboxMessage.RECEIVED+" TIMESTAMP, "+
@@ -173,32 +174,33 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		connection.close();
 	}
 	
-	private String add(String id, InboxAddress inbox, String from, String subject, Date date, State state, long size, InputStream blob) throws Exception {
+	private String add(String id, String from, InboxAddress recipient, String subject, Date date, State state, long size, InputStream blob) throws Exception {
 		Connection connection = getConnection();
-		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-		ps.setString(1, id);
-		ps.setString(2, inbox.getAddress());
-		ps.setString(3, from);
-		ps.setString(4, subject);
-		ps.setTimestamp(5, new Timestamp(date.getTime()));
-		ps.setInt(6, state.ordinal());
-		ps.setLong(7, size);
-		ps.setBinaryStream(8, blob);
+		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		ps.setString(1, id); // UID
+		ps.setString(2, recipient.getAddress());// INBOX
+		ps.setString(3, recipient.getFullAddress()); // RECIPIENT
+		ps.setString(4, from); // FROM
+		ps.setString(5, subject); // SUBJECT
+		ps.setTimestamp(6, new Timestamp(date.getTime())); // RECEIVED
+		ps.setInt(7, state.ordinal()); // STATE
+		ps.setLong(8, size); // SIZE
+		ps.setBinaryStream(9, blob); // MIMEMESSAGE
 		ps.execute();
 		connection.commit();
 		connection.close();
 
-		log.fine("Added mail entry "+inbox.getFullAddress());
+		log.fine("Added mail entry "+recipient.getFullAddress());
 		return id;
 	}
 
-	public BlueboxMessage store(InboxAddress inbox, String from, Date received, MimeMessage bbmm) throws Exception {
+	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
 		String uid = UUID.randomUUID().toString();
-		BlueboxMessage message = new BlueboxMessage(uid,inbox);
-		message.setBlueBoxMimeMessage(from, received, bbmm);
+		BlueboxMessage message = new BlueboxMessage(uid,recipient);
+		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
 		add(uid, 
-				inbox, 
-				BlueboxMessage.getFrom(from, bbmm),
+				from,
+				recipient, 
 				bbmm.getSubject(),
 				received, 
 				State.NORMAL, 
@@ -307,18 +309,20 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void deleteAll() throws Exception {
-		log.fine("Deleting all inboxes");
-		Connection connection = getConnection();
-		Statement s;
-		s = connection.createStatement();
-		s.execute("delete from "+INBOX_TABLE);
-		s.close();
-
-		log.fine("Deleting all properties");
-		s = connection.createStatement();
-		s.execute("delete from "+PROPS_TABLE);
-		s.close();
-		connection.close();
+//		log.fine("Deleting all inboxes");
+//		Connection connection = getConnection();
+//		Statement s;
+//		s = connection.createStatement();
+//		s.execute("delete from "+INBOX_TABLE);
+//		s.close();
+//
+//		log.fine("Deleting all properties");
+//		s = connection.createStatement();
+//		s.execute("delete from "+PROPS_TABLE);
+//		s.close();
+//		connection.close();
+		dropTables();
+		setupTables();
 	}
 
 	@Override
@@ -581,7 +585,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		JSONObject jo = new JSONObject();
 		try {
 			jo.put(BlueboxMessage.COUNT, 0);
-			jo.put(BlueboxMessage.INBOX, "");
+			jo.put(Inbox.EMAIL,"");
+			jo.put(BlueboxMessage.RECIPIENT,"");
 
 			Connection connection = null;
 			try {
@@ -589,13 +594,15 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				try {
 					Statement s = connection.createStatement();
 					PreparedStatement ps;
-					ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.INBOX+", COUNT(*) FROM "+INBOX_TABLE+" GROUP BY "+BlueboxMessage.INBOX+" ORDER BY COUNT(*) DESC");
+					ps = connection.prepareStatement("SELECT DISTINCT "+BlueboxMessage.RECIPIENT+","+BlueboxMessage.RECIPIENT+", COUNT(*)  FROM "+INBOX_TABLE+" GROUP BY "+BlueboxMessage.RECIPIENT+","+BlueboxMessage.RECIPIENT+" ORDER BY COUNT(*) DESC");
 					ps.execute();
 					ResultSet result = ps.getResultSet();
 
 					while (result.next()) {
-						jo.put(BlueboxMessage.INBOX,result.getString(1));
-						jo.put(BlueboxMessage.COUNT,result.getLong(2));
+						InboxAddress ia = new InboxAddress(result.getString(2));
+						jo.put(Inbox.EMAIL,ia.getFullAddress());
+						jo.put(BlueboxMessage.RECIPIENT,ia.getDisplayName());
+						jo.put(BlueboxMessage.COUNT,result.getLong(3));
 						break; // list is already ordered, so first one is biggest
 					}
 					ps.close();

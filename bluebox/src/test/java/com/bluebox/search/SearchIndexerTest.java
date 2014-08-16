@@ -135,7 +135,7 @@ public class SearchIndexerTest extends TestCase {
 		searchString = "gigabytes";
 		SearchIndexer.getInstance().searchInboxes(searchString, sw, 0, 50, SearchIndexer.SearchFields.SUBJECT, SearchIndexer.SearchFields.RECEIVED, true);
 		ja = new JSONArray(sw.toString());
-		log.info(searchString+"<<<<<<<<<>>>>>>>>>>"+ja.toString(3));
+		log.info(searchString+"="+ja.toString(3));
 		assertTrue("Missing search results",ja.length()>0);
 		assertEquals("Subject for gigabytes",ja.getJSONObject(0).get(BlueboxMessage.SUBJECT));
 
@@ -144,7 +144,7 @@ public class SearchIndexerTest extends TestCase {
 		searchString = "Subject in";
 		SearchIndexer.getInstance().searchInboxes(searchString, sw, 0, 50, SearchIndexer.SearchFields.SUBJECT, SearchIndexer.SearchFields.RECEIVED, true);
 		ja = new JSONArray(sw.toString());
-		log.info(searchString+"<<<<<<<<<>>>>>>>>>>"+ja.toString(3));
+		log.info(searchString+"="+ja.toString(3));
 		assertTrue("Missing search results",ja.length()>0);
 		assertEquals("Subject in action",ja.getJSONObject(0).get(BlueboxMessage.SUBJECT));
 

@@ -42,8 +42,8 @@ public abstract class AbstractStorage implements StorageIf {
 	public BlueboxMessage loadMessage(Object dbo) throws Exception {
 		String uid = getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString());
 		BlueboxMessage message = new BlueboxMessage(uid);
-//		message.setProperty(BlueboxMessage.TO,getDBOString(dbo,BlueboxMessage.TO,"bluebox@bluebox.com"));
 		message.setProperty(BlueboxMessage.FROM,getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com"));
+		message.setProperty(BlueboxMessage.RECIPIENT,getDBOString(dbo,BlueboxMessage.RECIPIENT,""));
 		message.setProperty(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
 		message.setLongProperty(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()).getTime());
 		message.setLongProperty(BlueboxMessage.STATE,getDBOLong(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
