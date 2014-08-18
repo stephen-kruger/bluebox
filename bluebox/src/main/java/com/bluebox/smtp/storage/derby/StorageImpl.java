@@ -13,10 +13,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-import java.util.UUID;
 import java.util.logging.Logger;
-
-import javax.mail.internet.MimeMessage;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -124,14 +121,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			s.executeUpdate("CREATE TABLE "+INBOX_TABLE+
 					" ("+
-					BlueboxMessage.UID+" VARCHAR(36), "+
-					BlueboxMessage.INBOX+" VARCHAR(255), "+
-					BlueboxMessage.RECIPIENT+" VARCHAR(255), "+
-					BlueboxMessage.FROM+" VARCHAR(255), "+
-					BlueboxMessage.SUBJECT+" VARCHAR(255), "+
-					BlueboxMessage.RECEIVED+" TIMESTAMP, "+
-					BlueboxMessage.STATE+" INTEGER, "+
-					BlueboxMessage.SIZE+" BIGINT, "+
+					StorageIf.Props.Uid.name()+" VARCHAR(36), "+
+					StorageIf.Props.Inbox.name()+" VARCHAR(255), "+
+					StorageIf.Props.Recipient.name()+" VARCHAR(255), "+
+					StorageIf.Props.Sender.name()+" VARCHAR(255), "+
+					StorageIf.Props.Subject.name()+" VARCHAR(255), "+
+					StorageIf.Props.Received.name()+" TIMESTAMP, "+
+					StorageIf.Props.State.name()+" INTEGER, "+
+					StorageIf.Props.Size.name()+" BIGINT, "+
 					RAW+" blob(16M))");
 		}
 		catch (Throwable t) {
@@ -211,21 +208,21 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 //		return id;
 //	}
 
-	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
-		String uid = UUID.randomUUID().toString();
-		BlueboxMessage message = new BlueboxMessage(uid,recipient);
-		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
-//		add(uid, 
-//				from,
-//				recipient, 
-//				bbmm.getSubject(),
-//				received, 
-//				State.NORMAL, 
-//				Long.parseLong(message.getProperty(BlueboxMessage.SIZE)),
-//				Utils.streamMimeMessage(bbmm));
-		store(message.toJSON(),Utils.streamMimeMessage(bbmm));
-		return message;
-	}
+//	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
+//		String uid = UUID.randomUUID().toString();
+//		BlueboxMessage message = new BlueboxMessage(uid,recipient);
+//		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
+////		add(uid, 
+////				from,
+////				recipient, 
+////				bbmm.getSubject(),
+////				received, 
+////				State.NORMAL, 
+////				Long.parseLong(message.getProperty(BlueboxMessage.SIZE)),
+////				Utils.streamMimeMessage(bbmm));
+//		store(message.toJSON(),Utils.streamMimeMessage(bbmm));
+//		return message;
+//	}
 
 	public void delete(String id) throws Exception {
 		Connection connection = getConnection();

@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
@@ -151,7 +152,7 @@ public class BlueboxMessage {
 //		return new InternetAddress(inbox.getFullAddress());
 //	}
 
-	private JSONArray toJSONArray(Address[] r) {
+	public static JSONArray toJSONArray(Address[] r) {
 		JSONArray ja = new JSONArray();
 		try {
 			if (r!=null)
@@ -258,19 +259,13 @@ public class BlueboxMessage {
 			if (ja.length()>0)
 				json.put(ATTACHMENT, ja);
 
-			json.put(UID,properties.get(UID));
-//			json.put(TO,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));
-//			json.put(CC,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
-			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));				
-			json.put(SUBJECT,getBlueBoxMimeMessage().getSubject());
-			json.put(INBOX,getInbox().getAddress());
-			json.put(RECIPIENT,properties.get(RECIPIENT));
-			if (!properties.has(RECIPIENT))
-				properties.put(RECIPIENT, new Date().getTime());
-			json.put(RECEIVED,properties.get(RECEIVED));
-			json.put(STATE,properties.get(STATE));
-			json.put(SIZE,properties.get(SIZE));
-
+			@SuppressWarnings("unchecked")
+			Iterator<String> keys = properties.keys();
+			while (keys.hasNext()) {
+				String key = keys.next();
+				json.put(key, properties.get(key));
+			}
+			
 			return json;
 
 		}

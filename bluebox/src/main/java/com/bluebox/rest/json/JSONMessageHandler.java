@@ -10,6 +10,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
+import javax.mail.Message.RecipientType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -40,7 +41,11 @@ public class JSONMessageHandler extends AbstractHandler {
 			String uid = extractFragment(req.getRequestURI(),JSON_ROOT,0);
 			BlueboxMessage message = inbox.retrieve(uid);
 			JSONObject json = message.toJSON(req.getLocale());
+			
 			json.put(BlueboxMessage.RECEIVED, AbstractStorage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
+			// add in the TO, CC
+			json.put(BlueboxMessage.TO,BlueboxMessage.toJSONArray(message.getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));	
+			json.put(BlueboxMessage.CC,BlueboxMessage.toJSONArray(message.getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
 			json = securityScan(req,message,json);
 			out.write(json.toString());
 			out.flush();

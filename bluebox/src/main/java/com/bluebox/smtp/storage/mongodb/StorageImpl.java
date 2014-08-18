@@ -7,10 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-import java.util.UUID;
 import java.util.logging.Logger;
-
-import javax.mail.internet.MimeMessage;
 
 import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
@@ -85,24 +82,31 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	public void store(JSONObject props, InputStream blob) throws Exception {
+		DBCollection coll = db.getCollection(TABLE_NAME);
+		DBObject bson = ( DBObject ) JSON.parse( props.toString() );
+		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
+		GridFSInputFile gfsFile = gfsRaw.createFile(blob);
+		gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
+		gfsFile.save();
+		coll.insert(bson);
 	}
 	
-	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
-		BlueboxMessage message = new BlueboxMessage(UUID.randomUUID().toString());
-		message.setInbox(recipient);
-		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
-		DBCollection coll = db.getCollection(TABLE_NAME);
-		DBObject bson = ( DBObject ) JSON.parse( message.toJSON().toString() );
-
-		//		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
-		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
-		GridFSInputFile gfsFile = gfsRaw.createFile(Utils.streamMimeMessage(bbmm));
-		gfsFile.setFilename(message.getIdentifier());
-		gfsFile.save();
-		//		bson.put(BlueboxMessage.RAW, new BasicBSONDecoder().readObject(Utils.streamMimeMessage(bbmm)));
-		coll.insert(bson);
-		return message;
-	}
+//	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
+//		BlueboxMessage message = new BlueboxMessage(UUID.randomUUID().toString());
+//		message.setInbox(recipient);
+//		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
+//		DBCollection coll = db.getCollection(TABLE_NAME);
+//		DBObject bson = ( DBObject ) JSON.parse( message.toJSON().toString() );
+//
+//		//		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
+//		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
+//		GridFSInputFile gfsFile = gfsRaw.createFile(Utils.streamMimeMessage(bbmm));
+//		gfsFile.setFilename(message.getIdentifier());
+//		gfsFile.save();
+//		//		bson.put(BlueboxMessage.RAW, new BasicBSONDecoder().readObject(Utils.streamMimeMessage(bbmm)));
+//		coll.insert(bson);
+//		return message;
+//	}
 
 	public synchronized BlueboxMessage retrieve(String uid) throws Exception {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
@@ -116,12 +120,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		DBObject mo = (DBObject)dbo;
 		if (mo.containsField(key)) {
 			Object o = mo.get(key);
+			// if it's a JSONArray, return a string rep of the entire array
 			if (o instanceof BasicDBList) {
 				BasicDBList list = (BasicDBList)mo.get(key);
-				if (list.size()>0)
-					return list.get(0).toString();
-				else
-					return def;
+				return list.toString();
 			}
 			return o.toString();
 		}
@@ -166,7 +168,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public InputStream getDBORaw(Object dbo, String uid) {
 		try {
-			//return new ByteArrayInputStream( mo.get(key).toString().getBytes("UTF-8") );
 			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
 			GridFSDBFile imageForOutput = gfsRaw.findOne(uid);
 			return imageForOutput.getInputStream();
@@ -288,7 +289,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		int sortBit;
 		if (ascending) sortBit = 1; else sortBit = -1;
 		if (count<0)
-			count = 500;//Integer.MAX_VALUE; else we get "com.mongodb.MongoException: too much data for sort() with no index.  add an index or specify a smaller limit"
+			count = 500;
 		return db.getCollection(TABLE_NAME).find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
 	}
 
@@ -498,6 +499,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		for (DBObject result : output.results()) {
 			try {
 				InboxAddress ia = new InboxAddress(result.get("_id").toString());
+				
 				jo.put(Inbox.EMAIL,ia.getFullAddress());
 				jo.put(BlueboxMessage.RECIPIENT,ia.getDisplayName());
 				jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
