@@ -379,7 +379,7 @@
 				var tabs = registry.byId("mail-tab");
 				aspect.after(tabs, "selectChild", function (event) {
 					if (tabs.selectedChildWidget.id=="raw-tab") {
-				     	console.log("You selected ", tabs.selectedChildWidget.id);
+				     	console.log("Loading raw message from "+rawurl);
 				     	tabs.selectedChildWidget.setValue("<%= mailDetailsResource.getString("downloading") %>");
 				     	var xhrArgs = {
 								url: rawurl,
@@ -389,6 +389,7 @@
 									tabs.selectedChildWidget.setValue(data);
 								},
 								error: function (error) {
+									console.log("Error loading raw message :"+error);
 									tabs.selectedChildWidget.setValue(error);
 								}
 						};

@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import javax.mail.internet.MimeMessage;
+
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
@@ -23,6 +25,13 @@ public abstract class AbstractStorage implements StorageIf {
 		int index = 0;
 		writer.write("[");
 		for (JSONObject message : mail) {
+			// convert the date and size to something pretty
+			message.put(BlueboxMessage.RECEIVED,dateToString(new Date(message.getLong(BlueboxMessage.RECEIVED)),locale));
+			long size = message.getLong(BlueboxMessage.SIZE)/1000;
+			if (size==0)
+				size = 1;
+			message.put(BlueboxMessage.SIZE,size+"K");
+			
 			writer.write(message.toString(3));
 			if ((index++)<mail.size()-1) {
 				writer.write(",");
@@ -41,19 +50,6 @@ public abstract class AbstractStorage implements StorageIf {
 	public abstract InputStream getDBORaw(Object dbo, String key);
 	
 	public BlueboxMessage loadMessage(Object dbo) throws Exception {
-//		JSONObject props = new JSONObject();
-//		props.put(BlueboxMessage.UID, getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()));
-//		props.put(BlueboxMessage.FROM,getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com"));
-//		props.put(BlueboxMessage.RECIPIENT,getDBOString(dbo,BlueboxMessage.RECIPIENT,""));
-//		props.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
-//		props.put(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()).getTime());
-//		props.put(BlueboxMessage.STATE,getDBOLong(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
-//		props.put(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
-//		
-//		long size = getDBOLong(dbo,BlueboxMessage.SIZE,0)/1000;
-//		if (size==0)
-//			size = 1;
-//		props.put(BlueboxMessage.SIZE,size);
 		return new BlueboxMessage(loadMessageJSON(dbo,Locale.getDefault()),
 				Utils.loadEML(getDBORaw(dbo,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()))));
 	}
@@ -69,13 +65,9 @@ public abstract class AbstractStorage implements StorageIf {
 		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
 		message.put(BlueboxMessage.RECIPIENT,getDBOString(dbo,BlueboxMessage.RECIPIENT,""));
 		message.put(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()).getTime());
-//		message.put(BlueboxMessage.RECEIVED,dateToString(getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()),locale));
 		message.put(BlueboxMessage.STATE,getDBOLong(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
 		message.put(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
-		long size = getDBOLong(dbo,BlueboxMessage.SIZE,0)/1000;
-		if (size==0)
-			size = 1;
-		message.put(BlueboxMessage.SIZE,size+"K");
+		message.put(BlueboxMessage.SIZE,getDBOLong(dbo,BlueboxMessage.SIZE,0));
 		return message;
 	}
 	
@@ -83,4 +75,11 @@ public abstract class AbstractStorage implements StorageIf {
 		return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.SHORT, SimpleDateFormat.SHORT, locale).format(date);
 	}
 
+	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
+		String uid = UUID.randomUUID().toString();
+		BlueboxMessage message = new BlueboxMessage(uid,recipient);
+		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
+		store(message.toJSON(),Utils.streamMimeMessage(bbmm));
+		return message;
+	}
 }

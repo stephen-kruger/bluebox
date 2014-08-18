@@ -639,15 +639,23 @@ public class Inbox implements SimpleMessageListener {
 						mail = inbox.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
 						if (mail.size()>0) {
 							log.info("Backing up from "+start+" to "+(start+count));
+							File emlFile,jsonFile;
 							for (BlueboxMessage msg : mail) {
 								try {
-									OutputStream fos = new BufferedOutputStream(new FileOutputStream(new File(dir,msg.getIdentifier()+".eml")));
-									Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()),fos);
-									fos.close();
+									emlFile = new File(dir,msg.getIdentifier()+".eml");
+									jsonFile = new File(dir.getCanonicalFile(),msg.getIdentifier()+".json");
+									if (!jsonFile.exists()&&emlFile.exists()) {
+										OutputStream fos = new BufferedOutputStream(new FileOutputStream(emlFile));
+										Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()),fos);
+										fos.close();
 
-									fos = new BufferedOutputStream(new FileOutputStream(new File(dir.getCanonicalFile(),msg.getIdentifier()+".json")));
-									fos.write(msg.toJSON().toString().getBytes());
-									fos.close();
+										fos = new BufferedOutputStream(new FileOutputStream(jsonFile));
+										fos.write(msg.toJSON().toString().getBytes());
+										fos.close();
+									}
+									else {
+										log.info("Skipping backup of "+msg.getIdentifier());
+									}
 								}
 								catch (Throwable t) {
 									log.warning(t.getMessage());
@@ -685,16 +693,35 @@ public class Inbox implements SimpleMessageListener {
 							try {
 								MimeMessage mm = Utils.loadEML(new BufferedInputStream(new FileInputStream(files[i])));
 								JSONObject jo = new JSONObject(Utils.convertStreamToString(new BufferedInputStream(new FileInputStream(files[i].getCanonicalPath().substring(0, files[i].getCanonicalPath().length()-4)+".json"))));
-								BlueboxMessage message;
 								// backwards compat workaround for backups prior to introduction of RECIPIENT field
+								if (!jo.has(BlueboxMessage.RECIPIENT)) {
+									jo.put(BlueboxMessage.RECIPIENT,jo.get(BlueboxMessage.INBOX));
+								}
+								else {
+									// if it's there, but is a JSONarray, use value of inbox instead
+									if (jo.get(BlueboxMessage.RECIPIENT) instanceof JSONArray) {
+										// try get actual full name version from this array
+										JSONArray ja = jo.getJSONArray(BlueboxMessage.RECIPIENT);
+										jo.put(BlueboxMessage.RECIPIENT,jo.get(BlueboxMessage.INBOX));
+										for (int j = 0; j < ja.length(); j++) {
+											if (ja.getString(j).indexOf(jo.getString(BlueboxMessage.INBOX))>=0) {
+												jo.put(BlueboxMessage.RECIPIENT,ja.getString(j));
+												break;
+											}
+										}
+									}
+								}
+
 								// default to INBOX if doesn't exist
-								if ((jo.has(BlueboxMessage.RECIPIENT))&&(!(jo.get(BlueboxMessage.RECIPIENT) instanceof JSONArray)))
-									message = StorageFactory.getInstance().store(jo.getString(BlueboxMessage.FROM), new InboxAddress(jo.getString(BlueboxMessage.RECIPIENT)), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
-								else
-									message = StorageFactory.getInstance().store(jo.getString(BlueboxMessage.FROM), new InboxAddress(jo.getString(BlueboxMessage.INBOX)), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
-								SearchIndexer.getInstance().indexMail(message);
+								//								if ((jo.has(BlueboxMessage.RECIPIENT))&&(!(jo.get(BlueboxMessage.RECIPIENT) instanceof JSONArray)))
+								//									message = StorageFactory.getInstance().store(jo.getString(BlueboxMessage.FROM), new InboxAddress(jo.getString(BlueboxMessage.RECIPIENT)), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
+								//								else
+								//									message = StorageFactory.getInstance().store(jo.getString(BlueboxMessage.FROM), new InboxAddress(jo.getString(BlueboxMessage.INBOX)), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
+								StorageFactory.getInstance().store(jo, new BufferedInputStream(new FileInputStream(files[i])));
+								SearchIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
 							}
 							catch (Throwable t) {
+								t.printStackTrace();
 								log.warning(t.getMessage());
 							}
 						}
