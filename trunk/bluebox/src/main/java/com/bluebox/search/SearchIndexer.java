@@ -73,7 +73,7 @@ public class SearchIndexer {
 		config = new IndexWriterConfig(version, analyzer);
 		indexWriter = new IndexWriter(index, config);
 	}
-	
+
 	public void stop() {
 		try {
 			indexWriter.close();
@@ -205,7 +205,6 @@ public class SearchIndexer {
 
 
 	public void indexMail(BlueboxMessage message) throws IOException, JSONException, Exception {
-		//		JSONObject json = new JSONObject(message.toJSON(false));
 		addDoc(message.getIdentifier(),
 				message.getInbox().getFullAddress(),
 				Utils.decodeQuotedPrintable(message.getFrom().getString(0)),
@@ -215,6 +214,10 @@ public class SearchIndexer {
 				getRecipients(message),
 				message.getSize(),
 				message.getReceived().getTime());
+	}
+
+	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
+		addDoc(uid,inbox,from,subject,text,html,recipients,size,received);
 	}
 
 	/* Find which one of the potential recipeints of this mail matches the specified inbox

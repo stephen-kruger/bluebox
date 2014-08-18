@@ -24,6 +24,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.codehaus.jettison.json.JSONArray;
@@ -689,10 +690,10 @@ public class Inbox implements SimpleMessageListener {
 					File[] files = dir.listFiles();
 					for (int i = 0; i < files.length;i++) {
 						setProgress(i*100/files.length);
+						log.info("Progress : "+(i*100/files.length));
 						if (files[i].getName().endsWith("eml")) {
 							try {
-								MimeMessage mm = Utils.loadEML(new BufferedInputStream(new FileInputStream(files[i])));
-								JSONObject jo = new JSONObject(Utils.convertStreamToString(new BufferedInputStream(new FileInputStream(files[i].getCanonicalPath().substring(0, files[i].getCanonicalPath().length()-4)+".json"))));
+								JSONObject jo = new JSONObject(FileUtils.readFileToString(new File(files[i].getCanonicalPath().substring(0, files[i].getCanonicalPath().length()-4)+".json")));
 								// backwards compat workaround for backups prior to introduction of RECIPIENT field
 								if (!jo.has(BlueboxMessage.RECIPIENT)) {
 									jo.put(BlueboxMessage.RECIPIENT,jo.get(BlueboxMessage.INBOX));
@@ -712,12 +713,11 @@ public class Inbox implements SimpleMessageListener {
 									}
 								}
 
-								// default to INBOX if doesn't exist
-								//								if ((jo.has(BlueboxMessage.RECIPIENT))&&(!(jo.get(BlueboxMessage.RECIPIENT) instanceof JSONArray)))
-								//									message = StorageFactory.getInstance().store(jo.getString(BlueboxMessage.FROM), new InboxAddress(jo.getString(BlueboxMessage.RECIPIENT)), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
-								//								else
-								//									message = StorageFactory.getInstance().store(jo.getString(BlueboxMessage.FROM), new InboxAddress(jo.getString(BlueboxMessage.INBOX)), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
-								StorageFactory.getInstance().store(jo, new BufferedInputStream(new FileInputStream(files[i])));
+								InputStream ms = new BufferedInputStream(new FileInputStream(files[i]));
+								ms.mark(Integer.MAX_VALUE);
+								StorageFactory.getInstance().store(jo, ms);
+								ms.reset();
+								MimeMessage mm = Utils.loadEML(ms);
 								SearchIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
 							}
 							catch (Throwable t) {

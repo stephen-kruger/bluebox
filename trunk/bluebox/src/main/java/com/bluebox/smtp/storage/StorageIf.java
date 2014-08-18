@@ -27,6 +27,9 @@ public interface StorageIf {
 	
 	public enum Props {Uid,Inbox,Recipient,Sender,Subject,Received,State,Size};
 	
+	/*
+	 * Implementations must ensure all the fields in the Props object are persisted.
+	 */
 	public void store(JSONObject props, InputStream blob) throws Exception;
 
 	public BlueboxMessage retrieve(String uid)
