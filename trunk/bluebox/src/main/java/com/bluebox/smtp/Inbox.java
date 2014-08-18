@@ -433,10 +433,10 @@ public class Inbox implements SimpleMessageListener {
 		}
 	}
 
-	public void updateStats(BlueboxMessage message, String recipient, boolean force) throws AddressException {
+	public void updateStats(BlueboxMessage message, String recipient, boolean force) throws AddressException, JSONException {
 		incrementGlobalCount();
 		if (message!=null)
-			updateStatsRecent(message.getProperty(BlueboxMessage.INBOX),message.getProperty(BlueboxMessage.FROM),message.getProperty(BlueboxMessage.SUBJECT),message.getProperty(BlueboxMessage.UID));	
+			updateStatsRecent(message.getInbox().getAddress(),message.getFrom().getString(0),message.getSubject(),message.getIdentifier());	
 	}
 
 	public void clearErrors() throws Exception {
@@ -540,10 +540,10 @@ public class Inbox implements SimpleMessageListener {
 		return StorageFactory.getInstance().getMostActiveSender();
 	}
 
-	private JSONObject updateStatsRecent(String to, String from, String subject, String uid) {
+	private JSONObject updateStatsRecent(String inbox, String from, String subject, String uid) {
 		try {
 			recentStats.put(BlueboxMessage.SUBJECT, subject);
-			recentStats.put(BlueboxMessage.INBOX, to);
+			recentStats.put(BlueboxMessage.INBOX, inbox);
 			recentStats.put(BlueboxMessage.FROM, from);
 			recentStats.put(BlueboxMessage.UID, uid);
 		} 
@@ -646,7 +646,7 @@ public class Inbox implements SimpleMessageListener {
 									fos.close();
 
 									fos = new BufferedOutputStream(new FileOutputStream(new File(dir.getCanonicalFile(),msg.getIdentifier()+".json")));
-									fos.write(msg.toJSON().getBytes());
+									fos.write(msg.toJSON().toString().getBytes());
 									fos.close();
 								}
 								catch (Throwable t) {
@@ -688,7 +688,7 @@ public class Inbox implements SimpleMessageListener {
 								BlueboxMessage message;
 								// backwards compat workaround for backups prior to introduction of RECIPIENT field
 								// default to INBOX if doesn't exist
-								if (jo.has(BlueboxMessage.RECIPIENT))
+								if ((jo.has(BlueboxMessage.RECIPIENT))&&(!(jo.get(BlueboxMessage.RECIPIENT) instanceof JSONArray)))
 									message = StorageFactory.getInstance().store(jo.getString(BlueboxMessage.FROM), new InboxAddress(jo.getString(BlueboxMessage.RECIPIENT)), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);
 								else
 									message = StorageFactory.getInstance().store(jo.getString(BlueboxMessage.FROM), new InboxAddress(jo.getString(BlueboxMessage.INBOX)), new Date(jo.getLong(BlueboxMessage.RECEIVED)), mm);

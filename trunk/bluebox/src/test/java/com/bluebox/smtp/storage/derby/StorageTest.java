@@ -42,8 +42,8 @@ public class StorageTest extends TestCase {
 		List<BlueboxMessage> messages;
 		messages = si.listMail(message.getInbox(), State.NORMAL, 0, 10, BlueboxMessage.RECEIVED, true);
 		assertEquals("Message was missing",1,messages.size());
-		assertEquals("Message was missing subject",message.getProperty(BlueboxMessage.SUBJECT),messages.get(0).getProperty(BlueboxMessage.SUBJECT));
-		assertEquals("Message reported incorrect sender",message.getProperty(BlueboxMessage.FROM),messages.get(0).getProperty(BlueboxMessage.FROM));
+		assertEquals("Message was missing subject",message.getSubject(),messages.get(0).getSubject());
+		assertEquals("Message reported incorrect sender",message.getFrom(),messages.get(0).getFrom());
 		
 		messages = si.listMail(message.getInbox(), State.ANY, 0, 10, BlueboxMessage.RECEIVED, true);
 		assertEquals("Message was missing",1,messages.size());

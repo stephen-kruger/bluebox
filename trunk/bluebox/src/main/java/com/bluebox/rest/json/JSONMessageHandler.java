@@ -39,7 +39,7 @@ public class JSONMessageHandler extends AbstractHandler {
 		try {
 			String uid = extractFragment(req.getRequestURI(),JSON_ROOT,0);
 			BlueboxMessage message = inbox.retrieve(uid);
-			JSONObject json = new JSONObject(message.toJSON(req.getLocale()));
+			JSONObject json = message.toJSON(req.getLocale());
 			json.put(BlueboxMessage.RECEIVED, AbstractStorage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
 			json = securityScan(req,message,json);
 			out.write(json.toString());
@@ -82,7 +82,7 @@ public class JSONMessageHandler extends AbstractHandler {
 			json.put(BlueboxMessage.HTML_BODY, cr.getCleanHTML());
 
 			// scan subject for malicious content
-			cr = as.scan(message.getProperty(BlueboxMessage.SUBJECT), policy);
+			cr = as.scan(message.getSubject(), policy);
 			json.put(BlueboxMessage.SUBJECT, cr.getCleanHTML());
 			for (String error : cr.getErrorMessages())
 				sec.append((count++)+"(subject) "+error+"\n");

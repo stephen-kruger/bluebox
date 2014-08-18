@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.Utils;
@@ -40,21 +41,21 @@ public abstract class AbstractStorage implements StorageIf {
 	public abstract InputStream getDBORaw(Object dbo, String key);
 	
 	public BlueboxMessage loadMessage(Object dbo) throws Exception {
-		String uid = getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString());
-		BlueboxMessage message = new BlueboxMessage(uid);
-		message.setProperty(BlueboxMessage.FROM,getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com"));
-		message.setProperty(BlueboxMessage.RECIPIENT,getDBOString(dbo,BlueboxMessage.RECIPIENT,""));
-		message.setProperty(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
-		message.setLongProperty(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()).getTime());
-		message.setLongProperty(BlueboxMessage.STATE,getDBOLong(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
-		message.setProperty(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
-		message.loadBlueBoxMimeMessage(Utils.loadEML(getDBORaw(dbo,uid)));
-		
-		long size = getDBOLong(dbo,BlueboxMessage.SIZE,0)/1000;
-		if (size==0)
-			size = 1;
-		message.setProperty(BlueboxMessage.SIZE,Long.toString(size));
-		return message;
+//		JSONObject props = new JSONObject();
+//		props.put(BlueboxMessage.UID, getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()));
+//		props.put(BlueboxMessage.FROM,getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com"));
+//		props.put(BlueboxMessage.RECIPIENT,getDBOString(dbo,BlueboxMessage.RECIPIENT,""));
+//		props.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
+//		props.put(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()).getTime());
+//		props.put(BlueboxMessage.STATE,getDBOLong(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
+//		props.put(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
+//		
+//		long size = getDBOLong(dbo,BlueboxMessage.SIZE,0)/1000;
+//		if (size==0)
+//			size = 1;
+//		props.put(BlueboxMessage.SIZE,size);
+		return new BlueboxMessage(loadMessageJSON(dbo,Locale.getDefault()),
+				Utils.loadEML(getDBORaw(dbo,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()))));
 	}
 	
 	/*
@@ -64,9 +65,11 @@ public abstract class AbstractStorage implements StorageIf {
 	public JSONObject loadMessageJSON(Object dbo, Locale locale) throws Exception {
 		JSONObject message = new JSONObject();
 		message.put(BlueboxMessage.UID,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()));
-		message.put(BlueboxMessage.FROM,new InboxAddress(getDBOString(dbo,BlueboxMessage.FROM,"bluebox@bluebox.com")).getDisplayName());
+		message.put(BlueboxMessage.FROM,new JSONArray(getDBOString(dbo,BlueboxMessage.FROM,"['bluebox@bluebox.com']")));
 		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
-		message.put(BlueboxMessage.RECEIVED,dateToString(getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()),locale));
+		message.put(BlueboxMessage.RECIPIENT,getDBOString(dbo,BlueboxMessage.RECIPIENT,""));
+		message.put(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()).getTime());
+//		message.put(BlueboxMessage.RECEIVED,dateToString(getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()),locale));
 		message.put(BlueboxMessage.STATE,getDBOLong(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
 		message.put(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
 		long size = getDBOLong(dbo,BlueboxMessage.SIZE,0)/1000;

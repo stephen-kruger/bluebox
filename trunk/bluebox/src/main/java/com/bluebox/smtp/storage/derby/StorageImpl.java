@@ -174,38 +174,56 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		connection.close();
 	}
 	
-	private String add(String id, String from, InboxAddress recipient, String subject, Date date, State state, long size, InputStream blob) throws Exception {
+	public void store(JSONObject props, InputStream blob) throws Exception {
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		ps.setString(1, id); // UID
-		ps.setString(2, recipient.getAddress());// INBOX
-		ps.setString(3, recipient.getFullAddress()); // RECIPIENT
-		ps.setString(4, from); // FROM
-		ps.setString(5, subject); // SUBJECT
-		ps.setTimestamp(6, new Timestamp(date.getTime())); // RECEIVED
-		ps.setInt(7, state.ordinal()); // STATE
-		ps.setLong(8, size); // SIZE
+		ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
+		ps.setString(2, props.getString(StorageIf.Props.Inbox.name()));// INBOX
+		ps.setString(3, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
+		ps.setString(4, props.getString(StorageIf.Props.Sender.name())); // FROM
+		ps.setString(5, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
+		ps.setTimestamp(6, new Timestamp(props.getLong(StorageIf.Props.Received.name()))); // RECEIVED
+		ps.setInt(7, props.getInt(StorageIf.Props.State.name())); // STATE
+		ps.setLong(8, props.getLong(StorageIf.Props.Size.name())); // SIZE
 		ps.setBinaryStream(9, blob); // MIMEMESSAGE
 		ps.execute();
 		connection.commit();
 		connection.close();
-
-		log.fine("Added mail entry "+recipient.getFullAddress());
-		return id;
 	}
+	
+//	public String add(String id, String from, InboxAddress recipient, String subject, Date date, State state, long size, InputStream blob) throws Exception {
+//		Connection connection = getConnection();
+//		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+//		ps.setString(1, id); // UID
+//		ps.setString(2, recipient.getAddress());// INBOX
+//		ps.setString(3, recipient.getFullAddress()); // RECIPIENT
+//		ps.setString(4, from); // FROM
+//		ps.setString(5, subject); // SUBJECT
+//		ps.setTimestamp(6, new Timestamp(date.getTime())); // RECEIVED
+//		ps.setInt(7, state.ordinal()); // STATE
+//		ps.setLong(8, size); // SIZE
+//		ps.setBinaryStream(9, blob); // MIMEMESSAGE
+//		ps.execute();
+//		connection.commit();
+//		connection.close();
+//
+//		log.fine("Added mail entry "+recipient.getFullAddress());
+//		return id;
+//	}
 
 	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
 		String uid = UUID.randomUUID().toString();
 		BlueboxMessage message = new BlueboxMessage(uid,recipient);
 		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
-		add(uid, 
-				from,
-				recipient, 
-				bbmm.getSubject(),
-				received, 
-				State.NORMAL, 
-				Long.parseLong(message.getProperty(BlueboxMessage.SIZE)),
-				Utils.streamMimeMessage(bbmm));
+//		add(uid, 
+//				from,
+//				recipient, 
+//				bbmm.getSubject(),
+//				received, 
+//				State.NORMAL, 
+//				Long.parseLong(message.getProperty(BlueboxMessage.SIZE)),
+//				Utils.streamMimeMessage(bbmm));
+		store(message.toJSON(),Utils.streamMimeMessage(bbmm));
 		return message;
 	}
 
@@ -443,6 +461,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				BlueboxMessage.INBOX+","+
 				BlueboxMessage.FROM+","+
 				BlueboxMessage.SUBJECT+","+
+				BlueboxMessage.RECIPIENT+","+
 				BlueboxMessage.RECEIVED+","+
 				BlueboxMessage.STATE+","+
 				BlueboxMessage.SIZE;
@@ -649,7 +668,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					ResultSet result = ps.getResultSet();
 
 					while (result.next()) {
-						jo.put(BlueboxMessage.FROM,result.getString(1));
+						// could be multiple senders, so lets just take first one
+						jo.put(BlueboxMessage.FROM,new JSONArray(result.getString(1)).get(0));
 						jo.put(BlueboxMessage.COUNT,result.getLong(2));
 						break; // list is already ordered, so first one is biggest
 					}

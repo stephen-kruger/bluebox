@@ -3,7 +3,6 @@ package com.bluebox.feed;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.mail.internet.MimeMessage;
@@ -89,8 +88,8 @@ public class FeedServlet extends HttpServlet {
 				entry.setTitle(message.getBlueBoxMimeMessage().getSubject());
 				// http://localhost:8080/bluebox/rest/json/inbox/detail/d976d0ee-d5bf-4f72-b6e8-187965e1acea
 				entry.setLink(req.getContextPath()+"/rest/json/inbox/detail/"+message.getIdentifier());
-				entry.setPublishedDate(new Date(message.getLongProperty(BlueboxMessage.RECEIVED)));
-				entry.setUpdatedDate(new Date(message.getLongProperty(BlueboxMessage.RECEIVED)));
+				entry.setPublishedDate(message.getReceived());
+				entry.setUpdatedDate(message.getReceived());
 				if (msg.getFrom()!=null)
 					entry.setAuthor(msg.getFrom()[0].toString());
 				
