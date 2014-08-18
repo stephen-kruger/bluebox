@@ -125,10 +125,10 @@ public class StorageTest extends TestCase {
 		MimeMessage storedMM = stored.getBlueBoxMimeMessage();
 		assertEquals("MimeMessage subjects did not match",message.getSubject(),storedMM.getSubject());
 		assertEquals("Inbox address did not match",inbox.getAddress(),stored.getInbox().getAddress());
-		assertEquals("Received time did not match",bbm.getLongProperty(BlueboxMessage.RECEIVED),stored.getLongProperty(BlueboxMessage.RECEIVED));
-		assertEquals("Subjects did not match",bbm.getProperty(BlueboxMessage.SUBJECT),stored.getProperty(BlueboxMessage.SUBJECT));
+		assertEquals("Received time did not match",bbm.getReceived(),stored.getReceived());
+		assertEquals("Subjects did not match",bbm.getSubject(),stored.getSubject());
 		assertEquals("Subjects did not match",message.getSubject(),storedMM.getSubject());
-		assertEquals("From did not match",bbm.getProperty(BlueboxMessage.FROM),stored.getProperty(BlueboxMessage.FROM));
+//		assertEquals("From did not match",bbm.getProperty(BlueboxMessage.FROM),stored.getProperty(BlueboxMessage.FROM));
 //		log.info(stored.toJSON());
 	}
 	
@@ -238,7 +238,7 @@ public class StorageTest extends TestCase {
 		List<BlueboxMessage> mail = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.ANY, 0,SIZE,BlueboxMessage.RECEIVED, true);
 
 		for (BlueboxMessage message : mail) {
-			JSONObject jo = new JSONObject(message.toJSON());
+			JSONObject jo = message.toJSON();
 			assertTrue(jo.has(BlueboxMessage.UID));
 			assertTrue(jo.has(BlueboxMessage.INBOX));
 			assertTrue(jo.has(BlueboxMessage.RECEIVED));
@@ -286,8 +286,8 @@ public class StorageTest extends TestCase {
 			Date mDate, pDate;
 			//			log.info(curr.toString());
 			if (prev!=null) {
-				mDate = new Date(Long.parseLong(curr.getProperty(BlueboxMessage.RECEIVED)));
-				pDate = new Date(Long.parseLong(prev.getProperty(BlueboxMessage.RECEIVED)));
+				mDate = curr.getReceived();
+				pDate = prev.getReceived();
 				assertTrue("Mail order was not correct",((mDate.after(pDate))||(mDate.equals(pDate))));
 			}
 			prev = curr;
@@ -303,7 +303,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Paging did not return correct amount of results",SIZE,results.size());
 		long currSize=0, prevSize=-1;
 		for (BlueboxMessage curr : results) {
-			currSize = curr.getLongProperty(BlueboxMessage.SIZE);
+			currSize = curr.getSize();
 			assertTrue("Mail order was not sorted by size "+currSize+" > "+prevSize,prevSize<=currSize);
 			prevSize = currSize;
 		}

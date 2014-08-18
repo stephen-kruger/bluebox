@@ -10,6 +10,7 @@
 	String email;
 	if (request.getParameter(Inbox.EMAIL)!=null) {
 		email = request.getParameter(Inbox.EMAIL);
+		System.out.println(javax.mail.internet.MimeUtility.decodeText(email));
 	}
 	else {
 		email = "";

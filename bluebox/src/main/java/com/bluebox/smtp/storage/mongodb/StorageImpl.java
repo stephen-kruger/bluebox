@@ -84,12 +84,15 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		StorageFactory.clearInstance();
 	}
 
+	public void store(JSONObject props, InputStream blob) throws Exception {
+	}
+	
 	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
 		BlueboxMessage message = new BlueboxMessage(UUID.randomUUID().toString());
 		message.setInbox(recipient);
 		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
 		DBCollection coll = db.getCollection(TABLE_NAME);
-		DBObject bson = ( DBObject ) JSON.parse( message.toJSON() );
+		DBObject bson = ( DBObject ) JSON.parse( message.toJSON().toString() );
 
 		//		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
 		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);

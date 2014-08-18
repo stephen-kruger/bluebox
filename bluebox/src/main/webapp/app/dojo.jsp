@@ -3,7 +3,8 @@
 <%
 	Config bbconfig = Config.getInstance();
 %>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"> 
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="shortcut icon" type='image/x-icon' href="<%=request.getContextPath()%>/app/<%=bbconfig.getString("bluebox_theme")%>/favicon.ico" />
 
 <!-- core dojo style sheets -->

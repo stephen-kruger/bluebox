@@ -37,6 +37,7 @@ public class JSONAutoCompleteHandler extends AbstractHandler {
 			
 			result.put("items", children);
 			
+			resp.setContentType("text/x-json;charset=UTF-8");
 			Writer writer = resp.getWriter();
 			writer.write(result.toString(3));
 			writer.flush();

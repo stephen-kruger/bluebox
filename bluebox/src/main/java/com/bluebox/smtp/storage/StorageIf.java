@@ -24,6 +24,10 @@ public interface StorageIf {
 	
 	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm)
 			throws Exception;
+	
+	public enum Props {Uid,Inbox,Recipient,Sender,Subject,Received,State,Size};
+	
+	public void store(JSONObject props, InputStream blob) throws Exception;
 
 	public BlueboxMessage retrieve(String uid)
 			throws Exception;

@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 
 import javax.activation.DataSource;
 import javax.mail.Address;
-import javax.mail.Message.RecipientType;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
@@ -57,6 +56,11 @@ public class BlueboxMessage {
 		setProperty(UID,id);
 	}
 
+	public BlueboxMessage(JSONObject jo, MimeMessage message) {
+		properties = jo;
+		mmw = message;
+	}
+	
 	public BlueboxMessage(String id, InboxAddress inbox) {
 		this(id);
 		setInbox(inbox);
@@ -66,10 +70,10 @@ public class BlueboxMessage {
 		return mmw;
 	}
 
-	public void setBlueBoxMimeMessage(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws IOException, MessagingException, SQLException {
+	public void setBlueBoxMimeMessage(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws IOException, MessagingException, SQLException, JSONException {
 		mmw = bbmm;
 		log.fine("Persisting mime message");
-		setProperty(BlueboxMessage.FROM, from);
+		setProperty(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
 		setProperty(RECIPIENT, recipient.getFullAddress());
 		setProperty(INBOX, getInbox().getAddress());
 		setProperty(SUBJECT, bbmm.getSubject());
@@ -172,15 +176,7 @@ public class BlueboxMessage {
 	//		return ja;
 	//	}
 
-	public String getIdentifier() {
-		return getProperty(UID);
-	}
-
-	public Date getReceived() {
-		return new Date(getLongProperty(RECEIVED));
-	}
-
-	public String getPropertyString(String name) {
+	private String getPropertyString(String name) {
 		try {
 			return properties.getString(name);
 		} 
@@ -189,7 +185,7 @@ public class BlueboxMessage {
 		}
 	}
 
-	public String getProperty(String name) {
+	private String getProperty(String name) {
 		return getPropertyString(name);
 	}
 
@@ -245,11 +241,11 @@ public class BlueboxMessage {
 		}
 	}
 
-	public String toJSON() throws Exception {
+	public JSONObject toJSON() throws Exception {
 		return toJSON(Locale.getDefault());
 	}
 
-	public String toJSON(Locale locale) throws Exception {
+	public JSONObject toJSON(Locale locale) throws Exception {
 		JSONObject json;
 		try {
 			json = new JSONObject();				
@@ -263,22 +259,24 @@ public class BlueboxMessage {
 				json.put(ATTACHMENT, ja);
 
 			json.put(UID,properties.get(UID));
-			json.put(TO,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));
-			json.put(CC,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
+//			json.put(TO,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));
+//			json.put(CC,toJSONArray(getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
 			json.put(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));				
 			json.put(SUBJECT,getBlueBoxMimeMessage().getSubject());
 			json.put(INBOX,getInbox().getAddress());
 			json.put(RECIPIENT,properties.get(RECIPIENT));
+			if (!properties.has(RECIPIENT))
+				properties.put(RECIPIENT, new Date().getTime());
 			json.put(RECEIVED,properties.get(RECEIVED));
 			json.put(STATE,properties.get(STATE));
 			json.put(SIZE,properties.get(SIZE));
 
-			return json.toString();
+			return json;
 
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
-			return new JSONObject().toString();
+			return new JSONObject();
 		}				
 	}
 
@@ -301,7 +299,7 @@ public class BlueboxMessage {
 		}
 	}
 
-	public void setProperty(String name, String value) {
+	private void setProperty(String name, Object value) {
 		try {
 			properties.put(name, value);
 		} 
@@ -310,7 +308,7 @@ public class BlueboxMessage {
 		}
 	}
 
-	public void setLongProperty(String name, long value) {
+	private void setLongProperty(String name, long value) {
 		try {
 			properties.put(name, value);
 		} 
@@ -319,7 +317,7 @@ public class BlueboxMessage {
 		}
 	}
 
-	public long getLongProperty(String name) {
+	private long getLongProperty(String name) {
 		try {
 			return properties.getLong(name);
 		} 
@@ -329,7 +327,7 @@ public class BlueboxMessage {
 		}
 	}
 
-	public void setIntProperty(String name, int value) {
+	private void setIntProperty(String name, int value) {
 		try {
 			properties.put(name, value);
 		} 
@@ -338,7 +336,7 @@ public class BlueboxMessage {
 		}
 	}
 
-	public int getIntProperty(String name) {
+	private int getIntProperty(String name) {
 		try {
 			return properties.getInt(name);
 		} 
@@ -348,6 +346,14 @@ public class BlueboxMessage {
 		}
 	}
 
+	public String getIdentifier() {
+		return getProperty(UID);
+	}
+
+	public Date getReceived() {
+		return new Date(getLongProperty(RECEIVED));
+	}
+	
 	public InboxAddress getInbox() throws AddressException {
 		return new InboxAddress(getProperty(INBOX));
 	}
@@ -355,7 +361,19 @@ public class BlueboxMessage {
 	public void setInbox(InboxAddress inbox) {
 		setProperty(INBOX,inbox.getAddress());
 	}
+	
+	public String getSubject() {
+		return getProperty(SUBJECT);
+	}
+	
+	public JSONArray getFrom() throws JSONException {
+		return properties.getJSONArray(FROM);
+	}
 
+	public long getSize() {
+		return this.getLongProperty(SIZE);
+	}
+	
 //	public static String getFrom(InboxAddress from, MimeMessage bbmm) throws MessagingException {
 //		if (from!=null)
 //			if (from.length()>0)

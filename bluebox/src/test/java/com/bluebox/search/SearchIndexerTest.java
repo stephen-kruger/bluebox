@@ -76,7 +76,7 @@ public class SearchIndexerTest extends TestCase {
 		Inbox.getInstance();
 		BlueboxMessage msg = TestUtils.addRandom(StorageFactory.getInstance());
 		si.indexMail(msg);
-		assertEquals("Missing expected search results",1,si.search(msg.getProperty(BlueboxMessage.SUBJECT),SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,si.search(msg.getSubject(),SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 		assertEquals("Missing expected search results",1,si.search("steve",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 		Inbox.getInstance().stop();
 	}
@@ -154,7 +154,7 @@ public class SearchIndexerTest extends TestCase {
 		//		ja = new JSONArray(sw.toString());
 		//		log.info(ja.toString(3));
 		//		assertTrue("No 'From' search results",ja.length()>0);
-		//		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),original.getProperty(BlueboxMessage.SUBJECT));
+		//		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),original.getSubject());
 		//		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.FROM),original.getProperty(BlueboxMessage.FROM));
 		//
 		//		// test substring search
@@ -163,7 +163,7 @@ public class SearchIndexerTest extends TestCase {
 		//		ja = new JSONArray(sw.toString());
 		//		log.info(ja.toString(3));
 		//		assertTrue("No substring search results",ja.length()>0);
-		//		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),original.getProperty(BlueboxMessage.SUBJECT));
+		//		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),original.getSubject());
 		//		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.FROM),original.getProperty(BlueboxMessage.FROM));
 	}
 }

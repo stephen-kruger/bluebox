@@ -208,13 +208,13 @@ public class SearchIndexer {
 		//		JSONObject json = new JSONObject(message.toJSON(false));
 		addDoc(message.getIdentifier(),
 				message.getInbox().getFullAddress(),
-				Utils.decodeQuotedPrintable(message.getProperty(BlueboxMessage.FROM)),
-				Utils.decodeQuotedPrintable(message.getProperty(BlueboxMessage.SUBJECT)),
+				Utils.decodeQuotedPrintable(message.getFrom().getString(0)),
+				Utils.decodeQuotedPrintable(message.getSubject()),
 				message.getHtml(),
 				message.getText(),
 				getRecipients(message),
-				message.getLongProperty(BlueboxMessage.SIZE),
-				message.getLongProperty(BlueboxMessage.RECEIVED));
+				message.getSize(),
+				message.getReceived().getTime());
 	}
 
 	/* Find which one of the potential recipeints of this mail matches the specified inbox
