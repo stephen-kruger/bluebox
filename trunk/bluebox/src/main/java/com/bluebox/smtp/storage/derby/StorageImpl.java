@@ -13,11 +13,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-import java.util.logging.Logger;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
@@ -29,11 +30,11 @@ import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.StorageIf;
 
 public class StorageImpl extends AbstractStorage implements StorageIf {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(StorageImpl.class);
 	private static final String INBOX_TABLE = "INBOX";
 	private static final String PROPS_TABLE = "PROPERTIES";
-	public static final String KEY = "keyname";
-	public static final String VALUE = "value";
+	private static final String KEY = "keyname";
+	private static final String VALUE = "value";
 	public static final String ERROR_COUNT = "error_count";
 	public static final String ERROR_TITLE = "error_title";
 	public static final String ERROR_CONTENT = "error_content";
@@ -55,7 +56,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				count = 0;
 			}
 			catch (Throwable t) {
-				log.warning("Trying again "+t.getMessage());
+				log.warn("Trying again "+t.getMessage());
 				Thread.sleep(750);
 				started=false;
 			}
@@ -72,7 +73,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			DriverManager.getConnection("jdbc:derby:;shutdown=true");
 		}
 		catch (Throwable t) {
-			log.warning(t.getMessage());
+			log.warn(t.getMessage());
 		}
 		// force gc to unload the derby classes
 		//http://db.apache.org/derby/docs/10.3/devguide/tdevdvlp20349.html
@@ -97,13 +98,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			dropTables();
 		}
 		catch (Throwable t) {
-			log.warning(t.getMessage());
+			log.warn(t.getMessage());
 		}
 		try {
 			setupTables();
 		}
 		catch (Throwable t) {
-			log.warning(t.getMessage());
+			log.warn(t.getMessage());
 		}
 	}
 
@@ -132,13 +133,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					RAW+" blob(16M))");
 		}
 		catch (Throwable t) {
-			log.fine(t.getMessage());
+			log.debug(t.getMessage());
 		}
 		try {
 			s.executeUpdate("CREATE TABLE "+PROPS_TABLE+" ("+KEY+" VARCHAR(256), "+VALUE+" VARCHAR(512))");
 		}
 		catch (Throwable t) {
-			log.fine(t.getMessage());
+			log.debug(t.getMessage());
 		}
 		s.close();
 		connection.close();
@@ -158,13 +159,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				s.executeUpdate("CREATE INDEX "+indexes[i]+"_INDEX_ASC ON "+table+"("+indexes[i]+" ASC)");
 			}
 			catch (Throwable t) {
-				log.fine("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
+				log.debug("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
 			}
 			try {
 				s.executeUpdate("CREATE INDEX "+indexes[i]+"_INDEX_DESC ON "+table+"("+indexes[i]+" DESC)");
 			}
 			catch (Throwable t) {
-				log.fine("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
+				log.debug("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
 			}
 		}
 		s.close();
@@ -204,7 +205,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 //		connection.commit();
 //		connection.close();
 //
-//		log.fine("Added mail entry "+recipient.getFullAddress());
+//		log.debug("Added mail entry "+recipient.getFullAddress());
 //		return id;
 //	}
 
@@ -231,7 +232,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.execute();
 		connection.commit();
 		connection.close();
-		log.fine("Removed mail entry "+id);
+		log.debug("Removed mail entry "+id);
 	}
 
 	public BlueboxMessage retrieve(String uid) throws Exception {
@@ -256,7 +257,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				return value;
 			}
 			else {
-				log.warning("Missing field "+key);
+				log.warn("Missing field "+key);
 			}
 		}
 		catch (SQLException sqe) {
@@ -306,14 +307,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return mo.getBinaryStream(StorageImpl.RAW);
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error(t.getMessage());
 			t.printStackTrace();
 			return null;
 		}
 	}
 
 	public void deleteAll(InboxAddress inbox) throws Exception {
-		log.fine("Deleting inbox "+inbox);
+		log.debug("Deleting inbox "+inbox);
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.INBOX+"=?");
 		ps.setString(1, inbox.getAddress());
@@ -324,14 +325,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void deleteAll() throws Exception {
-//		log.fine("Deleting all inboxes");
+//		log.debug("Deleting all inboxes");
 //		Connection connection = getConnection();
 //		Statement s;
 //		s = connection.createStatement();
 //		s.execute("delete from "+INBOX_TABLE);
 //		s.close();
 //
-//		log.fine("Deleting all properties");
+//		log.debug("Deleting all properties");
 //		s = connection.createStatement();
 //		s.execute("delete from "+PROPS_TABLE);
 //		s.close();
@@ -362,7 +363,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.close();
 		connection.close();
 
-		log.fine("Calculated mail count ("+count+") in "+(new Date().getTime()-start)+"ms");
+		log.debug("Calculated mail count ("+count+") in "+(new Date().getTime()-start)+"ms");
 		return count;
 	}
 
@@ -395,7 +396,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 		connection.close();
 
-		log.fine("Calculated mail count for "+inbox+" ("+count+") in "+(new Date().getTime()-start)+"ms");
+		log.debug("Calculated mail count for "+inbox+" ("+count+") in "+(new Date().getTime()-start)+"ms");
 		return count;
 	}
 
@@ -481,13 +482,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.execute();
 		connection.commit();
 		connection.close();
-		log.fine("Update mail entry "+uid+" to "+state);
+		log.debug("Update mail entry "+uid+" to "+state);
 	}
 
 	public void setProperty(String key, String value) {
 		if (value.length()>512) {
 			value = value.substring(0,512);
-			log.severe("Truncating data to fit 512 field");
+			log.error("Truncating data to fit 512 field");
 		}
 		try {
 			Connection connection = getConnection();
@@ -507,7 +508,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			connection.close();
 		}
 		catch (Throwable t) {
-			log.warning(t.getMessage());
+			log.warn(t.getMessage());
 		}
 	}
 
@@ -526,7 +527,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			connection.close();
 		}
 		catch (Throwable t) {
-			log.warning(t.getMessage());
+			log.warn(t.getMessage());
 		}
 		return value;
 	}
@@ -643,7 +644,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (JSONException je) {
 			je.printStackTrace();
 		}
-		log.fine("Calculated active inbox count in "+(new Date().getTime()-start)+"ms");
+		log.debug("Calculated active inbox count in "+(new Date().getTime()-start)+"ms");
 		return jo;
 	}
 

@@ -1,7 +1,8 @@
 package com.bluebox.smtp;
 
-import java.util.logging.Logger;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.server.SMTPServer;
@@ -10,7 +11,7 @@ import com.bluebox.Config;
 import com.bluebox.Utils;
 
 public class BlueBoxSMTPServer extends SMTPServer {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(BlueBoxSMTPServer.class);
 
 	public BlueBoxSMTPServer(MessageHandlerFactory mhf) {
 		super(mhf);

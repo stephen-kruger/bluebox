@@ -16,7 +16,6 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import javax.mail.Address;
@@ -30,6 +29,8 @@ import org.apache.lucene.index.IndexNotFoundException;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.helper.SimpleMessageListener;
 
@@ -50,7 +51,7 @@ public class Inbox implements SimpleMessageListener {
 	public static final String START = "Start";
 	public static final String COUNT = "Count";
 	public static final String ORDERBY = "OrderBy";
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(Inbox.class);
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
 
 	private static Timer timer = null;
@@ -77,7 +78,7 @@ public class Inbox implements SimpleMessageListener {
 			StorageFactory.getInstance().start();
 		} 
 		catch (Exception e) {
-			log.severe("Error starting storage instance :"+e.getMessage());
+			log.error("Error starting storage instance",e.getMessage());
 			e.printStackTrace();
 		}
 		// now start a background timer for the mail expiration
@@ -98,7 +99,7 @@ public class Inbox implements SimpleMessageListener {
 					cleanUp();
 				} 
 				catch (Exception e) {
-					log.severe("Error running message cleanup");
+					log.error("Error running message cleanup",e);
 					e.printStackTrace();
 				}
 			}
@@ -111,7 +112,7 @@ public class Inbox implements SimpleMessageListener {
 			StorageFactory.getInstance().stop();
 		}
 		catch (Throwable e) {
-			log.severe("Error stopping storage :"+e.getMessage());
+			log.error("Error stopping storage :{}",e.getMessage());
 		}
 		log.info("Cleanup timer cancelled");
 		if (timer != null) {
@@ -124,7 +125,7 @@ public class Inbox implements SimpleMessageListener {
 		} 
 		catch (IOException e) {
 			e.printStackTrace();
-			log.severe("Error stopping search engine :"+e.getMessage());
+			log.error("Error stopping search engine",e);
 		}
 		inbox = null;
 	}
@@ -142,7 +143,7 @@ public class Inbox implements SimpleMessageListener {
 			return StorageFactory.getInstance().getMailCount(state);
 		} 
 		catch (Exception e) {
-			log.severe(e.getMessage());
+			log.error(e.getMessage());
 			e.printStackTrace();
 		}
 		return 0;
@@ -153,22 +154,22 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
-		log.fine("Sending inbox contents for "+inbox);
+		log.debug("Sending inbox contents for {}",inbox);
 		StorageFactory.getInstance().listInbox(inbox, state, writer, start, count, orderBy, ascending, locale);
 	}
 
 	public List<BlueboxMessage> listInbox(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
-		log.fine("Sending inbox contents for "+inbox);
+		log.debug("Sending inbox contents for {}",inbox);
 		return StorageFactory.getInstance().listMail(inbox, state, start, count, orderBy, ascending);
 	}
 
 	public List<JSONObject> listInboxLite(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale loc) throws Exception {
-		log.fine("Sending inbox contents for "+inbox);
+		log.debug("Sending inbox contents for {}",inbox);
 		return StorageFactory.getInstance().listMailLite(inbox, state, start, count, orderBy, ascending, loc);
 	}
 
 	public long searchInbox(String search, Writer writer, int start, int count, SearchIndexer.SearchFields searchScope, SearchIndexer.SearchFields orderBy, boolean ascending) throws Exception {
-		log.fine("Searching for "+search+" ordered by "+orderBy);
+		log.debug("Searching for {} ordered by {}",search,orderBy);
 		try {
 			return SearchIndexer.getInstance().searchInboxes(search, writer, start, count, searchScope, orderBy, ascending);
 		}
@@ -233,7 +234,7 @@ public class Inbox implements SimpleMessageListener {
 			}
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error("Problem trimming mailboxes",t);
 		}
 	}
 
@@ -258,11 +259,11 @@ public class Inbox implements SimpleMessageListener {
 					SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
 				}
 				else {
-					log.fine("Not deleting since received:"+received+" but expiry window:"+messageExpireDate);
+					log.debug("Not deleting since received:"+received+" but expiry window:"+messageExpireDate);
 				}
 			}
 			catch (Throwable t) {
-				log.warning("Problem cleaning up message "+msg.getIdentifier()+" "+t.getMessage());
+				log.warn("Problem cleaning up message "+msg.getIdentifier()+" "+t.getMessage());
 			}
 		}
 		log.info("Cleaned up "+count+" messages");
@@ -278,11 +279,11 @@ public class Inbox implements SimpleMessageListener {
 					count++;
 				}
 				else {
-					log.fine("Not deleting since received:"+received+" but expiry window:"+messageExpireDate);
+					log.debug("Not deleting since received:"+received+" but expiry window:"+messageExpireDate);
 				}				
 			}
 			catch (Throwable t) {
-				log.warning("Problem cleaning up message "+msg.getIdentifier());
+				log.warn("Problem cleaning up message "+msg.getIdentifier());
 			}
 		}
 		log.info("Cleaned up "+count+" deleted messages");
@@ -305,17 +306,17 @@ public class Inbox implements SimpleMessageListener {
 
 			// check from blacklist
 			for (Object badDomain : fromBlackList) {
-				log.finest(badDomain+"<<<---- Comparing fromBlackList---->>>"+fromIA.getAddress());
+				log.debug(badDomain+"<<<---- Comparing fromBlackList---->>>"+fromIA.getAddress());
 				if (fromIA.getAddress().endsWith(badDomain.toString())) {
-					log.warning("Rejecting mail from "+from+" to "+recipient+" due to blacklisted FROM:"+badDomain);
+					log.warn("Rejecting mail from "+from+" to "+recipient+" due to blacklisted FROM:"+badDomain);
 					return false;
 				}
 			}
 			// check to blacklist
 			for (Object badDomain : toBlackList) {
-				log.finest(badDomain+"<<<---- Comparing toBlackList---->>>"+toIA.getAddress());
+				log.debug(badDomain+"<<<---- Comparing toBlackList---->>>"+toIA.getAddress());
 				if (toIA.getAddress().endsWith(badDomain.toString())) {
-					log.warning("Rejecting mail from "+from+" to "+recipient+" due to blacklisted TO:"+badDomain);
+					log.warn("Rejecting mail from "+from+" to "+recipient+" due to blacklisted TO:"+badDomain);
 					return false;
 				}
 			}
@@ -323,34 +324,34 @@ public class Inbox implements SimpleMessageListener {
 			// check the from whitelist
 			if (fromWhiteList.size()>0) {
 				for (Object goodDomain : fromWhiteList) {
-					log.finest(goodDomain.toString()+"<<<---- Comparing fromWhiteList---->>>"+fromIA.getAddress());
+					log.debug(goodDomain.toString()+"<<<---- Comparing fromWhiteList---->>>"+fromIA.getAddress());
 					if (fromIA.getAddress().endsWith(goodDomain.toString())) {
 						return true;
 					}
 				}
-				log.warning("Rejecting mail from "+from+" to "+recipient+" because not in FROM whitelist");
+				log.warn("Rejecting mail from "+from+" to "+recipient+" because not in FROM whitelist");
 				return false;
 			}
 
 			// check the to whitelist
 			if (toWhiteList.size()>0) {
 				for (Object goodDomain : toWhiteList) {
-					log.finest(goodDomain.toString()+"<<<---- Comparing toWhiteList---->>>"+toIA.getAddress());
+					log.debug(goodDomain.toString()+"<<<---- Comparing toWhiteList---->>>"+toIA.getAddress());
 					if (toIA.getAddress().endsWith(goodDomain.toString())) {
 						return true;
 					}
 				}
-				log.warning("Rejecting mail from "+from+" to "+recipient+" because not in TO whitelist");
+				log.warn("Rejecting mail from "+from+" to "+recipient+" because not in TO whitelist");
 				return false;
 			}
 
 
 			// else we accept everyone
-			log.fine("Accepting mail for "+recipient+" from "+from);
+			log.debug("Accepting mail for "+recipient+" from "+from);
 			return true;
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage()+" for from="+from+" and recipient="+recipient);
+			log.error(t.getMessage()+" for from="+from+" and recipient="+recipient);
 			errorLog("Accept error for address "+recipient+" sent by "+from, Utils.convertStringToStream(t.toString()));
 			//			t.printStackTrace();
 			return false;
@@ -388,7 +389,7 @@ public class Inbox implements SimpleMessageListener {
 				deliver(from,recipient,Utils.loadEML(data));
 			} 
 			catch (Throwable e) {
-				log.severe(e.getMessage());
+				log.error(e.getMessage());
 				errorLog("("+e.getMessage()+") Accepting raw message for recipient="+recipient +" "+e.getMessage(), data);
 				e.printStackTrace();
 			}
@@ -411,7 +412,7 @@ public class Inbox implements SimpleMessageListener {
 			SearchIndexer.getInstance().indexMail(message);
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error(t.getMessage());
 			t.printStackTrace();
 		}
 		updateStats(message, recipient, false);
@@ -659,7 +660,7 @@ public class Inbox implements SimpleMessageListener {
 									}
 								}
 								catch (Throwable t) {
-									log.warning(t.getMessage());
+									log.warn(t.getMessage());
 								}
 							}
 						}
@@ -681,7 +682,7 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public WorkerThread restore(final File dir) throws Exception {
-		log.info("Restoring mail from "+dir.getCanonicalPath());
+		log.info("Restoring mail from {}",dir.getCanonicalPath());
 		WorkerThread wt = new WorkerThread("restore") {
 
 			@Override
@@ -690,7 +691,7 @@ public class Inbox implements SimpleMessageListener {
 					File[] files = dir.listFiles();
 					for (int i = 0; i < files.length;i++) {
 						setProgress(i*100/files.length);
-						log.info("Progress : "+(i*100/files.length));
+						log.debug("Progress : {}",(i*100/files.length));
 						if (files[i].getName().endsWith("eml")) {
 							try {
 								JSONObject jo = new JSONObject(FileUtils.readFileToString(new File(files[i].getCanonicalPath().substring(0, files[i].getCanonicalPath().length()-4)+".json")));
@@ -722,13 +723,13 @@ public class Inbox implements SimpleMessageListener {
 							}
 							catch (Throwable t) {
 								t.printStackTrace();
-								log.warning(t.getMessage());
+								log.warn(t.getMessage());
 							}
 						}
 					}
 				}
 				else {
-					log.severe("Could not access");
+					log.error("Could not access");
 				}
 				setProgress(100);
 			}

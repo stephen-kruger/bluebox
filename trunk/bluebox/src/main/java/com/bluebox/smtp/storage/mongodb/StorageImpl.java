@@ -7,12 +7,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
-import java.util.logging.Logger;
 
 import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.Config;
 import com.bluebox.Utils;
@@ -38,7 +39,7 @@ import com.mongodb.gridfs.GridFSInputFile;
 import com.mongodb.util.JSON;
 
 public class StorageImpl extends AbstractStorage implements StorageIf {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(StorageImpl.class);
 	private static final String DB_ERR_NAME = "bluebox_errors";
 	private static final String TABLE_NAME = "inbox";
 	private static final String PROPS_TABLE_NAME = "properties";
@@ -53,7 +54,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		createIndexes();
 
-		log.fine("Started MongoDB connection");
+		log.debug("Started MongoDB connection");
 	}
 
 	private void createIndexes() {
@@ -66,13 +67,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				db.getCollection(TABLE_NAME).createIndex(new BasicDBObject(indexes[i], 1));
 			}
 			catch (Throwable t) {
-				log.severe(t.getMessage());
+				log.error(t.getMessage());
 			}
 			try {
 				db.getCollection(TABLE_NAME).createIndex(new BasicDBObject(indexes[i], -1));
 			}
 			catch (Throwable t) {
-				log.severe(t.getMessage());
+				log.error(t.getMessage());
 			}
 		}  
 	}
@@ -128,7 +129,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return o.toString();
 		}
 		else {
-			log.warning("Missing field "+key);
+			log.warn("Missing field "+key);
 			return def;
 		}
 	}
@@ -140,7 +141,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return Integer.parseInt(mo.get(key).toString());
 		}
 		else {
-			log.warning("Missing field "+key);
+			log.warn("Missing field "+key);
 			return def;
 		}
 	}
@@ -152,7 +153,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return Long.parseLong(mo.get(key).toString());
 		}
 		else {
-			log.warning("Missing field "+key);
+			log.warn("Missing field "+key);
 			return def;
 		}
 	}
@@ -173,7 +174,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return imageForOutput.getInputStream();
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error(t.getMessage());
 			t.printStackTrace();
 			return null;
 		}
@@ -233,7 +234,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void deleteAll() throws Exception {
-		log.fine("Deleting all inboxes");
+		log.debug("Deleting all inboxes");
 		if (db!=null) {
 			DBCollection coll = db.getCollection(TABLE_NAME);
 			if (coll!=null)
@@ -243,7 +244,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				props.drop();
 		}
 		else {
-			log.severe("Cannot delete from closed inbox");
+			log.error("Cannot delete from closed inbox");
 		}
 		// remove all blobs
 		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
@@ -251,7 +252,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		DBObject dbo;
 		while(cursor.hasNext()) {
 			dbo = cursor.next();
-			log.fine("Deleting raw "+dbo.get("filename"));
+			log.debug("Deleting raw "+dbo.get("filename"));
 			gfsRaw.remove(dbo);
 		}
 		cursor.close();
@@ -276,7 +277,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			query.append(BlueboxMessage.INBOX, inbox.getAddress());
 		long start = new Date().getTime();
 		long count = db.getCollection(TABLE_NAME).count(query);
-		log.fine("Calculated mail count in "+(new Date().getTime()-start)+"ms");
+		log.debug("Calculated mail count in "+(new Date().getTime()-start)+"ms");
 		return count;
 	}
 
@@ -304,7 +305,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					results.add(m);
 				}
 				catch (Throwable t) {
-					log.severe("Nasty problem loading message:"+t.getMessage());;
+					log.error("Nasty problem loading message:"+t.getMessage());;
 				}
 			}
 		} 

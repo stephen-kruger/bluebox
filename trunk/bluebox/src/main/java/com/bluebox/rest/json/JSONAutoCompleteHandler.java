@@ -2,18 +2,19 @@ package com.bluebox.rest.json;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.Inbox;
 
 public class JSONAutoCompleteHandler extends AbstractHandler {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(JSONAutoCompleteHandler.class);
 	public static final String JSON_ROOT = "rest/json/autocomplete";
 	private String START = "start";
 	private String COUNT = "count";
@@ -26,7 +27,7 @@ public class JSONAutoCompleteHandler extends AbstractHandler {
 		String start = req.getParameter(START);
 		String count = req.getParameter(COUNT);
 		
-		log.info("doAutoComplete "+hint+" "+start+" "+count);
+		log.info("doAutoComplete {} {} {}",hint,start,count);
 		
 		try {
 			JSONObject result = new JSONObject();
@@ -43,35 +44,35 @@ public class JSONAutoCompleteHandler extends AbstractHandler {
 			writer.flush();
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error(t.getMessage());
 			t.printStackTrace();
 		}
 		resp.flushBuffer();
 	}
 	
 	public JSONArray doAutoComplete(Inbox inbox, String hint, String start, String count) {
-		log.fine("doAutoComplete2 "+hint+" "+start+" "+count);
+		log.debug("doAutoComplete2 {} {} {}",hint,start,count);
 		long startI=0, countI=15;
 		try {
 			try {
 				startI = Long.parseLong(start);
 			}
 			catch (Throwable t) {
-				log.fine("Invalid type-ahead start value passed :"+start);
+				log.debug("Invalid type-ahead start value passed :{}",start);
 			}
 			
 			try {
 				countI = Long.parseLong(count);
 			}
 			catch (Throwable t) {
-				log.fine("Invalid type-ahead count value passed :"+count);
+				log.debug("Invalid type-ahead count value passed :{}",count);
 			}
 			
 			JSONArray children = inbox.autoComplete(hint, startI, countI);
 			return children;
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error(t.getMessage());
 			t.printStackTrace();
 			return new JSONArray();
 		}		

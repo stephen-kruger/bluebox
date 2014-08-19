@@ -1,15 +1,17 @@
 package com.bluebox.smtp;
 
-import java.util.logging.Logger;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.bluebox.Utils;
 
 public class InboxAddress extends Object {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(InboxAddress.class);
 
 	private String address;
 
@@ -57,7 +59,7 @@ public class InboxAddress extends Object {
 			return address.getAddress();
 		}
 		catch (Throwable e) {
-			log.fine(e.getMessage()+" "+email);
+			log.debug("Error for {}",email);
 			//e.printStackTrace();
 		}
 		return "*";

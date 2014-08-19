@@ -12,7 +12,7 @@
 <head>
 	<title><%=headerResource.getString("welcome")%></title>
 	<jsp:include page="dojo.jsp" />
-	<script>
+	<script type="text/javascript" charset="utf-8">
 		require(["dojo/domReady!"], function(domReady){
 			selectMenu("inbox");
 		});

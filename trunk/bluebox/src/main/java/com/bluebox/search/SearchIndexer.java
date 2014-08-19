@@ -6,7 +6,6 @@ import java.io.StringReader;
 import java.io.Writer;
 import java.util.Date;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 import javax.mail.Address;
 import javax.mail.internet.MimeMessage;
@@ -41,6 +40,8 @@ import org.apache.lucene.store.SimpleFSDirectory;
 import org.apache.lucene.util.Version;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
@@ -48,7 +49,7 @@ import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class SearchIndexer {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(SearchIndexer.class);
 	private static Version version = Version.LUCENE_4_9;
 	private Directory index;
 	private IndexWriterConfig config;
@@ -152,7 +153,7 @@ public class SearchIndexer {
 			}
 			catch (Throwable t) {
 				t.printStackTrace();
-				log.warning("Unsupported orderBy value :"+orderBy);
+				log.warn("Unsupported orderBy value :"+orderBy);
 				sort = new Sort(new SortField(SearchFields.RECEIVED.name(),SortField.Type.LONG,ascending));
 			}
 			// if count is 0, then return only total number of hits, without sending all the data.
@@ -169,7 +170,7 @@ public class SearchIndexer {
 			return docs;
 		}
 		catch (IndexNotFoundException ex) {
-			log.severe(ex.getMessage());
+			log.error(ex.getMessage());
 			ex.printStackTrace();
 			log.info("Rebuilding search indexes");
 			Inbox.getInstance().rebuildSearchIndexes();
@@ -256,7 +257,7 @@ public class SearchIndexer {
 	}
 
 	protected synchronized void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
-		log.fine("Indexing mail "+uid+" "+from);
+		log.debug("Indexing mail "+uid+" "+from);
 		Document doc = new Document();
 		doc.add(new StringField(SearchFields.UID.name(), uid, Field.Store.YES));
 		doc.add(new TextField(SearchFields.FROM.name(), from, Field.Store.YES));
@@ -301,7 +302,7 @@ public class SearchIndexer {
 				new ParserDelegator().parse(new StringReader(html), parserCallback, false);
 			}
 			catch (Throwable t) {
-				log.warning("Error indexing html body "+t.getMessage());
+				log.warn("Error indexing html body "+t.getMessage());
 			}
 		}
 		return sb.toString().trim();
@@ -315,7 +316,7 @@ public class SearchIndexer {
 		log.info("Preparing search indexes in "+temp.getCanonicalPath());
 		if(!(temp.mkdir()))
 		{
-			log.warning("Re-using index directory: " + temp.getAbsolutePath());
+			log.warn("Re-using index directory: " + temp.getAbsolutePath());
 		}
 		log.info("Configured search indexes in "+temp.getCanonicalPath());
 		return (temp);

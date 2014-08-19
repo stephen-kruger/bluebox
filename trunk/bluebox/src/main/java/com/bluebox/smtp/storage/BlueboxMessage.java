@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Logger;
 
 import javax.activation.DataSource;
 import javax.mail.Address;
@@ -22,6 +21,8 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.MimeMessageParser;
 import com.bluebox.Utils;
@@ -48,7 +49,7 @@ public class BlueboxMessage {
 
 	public enum State {ANY, NORMAL, DELETED};
 
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(BlueboxMessage.class);
 	private JSONObject properties = new JSONObject();
 	private MimeMessage mmw;
 	private MimeMessageParser parser;
@@ -73,7 +74,7 @@ public class BlueboxMessage {
 
 	public void setBlueBoxMimeMessage(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws IOException, MessagingException, SQLException, JSONException {
 		mmw = bbmm;
-		log.fine("Persisting mime message");
+		log.debug("Persisting mime message");
 		setProperty(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
 		setProperty(RECIPIENT, recipient.getFullAddress());
 		setProperty(INBOX, getInbox().getAddress());
@@ -116,7 +117,7 @@ public class BlueboxMessage {
 //				for (int i = 0; i < addr.length; i++) {
 //					InternetAddress ia = (InternetAddress) addr[i];
 //					if (ia.getAddress().equals(inbox.getAddress())) {
-//						log.fine("Found TO recipient");
+//						log.debug("Found TO recipient");
 //						return ia;
 //					}
 //				}
@@ -126,7 +127,7 @@ public class BlueboxMessage {
 //				for (int i = 0; i < addr.length; i++) {
 //					InternetAddress ia = (InternetAddress) addr[i];
 //					if (ia.getAddress().equals(inbox.getAddress())) {
-//						log.fine("Found CC recipient");
+//						log.debug("Found CC recipient");
 //						return ia;
 //					}
 //				}
@@ -136,7 +137,7 @@ public class BlueboxMessage {
 //				for (int i = 0; i < addr.length; i++) {
 //					InternetAddress ia = (InternetAddress) addr[i];
 //					if (ia.getAddress().equals(inbox.getAddress())) {
-//						log.fine("Found BCC recipient");
+//						log.debug("Found BCC recipient");
 //						return ia;
 //					}
 //				}
@@ -220,7 +221,7 @@ public class BlueboxMessage {
 			writeDataSource(ds,resp);
 		}
 		catch (Exception se) {
-			log.warning("Problem writing inline attachment :"+se.getMessage());
+			log.warn("Problem writing inline attachment :"+se.getMessage());
 		}
 	}
 
@@ -233,7 +234,7 @@ public class BlueboxMessage {
 			Utils.copy(ds.getInputStream(),resp.getOutputStream());		
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error(t.getMessage());
 			//			t.printStackTrace();
 			resp.sendError(HttpStatus.SC_NOT_FOUND, t.getMessage());
 		}
