@@ -3,18 +3,20 @@ package com.bluebox.rest.json;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
-import java.util.logging.Logger;
 
 import javax.mail.internet.AddressException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONInboxHandler extends AbstractHandler {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(JSONInboxHandler.class);
 	public static final String JSON_ROOT = "rest/json/inbox";
 
 	public void doGetInbox(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -42,7 +44,7 @@ public class JSONInboxHandler extends AbstractHandler {
 			writer.flush();
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error("Problem listing inbox",t);
 			t.printStackTrace();
 		}
 		resp.flushBuffer();

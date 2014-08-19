@@ -1,19 +1,20 @@
 package com.bluebox.rest.json;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONAttachmentHandler extends AbstractHandler {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(JSONAttachmentHandler.class);
 	public static final String JSON_ROOT = "rest/json/inbox/attachment";
 	/*
 	 * REST rest/json/inbox/attachment/26e3a411-f456-4c5f-a531-3b73f43ecf7f/1
@@ -26,12 +27,12 @@ public class JSONAttachmentHandler extends AbstractHandler {
 			String uid = extractFragment(uri,JSON_ROOT,2);
 			String index = extractFragment(uri,JSON_ROOT,1);
 			String name = extractFragment(uri,JSON_ROOT,0);
-			log.info("Serving file attachment "+name+" at index "+index+" for message "+uid);
+			log.info("Serving file attachment {} at index {} for message {}"+name,index,uid);
 			BlueboxMessage message = inbox.retrieve(uid);
 			message.writeAttachment(index, resp);
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error("Problem loading attachment",t);
 			t.printStackTrace();
 			try {
 				JSONObject error = new JSONObject();

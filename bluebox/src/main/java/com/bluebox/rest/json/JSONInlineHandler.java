@@ -1,19 +1,20 @@
 package com.bluebox.rest.json;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONInlineHandler extends AbstractHandler {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(JSONInboxHandler.class);
 	public static final String JSON_ROOT = "rest/json/inline";
 	
 	/*
@@ -26,12 +27,12 @@ public class JSONInlineHandler extends AbstractHandler {
 			String uri = req.getRequestURI();
 			String uid = extractFragment(uri,JSON_ROOT,1);
 			String name = extractFragment(uri,JSON_ROOT,0);
-			log.info("Serving inline attachment for uid "+uid+" with name "+name);
+			log.info("Serving inline attachment for uid {} with name {}",uid,name);
 			BlueboxMessage message = inbox.retrieve(uid);
 			message.writeInlineAttachment(name, resp);
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error("Problem serving attachment",t);
 			t.printStackTrace();
 			try {
 				JSONObject error = new JSONObject();

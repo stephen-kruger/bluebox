@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,6 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FileUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
 import com.bluebox.rest.json.JSONAttachmentHandler;
@@ -31,7 +32,7 @@ import com.bluebox.smtp.BlueBoxSMTPServer;
 import com.bluebox.smtp.Inbox;
 
 public class BlueBoxServlet extends HttpServlet {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(BlueBoxServlet.class);
 	private static final long serialVersionUID = 1015755960967873612L;
 	public static final String VERSION = Config.getInstance().getString(Config.BLUEBOX_VERSION);
 	private BlueBoxSMTPServer smtpServer;
@@ -61,64 +62,64 @@ public class BlueBoxServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(final HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		log.fine(req.getRequestURI());
+		log.debug(req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
-			log.fine("doGetMessageDetail");
+			log.debug("doGetMessageDetail");
 			new JSONMessageHandler().doGetMessageDetail(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONAutoCompleteHandler.JSON_ROOT)>=0){
-			log.fine("JSONAutoCompleteHandler");
+			log.debug("JSONAutoCompleteHandler");
 			new JSONAutoCompleteHandler().doAutoComplete(Inbox.getInstance(), req, resp);
 			return;
 		}	
 		if (req.getRequestURI().indexOf(JSONInlineHandler.JSON_ROOT)>=0){
-			log.fine("doGetInlineAttachment");
+			log.debug("doGetInlineAttachment");
 			new JSONInlineHandler().doGetInlineAttachment(Inbox.getInstance(),req,resp);
 			return;
 		}		
 		if (req.getRequestURI().indexOf(JSONAttachmentHandler.JSON_ROOT)>=0){
-			log.fine("doGetMessageAttachment");
+			log.debug("doGetMessageAttachment");
 			new JSONAttachmentHandler().doGetMessageAttachment(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONRawMessageHandler.JSON_ROOT)>=0){
-			log.fine("doGetRawDetail");
+			log.debug("doGetRawDetail");
 			new JSONRawMessageHandler().doGetRawDetail(Inbox.getInstance(),req,resp);
 			return;
 		}		
 		if (req.getRequestURI().indexOf(JSONInboxHandler.JSON_ROOT)>=0){
-			log.fine("doGetInbox");
+			log.debug("doGetInbox");
 			new JSONInboxHandler().doGetInbox(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONSearchHandler.JSON_ROOT)>=0){
-			log.fine("doSearchInbox");
+			log.debug("doSearchInbox");
 			new JSONSearchHandler().doSearchInbox(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONFolderHandler.JSON_ROOT)>=0){
-			log.fine("doGetFolder");
+			log.debug("doGetFolder");
 			new JSONFolderHandler().doGetFolder(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONStatsHandler.JSON_ROOT)>=0){
-			log.fine("doGetStats");
+			log.debug("doGetStats");
 			new JSONStatsHandler().doGet(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONErrorHandler.JSON_DETAIL_ROOT)>=0){
-			log.fine("doGetErrorDetail");
+			log.debug("doGetErrorDetail");
 			new JSONErrorHandler().doGetDetail(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONErrorHandler.JSON_ROOT)>=0){
-			log.fine("doGetErrors");
+			log.debug("doGetErrors");
 			new JSONErrorHandler().doGet(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONMessageUtilHandler.JSON_ROOT)>=0){
-			log.fine("doGetErrors");
+			log.debug("doGetErrors");
 			new JSONMessageUtilHandler().doGet(Inbox.getInstance(),req,resp);
 			return;
 		}
@@ -140,7 +141,7 @@ public class BlueBoxServlet extends HttpServlet {
 			return;
 		}
 		if (req.getRequestURI().indexOf("rest/admin/prune")>=0){
-			log.fine("Prune");
+			log.debug("Prune");
 			try {
 				WorkerThread wt = Inbox.getInstance().cleanUp();
 				startWorker(wt, resp);
@@ -266,7 +267,7 @@ public class BlueBoxServlet extends HttpServlet {
 			}
 			return;
 		}
-		log.warning("No handler for "+req.getRequestURI()+" expected :"+req.getContextPath());
+		log.warn("No handler for "+req.getRequestURI()+" expected :"+req.getContextPath());
 		super.doGet(req, resp);
 	}
 
@@ -294,21 +295,21 @@ public class BlueBoxServlet extends HttpServlet {
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		log.warning("Unimplemented doPut :"+req.getRequestURI());
+		log.warn("Unimplemented doPut :"+req.getRequestURI());
 		super.doPut(req, resp);
 	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		log.warning("Unimplemented doPost :"+req.getRequestURI());
+		log.warn("Unimplemented doPost :"+req.getRequestURI());
 		super.doPost(req, resp);
 	}
 
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		log.fine("doDelete :"+req.getRequestURI());
+		log.debug("doDelete :"+req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
 			new JSONMessageHandler().doDelete(Inbox.getInstance(),req,resp);
 			return;

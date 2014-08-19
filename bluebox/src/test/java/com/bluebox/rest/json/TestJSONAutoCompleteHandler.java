@@ -1,19 +1,18 @@
 package com.bluebox.rest.json;
 
-import java.util.logging.Logger;
-
 import junit.framework.TestCase;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.TestUtils;
-import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
 public class TestJSONAutoCompleteHandler extends TestCase {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(TestJSONAutoCompleteHandler.class);
 	private Inbox inbox;
 	private JSONAutoCompleteHandler handler;
 	private StorageIf jr;
@@ -25,7 +24,7 @@ public class TestJSONAutoCompleteHandler extends TestCase {
 		inbox = Inbox.getInstance();
 		handler = new JSONAutoCompleteHandler();
 		
-		log.fine("Cleaning up messages to start tests");
+		log.debug("Cleaning up messages to start tests");
 		getBlueBoxStorageIf().deleteAll();
 	}
 

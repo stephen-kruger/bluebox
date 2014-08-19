@@ -8,7 +8,6 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 import javax.mail.Message.RecipientType;
 import javax.servlet.ServletContext;
@@ -20,13 +19,15 @@ import org.codehaus.jettison.json.JSONObject;
 import org.owasp.validator.html.AntiSamy;
 import org.owasp.validator.html.CleanResults;
 import org.owasp.validator.html.Policy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONMessageHandler extends AbstractHandler {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(JSONMessageHandler.class);
 	public static final String JSON_ROOT = "rest/json/inbox/detail";
 	public static final String SECURITY = "Security";
 
@@ -51,7 +52,7 @@ public class JSONMessageHandler extends AbstractHandler {
 			out.flush();
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error(t.getMessage(),t);
 			t.printStackTrace();
 			try {
 				JSONObject error = new JSONObject();
@@ -129,7 +130,7 @@ public class JSONMessageHandler extends AbstractHandler {
 			out.write(result.toString(3));
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error(t.getMessage(),t);
 			t.printStackTrace();
 			try {
 				JSONObject error = new JSONObject();

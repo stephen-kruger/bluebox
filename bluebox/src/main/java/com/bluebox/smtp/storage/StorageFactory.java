@@ -1,11 +1,14 @@
 package com.bluebox.smtp.storage;
 
-import java.util.logging.Logger;
+
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.Config;
 
 public class StorageFactory {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(StorageFactory.class);
 	private static StorageIf storageInstance;
 
 	public static StorageIf getInstance() {
@@ -18,6 +21,7 @@ public class StorageFactory {
 				storageInstance = (StorageIf) Class.forName(storageClassName).newInstance();
 			} 
 			catch (Throwable e) {
+				log.error(e.getMessage());
 				e.printStackTrace();
 			}
 		}
@@ -29,16 +33,4 @@ public class StorageFactory {
 		storageInstance=null;
 	}
 
-//	public static void stop() {
-//		log.info("Stopping storage factory instance");
-//		if (storageInstance!=null) {
-//			try {
-//				storageInstance.stop();
-//			} 
-//			catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		storageInstance = null;
-//	}
 }

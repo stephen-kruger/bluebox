@@ -2,18 +2,19 @@ package com.bluebox.rest.json;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONErrorHandler extends AbstractHandler {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(JSONErrorHandler.class);
 	public static final String JSON_ROOT = "rest/json/errors";
 	public static final String JSON_DETAIL_ROOT = "rest/json/errors/detail";
 
@@ -34,7 +35,7 @@ public class JSONErrorHandler extends AbstractHandler {
 			writer.close();
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error("Problem serving errors",t);
 			t.printStackTrace();
 		}
 		resp.flushBuffer();

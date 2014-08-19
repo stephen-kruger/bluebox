@@ -3,17 +3,19 @@ package com.bluebox.rest.json;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Enumeration;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.search.SearchIndexer;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONSearchHandler extends AbstractHandler {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(JSONSearchHandler.class);
 	public static final String JSON_ROOT = "rest/json/search";
 
 //	protected static String extractSearch(String uri, String fragment) {
@@ -78,15 +80,15 @@ public class JSONSearchHandler extends AbstractHandler {
 			
 		try {
 			// tell the grid how many items we have
-			log.info("Sending JSON search view for "+search+" first="+first+" last="+last+" orderby="+orderBy.name());
+			log.info("Sending JSON search view for {} first={} last={} orderby={}",search,first,last,orderBy.name());
 			Writer writer = resp.getWriter();
 			long totalCount = inbox.searchInbox(search, writer, first, last-first, SearchIndexer.SearchFields.valueOf(searchScope), orderBy, ascending);
-			log.info("Total result set was length "+totalCount);
+			log.info("Total result set was length {}",totalCount);
 			resp.setHeader("Content-Range", "items "+first+"-"+last+"/"+totalCount);//Content-Range: items 0-24/66
 			writer.flush();
 		}
 		catch (Throwable t) {
-			log.severe(t.getMessage());
+			log.error(t.getMessage());
 			t.printStackTrace();
 		}
 		resp.flushBuffer();
@@ -100,7 +102,7 @@ public class JSONSearchHandler extends AbstractHandler {
 			return Integer.parseInt(contentHeader.substring(s,e));
 		}
 		catch (Throwable t) {
-			log.warning("Invalid Content header :"+contentHeader);
+			log.warn("Invalid Content header :{}",contentHeader);
 			return 0;
 		}
 	}
@@ -113,7 +115,7 @@ public class JSONSearchHandler extends AbstractHandler {
 			return Integer.parseInt(contentHeader.substring(s,e));
 		}
 		catch (Throwable t) {
-			log.warning("Invalid Content header :"+contentHeader);
+			log.warn("Invalid Content header :{}",contentHeader);
 			return Integer.MAX_VALUE;
 		}
 	}

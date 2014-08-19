@@ -2,7 +2,6 @@ package com.bluebox;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import org.apache.commons.configuration.CompositeConfiguration;
@@ -10,9 +9,11 @@ import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Config extends CompositeConfiguration {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(Config.class);
 	private static Config configInstance;
 	public static final String BLUEBOX_VERSION 			= "bluebox_version";
 	public static final String BLUEBOX_PORT 			= "bluebox_port";
@@ -44,7 +45,7 @@ public class Config extends CompositeConfiguration {
 			addConfiguration(pconfig);
 		} 
 		catch (ConfigurationException e) {
-			log.severe("Problem loading configuration");
+			log.error("Problem loading configuration",e);
 			e.printStackTrace();
 		}
 

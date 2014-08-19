@@ -23,7 +23,6 @@ import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -48,6 +47,8 @@ import org.apache.commons.fileupload.util.mime.MimeUtility;
 import org.apache.commons.lang.RandomStringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.rest.json.AbstractHandler;
 import com.bluebox.smtp.Inbox;
@@ -55,7 +56,7 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class Utils {
 	public static final String UTF8 = "UTF-8";
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(Utils.class);
 	private static int counter=0;
 
 	public static String getHostName() {
@@ -183,7 +184,7 @@ public class Utils {
 			return address.getPersonal()+"";
 		}
 		catch (Throwable e) {
-			log.fine(e.getMessage()+" "+email);
+			log.debug(e.getMessage()+" "+email);
 			e.printStackTrace();
 		}
 		return "";
@@ -195,7 +196,7 @@ public class Utils {
 
 	public static String uploadEML(InputStream eml) throws IOException, MessagingException {
 		if (eml==null) {
-			log.severe("Could not load eml resource");
+			log.error("Could not load eml resource");
 			return "Could not load eml resource";
 		}
 		try {
@@ -496,7 +497,7 @@ public class Utils {
 			}
 		}
 		if (retryCount<=0) {
-			log.warning("Timed out waiting for messages to arrive");
+			log.warn("Timed out waiting for messages to arrive");
 			throw new Exception("Timed out waiting for "+count+"messages to arrive");
 		}
 		else {
@@ -649,7 +650,7 @@ public class Utils {
 		} 
 		catch (UnsupportedEncodingException e) {
 			//e.printStackTrace();
-			log.warning("Problem decoding "+s);
+			log.warn("Problem decoding "+s);
 			return s;
 		}
 	}
@@ -660,7 +661,7 @@ public class Utils {
 		} 
 		catch (UnsupportedEncodingException e) {
 			//			e.printStackTrace();
-			log.warning("Problem encoding "+s);
+			log.warn("Problem encoding "+s);
 			return s;
 		}
 	}
@@ -741,7 +742,7 @@ public class Utils {
 			catch (Throwable e) {
 				res.append(s);
 				//e.printStackTrace();
-				log.fine("Error decoding quoted-printable :"+e.getMessage());
+				log.debug("Error decoding quoted-printable :"+e.getMessage());
 			}				
 		}
 		return res.toString();
