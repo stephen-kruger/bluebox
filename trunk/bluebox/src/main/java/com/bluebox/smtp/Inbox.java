@@ -646,7 +646,11 @@ public class Inbox implements SimpleMessageListener {
 								try {
 									emlFile = new File(dir,msg.getIdentifier()+".eml");
 									jsonFile = new File(dir.getCanonicalFile(),msg.getIdentifier()+".json");
-									if (!jsonFile.exists()&&emlFile.exists()) {
+									if (jsonFile.exists()||emlFile.exists()) {
+										log.info("Skipping backup of "+msg.getIdentifier());
+										
+									}
+									else {
 										OutputStream fos = new BufferedOutputStream(new FileOutputStream(emlFile));
 										Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()),fos);
 										fos.close();
@@ -654,9 +658,6 @@ public class Inbox implements SimpleMessageListener {
 										fos = new BufferedOutputStream(new FileOutputStream(jsonFile));
 										fos.write(msg.toJSON().toString().getBytes());
 										fos.close();
-									}
-									else {
-										log.info("Skipping backup of "+msg.getIdentifier());
 									}
 								}
 								catch (Throwable t) {
