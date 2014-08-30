@@ -1,8 +1,6 @@
 package com.bluebox.chart;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.Date;
+import java.util.Calendar;
 
 import junit.framework.TestCase;
 
@@ -19,10 +17,11 @@ import com.bluebox.smtp.storage.StorageFactory;
 public class ChartTest extends TestCase {
 	private static final Logger log = LoggerFactory.getLogger(ChartTest.class);
 
-	
+
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		log.info("Populating chart tests");
 		Inbox.getInstance().deleteAll();; // trigger inbox and storage start
 		TestUtils.addRandom(StorageFactory.getInstance(), 10);
 		Utils.waitFor(10);
@@ -31,24 +30,24 @@ public class ChartTest extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
-//		Inbox.getInstance().deleteAll();;
+		Inbox.getInstance().deleteAll();
 		Inbox.getInstance().stop();
 	}
 
-	@SuppressWarnings("deprecation")
 	public void testHistory() throws JSONException {
 		JSONObject jo = StorageFactory.getInstance().getCountByDay();
-		log.info(jo.toString(3));
-		assertNotNull(jo.get("1"));
-		assertNotNull(jo.get("31"));
-		
-		assertEquals("Incorrect status reported for today",10,jo.getInt(""+new Date().getDate()));
+
+		Calendar cal = Calendar.getInstance();
+		int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
+		for (int i = 1; i < 32;i++) {
+			assertNotNull(jo.get(""+i));
+			if (i==dayOfMonth) {
+				assertEquals("Incorrect status reported for today",10,jo.getInt(""+i));
+			}
+			else {
+				assertEquals("Incorrect status reported for day "+i,1,jo.getInt(""+i));				
+			}
+		}
 	}
-	
-	public void testChart() throws Exception {
-		File f = File.createTempFile("blueboxchart", "png");
-		f.deleteOnExit();
-		Charts c = new Charts();
-		c.renderHistoryChart(new FileOutputStream(f),200,200);
-	}
+
 }

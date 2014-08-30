@@ -18,7 +18,7 @@ import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public abstract class AbstractStorage implements StorageIf {
-	public static final String DB_NAME = "bluebox401";
+	public static final String DB_NAME = "bluebox402";
 	
 	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
 		List<JSONObject> mail = listMailLite(inbox, state, start, count, orderBy, ascending, locale);
