@@ -15,5 +15,5 @@
 
 <div class="leftSideContent">
 	<h2><%= statsResource.getString("charts_title") %></h2>
-	<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?width=350&height=160"></img>
+	<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?width=300&height=150"></img>
 </div>

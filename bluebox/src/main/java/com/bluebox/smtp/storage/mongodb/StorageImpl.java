@@ -630,6 +630,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			try {
 				row = (DBObject) result.get("_id");
 				resultJ.put(row.get("day").toString(),result.get("count").toString());
+//				log.info(">>>"+row.get("day").toString()+" "+result.get("count").toString());
 			} 
 			catch (Throwable e) {
 				e.printStackTrace();
