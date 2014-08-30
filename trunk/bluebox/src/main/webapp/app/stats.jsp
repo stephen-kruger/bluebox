@@ -117,8 +117,7 @@
 		<span id="stats_recent" style="white-space: normal;"><img
 			src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/loading.gif"></span>
 	</p>
-	<br />
 	<div class="seperator"></div>
-	<br /> <span style="color: lightGrey;"><%= footerResource.getString("title") %>
+	<span style="color: lightGrey;"><%= footerResource.getString("title") %>
 		V<%= BlueBoxServlet.VERSION %></span>
 </div>

@@ -23,10 +23,6 @@
 			width:100%;
 			height:70%;
 		}
-			
-		.seperator {
-			border-top:1px dotted #ccc;
-		}
 	
 	</style>
 </head>

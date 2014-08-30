@@ -85,6 +85,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public void store(JSONObject props, InputStream blob) throws Exception {
 		DBCollection coll = db.getCollection(TABLE_NAME);
 		DBObject bson = ( DBObject ) JSON.parse( props.toString() );
+		bson.put(StorageIf.Props.Received.name(), new Date(props.getLong(StorageIf.Props.Received.name())));
 		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
 		GridFSInputFile gfsFile = gfsRaw.createFile(blob);
 		gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
@@ -158,13 +159,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-
 	public Date getDBODate(Object dbo, String key, Date def) {
 		BasicDBObject mo = (BasicDBObject)dbo;
 		if (mo.containsField(key))
-			return new Date(mo.getLong(key));
-		else
+			return mo.getDate(key);
+		else {
+			log.warn("Missing field "+key);
 			return def;
+		}
 	}
 
 	public InputStream getDBORaw(Object dbo, String uid) {
@@ -601,5 +603,41 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public WorkerThread runMaintenance() throws Exception {
 		return cleanRaw();
+	}
+
+	@Override
+	public JSONObject getCountByDay() {
+		JSONObject resultJ = new JSONObject();
+		try {
+			// init stats with empty values
+			for (int i = 1; i < 32; i++) {
+				resultJ.put(i+"", 1);
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		
+		// now fill in query results
+		String json = "{$group : { _id : { day: { $dayOfMonth: \"$"+StorageIf.Props.Received.name()+"\" }}, count: { $sum: 1 }}}";
+		DBObject sum = (DBObject) JSON.parse(json);
+		DBObject sort = new BasicDBObject("$sort", new BasicDBObject(BlueboxMessage.COUNT, -1));
+		List<DBObject> pipeline = Arrays.asList(sum, sort);
+		AggregationOutput output = db.getCollection(TABLE_NAME).aggregate(pipeline);
+		//{ "_id" : { "day" : 30} , "count" : 10}
+		DBObject row;
+		for (DBObject result : output.results()) {
+			try {
+				row = (DBObject) result.get("_id");
+				resultJ.put(row.get("day").toString(),result.get("count").toString());
+				log.info("---------------------------------");
+				log.info(result.toString());
+			} 
+			catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return resultJ;
 	}
 }

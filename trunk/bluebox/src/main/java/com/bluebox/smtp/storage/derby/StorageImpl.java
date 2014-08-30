@@ -38,7 +38,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public static final String ERROR_COUNT = "error_count";
 	public static final String ERROR_TITLE = "error_title";
 	public static final String ERROR_CONTENT = "error_content";
-	public static final String RAW = "pic";
+//	public static final String RAW = "pic";
 	private boolean started = false;
 
 	public void start() throws Exception {
@@ -130,7 +130,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					StorageIf.Props.Received.name()+" TIMESTAMP, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
 					StorageIf.Props.Size.name()+" BIGINT, "+
-					RAW+" blob(16M))");
+					BlueboxMessage.RAW+" blob(16M))");
 		}
 		catch (Throwable t) {
 			log.debug(t.getMessage());
@@ -171,7 +171,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 		connection.close();
 	}
-	
+
 	public void store(JSONObject props, InputStream blob) throws Exception {
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -188,42 +188,42 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		connection.commit();
 		connection.close();
 	}
-	
-//	public String add(String id, String from, InboxAddress recipient, String subject, Date date, State state, long size, InputStream blob) throws Exception {
-//		Connection connection = getConnection();
-//		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-//		ps.setString(1, id); // UID
-//		ps.setString(2, recipient.getAddress());// INBOX
-//		ps.setString(3, recipient.getFullAddress()); // RECIPIENT
-//		ps.setString(4, from); // FROM
-//		ps.setString(5, subject); // SUBJECT
-//		ps.setTimestamp(6, new Timestamp(date.getTime())); // RECEIVED
-//		ps.setInt(7, state.ordinal()); // STATE
-//		ps.setLong(8, size); // SIZE
-//		ps.setBinaryStream(9, blob); // MIMEMESSAGE
-//		ps.execute();
-//		connection.commit();
-//		connection.close();
-//
-//		log.debug("Added mail entry "+recipient.getFullAddress());
-//		return id;
-//	}
 
-//	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
-//		String uid = UUID.randomUUID().toString();
-//		BlueboxMessage message = new BlueboxMessage(uid,recipient);
-//		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
-////		add(uid, 
-////				from,
-////				recipient, 
-////				bbmm.getSubject(),
-////				received, 
-////				State.NORMAL, 
-////				Long.parseLong(message.getProperty(BlueboxMessage.SIZE)),
-////				Utils.streamMimeMessage(bbmm));
-//		store(message.toJSON(),Utils.streamMimeMessage(bbmm));
-//		return message;
-//	}
+	//	public String add(String id, String from, InboxAddress recipient, String subject, Date date, State state, long size, InputStream blob) throws Exception {
+	//		Connection connection = getConnection();
+	//		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	//		ps.setString(1, id); // UID
+	//		ps.setString(2, recipient.getAddress());// INBOX
+	//		ps.setString(3, recipient.getFullAddress()); // RECIPIENT
+	//		ps.setString(4, from); // FROM
+	//		ps.setString(5, subject); // SUBJECT
+	//		ps.setTimestamp(6, new Timestamp(date.getTime())); // RECEIVED
+	//		ps.setInt(7, state.ordinal()); // STATE
+	//		ps.setLong(8, size); // SIZE
+	//		ps.setBinaryStream(9, blob); // MIMEMESSAGE
+	//		ps.execute();
+	//		connection.commit();
+	//		connection.close();
+	//
+	//		log.debug("Added mail entry "+recipient.getFullAddress());
+	//		return id;
+	//	}
+
+	//	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
+	//		String uid = UUID.randomUUID().toString();
+	//		BlueboxMessage message = new BlueboxMessage(uid,recipient);
+	//		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
+	////		add(uid, 
+	////				from,
+	////				recipient, 
+	////				bbmm.getSubject(),
+	////				received, 
+	////				State.NORMAL, 
+	////				Long.parseLong(message.getProperty(BlueboxMessage.SIZE)),
+	////				Utils.streamMimeMessage(bbmm));
+	//		store(message.toJSON(),Utils.streamMimeMessage(bbmm));
+	//		return message;
+	//	}
 
 	public void delete(String id) throws Exception {
 		Connection connection = getConnection();
@@ -304,7 +304,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public InputStream getDBORaw(Object dbo, String key) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
-			return mo.getBinaryStream(StorageImpl.RAW);
+			return mo.getBinaryStream(BlueboxMessage.RAW);
 		}
 		catch (Throwable t) {
 			log.error(t.getMessage());
@@ -325,18 +325,18 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void deleteAll() throws Exception {
-//		log.debug("Deleting all inboxes");
-//		Connection connection = getConnection();
-//		Statement s;
-//		s = connection.createStatement();
-//		s.execute("delete from "+INBOX_TABLE);
-//		s.close();
-//
-//		log.debug("Deleting all properties");
-//		s = connection.createStatement();
-//		s.execute("delete from "+PROPS_TABLE);
-//		s.close();
-//		connection.close();
+		//		log.debug("Deleting all inboxes");
+		//		Connection connection = getConnection();
+		//		Statement s;
+		//		s = connection.createStatement();
+		//		s.execute("delete from "+INBOX_TABLE);
+		//		s.close();
+		//
+		//		log.debug("Deleting all properties");
+		//		s = connection.createStatement();
+		//		s.execute("delete from "+PROPS_TABLE);
+		//		s.close();
+		//		connection.close();
 		dropTables();
 		setupTables();
 	}
@@ -675,7 +675,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					s.close();
 				}
 				catch (Throwable t) {
-					t.printStackTrace();
+					log.warn("Seems no stats are available");
 				}
 			}
 			catch (Throwable t) {
@@ -713,9 +713,48 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					setProgress(100);
 				}
 			}
-			
+
 		};
 		return wt;
+	}
+
+	@Override
+	public JSONObject getCountByDay() {
+
+		JSONObject resultJ = new JSONObject();
+		try {
+			// init stats with empty values
+			for (int i = 1; i < 32; i++) {
+				resultJ.put(i+"", 1);
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+
+		String sql = "select day( "+StorageIf.Props.Received+" ), count( "+StorageIf.Props.Uid+" ) from "+INBOX_TABLE+" group by day( "+StorageIf.Props.Received+" )";
+		try {
+			Connection connection = getConnection();
+			Statement s = connection.createStatement();
+			PreparedStatement ps;
+			ps = connection.prepareStatement(sql);
+			ps.execute();
+			ResultSet result = ps.getResultSet();
+
+			while (result.next()) {
+				resultJ.put(result.getString(1), result.getString(2));
+			}
+			ps.close();
+			s.close();
+			connection.close();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+			log.warn("Seems no stats are available");
+		}
+
+
+		return resultJ;
 	}
 
 }

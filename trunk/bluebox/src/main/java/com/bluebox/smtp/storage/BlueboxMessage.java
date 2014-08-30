@@ -80,7 +80,7 @@ public class BlueboxMessage {
 		setProperty(INBOX, getInbox().getAddress());
 		setProperty(SUBJECT, bbmm.getSubject());
 		setLongProperty(RECEIVED, received.getTime());
-		setProperty(RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
+//		setProperty(RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
 		setIntProperty(STATE, State.NORMAL.ordinal());
 		setProperty(SIZE, bbmm.getSize());
 	}
