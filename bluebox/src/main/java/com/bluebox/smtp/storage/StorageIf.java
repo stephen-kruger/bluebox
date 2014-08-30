@@ -105,4 +105,14 @@ public interface StorageIf {
 	 * Called to perform housekeep tasks on the underlying storage, such as rebuilding indexes.
 	 */
 	public WorkerThread runMaintenance() throws Exception;
+	
+	/*
+	 * Return a JSON view of the count of email received per day of month
+	 * {
+	 *  "1" : 200,
+	 *  ...
+	 *  "31" : 100
+	 * }
+	 */
+	public JSONObject getCountByDay();
 }

@@ -19,6 +19,8 @@
 	<div class="colWrapper">		
 		<div class="leftCol">
 			<jsp:include page="check.jsp" />
+			<div class="seperator"></div>
+			<jsp:include page="charts.jsp" />
 		</div>
 			
 		<div class="centerCol" style="display: table-cell;vertical-align: middle;">
@@ -28,6 +30,8 @@
 		<div class="rightCol">
 			<jsp:include page="stats.jsp" />
 		</div>
+		
+
 	</div>
 </body>
 </html>

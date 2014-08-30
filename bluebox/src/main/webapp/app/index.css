@@ -83,3 +83,9 @@ img.sixteenIcon {
 	padding:5px;
 	border-radius: 1em;
 }
+
+.seperator {
+	margin-top:3em;
+	margin-bottom:3em;
+	border-top:1px dotted #ccc;
+}

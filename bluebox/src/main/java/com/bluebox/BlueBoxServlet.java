@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
+import com.bluebox.chart.Charts;
 import com.bluebox.rest.json.JSONAttachmentHandler;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONErrorHandler;
@@ -62,7 +63,7 @@ public class BlueBoxServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(final HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		log.debug(req.getRequestURI());
+		log.info(req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
 			log.debug("doGetMessageDetail");
 			new JSONMessageHandler().doGetMessageDetail(Inbox.getInstance(),req,resp);
@@ -121,6 +122,11 @@ public class BlueBoxServlet extends HttpServlet {
 		if (req.getRequestURI().indexOf(JSONMessageUtilHandler.JSON_ROOT)>=0){
 			log.debug("doGetErrors");
 			new JSONMessageUtilHandler().doGet(Inbox.getInstance(),req,resp);
+			return;
+		}
+		if (req.getRequestURI().indexOf(Charts.CHART_ROOT)>=0){
+			log.debug("doCharts");
+			new Charts().renderChart(req, resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf("rest/admin/generate")>=0){
