@@ -639,4 +639,39 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		
 		return resultJ;
 	}
+	
+	@Override
+	public JSONObject getCountByHour() {
+		JSONObject resultJ = new JSONObject();
+		try {
+			// init stats with empty values
+			for (int i = 0; i < 24; i++) {
+				resultJ.put(i+"", 1);
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		
+		// now fill in query results
+		String json = "{$group : { _id : { hour: { $hour: \"$"+StorageIf.Props.Received.name()+"\" }}, count: { $sum: 1 }}}";
+		DBObject sum = (DBObject) JSON.parse(json);
+		DBObject sort = new BasicDBObject("$sort", new BasicDBObject(BlueboxMessage.COUNT, -1));
+		List<DBObject> pipeline = Arrays.asList(sum, sort);
+		AggregationOutput output = db.getCollection(TABLE_NAME).aggregate(pipeline);
+		//{ "_id" : { "day" : 30} , "count" : 10}
+		DBObject row;
+		for (DBObject result : output.results()) {
+			try {
+				row = (DBObject) result.get("_id");
+				resultJ.put(row.get("hour").toString(),result.get("count").toString());
+				log.info(">>>"+row.get("hour").toString()+" "+result.get("count").toString());
+			} 
+			catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return resultJ;
+	}
 }

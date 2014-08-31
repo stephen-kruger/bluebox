@@ -7,13 +7,12 @@
 <%@ page import="com.bluebox.BlueBoxServlet" language="java"%>
 <% 
 	Config bbconfig = Config.getInstance(); 
-	ResourceBundle statsResource = ResourceBundle.getBundle("charts",request.getLocale());
+	ResourceBundle chartResource = ResourceBundle.getBundle("charts",request.getLocale());
 %>
-<script>	
-
-</script>
 
 <div class="leftSideContent">
-	<h2><%= statsResource.getString("charts_title") %></h2>
-	<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?width=300&height=150"></img>
+	<h2><%= chartResource.getString("charts_daily_title") %></h2>
+	<a href="./info.jsp">
+		<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=daily&width=300&height=150"></img>
+	</a>
 </div>
