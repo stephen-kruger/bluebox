@@ -732,7 +732,47 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			t.printStackTrace();
 		}
 
-		String sql = "select day( "+StorageIf.Props.Received+" ), count( "+StorageIf.Props.Uid+" ) from "+INBOX_TABLE+" group by day( "+StorageIf.Props.Received+" )";
+		String sql = "select day( "+StorageIf.Props.Received.name()+" ), count( "+StorageIf.Props.Uid.name()+" ) from "+INBOX_TABLE+" group by day( "+StorageIf.Props.Received.name()+" )";
+		try {
+			Connection connection = getConnection();
+			Statement s = connection.createStatement();
+			PreparedStatement ps;
+			ps = connection.prepareStatement(sql);
+			ps.execute();
+			ResultSet result = ps.getResultSet();
+
+			while (result.next()) {
+				resultJ.put(result.getString(1), result.getString(2));
+				log.info(result.toString());
+			}
+			ps.close();
+			s.close();
+			connection.close();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+			log.warn("Seems no stats are available");
+		}
+
+
+		return resultJ;
+	}
+	
+	@Override
+	public JSONObject getCountByHour() {
+
+		JSONObject resultJ = new JSONObject();
+		try {
+			// init stats with empty values
+			for (int i = 0; i < 24; i++) {
+				resultJ.put(i+"", 1);
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+
+		String sql = "select hour( "+StorageIf.Props.Received.name()+" ), count( "+StorageIf.Props.Uid.name()+" ) from "+INBOX_TABLE+" group by hour( "+StorageIf.Props.Received.name()+" )";
 		try {
 			Connection connection = getConnection();
 			Statement s = connection.createStatement();
@@ -750,7 +790,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
-			log.warn("Seems no stats are available");
+			log.warn("Seems no hourly stats are available");
 		}
 
 

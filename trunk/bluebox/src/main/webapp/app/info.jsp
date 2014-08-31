@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle"%>
+<%@ page import="com.bluebox.chart.Charts" language="java"%>
 <%@ page import="com.bluebox.Config"%>
 <%
 	Config bbconfig = Config.getInstance();
 	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
 	ResourceBundle infoResource = ResourceBundle.getBundle("info",request.getLocale());
+	ResourceBundle chartResource = ResourceBundle.getBundle("charts",request.getLocale());
+
 %>
 
 <!DOCTYPE html>
@@ -25,6 +28,11 @@
 		.infoValue {
 			font-weight: bold;
 			text-align: right;
+		}
+		
+		/* make centre smaller to allow bigge rgraph in rightCol*/
+		.centerCol {
+			width:50%;
 		}
 	
 	</style>
@@ -112,7 +120,10 @@
 		</div>
 			
 		<div class="rightCol">
-			<jsp:include page="stats.jsp" />
+			<h3><%= chartResource.getString("charts_daily_title") %></h3>
+			<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=daily&width=450&height=250"></img>
+			<h3><%= chartResource.getString("charts_hourly_title") %></h3>
+			<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=hourly&width=400&height=250"></img>
 		</div>
 	</div>
 </body>
