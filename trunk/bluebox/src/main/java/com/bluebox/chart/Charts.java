@@ -12,7 +12,6 @@ import org.codehaus.jettison.json.JSONObject;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
@@ -121,9 +120,9 @@ public class Charts {
 			yAxis.setVisible(true);
 		}
 		yAxis.setAutoRange(true);
-		yAxis.setAutoRangeMinimumSize(1);
-		NumberAxis rangeaxis = (NumberAxis) plot.getRangeAxis(); 
-		rangeaxis.setAutoRangeStickyZero(false);
+//		yAxis.setAutoRangeMinimumSize(1);
+//		NumberAxis rangeaxis = (NumberAxis) plot.getRangeAxis(); 
+//		rangeaxis.setAutoRangeStickyZero(false);
 
 		// x-axis
 		ValueAxis xAxis = plot.getDomainAxis();
@@ -131,7 +130,7 @@ public class Charts {
 			xAxis.setAxisLineVisible(false);
 		}
 		xAxis.setAutoRange(true);
-		xAxis.setRange(1, 31);
+//		xAxis.setRange(1, 31);
 
 
 		ChartUtilities.writeChartAsPNG(os, chart, width, height);
