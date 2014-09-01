@@ -684,7 +684,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				hour = Integer.parseInt(row.get("hour").toString())+1;
 				if (hour==24) hour = 0;
 				resultJ.put(""+hour,result.get("count").toString());
-				log.info(row.toString()+">>>"+hour+" "+result.get("count").toString());
+//				log.info(row.toString()+">>>"+hour+" "+result.get("count").toString());
 			} 
 			catch (Throwable e) {
 				e.printStackTrace();
