@@ -3,6 +3,7 @@ package com.bluebox.chart;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Iterator;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,54 +32,59 @@ import com.bluebox.smtp.storage.StorageFactory;
 public class Charts {
 	public static final String CHART_ROOT = "rest/chart";
 
-//	private  PieDataset createPieDataset(JSONObject jo) {
-//		DefaultPieDataset result = new DefaultPieDataset();
-//		@SuppressWarnings("rawtypes")
-//		Iterator keys = jo.keys();
-//		String key;
-//		while (keys.hasNext()){
-//			try {
-//				key = keys.next().toString();
-//				result.setValue(key, jo.getLong(key));
-//			}
-//			catch (Throwable t) {
-//				t.printStackTrace();
-//			}
-//		}
-//		return result;
-//
-//	}
+	//	private  PieDataset createPieDataset(JSONObject jo) {
+	//		DefaultPieDataset result = new DefaultPieDataset();
+	//		@SuppressWarnings("rawtypes")
+	//		Iterator keys = jo.keys();
+	//		String key;
+	//		while (keys.hasNext()){
+	//			try {
+	//				key = keys.next().toString();
+	//				result.setValue(key, jo.getLong(key));
+	//			}
+	//			catch (Throwable t) {
+	//				t.printStackTrace();
+	//			}
+	//		}
+	//		return result;
+	//
+	//	}
 
 	private IntervalXYDataset createIntervalXYDataset(JSONObject jo) {
 		final XYSeries series = new XYSeries("Random Data");
-		for (int i = 1; i < 32; i++) {
+		@SuppressWarnings("rawtypes")
+		Iterator keys = jo.keys();
+		String key;
+		while (keys.hasNext()) {
+			key = keys.next().toString();
 			try {
-				series.add(i, jo.getInt(i+""));
-			} 
-			catch (JSONException e) {
+				series.add(Double.parseDouble(key), jo.getInt(key));
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 		}
 		final XYSeriesCollection dataset = new XYSeriesCollection(series);
 		return dataset;
 	}
-	
-//	private TimeSeries createDailyDataset(JSONObject jo) {
-//		TimeSeries series = new TimeSeries("Daily");
-//		int day;
-//		Date now = new Date();
-//		for (int i = 1; i < 32; i++) {
-//			day = i;
-//			try {
-//				series.add(new Day(day,now.getMonth(),1900), jo.getInt(day+""));
-//			} 
-//			catch (JSONException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//
-//		return series;
-//	}
+
+	//	private TimeSeries createDailyDataset(JSONObject jo) {
+	//		TimeSeries series = new TimeSeries("Daily");
+	//		int day;
+	//		Date now = new Date();
+	//		for (int i = 1; i < 32; i++) {
+	//			day = i;
+	//			try {
+	//				series.add(new Day(day,now.getMonth(),1900), jo.getInt(day+""));
+	//			} 
+	//			catch (JSONException e) {
+	//				e.printStackTrace();
+	//			}
+	//		}
+	//
+	//		return series;
+	//	}
 
 	public void renderDailyCountChart(OutputStream os, int width, int height) throws IOException {
 		boolean thumbnail = false;
@@ -86,9 +92,9 @@ public class Charts {
 			thumbnail = true;
 		}
 		IntervalXYDataset dataset = createIntervalXYDataset(StorageFactory.getInstance().getCountByDay());
-//		TimeSeries series = createDailyDataset(StorageFactory.getInstance().getCountByDay());
-//		TimeSeriesCollection dataset= new TimeSeriesCollection();
-//		dataset.addSeries(series);
+		//		TimeSeries series = createDailyDataset(StorageFactory.getInstance().getCountByDay());
+		//		TimeSeriesCollection dataset= new TimeSeriesCollection();
+		//		dataset.addSeries(series);
 		JFreeChart chart = ChartFactory.createXYBarChart(
 				"",
 				"", 
@@ -120,9 +126,9 @@ public class Charts {
 			yAxis.setVisible(true);
 		}
 		yAxis.setAutoRange(true);
-//		yAxis.setAutoRangeMinimumSize(1);
-//		NumberAxis rangeaxis = (NumberAxis) plot.getRangeAxis(); 
-//		rangeaxis.setAutoRangeStickyZero(false);
+		//		yAxis.setAutoRangeMinimumSize(1);
+		//		NumberAxis rangeaxis = (NumberAxis) plot.getRangeAxis(); 
+		//		rangeaxis.setAutoRangeStickyZero(false);
 
 		// x-axis
 		ValueAxis xAxis = plot.getDomainAxis();
@@ -130,7 +136,7 @@ public class Charts {
 			xAxis.setAxisLineVisible(false);
 		}
 		xAxis.setAutoRange(true);
-//		xAxis.setRange(1, 31);
+		//		xAxis.setRange(1, 31);
 
 
 		ChartUtilities.writeChartAsPNG(os, chart, width, height);
@@ -171,7 +177,7 @@ public class Charts {
 
 		return series;
 	}
-	
+
 	public void renderHourlyCountChart(OutputStream os, int width, int height) throws IOException {
 		boolean thumbnail = false;
 		if (width<300) {
@@ -179,7 +185,7 @@ public class Charts {
 		}
 		TimeSeries dataset = createHourlyDataset(StorageFactory.getInstance().getCountByHour());
 		TimeSeriesCollection my_data_series= new TimeSeriesCollection();
-        my_data_series.addSeries(dataset);
+		my_data_series.addSeries(dataset);
 		JFreeChart chart = ChartFactory.createTimeSeriesChart("", "", "", my_data_series, false, false, false);
 		chart.setBorderVisible(false);
 		chart.removeLegend();
@@ -210,21 +216,21 @@ public class Charts {
 		ChartUtilities.writeChartAsPNG(os, chart, width, height);
 	}
 
-//	public void renderHistoryChart(OutputStream os, int width, int height) throws IOException {
-//		JFreeChart chart = ChartFactory.createPieChart3D("",          // chart title
-//				createPieDataset(StorageFactory.getInstance().getCountByDay()),                // data
-//				true,                   // include legend
-//				true,
-//				false);
-//
-//
-//		PiePlot3D plot = (PiePlot3D) chart.getPlot();
-//		plot.setStartAngle(290);
-//		plot.setDirection(Rotation.CLOCKWISE);
-//		plot.setForegroundAlpha(0.5f);
-//		plot.setBackgroundPaint(Color.WHITE);
-//		plot.setBackgroundAlpha(0.2f); 
-//		plot.setOutlineVisible(false);
-//		ChartUtilities.writeChartAsPNG(os, chart, width, height);
-//	}
+	//	public void renderHistoryChart(OutputStream os, int width, int height) throws IOException {
+	//		JFreeChart chart = ChartFactory.createPieChart3D("",          // chart title
+	//				createPieDataset(StorageFactory.getInstance().getCountByDay()),                // data
+	//				true,                   // include legend
+	//				true,
+	//				false);
+	//
+	//
+	//		PiePlot3D plot = (PiePlot3D) chart.getPlot();
+	//		plot.setStartAngle(290);
+	//		plot.setDirection(Rotation.CLOCKWISE);
+	//		plot.setForegroundAlpha(0.5f);
+	//		plot.setBackgroundPaint(Color.WHITE);
+	//		plot.setBackgroundAlpha(0.2f); 
+	//		plot.setOutlineVisible(false);
+	//		ChartUtilities.writeChartAsPNG(os, chart, width, height);
+	//	}
 }
