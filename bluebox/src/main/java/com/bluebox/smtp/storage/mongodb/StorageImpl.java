@@ -92,23 +92,23 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		gfsFile.save();
 		coll.insert(bson);
 	}
-	
-//	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
-//		BlueboxMessage message = new BlueboxMessage(UUID.randomUUID().toString());
-//		message.setInbox(recipient);
-//		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
-//		DBCollection coll = db.getCollection(TABLE_NAME);
-//		DBObject bson = ( DBObject ) JSON.parse( message.toJSON().toString() );
-//
-//		//		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
-//		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
-//		GridFSInputFile gfsFile = gfsRaw.createFile(Utils.streamMimeMessage(bbmm));
-//		gfsFile.setFilename(message.getIdentifier());
-//		gfsFile.save();
-//		//		bson.put(BlueboxMessage.RAW, new BasicBSONDecoder().readObject(Utils.streamMimeMessage(bbmm)));
-//		coll.insert(bson);
-//		return message;
-//	}
+
+	//	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
+	//		BlueboxMessage message = new BlueboxMessage(UUID.randomUUID().toString());
+	//		message.setInbox(recipient);
+	//		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
+	//		DBCollection coll = db.getCollection(TABLE_NAME);
+	//		DBObject bson = ( DBObject ) JSON.parse( message.toJSON().toString() );
+	//
+	//		//		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
+	//		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
+	//		GridFSInputFile gfsFile = gfsRaw.createFile(Utils.streamMimeMessage(bbmm));
+	//		gfsFile.setFilename(message.getIdentifier());
+	//		gfsFile.save();
+	//		//		bson.put(BlueboxMessage.RAW, new BasicBSONDecoder().readObject(Utils.streamMimeMessage(bbmm)));
+	//		coll.insert(bson);
+	//		return message;
+	//	}
 
 	public synchronized BlueboxMessage retrieve(String uid) throws Exception {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
@@ -345,12 +345,19 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public void setState(String uid, BlueboxMessage.State state) throws Exception {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
 		DBCursor cursor = db.getCollection(TABLE_NAME).find(query);
-		if (cursor.hasNext()) {
-			DBObject dbo = cursor.next();
-			dbo.put(BlueboxMessage.STATE, state.ordinal());
-			db.getCollection(TABLE_NAME).update(query, dbo);
+		try {
+			if (cursor.hasNext()) {
+				DBObject dbo = cursor.next();
+				dbo.put(BlueboxMessage.STATE, state.ordinal());
+				db.getCollection(TABLE_NAME).update(query, dbo);
+			}
 		}
-		cursor.close();
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		finally {
+			cursor.close();
+		}
 	}
 
 	public void setProperty(String key, String value) {
@@ -412,15 +419,17 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	public int logErrorCount() {
+		DBCursor cursor = errorFS.getFileList();
 		try {
 			// retrieve GridFS object "smithco"
-			DBCursor cursor = errorFS.getFileList();
 			int count = cursor.count();
-			cursor.close();
 			return count;
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
+		}
+		finally {
+			cursor.close();
 		}
 		return 0;
 	}
@@ -437,8 +446,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	public JSONArray logErrorList(int start, int count) {
+		DBCursor cursor = errorFS.getFileList();
 		try {
-			DBCursor cursor = errorFS.getFileList();
 			cursor.skip(start);
 			JSONArray result = new JSONArray();
 			JSONObject logError;
@@ -450,11 +459,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				logError.put("id", dbo.get("_id"));
 				result.put(logError);
 			}
-			cursor.close();
 			return result;
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
+		}
+		finally {
+			cursor.close();
 		}
 		return null;
 	}
@@ -487,14 +498,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		DBObject sum = new BasicDBObject();
 		sum.put("$sum", 1);
-		
+
 		DBObject group = new BasicDBObject();
 		group.put("_id", "$"+BlueboxMessage.RECIPIENT);
 		group.put(BlueboxMessage.COUNT, sum);
-		
+
 		DBObject all = new BasicDBObject();
 		all.put("$group", group);
-		
+
 		DBObject sort = new BasicDBObject("$sort", new BasicDBObject(BlueboxMessage.COUNT, -1));
 		List<DBObject> pipeline = Arrays.asList(all, sort);
 		AggregationOutput output = db.getCollection(TABLE_NAME).aggregate(pipeline);
@@ -502,7 +513,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		for (DBObject result : output.results()) {
 			try {
 				InboxAddress ia = new InboxAddress(result.get("_id").toString());
-				
+
 				jo.put(Inbox.EMAIL,ia.getFullAddress());
 				jo.put(BlueboxMessage.RECIPIENT,ia.getDisplayName());
 				jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
@@ -512,6 +523,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				e.printStackTrace();
 			}
 		}
+
 		// for later Mongodb use Cursor 
 		//				AggregationOptions aggregationOptions = AggregationOptions.builder()
 		//						.batchSize(100)
@@ -617,7 +629,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (Throwable t) {
 			t.printStackTrace();
 		}
-		
+
 		// now fill in query results
 		String json = "{$group : { _id : { day: { $dayOfMonth: \"$"+StorageIf.Props.Received.name()+"\" }}, count: { $sum: 1 }}}";
 		DBObject sum = (DBObject) JSON.parse(json);
@@ -630,16 +642,16 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			try {
 				row = (DBObject) result.get("_id");
 				resultJ.put(row.get("day").toString(),result.get("count").toString());
-//				log.info(">>>"+row.get("day").toString()+" "+result.get("count").toString());
+				//				log.info(">>>"+row.get("day").toString()+" "+result.get("count").toString());
 			} 
 			catch (Throwable e) {
 				e.printStackTrace();
 			}
 		}
-		
+
 		return resultJ;
 	}
-	
+
 	@Override
 	public JSONObject getCountByHour() {
 		JSONObject resultJ = new JSONObject();
@@ -652,7 +664,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (Throwable t) {
 			t.printStackTrace();
 		}
-		
+
 		// now fill in query results
 		String json = "{$group : { _id : { hour: { $hour: \"$"+StorageIf.Props.Received.name()+"\" }}, count: { $sum: 1 }}}";
 		DBObject sum = (DBObject) JSON.parse(json);
@@ -671,7 +683,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				e.printStackTrace();
 			}
 		}
-		
+
 		return resultJ;
 	}
 }
