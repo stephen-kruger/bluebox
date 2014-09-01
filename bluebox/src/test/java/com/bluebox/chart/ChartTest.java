@@ -49,16 +49,17 @@ public class ChartTest extends TestCase {
 			}
 		}
 	}
-	
+
 	public void testCountByHour() throws JSONException {
 		JSONObject jo = StorageFactory.getInstance().getCountByHour();
-
+		log.info(jo.toString());
 		Calendar cal = Calendar.getInstance();
 		int hourOfDay = cal.get(Calendar.HOUR_OF_DAY);
-		for (int i = 1; i < 24;i++) {
+		log.info("Current hour is "+hourOfDay);
+		for (int i = 0; i < 24;i++) {
 			assertNotNull(jo.get(""+i));
 			if (i==hourOfDay) {
-				assertEquals("Incorrect status reported for hour",10,jo.getInt(""+i));
+				assertEquals("Incorrect status reported for hour "+i,10,jo.getInt(""+i));
 			}
 			else {
 				assertEquals("Incorrect status reported for hour "+i,1,jo.getInt(""+i));				

@@ -3,6 +3,7 @@ package com.bluebox.smtp.storage.mongodb;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -85,7 +86,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public void store(JSONObject props, InputStream blob) throws Exception {
 		DBCollection coll = db.getCollection(TABLE_NAME);
 		DBObject bson = ( DBObject ) JSON.parse( props.toString() );
-		bson.put(StorageIf.Props.Received.name(), new Date(props.getLong(StorageIf.Props.Received.name())));
+		Date d = new Date(props.getLong(StorageIf.Props.Received.name()));
+		bson.put(StorageIf.Props.Received.name(), d);
 		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
 		GridFSInputFile gfsFile = gfsRaw.createFile(blob);
 		gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
@@ -668,16 +670,21 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		// now fill in query results
 		String json = "{$group : { _id : { hour: { $hour: \"$"+StorageIf.Props.Received.name()+"\" }}, count: { $sum: 1 }}}";
 		DBObject sum = (DBObject) JSON.parse(json);
-		DBObject sort = new BasicDBObject("$sort", new BasicDBObject(BlueboxMessage.COUNT, -1));
+		DBObject sort = new BasicDBObject("$sort", new BasicDBObject(BlueboxMessage.COUNT, 1));
 		List<DBObject> pipeline = Arrays.asList(sum, sort);
 		AggregationOutput output = db.getCollection(TABLE_NAME).aggregate(pipeline);
-		//{ "_id" : { "day" : 30} , "count" : 10}
+		//{ "hour" : 10}
+		int hour;
 		DBObject row;
 		for (DBObject result : output.results()) {
 			try {
 				row = (DBObject) result.get("_id");
-				resultJ.put(row.get("hour").toString(),result.get("count").toString());
-//				log.info(">>>"+row.get("hour").toString()+" "+result.get("count").toString());
+				// not sure why, but hour is always off by one
+				// so 12 is returned as 11, etc
+				hour = Integer.parseInt(row.get("hour").toString())+1;
+				if (hour==24) hour = 0;
+				resultJ.put(""+hour,result.get("count").toString());
+				log.info(row.toString()+">>>"+hour+" "+result.get("count").toString());
 			} 
 			catch (Throwable e) {
 				e.printStackTrace();
