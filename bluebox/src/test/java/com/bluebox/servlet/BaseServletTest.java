@@ -1,7 +1,6 @@
 package com.bluebox.servlet;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
@@ -9,6 +8,8 @@ import org.codehaus.jettison.json.JSONObject;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.testing.HttpTester;
 import org.mortbay.jetty.testing.ServletTester;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
@@ -22,7 +23,7 @@ public abstract class BaseServletTest extends TestCase {
 	private String baseURL;
 	private String contextPath = "/";
 	public ServletHolder bbs, feeds;
-	public static final Logger log = Logger.getAnonymousLogger();
+	protected static final Logger log = LoggerFactory.getLogger(BaseServletTest.class);
 	public static final int COUNT = 5;
 	public static final String RECIPIENT = "user@there.com";
 
