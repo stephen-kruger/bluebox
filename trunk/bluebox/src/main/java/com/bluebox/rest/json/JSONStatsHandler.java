@@ -53,23 +53,29 @@ public class JSONStatsHandler extends AbstractHandler {
 		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(GLOBAL_STAT)) {
 			log.debug("Process global stat");
 			doGetGlobalStats(inbox,req,resp);
+			return;
 		}
 		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(RECENT_STAT)) {
 			log.debug("Process recent stat");
 			doGetRecentStats(inbox,req,resp);
+			return;
 		}
 		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(ACTIVE_STAT)) {
 			log.debug("Process active stat");
 			doGetActiveStats(inbox,req,resp);
+			return;
 		}
 		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(SENDER_STAT)) {
 			log.debug("Process active senderstat");
 			doGetSenderStats(inbox,req,resp);
+			return;
 		}
 		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(COMBINED_STAT)) {
 			log.debug("Process combined stat");
 			doGetCombinedStats(inbox,req,resp);
+			return;
 		}
+		log.error("Unknown request :"+req.getRequestURI()+" <<<>>> "+extractFragment(req.getRequestURI(), JSON_ROOT,1));
 	}
 
 	private void doGetCombinedStats(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
