@@ -210,7 +210,7 @@ public class SearchIndexer {
 				message.getInbox().getFullAddress(),
 				Utils.decodeQuotedPrintable(message.getFrom().getString(0)),
 				Utils.decodeQuotedPrintable(message.getSubject()),
-				message.getHtml(),
+				message.getHtml(null),
 				message.getText(),
 				getRecipients(message),
 				message.getSize(),

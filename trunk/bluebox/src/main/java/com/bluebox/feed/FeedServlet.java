@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.bluebox.Config;
+import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -19,6 +21,7 @@ import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndEntryImpl;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.feed.synd.SyndFeedImpl;
+import com.rometools.rome.feed.synd.SyndImageImpl;
 import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedOutput;
 
@@ -70,15 +73,18 @@ public class FeedServlet extends HttpServlet {
 		SyndFeed feed = new SyndFeedImpl();
 
 		feed.setDescription("Bluebox Inbox Syndication Feed");
-		//		feed.setLogo(uri.getBaseUri().toString()+"../app/"+Config.getInstance().getString("bluebox_theme")+"/message.png");
-		//		feed.setIcon(uri.getBaseUri().toString()+"../app/"+Config.getInstance().getString("bluebox_theme")+"/favicon.ico");
+		SyndImageImpl image = new SyndImageImpl();
+		image.setUrl(Utils.getServletBase(req)+"/app/"+Config.getInstance().getString("bluebox_theme")+"/message.png");
+		image.setLink(Utils.getServletBase(req)+"/app/"+Config.getInstance().getString("bluebox_theme")+"/message.png");
+		image.setTitle(feed.getDescription());
+		feed.setImage(image);
 		feed.setTitle("Inbox for "+email);
 		feed.setAuthor(email);
-		feed.setLink(req.getContextPath()+"../app/inbox.jsp?email="+URLEncoder.encode(email,"UTF-8"));
+		feed.setLink(Utils.getServletBase(req)+"/app/inbox.jsp?email="+URLEncoder.encode(email,"UTF-8"));
 
 		try {
 			InboxAddress inbox = new InboxAddress(email);
-			List<BlueboxMessage> messages = Inbox.getInstance().listInbox(inbox, BlueboxMessage.State.NORMAL, 0, 10, BlueboxMessage.RECEIVED, false);
+			List<BlueboxMessage> messages = Inbox.getInstance().listInbox(inbox, BlueboxMessage.State.NORMAL, 0, 15, BlueboxMessage.RECEIVED, false);
 			List<SyndEntry> entries = new ArrayList<SyndEntry>();
 			SyndEntry entry;
 			SyndContent description;
@@ -86,17 +92,16 @@ public class FeedServlet extends HttpServlet {
 				MimeMessage msg = message.getBlueBoxMimeMessage();
 				entry = new SyndEntryImpl();
 				entry.setTitle(message.getBlueBoxMimeMessage().getSubject());
-				// http://localhost:8080/bluebox/rest/json/inbox/detail/d976d0ee-d5bf-4f72-b6e8-187965e1acea
-				entry.setLink(req.getContextPath()+"/rest/json/inbox/detail/"+message.getIdentifier());
+				entry.setLink(Utils.getServletBase(req)+"/app/inbox.jsp?"+URLEncoder.encode(message.getInbox().toString(),"UTF-8"));
 				entry.setPublishedDate(message.getReceived());
 				entry.setUpdatedDate(message.getReceived());
 				if (msg.getFrom()!=null)
 					entry.setAuthor(msg.getFrom()[0].toString());
-				
+
 				description = new SyndContentImpl();
-				if (message.getHtml().length()>0) {
+				if (message.getHtml(req).length()>0) {
 					description.setType("text/html");
-					description.setValue(message.getHtml());					
+					description.setValue(message.getHtml(req));					
 				}
 				else {
 					description.setType("text/plain");

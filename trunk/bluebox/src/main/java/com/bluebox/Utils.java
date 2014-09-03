@@ -41,6 +41,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.apache.commons.fileupload.util.mime.MimeUtility;
@@ -363,7 +364,7 @@ public class Utils {
 	//			}
 	//		}
 	//	}
-	
+
 	public static WorkerThread generate(final ServletContext session, final int count) {
 		WorkerThread wt = new WorkerThread("generate") {
 
@@ -395,7 +396,7 @@ public class Utils {
 		};
 		return wt;
 	}
-	
+
 	public static void sendMessage(final ServletContext session, final int count) {
 		ExecutorService threadPool = Executors.newFixedThreadPool(10);
 		for (int j = 0; j < count/6; j++) {
@@ -456,7 +457,7 @@ public class Utils {
 		if (bcc!=null)
 			for (int i = 0; i < bcc.length;i++)
 				recipients.add(bcc[i].toString());
-		
+
 		// if we load emails from file, there might not be a recipient (bcc)
 		if (recipients.size()==0)
 			recipients.add("anonymous@bluebox.lotus.com");
@@ -609,8 +610,8 @@ public class Utils {
 				"image/png",
 				"application/document"
 		}; 
-		
-//		String root = "src/main/webapp/data/";
+
+		//		String root = "src/main/webapp/data/";
 
 		int index = r.nextInt(extensions.length); 
 		String name = Integer.toString(r.nextInt(99))+"-"+names[index];
@@ -635,12 +636,12 @@ public class Utils {
 			content = new FileInputStream("src/main/webapp/data/"+names[index]);
 		}
 		DataSource source = new ByteArrayDataSource(content,mime[index]);
-//		source.setFileTypeMap(ftm);
+		//		source.setFileTypeMap(ftm);
 		messageBodyPart.setFileName(name);
 		messageBodyPart.setContentID(UUID.randomUUID().toString());
 		messageBodyPart.setDataHandler(new DataHandler(source));
 		messageBodyPart.setHeader("Content-Type", ftm.getContentType(name)); 
-		
+
 		return messageBodyPart;
 	}
 
@@ -674,10 +675,10 @@ public class Utils {
 	}
 
 	public static String convertNotesAddress(String notes) {
-//		if (notes.indexOf('/')>0)
-//			notes = notes.replaceAll("%", ".");
-//		else
-//			notes = notes.replaceAll("%", "/");
+		//		if (notes.indexOf('/')>0)
+		//			notes = notes.replaceAll("%", ".");
+		//		else
+		//			notes = notes.replaceAll("%", "/");
 		String domain = AbstractHandler.extractFragment(notes, 0);
 		String subdomain = AbstractHandler.extractFragment(notes, 1);
 		String name = AbstractHandler.extractFragment(notes, 2);
@@ -766,5 +767,14 @@ public class Utils {
 		return new ByteArrayInputStream(os.toByteArray());
 	}
 
-
+	public static String getServletBase(HttpServletRequest request) {
+		if (request==null) {
+			return "";
+		}
+		String uri = request.getScheme() + "://" +
+				request.getServerName() + 
+				("http".equals(request.getScheme()) && request.getServerPort() == 80 || "https".equals(request.getScheme()) && request.getServerPort() == 443 ? "" : ":" + request.getServerPort() ) +
+				"/bluebox";
+		return uri;
+	}
 }

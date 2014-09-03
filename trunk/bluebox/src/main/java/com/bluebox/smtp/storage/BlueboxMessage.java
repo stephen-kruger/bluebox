@@ -15,6 +15,7 @@ import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.MimeMessage;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpStatus;
@@ -204,7 +205,7 @@ public class BlueboxMessage {
 			writeDataSource(ds,resp);
 		}
 		catch (Exception se) {
-			log.info("Problem writing attachment :"+se.getMessage());
+			log.info("Problem writing attachment :%s",se.getMessage());
 		}
 	}
 
@@ -221,7 +222,7 @@ public class BlueboxMessage {
 			writeDataSource(ds,resp);
 		}
 		catch (Exception se) {
-			log.warn("Problem writing inline attachment :"+se.getMessage());
+			log.warn("Problem writing inline attachment :%s",se.getMessage());
 		}
 	}
 
@@ -229,7 +230,7 @@ public class BlueboxMessage {
 		try {
 			if (ds==null)
 				throw new Exception("No attachment found");
-			log.info("Setting mime type to "+ds.getContentType());
+			log.debug("Setting mime type to %s",ds.getContentType());
 			resp.setContentType(ds.getContentType());
 			Utils.copy(ds.getInputStream(),resp.getOutputStream());		
 		}
@@ -276,9 +277,10 @@ public class BlueboxMessage {
 		}				
 	}
 
-	public static String convertCidLinks(String uid, String htmlString) {
+	public static String convertCidLinks(HttpServletRequest request, String uid, String htmlString) {
 		try {
-			return htmlString.replaceAll("cid:", "../"+JSONInlineHandler.JSON_ROOT+"/"+uid+"/");
+//			log.info(htmlString.replaceAll("cid:", Utils.getServletBase(request)+"/"+JSONInlineHandler.JSON_ROOT+"/"+uid+"/"));
+			return htmlString.replaceAll("cid:", Utils.getServletBase(request)+"/"+JSONInlineHandler.JSON_ROOT+"/"+uid+"/");
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();
@@ -403,12 +405,12 @@ public class BlueboxMessage {
 		return "";
 	}
 
-	public String getHtml() {
+	public String getHtml(HttpServletRequest request) {
 		try {
 			String html = getParser().getHtmlContent();
 			if (html==null)
 				html = "";
-			return convertCidLinks(this.getIdentifier(),html);
+			return convertCidLinks(request,getIdentifier(),html);
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();

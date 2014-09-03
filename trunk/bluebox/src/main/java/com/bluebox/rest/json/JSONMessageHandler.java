@@ -36,11 +36,14 @@ public class JSONMessageHandler extends AbstractHandler {
 	 */
 	public void doGetMessageDetail(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		setDefaultHeaders(resp);
-		log.info("doGetMessageDetail");
+		log.info("doGetMessageDetail:"+req.getRequestURI());
 		Writer out = resp.getWriter();
 		try {
 			String uid = extractFragment(req.getRequestURI(),JSON_ROOT,0);
 			BlueboxMessage message = inbox.retrieve(uid);
+			if (message == null) {
+				log.error("Could not find message with uid="+uid);
+			}
 			JSONObject json = message.toJSON(req.getLocale());
 			
 			json.put(BlueboxMessage.RECEIVED, AbstractStorage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
@@ -76,7 +79,7 @@ public class JSONMessageHandler extends AbstractHandler {
 				p = new FileInputStream("src/main/webapp/WEB-INF/antisamy-anythinggoes-1.4.4.xml");
 
 			// scan html for malicious content
-			String html = message.getHtml();
+			String html = message.getHtml(request);
 			Policy policy = Policy.getInstance(p);
 			AntiSamy as = new AntiSamy();
 			CleanResults cr = as.scan(html, policy);
