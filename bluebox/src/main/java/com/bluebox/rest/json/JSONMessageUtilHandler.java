@@ -38,7 +38,7 @@ public class JSONMessageUtilHandler extends AbstractHandler {
 			String uid = extractFragment(req.getRequestURI(), JSON_ROOT, 1);
 			log.info("Serving links for "+uid);
 			BlueboxMessage message = inbox.retrieve(uid);
-			JSONArray links = getLinks(message.getHtml());
+			JSONArray links = getLinks(message.getHtml(req));
 			resp.setContentType("application/json");
 			resp.setCharacterEncoding("utf-8");
 			JSONObject result = new JSONObject();

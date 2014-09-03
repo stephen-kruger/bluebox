@@ -50,6 +50,7 @@ public class StorageTest extends TestCase {
 		super.tearDown();
 		log.fine("Cleaning up messages after tests");
 		try {
+			StorageFactory.getInstance().logErrorClear();
 			StorageFactory.getInstance().deleteAll();
 		}
 		catch (Throwable t) {
@@ -426,7 +427,8 @@ public class StorageTest extends TestCase {
 
 	public void testErrorStorage() throws JSONException {
 		StorageFactory.getInstance().logErrorClear();
-		assertEquals("Error log should be empty",1,StorageFactory.getInstance().logErrorCount());
+		assertEquals("Error log should be empty",0,StorageFactory.getInstance().logErrorCount());
+		StorageFactory.getInstance().logError("This is a test error", Utils.convertStringToStream("This is a blob"));
 		StorageFactory.getInstance().logError("This is a test error", Utils.convertStringToStream("This is a blob"));
 		assertEquals("Error log should not be empty",2,StorageFactory.getInstance().logErrorCount());
 		JSONArray errors = StorageFactory.getInstance().logErrorList(0,10);
