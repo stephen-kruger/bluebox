@@ -273,6 +273,16 @@ public class BlueBoxServlet extends HttpServlet {
 			}
 			return;
 		}
+		if (req.getRequestURI().indexOf("rest/updateavailable")>=0) {
+			try {
+				resp.getWriter().print(Utils.updateAvailable().toString());
+				resp.flushBuffer();
+			} 
+			catch (Exception e) {
+				e.printStackTrace();
+				resp.getWriter().print(e.getMessage());
+			}
+		}
 		log.warn("No handler for "+req.getRequestURI()+" expected :"+req.getContextPath());
 		super.doGet(req, resp);
 	}

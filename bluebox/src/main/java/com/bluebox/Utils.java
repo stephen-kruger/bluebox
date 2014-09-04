@@ -11,18 +11,22 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
@@ -48,6 +52,7 @@ import org.apache.commons.fileupload.util.mime.MimeUtility;
 import org.apache.commons.lang.RandomStringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -776,5 +781,52 @@ public class Utils {
 				("http".equals(request.getScheme()) && request.getServerPort() == 80 || "https".equals(request.getScheme()) && request.getServerPort() == 443 ? "" : ":" + request.getServerPort() ) +
 				"/bluebox";
 		return uri;
+	}
+	
+	private static int[] getVersionNumbers(String ver) {
+	    Matcher m = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(beta(\\d*))?").matcher(ver);
+	    if (!m.matches())
+	        throw new IllegalArgumentException("Malformed FW version :"+ver);
+
+	    return new int[] { Integer.parseInt(m.group(1)),  // major
+	            Integer.parseInt(m.group(2)),             // minor
+	            Integer.parseInt(m.group(3)),             // rev.
+	            m.group(4) == null ? Integer.MAX_VALUE    // no beta suffix
+	                    : m.group(5).isEmpty() ? 1        // "beta"
+	                    : Integer.parseInt(m.group(5))    // "beta3"
+	    };
+	}
+	
+	static boolean isVersionNewer(String availableVersion, String currentVersion) {
+
+	    int[] availableVer = getVersionNumbers(availableVersion);
+	    int[] currentVer = getVersionNumbers(currentVersion);
+
+	    for (int i = 0; i < availableVer.length; i++)
+	        if (availableVer[i] != currentVer[i])
+	            return availableVer[i] > currentVer[i];
+
+	    return false;
+	}
+	
+	public static JSONObject updateAvailable() throws JSONException {
+		String propsUrl = "http://bluebox.googlecode.com/svn/trunk/bluebox/src/main/resources/bluebox.properties";
+		Properties props = new Properties();
+		JSONObject jo = new JSONObject();
+		jo.put("available", false);
+		jo.put(Config.BLUEBOX_VERSION, "1.0");
+		try {
+			// TODO cache this value for 24 hours at least
+			InputStream is = new URL(propsUrl).openStream();	
+			props.load(is);
+			is.close();
+			jo.put("available", isVersionNewer(props.getProperty(Config.BLUEBOX_VERSION),Config.getInstance().getString(Config.BLUEBOX_VERSION)));
+			jo.put(Config.BLUEBOX_VERSION, props.getProperty(Config.BLUEBOX_VERSION));
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+
+		return jo;
 	}
 }
