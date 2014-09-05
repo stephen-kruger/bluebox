@@ -282,6 +282,7 @@ public class BlueBoxServlet extends HttpServlet {
 				e.printStackTrace();
 				resp.getWriter().print(e.getMessage());
 			}
+			return;
 		}
 		log.warn("No handler for "+req.getRequestURI()+" expected :"+req.getContextPath());
 		super.doGet(req, resp);
