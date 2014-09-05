@@ -782,50 +782,64 @@ public class Utils {
 				"/bluebox";
 		return uri;
 	}
-	
-	private static int[] getVersionNumbers(String ver) {
-	    Matcher m = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(beta(\\d*))?").matcher(ver);
-	    if (!m.matches())
-	        throw new IllegalArgumentException("Malformed FW version :"+ver);
 
-	    return new int[] { Integer.parseInt(m.group(1)),  // major
-	            Integer.parseInt(m.group(2)),             // minor
-	            Integer.parseInt(m.group(3)),             // rev.
-	            m.group(4) == null ? Integer.MAX_VALUE    // no beta suffix
-	                    : m.group(5).isEmpty() ? 1        // "beta"
-	                    : Integer.parseInt(m.group(5))    // "beta3"
-	    };
+	private static int[] getVersionNumbers(String ver) {
+		Matcher m = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)(beta(\\d*))?").matcher(ver);
+		if (!m.matches())
+			throw new IllegalArgumentException("Malformed FW version :"+ver);
+
+		return new int[] { Integer.parseInt(m.group(1)),  // major
+				Integer.parseInt(m.group(2)),             // minor
+				Integer.parseInt(m.group(3)),             // rev.
+				m.group(4) == null ? Integer.MAX_VALUE    // no beta suffix
+						: m.group(5).isEmpty() ? 1        // "beta"
+								: Integer.parseInt(m.group(5))    // "beta3"
+		};
 	}
-	
+
 	static boolean isVersionNewer(String availableVersion, String currentVersion) {
 
-	    int[] availableVer = getVersionNumbers(availableVersion);
-	    int[] currentVer = getVersionNumbers(currentVersion);
+		int[] availableVer = getVersionNumbers(availableVersion);
+		int[] currentVer = getVersionNumbers(currentVersion);
 
-	    for (int i = 0; i < availableVer.length; i++)
-	        if (availableVer[i] != currentVer[i])
-	            return availableVer[i] > currentVer[i];
+		for (int i = 0; i < availableVer.length; i++)
+			if (availableVer[i] != currentVer[i])
+				return availableVer[i] > currentVer[i];
 
-	    return false;
+				return false;
 	}
-	
-	public static JSONObject updateAvailable() throws JSONException {
+
+	private static Date lastChecked = new Date(0);
+	private static Properties props;
+
+	public static Properties getOnlinePropsCached() {
 		String propsUrl = "http://bluebox.googlecode.com/svn/trunk/bluebox/src/main/resources/bluebox.properties";
-		Properties props = new Properties();
+		// cache this value for 24 hours
+		if ((new Date().getTime()-lastChecked.getTime())>86400000) {
+			try {
+				log.info("Checking for online update");
+				props = new Properties();
+				InputStream is = new URL(propsUrl).openStream();	
+				props.load(is);
+				is.close();
+				lastChecked = new Date();
+			}
+			catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
+		else {
+			log.info("Using cached value for online update, expiring in {}ms",(new Date().getTime()-lastChecked.getTime()));
+		}
+		return props;
+	}
+
+	public static JSONObject updateAvailable() throws JSONException {
 		JSONObject jo = new JSONObject();
-		jo.put("available", false);
-		jo.put(Config.BLUEBOX_VERSION, "1.0");
-		try {
-			// TODO cache this value for 24 hours at least
-			InputStream is = new URL(propsUrl).openStream();	
-			props.load(is);
-			is.close();
-			jo.put("available", isVersionNewer(props.getProperty(Config.BLUEBOX_VERSION),Config.getInstance().getString(Config.BLUEBOX_VERSION)));
-			jo.put(Config.BLUEBOX_VERSION, props.getProperty(Config.BLUEBOX_VERSION));
-		}
-		catch (Throwable t) {
-			t.printStackTrace();
-		}
+		Properties props = getOnlinePropsCached();
+		jo.put("update_available", isVersionNewer(props.getProperty(Config.BLUEBOX_VERSION),Config.getInstance().getString(Config.BLUEBOX_VERSION)));
+		jo.put("current_version", Config.getInstance().getString(Config.BLUEBOX_VERSION));
+		jo.put("available_version", props.getProperty(Config.BLUEBOX_VERSION));
 
 		return jo;
 	}
