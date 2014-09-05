@@ -131,7 +131,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return o.toString();
 		}
 		else {
-			log.warn("Missing field %s",key);
+			log.warn("Missing field {}",key);
 			return def;
 		}
 	}
@@ -143,7 +143,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return Integer.parseInt(mo.get(key).toString());
 		}
 		else {
-			log.warn("Missing field %s",key);
+			log.warn("Missing field {}",key);
 			return def;
 		}
 	}
@@ -155,7 +155,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return Long.parseLong(mo.get(key).toString());
 		}
 		else {
-			log.warn("Missing field %s",key);
+			log.warn("Missing field {}",key);
 			return def;
 		}
 	}
@@ -165,7 +165,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if (mo.containsField(key))
 			return mo.getDate(key);
 		else {
-			log.warn("Missing field %s",key);
+			log.warn("Missing field {}",key);
 			return def;
 		}
 	}
@@ -215,7 +215,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 						dbo = cursor.next();
 						BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, dbo.get("filename").toString());
 						if (db.getCollection(TABLE_NAME).findOne(query)==null) {
-							log.info("Removing orphaned blob %s",dbo.get("filename"));
+							log.info("Removing orphaned blob {}",dbo.get("filename"));
 							gfsRaw.remove(dbo);
 						}
 						count++;
@@ -280,7 +280,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			query.append(BlueboxMessage.INBOX, inbox.getAddress());
 		long start = new Date().getTime();
 		long count = db.getCollection(TABLE_NAME).count(query);
-		log.debug("Calculated mail count in %s",(new Date().getTime()-start)+"ms");
+		log.debug("Calculated mail count in {}",(new Date().getTime()-start)+"ms");
 		return count;
 	}
 
@@ -308,7 +308,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					results.add(m);
 				}
 				catch (Throwable t) {
-					log.error("Nasty problem loading message:%s",t.getMessage());;
+					log.error("Nasty problem loading message:{}",t.getMessage());;
 				}
 			}
 		} 
@@ -411,7 +411,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			GridFSInputFile gfs = errorFS.createFile(content);
 			gfs.put("title", title);
 			gfs.save();
-			log.info("Saved with id %s",gfs.getId());
+			log.info("Saved with id {}",gfs.getId());
 			content.close();
 		}
 		catch (Throwable t) {

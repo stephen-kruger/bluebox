@@ -205,7 +205,7 @@ public class BlueboxMessage {
 			writeDataSource(ds,resp);
 		}
 		catch (Exception se) {
-			log.info("Problem writing attachment :%s",se.getMessage());
+			log.info("Problem writing attachment :{}",se.getMessage());
 		}
 	}
 
@@ -222,7 +222,7 @@ public class BlueboxMessage {
 			writeDataSource(ds,resp);
 		}
 		catch (Exception se) {
-			log.warn("Problem writing inline attachment :%s",se.getMessage());
+			log.warn("Problem writing inline attachment :{}",se.getMessage());
 		}
 	}
 
@@ -230,7 +230,7 @@ public class BlueboxMessage {
 		try {
 			if (ds==null)
 				throw new Exception("No attachment found");
-			log.debug("Setting mime type to %s",ds.getContentType());
+			log.debug("Setting mime type to {}",ds.getContentType());
 			resp.setContentType(ds.getContentType());
 			Utils.copy(ds.getInputStream(),resp.getOutputStream());		
 		}

@@ -83,9 +83,11 @@ public class UtilsTest extends TestCase {
 	
 	public void testOnlineUpdateCheck() throws JSONException {
 		JSONObject jo = Utils.updateAvailable();
+		jo = Utils.updateAvailable();
 		log.info(jo.toString());
-		assertNotNull(jo.getString(Config.BLUEBOX_VERSION));
-		assertNotNull(jo.getString("available"));
+		assertNotNull("current_version");
+		assertNotNull("available_version");
+		assertNotNull(jo.getString("update_available"));
 	}
 
 }
