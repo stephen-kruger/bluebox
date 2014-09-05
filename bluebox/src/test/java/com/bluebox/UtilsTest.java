@@ -85,8 +85,9 @@ public class UtilsTest extends TestCase {
 		JSONObject jo = Utils.updateAvailable();
 		jo = Utils.updateAvailable();
 		log.info(jo.toString());
-		assertNotNull("current_version");
-		assertNotNull("available_version");
+		assertNotNull(jo.getString("current_version"));
+		assertNotNull(jo.getString("available_version"));
+		assertNotNull(jo.getString("online_war"));
 		assertNotNull(jo.getString("update_available"));
 	}
 
