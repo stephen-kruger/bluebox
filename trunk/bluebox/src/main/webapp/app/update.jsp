@@ -9,4 +9,54 @@
 	Config bbconfig = Config.getInstance(); 
 	ResourceBundle updateResource = ResourceBundle.getBundle("update",request.getLocale());
 %>
-<span id="updateAvailable" class="blinkBadge"><%= updateResource.getString("update_available") %></span>
+
+<script type="text/javascript">	
+
+function dialog(title, content) {
+	require(["dijit/Dialog", "dojo/domReady!"], function(Dialog){
+	    myDialog = new Dialog({
+	        title: title,
+	        content: content,
+	        style: "width: 450px"
+	    });
+	    
+	    var div = dojo.create('div', {}, myDialog.containerNode);
+        dojo.style(dojo.byId(div), "padding", "2em");
+        dojo.style(dojo.byId(div), "float", "middle");
+	    var closeBtn = new dijit.form.Button({
+            label: "Close",
+            onClick: function(){
+            	myDialog.hide();
+                dojo.destroy(myDialog);
+            }
+         });
+	    dojo.create(closeBtn.domNode,{}, div);
+	    myDialog.show();
+	});
+}
+
+function showUpdates() {
+	var xhrArgs = {
+			url: "<%=request.getContextPath()%>/rest/updateavailable",
+			handleAs: "json",
+			preventCache: false,
+			load: function(data) {
+				if(data.update_available) {
+					document.getElementById("update").style.display="";
+			    	dialog("Update Available","Your version:<b>"+data.current_version+"</b><br/>New version:<b>"+
+			    			data.available_version+"</b><br/>Get the latest war here:<a href='"+data.online_war+"'>link</a>");
+				}
+				else {
+					document.getElementById("update").style.display="none";
+				}
+			},
+			error: function (error) {
+				console.log("Something veeery bad happened :"+error);
+			}
+	};
+
+	dojo.xhrGet(xhrArgs);
+}
+</script>
+
+<a href="#" onclick="showUpdates()" id="updateAvailable" class="blinkBadge"><%= updateResource.getString("update_available") %></a>

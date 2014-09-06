@@ -743,7 +743,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 			while (result.next()) {
 				resultJ.put(result.getString(1), result.getString(2));
-				log.info(result.toString());
+//				log.info(result.toString());
 			}
 			ps.close();
 			s.close();

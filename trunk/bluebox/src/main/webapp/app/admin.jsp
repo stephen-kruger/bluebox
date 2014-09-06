@@ -99,29 +99,6 @@
 			genericGet("<%=request.getContextPath()%>/rest/admin/clean","Clean backups requested","Server responded");
 		}
 		
-		function dialog(title, content) {
-			require(["dijit/Dialog", "dojo/domReady!"], function(Dialog){
-	    	    myDialog = new Dialog({
-	    	        title: title,
-	    	        content: content,
-	    	        style: "width: 450px"
-	    	    });
-	    	    
-	    	    var div = dojo.create('div', {}, myDialog.containerNode);
-                dojo.style(dojo.byId(div), "padding", "2em");
-                dojo.style(dojo.byId(div), "float", "middle");
-	    	    var closeBtn = new dijit.form.Button({
-                    label: "Close",
-                    onClick: function(){
-                    	myDialog.hide();
-                        dojo.destroy(myDialog);
-                    }
-                 });
-	    	    dojo.create(closeBtn.domNode,{}, div);
-	    	    myDialog.show();
-	    	});
-		}
-		
 		function genericGet(url,title,content) {
 			dojo.ready(function(){
 				  // The parameters to pass to xhrGet, the url, how to handle it, and the callbacks.
