@@ -846,8 +846,7 @@ public class Utils {
 		else {
 			jo.put("online_war", props.getProperty("derby_war"));			
 		}
-		log.info(">>>>>>>>>>>"+jo.toString());
-
+		log.info(jo.toString());
 		return jo;
 	}
 }

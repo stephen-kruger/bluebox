@@ -181,6 +181,7 @@
 							if(data.update_available) {
 								document.getElementById("update").style.display="";
 								// TODO - implement some display to online links
+						    	dialog(title,content+"<br/>"+data);
 							}
 							else {
 								document.getElementById("update").style.display="none";
@@ -230,6 +231,6 @@
 		<a id="admin" class="menulink" href="<%=request.getContextPath()%>/app/admin.jsp"><%= menuResource.getString("admin") %></a>
 		<a id="help" class="helpIcon" href="<%=request.getContextPath()%>/app/help.jsp" onmouseover="dijit.Tooltip.defaultPosition=['below']">?</a>
 		<div class="dijitHidden"><span data-dojo-type="dijit.Tooltip" data-dojo-props="connectId:'help'"><%= menuResource.getString("help") %></span></div>
-		<a id="update" style="display:none;" class="menulink" href="<%=request.getContextPath()%>/app/admin.jsp"><jsp:include page="update.jsp" /></a>
+		<span id="update" style="display:none;" class="menulink"><jsp:include page="update.jsp" /></span>
 	</div>
 </div>
