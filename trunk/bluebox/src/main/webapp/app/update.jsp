@@ -43,8 +43,10 @@ function showUpdates() {
 			load: function(data) {
 				if(data.update_available) {
 					document.getElementById("update").style.display="";
-			    	dialog("Update Available","Your version:<b>"+data.current_version+"</b><br/>New version:<b>"+
-			    			data.available_version+"</b><br/>Get the latest war here:<a href='"+data.online_war+"'>link</a>");
+			    	dialog("<%= updateResource.getString("update_available") %>",
+			    			"<%= updateResource.getString("current_version") %><b>"+data.current_version+"</b>"+
+			    			"<br/><%= updateResource.getString("new_version") %><b>"+
+			    			data.available_version+"</b><br/><%= updateResource.getString("download_text") %><a href='"+data.online_war+"'><%= updateResource.getString("link_text") %></a>");
 				}
 				else {
 					document.getElementById("update").style.display="none";

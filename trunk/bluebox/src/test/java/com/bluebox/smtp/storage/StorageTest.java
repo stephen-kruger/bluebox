@@ -435,6 +435,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Missing logs",errors.length(),2);
 		log.info(errors.toString(3));
 		assertEquals("Incorrect title","This is a test error",((JSONObject)errors.get(1)).get("title"));
+		assertNotNull("No date found",((JSONObject)errors.get(1)).get("date"));
 		String id = ((JSONObject)errors.get(1)).getString("id");
 		log.info("Looking for id "+id);
 		assertEquals("Incorrect content","This is a blob",StorageFactory.getInstance().logErrorContent(id));

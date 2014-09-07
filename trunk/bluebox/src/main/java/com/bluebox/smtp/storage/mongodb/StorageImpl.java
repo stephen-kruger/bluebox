@@ -161,9 +161,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	public Date getDBODate(Object dbo, String key, Date def) {
-		BasicDBObject mo = (BasicDBObject)dbo;
+		DBObject mo = (DBObject)dbo;
 		if (mo.containsField(key))
-			return mo.getDate(key);
+			return (Date)mo.get(key);
 		else {
 			log.warn("Missing field {}",key);
 			return def;
@@ -410,6 +410,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			GridFSInputFile gfs = errorFS.createFile(content);
 			gfs.put("title", title);
+			gfs.put("date", new Date());
 			gfs.save();
 			log.info("Saved with id {}",gfs.getId());
 			content.close();
@@ -439,7 +440,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			log.info("Clearing error db");
 			errorFS.getDB().dropDatabase();
-//			logError("Error db cleared",Utils.convertStringToStream("Requested "+new Date().toString()));
+			//			logError("Error db cleared",Utils.convertStringToStream("Requested "+new Date().toString()));
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
@@ -456,7 +457,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				DBObject dbo = cursor.next();
 				//log.info(dbo.toString());;
 				logError = new JSONObject();
-				logError.put("title", dbo.get("title"));
+				logError.put("title", getDBOString(dbo,"title",""));
+				logError.put("date", getDBODate(dbo,"date",new Date()));
 				logError.put("id", dbo.get("_id"));
 				result.put(logError);
 			}
@@ -683,7 +685,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				hour = Integer.parseInt(row.get("hour").toString())+1;
 				if (hour==24) hour = 0;
 				resultJ.put(""+hour,result.get("count").toString());
-//				log.info(row.toString()+">>>"+hour+" "+result.get("count").toString());
+				//				log.info(row.toString()+">>>"+hour+" "+result.get("count").toString());
 			} 
 			catch (Throwable e) {
 				e.printStackTrace();

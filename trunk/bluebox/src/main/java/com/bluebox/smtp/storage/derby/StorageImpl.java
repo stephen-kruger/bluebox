@@ -37,8 +37,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	private static final String VALUE = "value";
 	public static final String ERROR_COUNT = "error_count";
 	public static final String ERROR_TITLE = "error_title";
+	public static final String ERROR_DATE = "error_date";
 	public static final String ERROR_CONTENT = "error_content";
-//	public static final String RAW = "pic";
 	private boolean started = false;
 
 	public void start() throws Exception {
@@ -485,6 +485,16 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		log.debug("Update mail entry "+uid+" to "+state);
 	}
 
+	private void clearProperty(String key) throws Exception {
+		Connection connection = getConnection();
+		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+PROPS_TABLE+" WHERE "+KEY+"=?");
+		ps.setString(1, key);
+		ps.execute();
+		connection.commit();
+		connection.close();
+		log.debug("Removed properties entry "+key);
+	}
+
 	public void setProperty(String key, String value) {
 		if (value.length()>512) {
 			value = value.substring(0,512);
@@ -543,6 +553,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			int count = logErrorCount();
 			count++;
 			setProperty(ERROR_TITLE+count,title);
+			setProperty(ERROR_DATE+count,new Date().toString());
 			setProperty(ERROR_CONTENT+count,Utils.convertStreamToString(content));
 			setProperty(ERROR_COUNT,Integer.toString(count));
 		}
@@ -558,8 +569,19 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void logErrorClear() {
+		int count = Integer.parseInt(getProperty(ERROR_COUNT,"0"));
+		try {
+			for (int i = 1; i <= count; i++) {
+				clearProperty(ERROR_TITLE+i);
+				clearProperty(ERROR_DATE+i);
+			}
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			log.error(e.getMessage());
+		}
 		setProperty(ERROR_COUNT,"0");
-		logError("Error db cleared",Utils.convertStringToStream("Requested "+new Date().toString()));
+//		logError("Error db cleared",Utils.convertStringToStream("Requested "+new Date().toString()));
 	}
 
 	@Override
@@ -576,9 +598,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			JSONObject logError;
 			for (int i = 1; i <= count; i++) {
 				String title = getProperty(ERROR_TITLE+i,"");
+				String date = getProperty(ERROR_DATE+i,"");
 				String id = i+"";
 				logError = new JSONObject();
 				logError.put("title", title);
+				logError.put("date", date);
 				logError.put("id", id);
 				result.put(logError);
 			}
@@ -743,7 +767,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 			while (result.next()) {
 				resultJ.put(result.getString(1), result.getString(2));
-//				log.info(result.toString());
+				//				log.info(result.toString());
 			}
 			ps.close();
 			s.close();
@@ -757,7 +781,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		return resultJ;
 	}
-	
+
 	@Override
 	public JSONObject getCountByHour() {
 

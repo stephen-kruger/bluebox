@@ -6,6 +6,7 @@
 	Config bbconfig = Config.getInstance();
 	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
 	ResourceBundle menuResource = ResourceBundle.getBundle("menu",request.getLocale());
+	ResourceBundle inboxResource = ResourceBundle.getBundle("inboxDetails",request.getLocale());
 %>
 
 <!DOCTYPE html>
@@ -47,8 +48,9 @@
 			    // set the layout structure:
 		    	var view = {
 					cells: [[
-						{name: '<%= menuResource.getString("errors") %>', field: 'title', width: 'auto', editable: false},
-						{name: 'ID',  field: 'id', hidden: 'true', editable: false}
+								{name: '<%= menuResource.getString("errors") %>', field: 'title', width: 'auto', editable: false},
+								{name: '<%= inboxResource.getString("date") %>', field: 'date', width: 'auto', editable: false},
+								{name: 'ID',  field: 'id', hidden: 'true', editable: false}
 					]]
 				};
 				
@@ -79,6 +81,7 @@
 				dojo.connect(grid, "onEndSelect", function(type, startPoint, endPoint, selected){
 					  loadError(grid.store.getValue(grid.getItem(endPoint.row), "id"));
 					  document.getElementById("errorTitle").innerHTML = grid.store.getValue(grid.getItem(endPoint.row), "title");
+					  document.getElementById("errorDate").innerHTML = grid.store.getValue(grid.getItem(endPoint.row), "date");
 					});			
 		      });
 			}
@@ -127,7 +130,7 @@
 			<div>
 				<div class=errorList id="gridDiv"></div>
 				<h3>Error details</h3>
-				<div id="errorTitle"></div>
+				<div id="errorTitle"></div><div id="errorDate"></div>
 				<textarea id="errorBody" data-dojo-type="dijit/form/Textarea" readonly="readonly" class="errorBody"></textarea>	
 			</div>
 		</div>
