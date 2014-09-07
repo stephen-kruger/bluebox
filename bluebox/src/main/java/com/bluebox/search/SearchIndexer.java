@@ -50,7 +50,6 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class SearchIndexer {
 	private static final Logger log = LoggerFactory.getLogger(SearchIndexer.class);
-	private static Version version = Version.LATEST;
 	private Directory index;
 	private IndexWriterConfig config;
 	private static SearchIndexer si;
@@ -70,8 +69,8 @@ public class SearchIndexer {
 
 	private SearchIndexer(Directory index) throws IOException {
 		this.index = index;
-		Analyzer analyzer = new StandardAnalyzer(version);
-		config = new IndexWriterConfig(version, analyzer);
+		Analyzer analyzer = new StandardAnalyzer();
+		config = new IndexWriterConfig(Version.LATEST, analyzer);
 		indexWriter = new IndexWriter(index, config);
 	}
 
@@ -91,43 +90,43 @@ public class SearchIndexer {
 		//		querystr = "*"+QueryParser.escape(querystr)+"*";
 		//		querystr = "*"+querystr+"*";
 		QueryParser queryParser;
-		Analyzer analyzer = new StandardAnalyzer(version);
+		
+		Analyzer analyzer = new StandardAnalyzer();
 		switch (fields) {
-
 		case SUBJECT :
-			queryParser = new MultiFieldQueryParser(version,
+			queryParser = new MultiFieldQueryParser(
 					new String[] {
 					SearchFields.SUBJECT.name()},
 					analyzer);
 			break;
 		case BODY :
-			queryParser = new MultiFieldQueryParser(version,
+			queryParser = new MultiFieldQueryParser(
 					new String[] {
 					SearchFields.TEXT_BODY.name(),
 					SearchFields.HTML_BODY.name()},
 					analyzer);
 			break;
 		case RECEIVED :
-			queryParser = new MultiFieldQueryParser(version,
+			queryParser = new MultiFieldQueryParser(
 					new String[] {
 					SearchFields.RECEIVED.name()},
 					analyzer);
 			break;
 		case FROM :
-			queryParser = new MultiFieldQueryParser(version,
+			queryParser = new MultiFieldQueryParser(
 					new String[] {
 					SearchFields.FROM.name()},
 					analyzer);
 			break;
 		case RECIPIENTS :
-			queryParser = new MultiFieldQueryParser(version,
+			queryParser = new MultiFieldQueryParser(
 					new String[] {
 					SearchFields.RECIPIENTS.name()},
 					analyzer);
 			break;
 		case ANY :
 		default :
-			queryParser = new MultiFieldQueryParser(version,
+			queryParser = new MultiFieldQueryParser(
 					new String[] {
 					SearchFields.FROM.name(),
 					SearchFields.SUBJECT.name(),
