@@ -50,7 +50,7 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class SearchIndexer {
 	private static final Logger log = LoggerFactory.getLogger(SearchIndexer.class);
-	private static Version version = Version.LUCENE_4_9;
+	private static Version version = Version.LATEST;
 	private Directory index;
 	private IndexWriterConfig config;
 	private static SearchIndexer si;
