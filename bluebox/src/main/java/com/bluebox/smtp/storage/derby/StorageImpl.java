@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -108,12 +107,17 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-	private void dropTables() throws Exception {
+	private void dropTables() {
+		try {
 		Connection connection = getConnection();
 		Statement s = connection.createStatement();
 		s.executeUpdate("DROP TABLE "+INBOX_TABLE);
 		s.executeUpdate("DROP TABLE "+PROPS_TABLE);
 		s.close();
+		}
+		catch (Throwable t) {
+			log.warn("Cannot drop tables :"+t.getMessage());
+		}
 	}
 
 	private void setupTables() throws Exception {
@@ -127,7 +131,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					StorageIf.Props.Recipient.name()+" VARCHAR(255), "+
 					StorageIf.Props.Sender.name()+" VARCHAR(255), "+
 					StorageIf.Props.Subject.name()+" VARCHAR(255), "+
-					StorageIf.Props.Received.name()+" DATE, "+
+					StorageIf.Props.Received.name()+" TIMESTAMP, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
 					StorageIf.Props.Size.name()+" BIGINT, "+
 					BlueboxMessage.RAW+" blob(16M))");
@@ -180,7 +184,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.setString(3, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
 		ps.setString(4, props.getString(StorageIf.Props.Sender.name())); // FROM
 		ps.setString(5, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
-		ps.setDate(6, new java.sql.Date(props.getLong(StorageIf.Props.Received.name()))); // RECEIVED
+		ps.setTimestamp(6, new java.sql.Timestamp(props.getLong(StorageIf.Props.Received.name()))); // RECEIVED
 		ps.setInt(7, props.getInt(StorageIf.Props.State.name())); // STATE
 		ps.setLong(8, props.getLong(StorageIf.Props.Size.name())); // SIZE
 		ps.setBinaryStream(9, blob); // MIMEMESSAGE
@@ -293,7 +297,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public Date getDBODate(Object dbo, String key, Date def) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
-			return mo.getDate(key);
+			return mo.getTimestamp(key);
 		} 
 		catch (SQLException e) {
 			e.printStackTrace();

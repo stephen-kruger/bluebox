@@ -191,7 +191,7 @@ public class Inbox implements SimpleMessageListener {
 			StorageFactory.getInstance().deleteAll();
 			SearchIndexer.getInstance().deleteIndexes();
 		} 
-		catch (Exception e) {
+		catch (Throwable e) {
 			e.printStackTrace();
 		}
 	}
