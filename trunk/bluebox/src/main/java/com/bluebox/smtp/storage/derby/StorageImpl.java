@@ -849,8 +849,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	
 	public void createFunction() throws Exception {
 		String method = "create function dayOfWeek\n"+ 
-				"( dateValue date )\n"+ 
-				"returns varchar( 8 )\n"+ 
+				"( dateValue timestamp )\n"+ 
+				"returns int\n"+ //"returns varchar( 8 )\n"+ 
 				"parameter style java\n"+ 
 				"no sql\n"+ 
 				"language java\n"+ 
@@ -891,14 +891,15 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			// init stats with empty values
 			for (int i = 1; i < 7; i++) {
-				resultJ.put(i+"", 1);
+				resultJ.put(i+"", 0);
 			}
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
 		}
 
-		String sql = "select dayOfWeek( "+StorageIf.Props.Received.name()+"), count( "+StorageIf.Props.Uid.name()+" ) from "+INBOX_TABLE+" group by dayOfWeek( "+StorageIf.Props.Received.name()+")";
+		String sql = "select dayOfWeek( "+StorageIf.Props.Received.name()+"), count( "+StorageIf.Props.Uid.name()+" ) from "+INBOX_TABLE+
+				"   group by dayOfWeek( "+StorageIf.Props.Received.name()+")";
 		try {
 			log.info(sql);
 			Connection connection = getConnection();
