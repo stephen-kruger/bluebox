@@ -841,8 +841,21 @@ public class Utils {
 		jo.put("current_version", Config.getInstance().getString(Config.BLUEBOX_VERSION));
 		jo.put("available_version", props.getProperty(Config.BLUEBOX_VERSION));
 		jo.put("online_war", props.getProperty("online_war"));			
-		
+
 		log.debug(jo.toString());
 		return jo;
+	}
+
+	public static void copyIsToOs(InputStream is, OutputStream os) throws IOException {
+		byte[] buf = new byte[1024];
+
+		int bytesRead;
+
+		while ((bytesRead = is.read(buf)) > 0) {
+
+			os.write(buf, 0, bytesRead);
+
+		}
+
 	}
 }

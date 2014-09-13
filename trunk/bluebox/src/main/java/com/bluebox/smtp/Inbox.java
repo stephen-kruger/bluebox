@@ -7,16 +7,19 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.prefs.Preferences;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import javax.mail.Address;
 import javax.mail.internet.AddressException;
@@ -633,6 +636,9 @@ public class Inbox implements SimpleMessageListener {
 			@Override
 			public void run() {
 				try {
+					File zipFile = new File(dir.getCanonicalPath()+File.separator+"bluebox.zip");
+					BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(zipFile));
+					ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
 					List<BlueboxMessage> mail;
 					int start = 0;
 					int count = 100;
@@ -640,25 +646,25 @@ public class Inbox implements SimpleMessageListener {
 						setProgress((int)(((start+1)*100)/inbox.getMailCount(BlueboxMessage.State.ANY)));
 						mail = inbox.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
 						if (mail.size()>0) {
-							log.info("Backing up from "+start+" to "+(start+count));
-							File emlFile,jsonFile;
+							log.info("Backing up from "+start+" to "+(start+count)+" to file "+zipFile.getCanonicalPath());
+
+							String emlFile,jsonFile;
 							for (BlueboxMessage msg : mail) {
 								try {
-									emlFile = new File(dir,msg.getIdentifier()+".eml");
-									jsonFile = new File(dir.getCanonicalFile(),msg.getIdentifier()+".json");
-									if (jsonFile.exists()||emlFile.exists()) {
-										log.info("Skipping backup of "+msg.getIdentifier());
-										
-									}
-									else {
-										OutputStream fos = new BufferedOutputStream(new FileOutputStream(emlFile));
-										Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()),fos);
-										fos.close();
+									emlFile = msg.getIdentifier()+".eml";
+									jsonFile = msg.getIdentifier()+".json";
+									ZipEntry zipEntry;
+									// the blob
+									zipEntry = new ZipEntry(emlFile);
+									zipOutputStream.putNextEntry(zipEntry);
+									Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()), zipOutputStream);
+									zipOutputStream.closeEntry();
 
-										fos = new BufferedOutputStream(new FileOutputStream(jsonFile));
-										fos.write(msg.toJSON().toString().getBytes());
-										fos.close();
-									}
+									// the metadata
+									zipEntry = new ZipEntry(jsonFile);
+									zipOutputStream.putNextEntry(zipEntry);
+									zipOutputStream.write(msg.toJSON().toString().getBytes());
+									zipOutputStream.closeEntry();
 								}
 								catch (Throwable t) {
 									log.warn(t.getMessage());
@@ -668,6 +674,8 @@ public class Inbox implements SimpleMessageListener {
 						start += mail.size();
 
 					} while (mail.size()>0);	
+					zipOutputStream.close();
+					fileOutputStream.close();
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
@@ -683,6 +691,83 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public WorkerThread restore(final File dir) throws Exception {
+		final File zipFile = new File(dir.getCanonicalPath()+File.separator+"bluebox.zip");
+		log.info("Restoring mail from {}",zipFile.getCanonicalPath());
+		WorkerThread wt = new WorkerThread("restore") {
+
+			@Override
+			public void run() {
+				if (zipFile.exists()) {
+					try {
+						ZipFile archive = new ZipFile(zipFile);
+						@SuppressWarnings("rawtypes")
+						Enumeration entries = archive.entries();
+						int i = 0;
+						int count = archive.size()/2;
+						while (entries.hasMoreElements()) {
+							ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+							setProgress(i*100/count);
+							log.debug("Progress : {}",(i*100/count));
+							if (zipEntry.getName().endsWith("eml")) {
+								try {
+									// read the json metadata
+									ZipEntry jsonEntry = archive.getEntry(zipEntry.getName().substring(0, zipEntry.getName().length()-4)+".json");
+									JSONObject jo = new JSONObject(Utils.convertStreamToString(archive.getInputStream(jsonEntry)));
+
+									// backwards compat workaround for backups prior to introduction of RECIPIENT field
+									if (!jo.has(BlueboxMessage.RECIPIENT)) {
+										jo.put(BlueboxMessage.RECIPIENT,jo.get(BlueboxMessage.INBOX));
+									}
+									else {
+										// if it's there, but is a JSONarray, use value of inbox instead
+										if (jo.get(BlueboxMessage.RECIPIENT) instanceof JSONArray) {
+											// try get actual full name version from this array
+											JSONArray ja = jo.getJSONArray(BlueboxMessage.RECIPIENT);
+											jo.put(BlueboxMessage.RECIPIENT,jo.get(BlueboxMessage.INBOX));
+											for (int j = 0; j < ja.length(); j++) {
+												if (ja.getString(j).indexOf(jo.getString(BlueboxMessage.INBOX))>=0) {
+													jo.put(BlueboxMessage.RECIPIENT,ja.getString(j));
+													break;
+												}
+											}
+										}
+									}
+									BufferedInputStream bi1, bi2;
+									StorageFactory.getInstance().store(jo, bi1 = new BufferedInputStream(archive.getInputStream(zipEntry)));
+									bi1.close();
+									MimeMessage mm = Utils.loadEML(bi2=new BufferedInputStream(archive.getInputStream(zipEntry)));
+									bi2.close();
+									SearchIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
+								}
+								catch (Throwable t) {
+									t.printStackTrace();
+									log.warn(t.getMessage());
+								}
+							}
+							i++;
+						}
+						archive.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				else {
+					log.error("Could not access zip archive, checking for old style backup");
+					try {
+						restoreOld(dir);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				setProgress(100);
+			}
+
+		};
+		return wt;
+
+	}
+
+	public WorkerThread restoreOld(final File dir) throws Exception {
 		log.info("Restoring mail from {}",dir.getCanonicalPath());
 		WorkerThread wt = new WorkerThread("restore") {
 
