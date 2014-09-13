@@ -66,5 +66,22 @@ public class ChartTest extends TestCase {
 			}
 		}
 	}
+	
+	public void testCountByDayOfWeek() throws JSONException {
+		JSONObject jo = StorageFactory.getInstance().getCountByDayOfWeek();
+		log.info(jo.toString());
+		Calendar cal = Calendar.getInstance();
+		int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+		log.info("Current day is "+dayOfWeek);
+		for (int i = 1; i < 7;i++) {
+			assertNotNull(jo.get(""+i));
+			if (i==dayOfWeek) {
+				assertEquals("Incorrect status reported for day "+i,10,jo.getInt(""+i));
+			}
+			else {
+				assertEquals("Incorrect status reported for day "+i,0,jo.getInt(""+i));				
+			}
+		}
+	}
 
 }

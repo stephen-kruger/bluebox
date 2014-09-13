@@ -829,7 +829,7 @@ public class Utils {
 			}
 		}
 		else {
-			log.info("Using cached value for online update, expiring in {}ms",(new Date().getTime()-lastChecked.getTime()));
+			log.debug("Using cached value for online update, expiring in {}ms",(new Date().getTime()-lastChecked.getTime()));
 		}
 		return props;
 	}
@@ -840,13 +840,9 @@ public class Utils {
 		jo.put("update_available", isVersionNewer(props.getProperty(Config.BLUEBOX_VERSION),Config.getInstance().getString(Config.BLUEBOX_VERSION)));
 		jo.put("current_version", Config.getInstance().getString(Config.BLUEBOX_VERSION));
 		jo.put("available_version", props.getProperty(Config.BLUEBOX_VERSION));
-		if (Config.getInstance().getString(Config.BLUEBOX_STORAGE).contains("mongodb")) {
-			jo.put("online_war", props.getProperty("mongodb_war"));			
-		}
-		else {
-			jo.put("online_war", props.getProperty("derby_war"));			
-		}
-		log.info(jo.toString());
+		jo.put("online_war", props.getProperty("online_war"));			
+		
+		log.debug(jo.toString());
 		return jo;
 	}
 }

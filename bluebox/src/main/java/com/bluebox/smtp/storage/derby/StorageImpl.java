@@ -127,7 +127,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					StorageIf.Props.Recipient.name()+" VARCHAR(255), "+
 					StorageIf.Props.Sender.name()+" VARCHAR(255), "+
 					StorageIf.Props.Subject.name()+" VARCHAR(255), "+
-					StorageIf.Props.Received.name()+" TIMESTAMP, "+
+					StorageIf.Props.Received.name()+" DATE, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
 					StorageIf.Props.Size.name()+" BIGINT, "+
 					BlueboxMessage.RAW+" blob(16M))");
@@ -180,7 +180,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.setString(3, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
 		ps.setString(4, props.getString(StorageIf.Props.Sender.name())); // FROM
 		ps.setString(5, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
-		ps.setTimestamp(6, new Timestamp(props.getLong(StorageIf.Props.Received.name()))); // RECEIVED
+		ps.setDate(6, new java.sql.Date(props.getLong(StorageIf.Props.Received.name()))); // RECEIVED
 		ps.setInt(7, props.getInt(StorageIf.Props.State.name())); // STATE
 		ps.setLong(8, props.getLong(StorageIf.Props.Size.name())); // SIZE
 		ps.setBinaryStream(9, blob); // MIMEMESSAGE
@@ -293,7 +293,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public Date getDBODate(Object dbo, String key, Date def) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
-			return mo.getTimestamp(key);
+			return mo.getDate(key);
 		} 
 		catch (SQLException e) {
 			e.printStackTrace();
@@ -581,7 +581,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			log.error(e.getMessage());
 		}
 		setProperty(ERROR_COUNT,"0");
-//		logError("Error db cleared",Utils.convertStringToStream("Requested "+new Date().toString()));
+		//		logError("Error db cleared",Utils.convertStringToStream("Requested "+new Date().toString()));
 	}
 
 	@Override
@@ -815,6 +815,105 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (Throwable t) {
 			t.printStackTrace();
 			log.warn("Seems no hourly stats are available");
+		}
+
+
+		return resultJ;
+	}
+
+	public void deleteFunction() throws Exception {
+		String method = "drop function app.dayOfWeek";	
+		Connection connection = getConnection();
+		try {
+			Statement s = connection.createStatement();
+			PreparedStatement ps;
+			ps = connection.prepareStatement(method);
+			ps.execute();
+			ResultSet result = ps.getResultSet();
+			log.info(result.toString());
+			result.close();
+			ps.close();
+			s.close();
+		}
+		catch (Throwable t) {
+			//t.printStackTrace();
+		}
+		finally {
+			connection.close();
+		}
+	}
+	
+	public void createFunction() throws Exception {
+		String method = "create function dayOfWeek\n"+ 
+				"( dateValue date )\n"+ 
+				"returns varchar( 8 )\n"+ 
+				"parameter style java\n"+ 
+				"no sql\n"+ 
+				"language java\n"+ 
+				"EXTERNAL NAME 'com.bluebox.smtp.storage.derby.DerbyFunctions.dayOfWeek'\n";	
+		Connection connection = getConnection();
+		try {
+			Statement s = connection.createStatement();
+			PreparedStatement ps;
+			ps = connection.prepareStatement(method);
+			ps.execute();
+			ResultSet result = ps.getResultSet();
+			log.info(result.toString());
+			result.close();
+			ps.close();
+			s.close();
+		}
+		catch (Throwable t) {
+			//t.printStackTrace();
+		}
+		finally {
+			connection.close();
+		}
+	}
+
+	@Override
+	public JSONObject getCountByDayOfWeek() {
+		try {
+			deleteFunction();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			createFunction();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		JSONObject resultJ = new JSONObject();
+		try {
+			// init stats with empty values
+			for (int i = 1; i < 7; i++) {
+				resultJ.put(i+"", 1);
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+
+		String sql = "select dayOfWeek( "+StorageIf.Props.Received.name()+"), count( "+StorageIf.Props.Uid.name()+" ) from "+INBOX_TABLE+" group by dayOfWeek( "+StorageIf.Props.Received.name()+")";
+		try {
+			log.info(sql);
+			Connection connection = getConnection();
+			Statement s = connection.createStatement();
+			PreparedStatement ps;
+			ps = connection.prepareStatement(sql);
+			ps.execute();
+			ResultSet result = ps.getResultSet();
+
+			while (result.next()) {
+				resultJ.put(result.getString(1), result.getString(2));
+			}
+			ps.close();
+			s.close();
+			connection.close();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+			log.warn("Seems no weekly stats are available");
 		}
 
 
