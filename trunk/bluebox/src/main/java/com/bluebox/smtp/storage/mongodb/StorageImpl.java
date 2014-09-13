@@ -1,6 +1,8 @@
 package com.bluebox.smtp.storage.mongodb;
 
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -48,6 +50,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public void start() throws Exception {
 		log.info("Starting MongoDB connection");
+//		MongoClientOptions options = MongoClientOptions.builder()
+//                .maxWaitTime(250)
+//                .connectTimeout(250)
+//                .socketTimeout(250)
+//                .build();
 		MongoClient mongoClient = new MongoClient(Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST));
 		db = mongoClient.getDB(DB_NAME);
 		errorFS = new GridFS(mongoClient.getDB(DB_ERR_NAME),DB_ERR_NAME);
@@ -57,6 +64,20 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		log.debug("Started MongoDB connection");
 	}
 
+	public static boolean mongoDetected() {
+		try {
+			Socket socket = new Socket(); // Unconnected socket, with the  system-default type of SocketImpl.
+			InetSocketAddress endPoint = new InetSocketAddress( Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST),27017);
+			socket.connect(  endPoint , 100);
+			socket.close();
+			return true;
+		}
+		catch (Throwable t) {
+			
+		}
+		return false;
+	}
+	
 	private void createIndexes() {
 		// create indexes
 		String[] indexes = new String[]{
@@ -686,6 +707,44 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				if (hour==24) hour = 0;
 				resultJ.put(""+hour,result.get("count").toString());
 				//				log.info(row.toString()+">>>"+hour+" "+result.get("count").toString());
+			} 
+			catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+
+		return resultJ;
+	}
+	
+	@Override
+	public JSONObject getCountByDayOfWeek() {
+		JSONObject resultJ = new JSONObject();
+		try {
+			// init stats with empty values
+			for (int i = 1; i < 8; i++) {
+				resultJ.put(i+"", 0);
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+
+		// now fill in query results
+		String json = "{$group : { _id : { dayOfWeek: { $dayOfWeek: \"$"+StorageIf.Props.Received.name()+"\" }}, count: { $sum: 1 }}}";
+		DBObject sum = (DBObject) JSON.parse(json);
+		DBObject sort = new BasicDBObject("$sort", new BasicDBObject(BlueboxMessage.COUNT, 1));
+		List<DBObject> pipeline = Arrays.asList(sum, sort);
+		AggregationOutput output = db.getCollection(TABLE_NAME).aggregate(pipeline);
+		//{ "dayOfWeek" : 2}, 1 = Sunday, 2 = monday etc
+		int dayOfWeek;
+		DBObject row;
+		for (DBObject result : output.results()) {
+			try {
+				row = (DBObject) result.get("_id");
+				dayOfWeek = Integer.parseInt(row.get("dayOfWeek").toString());
+				if (dayOfWeek==24) dayOfWeek = 0;
+				resultJ.put(""+dayOfWeek,result.get("count").toString());
+				//log.info(row.toString()+">>>"+dayOfWeek+" "+result.get("count").toString());
 			} 
 			catch (Throwable e) {
 				e.printStackTrace();

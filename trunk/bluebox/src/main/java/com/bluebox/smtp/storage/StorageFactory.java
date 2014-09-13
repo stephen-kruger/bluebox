@@ -13,22 +13,36 @@ public class StorageFactory {
 
 	public static StorageIf getInstance() {
 		if (storageInstance==null) {
-			//storageInstance = new StorageImpl2();
 			Config config = Config.getInstance();
-			String storageClassName = config.getString(Config.BLUEBOX_STORAGE);
-			log.info("Allocating storage instance for class "+storageClassName);
-			try {
-				storageInstance = (StorageIf) Class.forName(storageClassName).newInstance();
-			} 
-			catch (Throwable e) {
-				log.error(e.getMessage());
-				e.printStackTrace();
+			if (config.containsKey(Config.BLUEBOX_STORAGE)) {
+				log.info("Using config specified storage :"+config.getString(Config.BLUEBOX_STORAGE));
+				// use whatever config specifies
+				String storageClassName = config.getString(Config.BLUEBOX_STORAGE);
+				log.info("Allocating storage instance for class "+storageClassName);
+				try {
+					storageInstance = (StorageIf) Class.forName(storageClassName).newInstance();
+				} 
+				catch (Throwable e) {
+					log.error(e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			else {
+				// try mongodb, if it fails use derby
+				if (com.bluebox.smtp.storage.mongodb.StorageImpl.mongoDetected()) {
+					log.info("Checking for MongoDB");
+					storageInstance = new com.bluebox.smtp.storage.mongodb.StorageImpl();
+				} 
+				else {
+					log.info("Fallback to Derby storage");
+					storageInstance = new com.bluebox.smtp.storage.derby.StorageImpl();
+				}
 			}
 		}
 
 		return storageInstance;
 	}
-	
+
 	public static void clearInstance() {
 		storageInstance=null;
 	}

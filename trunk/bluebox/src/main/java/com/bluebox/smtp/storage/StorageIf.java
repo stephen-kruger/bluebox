@@ -117,4 +117,6 @@ public interface StorageIf {
 	public JSONObject getCountByDay();
 
 	JSONObject getCountByHour();
+
+	JSONObject getCountByDayOfWeek();
 }
