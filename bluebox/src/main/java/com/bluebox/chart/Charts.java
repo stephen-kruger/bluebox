@@ -14,10 +14,12 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
+import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
+import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.Hour;
 import org.jfree.data.time.TimeSeries;
@@ -158,6 +160,9 @@ public class Charts {
 		if (req.getParameter("chart").equals("hourly")) {
 			renderHourlyCountChart(resp.getOutputStream(),width,height);
 		}
+		if (req.getParameter("chart").equals("weekly")) {
+			renderWeeklyCountChart(resp.getOutputStream(),width,height);
+		}
 		resp.flushBuffer();
 	}
 
@@ -176,6 +181,22 @@ public class Charts {
 		}
 
 		return series;
+	}
+
+	private DefaultPieDataset createWeeklyDataset(JSONObject jo) {
+		DefaultPieDataset result = new DefaultPieDataset();
+		String[] key = new String[]{"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+		for (int i = 1; i < 8; i++) {
+			try {
+				result.setValue(key[i-1], jo.getInt(i+""));
+
+			} 
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+
+		return result;
 	}
 
 	public void renderHourlyCountChart(OutputStream os, int width, int height) throws IOException {
@@ -212,6 +233,25 @@ public class Charts {
 			valueAxis.setTickLabelsVisible(false);
 			valueAxis.setVisible(false);
 		}
+
+		ChartUtilities.writeChartAsPNG(os, chart, width, height);
+	}
+
+	public void renderWeeklyCountChart(OutputStream os, int width, int height) throws IOException {
+		boolean thumbnail = false;
+		if (width<300) {
+			thumbnail = true;
+		}
+		DefaultPieDataset dataset = createWeeklyDataset(StorageFactory.getInstance().getCountByDayOfWeek());
+		JFreeChart chart = ChartFactory.createPieChart("", dataset, false, false, false);
+		chart.setBorderVisible(false);
+		chart.setBackgroundPaint(Color.white);
+		Plot plot = chart.getPlot();
+		plot.setBackgroundPaint(Color.white);
+		plot.setOutlineVisible(false);
+		if (thumbnail)
+			chart.removeLegend();
+
 
 		ChartUtilities.writeChartAsPNG(os, chart, width, height);
 	}

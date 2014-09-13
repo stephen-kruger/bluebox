@@ -16,15 +16,15 @@ import com.bluebox.smtp.storage.StorageFactory;
 
 public class ChartTest extends TestCase {
 	private static final Logger log = LoggerFactory.getLogger(ChartTest.class);
-
+	private static int COUNT = 10;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		log.info("Populating chart tests");
-		Inbox.getInstance().deleteAll();; // trigger inbox and storage start
-		TestUtils.addRandom(StorageFactory.getInstance(), 10);
-		Utils.waitFor(10);
+		Inbox.getInstance().deleteAll(); // trigger inbox and storage start
+		TestUtils.addRandom(StorageFactory.getInstance(), COUNT);
+		Utils.waitFor(COUNT);
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class ChartTest extends TestCase {
 		for (int i = 1; i < 32;i++) {
 			assertNotNull(jo.get(""+i));
 			if (i==dayOfMonth) {
-				assertEquals("Incorrect status reported for today",10,jo.getInt(""+i));
+				assertEquals("Incorrect status reported for today",COUNT,jo.getInt(""+i));
 			}
 			else {
 				assertEquals("Incorrect status reported for day "+i,1,jo.getInt(""+i));				
@@ -59,24 +59,24 @@ public class ChartTest extends TestCase {
 		for (int i = 0; i < 24;i++) {
 			assertNotNull(jo.get(""+i));
 			if (i==hourOfDay) {
-				assertEquals("Incorrect status reported for hour "+i,10,jo.getInt(""+i));
+				assertEquals("Incorrect status reported for hour "+i,COUNT,jo.getInt(""+i));
 			}
 			else {
 				assertEquals("Incorrect status reported for hour "+i,1,jo.getInt(""+i));				
 			}
 		}
 	}
-	
+
 	public void testCountByDayOfWeek() throws JSONException {
 		JSONObject jo = StorageFactory.getInstance().getCountByDayOfWeek();
 		log.info(jo.toString());
 		Calendar cal = Calendar.getInstance();
 		int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
 		log.info("Current day is "+dayOfWeek);
-		for (int i = 1; i < 7;i++) {
+		for (int i = 1; i < 8;i++) {
 			assertNotNull(jo.get(""+i));
 			if (i==dayOfWeek) {
-				assertEquals("Incorrect status reported for day "+i,10,jo.getInt(""+i));
+				assertEquals("Incorrect status reported for day "+i,COUNT,jo.getInt(""+i));
 			}
 			else {
 				assertEquals("Incorrect status reported for day "+i,0,jo.getInt(""+i));				
