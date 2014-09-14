@@ -113,6 +113,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
 		gfsFile.save();
 		coll.insert(bson);
+		blob.close();
 	}
 
 	//	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {

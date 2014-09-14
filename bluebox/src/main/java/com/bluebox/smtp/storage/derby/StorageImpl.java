@@ -194,6 +194,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.execute();
 		connection.commit();
 		connection.close();
+		blob.close();
 	}
 
 	//	public String add(String id, String from, InboxAddress recipient, String subject, Date date, State state, long size, InputStream blob) throws Exception {

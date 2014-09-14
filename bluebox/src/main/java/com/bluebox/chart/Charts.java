@@ -185,6 +185,7 @@ public class Charts {
 
 	private DefaultPieDataset createWeeklyDataset(JSONObject jo) {
 		DefaultPieDataset result = new DefaultPieDataset();
+		// TODO localize these strings
 		String[] key = new String[]{"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
 		for (int i = 1; i < 8; i++) {
 			try {
