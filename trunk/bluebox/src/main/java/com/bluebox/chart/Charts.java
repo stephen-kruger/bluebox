@@ -14,7 +14,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtilities;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.ValueAxis;
-import org.jfree.chart.plot.Plot;
+import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
@@ -122,7 +122,7 @@ public class Charts {
 		// y-axis
 		ValueAxis yAxis = plot.getRangeAxis();
 		if (thumbnail) {
-			yAxis.setAxisLineVisible(false);
+//			yAxis.setAxisLineVisible(false);
 			yAxis.setTickMarksVisible(true);
 			yAxis.setTickLabelsVisible(true);
 			yAxis.setVisible(true);
@@ -135,7 +135,7 @@ public class Charts {
 		// x-axis
 		ValueAxis xAxis = plot.getDomainAxis();
 		if (thumbnail) {
-			xAxis.setAxisLineVisible(false);
+//			xAxis.setAxisLineVisible(false);
 		}
 		xAxis.setAutoRange(true);
 		//		xAxis.setRange(1, 31);
@@ -240,20 +240,23 @@ public class Charts {
 
 	public void renderWeeklyCountChart(OutputStream os, int width, int height) throws IOException {
 		boolean thumbnail = false;
-		if (width<300) {
+		if (width<=300) {
 			thumbnail = true;
 		}
 		DefaultPieDataset dataset = createWeeklyDataset(StorageFactory.getInstance().getCountByDayOfWeek());
 		JFreeChart chart = ChartFactory.createPieChart("", dataset, false, false, false);
-		chart.setBorderVisible(false);
-		chart.setBackgroundPaint(Color.white);
-		Plot plot = chart.getPlot();
-		plot.setBackgroundPaint(Color.white);
-		plot.setOutlineVisible(false);
-		if (thumbnail)
+		PiePlot plot = (PiePlot) chart.getPlot();
+		if (thumbnail) {
+			chart.setBorderVisible(false);
+			plot.setOutlineVisible(false);
 			chart.removeLegend();
+		}
 
-
+		chart.setBackgroundPaint(Color.white);
+		plot.setBackgroundPaint(Color.white);
+		plot.setLabelBackgroundPaint(Color.WHITE);
+		plot.setLabelOutlinePaint(Color.white);
+		plot.setLabelShadowPaint(Color.white);
 		ChartUtilities.writeChartAsPNG(os, chart, width, height);
 	}
 
