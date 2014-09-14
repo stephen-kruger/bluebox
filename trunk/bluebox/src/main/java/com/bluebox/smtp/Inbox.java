@@ -732,12 +732,12 @@ public class Inbox implements SimpleMessageListener {
 											}
 										}
 									}
-									BufferedInputStream bi1, bi2;
-									StorageFactory.getInstance().store(jo, bi1 = new BufferedInputStream(archive.getInputStream(zipEntry)));
-									bi1.close();
-									MimeMessage mm = Utils.loadEML(bi2=new BufferedInputStream(archive.getInputStream(zipEntry)));
-									bi2.close();
+									// store the message
+									StorageFactory.getInstance().store(jo, archive.getInputStream(zipEntry));
+									// index the message
+									MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));
 									SearchIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
+
 								}
 								catch (Throwable t) {
 									t.printStackTrace();
@@ -747,7 +747,8 @@ public class Inbox implements SimpleMessageListener {
 							i++;
 						}
 						archive.close();
-					} catch (IOException e) {
+					} 
+					catch (IOException e) {
 						e.printStackTrace();
 					}
 				}

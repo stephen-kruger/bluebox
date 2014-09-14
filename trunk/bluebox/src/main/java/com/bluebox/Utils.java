@@ -798,15 +798,19 @@ public class Utils {
 	}
 
 	static boolean isVersionNewer(String availableVersion, String currentVersion) {
+		try {
+			int[] availableVer = getVersionNumbers(availableVersion);
+			int[] currentVer = getVersionNumbers(currentVersion);
 
-		int[] availableVer = getVersionNumbers(availableVersion);
-		int[] currentVer = getVersionNumbers(currentVersion);
+			for (int i = 0; i < availableVer.length; i++)
+				if (availableVer[i] != currentVer[i])
+					return availableVer[i] > currentVer[i];
 
-		for (int i = 0; i < availableVer.length; i++)
-			if (availableVer[i] != currentVer[i])
-				return availableVer[i] > currentVer[i];
-
-				return false;
+					return false;
+		}
+		catch (Throwable t) {
+			return false;
+		}
 	}
 
 	private static Date lastChecked = new Date(0);
@@ -825,7 +829,10 @@ public class Utils {
 				lastChecked = new Date();
 			}
 			catch (Throwable t) {
-				t.printStackTrace();
+				//t.printStackTrace();
+				log.error("Problem connecting to {}",propsUrl);
+				props.put(Config.BLUEBOX_VERSION, Config.getInstance().getString(Config.BLUEBOX_VERSION));
+				props.put("online_war", Config.getInstance().getString("online_war"));
 			}
 		}
 		else {
@@ -842,20 +849,7 @@ public class Utils {
 		jo.put("available_version", props.getProperty(Config.BLUEBOX_VERSION));
 		jo.put("online_war", props.getProperty("online_war"));			
 
-		log.debug(jo.toString());
+		//log.info(jo.toString());
 		return jo;
-	}
-
-	public static void copyIsToOs(InputStream is, OutputStream os) throws IOException {
-		byte[] buf = new byte[1024];
-
-		int bytesRead;
-
-		while ((bytesRead = is.read(buf)) > 0) {
-
-			os.write(buf, 0, bytesRead);
-
-		}
-
 	}
 }
