@@ -2,6 +2,7 @@ package com.bluebox;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.time.DurationFormatUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
@@ -38,6 +40,7 @@ public class BlueBoxServlet extends HttpServlet {
 	public static final String VERSION = Config.getInstance().getString(Config.BLUEBOX_VERSION);
 	private BlueBoxSMTPServer smtpServer;
 	private Map<String,WorkerThread> workers = new HashMap<String,WorkerThread>();
+	private static Date started = new Date();
 
 	@Override
 	public void init() throws ServletException {
@@ -48,9 +51,7 @@ public class BlueBoxServlet extends HttpServlet {
 		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(inbox));
 		smtpServer.start();
 	}
-
-
-
+	
 	@Override
 	public void destroy() {
 		super.destroy();
@@ -345,16 +346,13 @@ public class BlueBoxServlet extends HttpServlet {
 	}
 
 
-	//	public static final void main(String[] args) {
-	//		try {
-	//			StorageImpl.backup(new File("C:\\eclipse.helios\\backup\\repository"), new File("C:\\eclipse.helios\\repository"));
-	//		} catch (RepositoryException e) {
-	//			e.printStackTrace();
-	//		} catch (IOException e) {
-	//			e.printStackTrace();
-	//		}
-	//
-	//	}
+	/*
+	 * hOW MUCH TIME HAS ELAPSED SINCE THE SERVLET WAS STARTED
+	 */
+	public static String getUptime(String format) {
+		long duration = 900000000+new Date().getTime()-started.getTime();
+		return DurationFormatUtils.formatDuration(duration, format, true);
+	}
 
 
 }
