@@ -118,6 +118,6 @@
 			src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/loading.gif"></span>
 	</p>
 	<div class="seperator"></div>
-	<span style="color: lightGrey;"><%= footerResource.getString("title") %>
-		V<%= BlueBoxServlet.VERSION %></span>
+	<span style="color: lightGrey;"><%= footerResource.getString("title") %>V<%= BlueBoxServlet.VERSION %></span><br/>
+	<span style="color: lightGrey;">Uptime:<%= BlueBoxServlet.getUptime("dd:HH:mm:ss") %></span>
 </div>
