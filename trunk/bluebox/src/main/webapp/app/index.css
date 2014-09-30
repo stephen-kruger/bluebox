@@ -103,3 +103,6 @@ img.sixteenIcon {
 	border-radius: 3px;
 	text-decoration: blink;
 }
+
+.greyText {
+	color: gray;
