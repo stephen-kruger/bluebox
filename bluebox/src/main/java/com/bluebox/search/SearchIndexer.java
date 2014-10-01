@@ -302,7 +302,7 @@ public class SearchIndexer {
 					new ParserDelegator().parse(new StringReader(html), parserCallback, false);
 				}
 				catch (Throwable t) {
-					log.warn("Could not extract html content - indexing all "+t.getMessage());
+					log.warn("Could not parse html content - indexing all");
 					sb.append(html);
 				}
 			}

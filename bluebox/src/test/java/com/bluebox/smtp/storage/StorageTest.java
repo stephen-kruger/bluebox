@@ -32,30 +32,14 @@ public class StorageTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		// this triggers the storage to be created too, and started
 		Inbox.getInstance();
-		log.fine("Cleaning up messages to start tests");
-		StorageFactory.getInstance().logErrorClear();
-		try {
-			StorageFactory.getInstance().deleteAll();
-		}
-		catch (Throwable t) {
-			log.warning("Tables not created");
-		}
-		Inbox.getInstance().deleteAll();
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		log.fine("Cleaning up messages after tests");
-		try {
-			StorageFactory.getInstance().logErrorClear();
-			StorageFactory.getInstance().deleteAll();
-		}
-		catch (Throwable t) {
-			log.warning("Tables not created");
-		}
+		Inbox.getInstance().deleteAll();
 		Inbox.getInstance().stop();
 	}
 

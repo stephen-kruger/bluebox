@@ -15,6 +15,7 @@ import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
+import com.bluebox.WorkerThread;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageIf;
 
@@ -28,7 +29,7 @@ public class InboxTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		inbox = Inbox.getInstance();
-		inbox.deleteAll();
+//		inbox.deleteAll();
 		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(inbox));
 		smtpServer.start();
 		//		int max = 10;
@@ -42,12 +43,6 @@ public class InboxTest extends TestCase {
 	protected void tearDown() throws Exception {
 		super.tearDown();
 		smtpServer.stop();
-		//		int max = 10;
-		//		do {
-		//			// give thread time to close down
-		//			Thread.sleep(500);
-		//		}
-		//		while ((max-- > 0)&&(smtpServer.isRunning()));
 		inbox.deleteAll();
 		inbox.stop();
 	}
@@ -117,16 +112,28 @@ public class InboxTest extends TestCase {
 	}
 
 	public void testBackup() throws Exception {
+		Inbox.getInstance().deleteAll();
+		assertEquals(0,Inbox.getInstance().getMailCount(BlueboxMessage.State.ANY));
 		String email1 = "aaading@kkddf.com";
 		String email2 = "aaading@kkddf.com";
 		String email3 = "aaading@kkddf.com";
 		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email1), null, null, "subject", "body");
 		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email2), null, null, "subject", "body");
 		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email3), null, null, "subject", "body");
+		assertEquals(3,Inbox.getInstance().getMailCount(BlueboxMessage.State.ANY));
 		File dir = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
 		dir.mkdirs();
-		Inbox.getInstance().backup(dir);
-		Inbox.getInstance().restore(dir);
+		WorkerThread wt = Inbox.getInstance().backup(dir);
+		new Thread(wt).start();
+		while (wt.getProgress()<100)
+			Thread.sleep(250);
+		Inbox.getInstance().deleteAll();
+		assertEquals(0,Inbox.getInstance().getMailCount(BlueboxMessage.State.ANY));
+		wt = Inbox.getInstance().restore(dir);
+		new Thread(wt).start();
+		while (wt.getProgress()<100)
+			Thread.sleep(250);
+		assertEquals(3,Inbox.getInstance().getMailCount(BlueboxMessage.State.ANY));
 	}
 
 }
