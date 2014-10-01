@@ -90,50 +90,50 @@ public class SearchIndexer {
 		//		querystr = "*"+QueryParser.escape(querystr)+"*";
 		//		querystr = "*"+querystr+"*";
 		QueryParser queryParser;
-		
+
 		Analyzer analyzer = new StandardAnalyzer();
 		switch (fields) {
 		case SUBJECT :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-					SearchFields.SUBJECT.name()},
-					analyzer);
+							SearchFields.SUBJECT.name()},
+							analyzer);
 			break;
 		case BODY :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-					SearchFields.TEXT_BODY.name(),
-					SearchFields.HTML_BODY.name()},
-					analyzer);
+							SearchFields.TEXT_BODY.name(),
+							SearchFields.HTML_BODY.name()},
+							analyzer);
 			break;
 		case RECEIVED :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-					SearchFields.RECEIVED.name()},
-					analyzer);
+							SearchFields.RECEIVED.name()},
+							analyzer);
 			break;
 		case FROM :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-					SearchFields.FROM.name()},
-					analyzer);
+							SearchFields.FROM.name()},
+							analyzer);
 			break;
 		case RECIPIENTS :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-					SearchFields.RECIPIENTS.name()},
-					analyzer);
+							SearchFields.RECIPIENTS.name()},
+							analyzer);
 			break;
 		case ANY :
 		default :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-					SearchFields.FROM.name(),
-					SearchFields.SUBJECT.name(),
-					SearchFields.TEXT_BODY.name(),
-					SearchFields.HTML_BODY.name(),
-					SearchFields.RECIPIENTS.name()},
-					analyzer);
+							SearchFields.FROM.name(),
+							SearchFields.SUBJECT.name(),
+							SearchFields.TEXT_BODY.name(),
+							SearchFields.HTML_BODY.name(),
+							SearchFields.RECIPIENTS.name()},
+							analyzer);
 		}
 		queryParser.setAllowLeadingWildcard(true);
 		queryParser.setDefaultOperator(QueryParser.Operator.AND);
@@ -297,11 +297,14 @@ public class SearchIndexer {
 			}
 		};
 		if (html!=null) {
-			try {
-				new ParserDelegator().parse(new StringReader(html), parserCallback, false);
-			}
-			catch (Throwable t) {
-				log.warn("Error indexing html body "+t.getMessage());
+			if (html.length()>0) {
+				try {
+					new ParserDelegator().parse(new StringReader(html), parserCallback, false);
+				}
+				catch (Throwable t) {
+					log.warn("Could not extract html content - indexing all "+t.getMessage());
+					sb.append(html);
+				}
 			}
 		}
 		return sb.toString().trim();
