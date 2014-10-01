@@ -641,7 +641,7 @@ public class Inbox implements SimpleMessageListener {
 					ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
 					List<BlueboxMessage> mail;
 					int start = 0;
-					int count = 100;
+					final int count = 500;
 					do {
 						setProgress((int)(((start+1)*100)/inbox.getMailCount(BlueboxMessage.State.ANY)));
 						mail = inbox.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
@@ -651,13 +651,15 @@ public class Inbox implements SimpleMessageListener {
 							String emlFile,jsonFile;
 							for (BlueboxMessage msg : mail) {
 								try {
+									
 									emlFile = msg.getIdentifier()+".eml";
 									jsonFile = msg.getIdentifier()+".json";
 									ZipEntry zipEntry;
 									// the blob
 									zipEntry = new ZipEntry(emlFile);
 									zipOutputStream.putNextEntry(zipEntry);
-									Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()), zipOutputStream);
+									msg.getBlueBoxMimeMessage().writeTo(zipOutputStream);
+									//Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()), zipOutputStream);
 									zipOutputStream.closeEntry();
 
 									// the metadata
