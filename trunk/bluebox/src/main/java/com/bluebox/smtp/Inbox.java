@@ -629,7 +629,6 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public WorkerThread backup(final File dir) throws Exception {
-		log.info("Backing up mail to "+dir.getCanonicalPath());
 		final Inbox inbox = Inbox.getInstance();
 		WorkerThread wt = new WorkerThread("backup") {
 
@@ -637,6 +636,7 @@ public class Inbox implements SimpleMessageListener {
 			public void run() {
 				try {
 					File zipFile = new File(dir.getCanonicalPath()+File.separator+"bluebox.zip");
+					log.info("Backing up mail to "+zipFile.getCanonicalPath());
 					BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(zipFile));
 					ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
 					List<BlueboxMessage> mail;
