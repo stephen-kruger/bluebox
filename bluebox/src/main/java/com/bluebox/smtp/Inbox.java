@@ -709,7 +709,8 @@ public class Inbox implements SimpleMessageListener {
 							ZipEntry zipEntry = (ZipEntry) entries.nextElement();
 							setProgress(i*100/count);
 							log.debug("Progress : {}",(i*100/count));
-							if (zipEntry.getName().endsWith("eml")) {
+							String uid = zipEntry.getName().substring(0,zipEntry.getName().indexOf('.'));
+							if ((!StorageFactory.getInstance().contains(uid))&&(zipEntry.getName().endsWith("eml"))) {
 								try {
 									// read the json metadata
 									ZipEntry jsonEntry = archive.getEntry(zipEntry.getName().substring(0, zipEntry.getName().length()-4)+".json");

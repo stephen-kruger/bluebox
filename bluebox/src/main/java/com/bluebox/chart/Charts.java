@@ -247,10 +247,10 @@ public class Charts {
 		JFreeChart chart = ChartFactory.createPieChart("", dataset, false, false, false);
 		PiePlot plot = (PiePlot) chart.getPlot();
 		if (thumbnail) {
-			chart.setBorderVisible(false);
-			plot.setOutlineVisible(false);
 			chart.removeLegend();
 		}
+		plot.setOutlineVisible(false);
+		chart.setBorderVisible(false);
 
 		chart.setBackgroundPaint(Color.white);
 		plot.setBackgroundPaint(Color.white);

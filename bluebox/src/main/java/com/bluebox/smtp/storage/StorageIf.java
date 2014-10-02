@@ -34,6 +34,8 @@ public interface StorageIf {
 
 	public BlueboxMessage retrieve(String uid)
 			throws Exception;
+	
+	public boolean contains(String uid);
 
 	public void deleteAll(InboxAddress inbox) throws Exception;
 

@@ -82,4 +82,13 @@ public abstract class AbstractStorage implements StorageIf {
 		store(message.toJSON(),Utils.streamMimeMessage(bbmm));
 		return message;
 	}
+	
+	public boolean contains(String uid) {
+		try {
+			return retrieve(uid)!=null;
+		}
+		catch (Throwable t) {
+			return false;
+		}
+	}
 }
