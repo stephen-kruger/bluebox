@@ -15,10 +15,12 @@
 	<a href="<%=request.getContextPath()%>/app/info.jsp">
 		<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=daily&width=300&height=150"></img>
 	</a>
+	<!-- 
 	<h2><%= chartResource.getString("charts_hourly_title") %></h2>
 	<a href="<%=request.getContextPath()%>/app/info.jsp">
-		<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=hourly&width=300&height=150"></img>
+		<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=hourly&width=400&height=150"></img>
 	</a>
+	 -->
 	<h2><%= chartResource.getString("charts_weekly_title") %></h2>
 	<a href="<%=request.getContextPath()%>/app/info.jsp">
 		<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=weekly&width=300&height=150"></img>

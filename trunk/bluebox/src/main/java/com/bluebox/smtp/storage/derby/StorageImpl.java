@@ -757,7 +757,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			// init stats with empty values
 			for (int i = 1; i < 32; i++) {
-				resultJ.put(i+"", 1);
+				resultJ.put(i+"", 0);
 			}
 		}
 		catch (Throwable t) {
@@ -797,7 +797,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			// init stats with empty values
 			for (int i = 0; i < 24; i++) {
-				resultJ.put(i+"", 1);
+				resultJ.put(i+"", 0);
 			}
 		}
 		catch (Throwable t) {
