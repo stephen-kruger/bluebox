@@ -23,7 +23,6 @@ import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexNotFoundException;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
@@ -55,7 +54,7 @@ public class SearchIndexer {
 	private static SearchIndexer si;
 	private IndexWriter indexWriter;
 	public enum SearchFields {UID, INBOX, FROM, SUBJECT, RECEIVED, TEXT_BODY, HTML_BODY, SIZE, RECIPIENTS, ANY, BODY};
-
+	
 	public static SearchIndexer getInstance() throws IOException {
 		if (si==null) {
 			si = new SearchIndexer();
@@ -71,6 +70,7 @@ public class SearchIndexer {
 		this.index = index;
 		Analyzer analyzer = new StandardAnalyzer();
 		config = new IndexWriterConfig(Version.LATEST, analyzer);
+		config.setUseCompoundFile(true);
 		indexWriter = new IndexWriter(index, config);
 	}
 
@@ -90,7 +90,8 @@ public class SearchIndexer {
 		//		querystr = "*"+QueryParser.escape(querystr)+"*";
 		//		querystr = "*"+querystr+"*";
 		QueryParser queryParser;
-
+		DirectoryReader reader = DirectoryReader.open(index);
+		IndexSearcher searcher = new IndexSearcher(reader);
 		Analyzer analyzer = new StandardAnalyzer();
 		switch (fields) {
 		case SUBJECT :
@@ -138,8 +139,7 @@ public class SearchIndexer {
 		queryParser.setAllowLeadingWildcard(true);
 		queryParser.setDefaultOperator(QueryParser.Operator.AND);
 		try {
-			IndexReader reader = DirectoryReader.open(index);
-			IndexSearcher searcher = new IndexSearcher(reader);
+			
 
 			Sort sort;
 			try {
@@ -174,6 +174,9 @@ public class SearchIndexer {
 			log.info("Rebuilding search indexes");
 			Inbox.getInstance().rebuildSearchIndexes();
 			return new Document[0];
+		}
+		finally {
+			reader.close();
 		}
 	}
 

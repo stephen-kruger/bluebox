@@ -498,7 +498,6 @@ public class Inbox implements SimpleMessageListener {
 			if (!contains(children,curr.getString("name"))) {
 				children.put(curr);
 			}
-
 			if (children.length()>=count)
 				break;
 		}
