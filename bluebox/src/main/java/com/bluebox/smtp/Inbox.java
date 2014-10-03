@@ -58,6 +58,8 @@ public class Inbox implements SimpleMessageListener {
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
 
 	private static Timer timer = null;
+	private static TimerTask timerTask = null;
+
 	private static Inbox inbox;
 
 	public static Inbox getInstance() {
@@ -85,31 +87,40 @@ public class Inbox implements SimpleMessageListener {
 			e.printStackTrace();
 		}
 		// now start a background timer for the mail expiration
-		long frequency = Config.getInstance().getLong(Config.BLUEBOX_DAEMON_DELAY);
-		if (timer != null) {
-			timer.cancel();
-		}
-		timer = new Timer();
-		long period = frequency*60*1000;  // repeat every hour.
-		long delay = period;   // delay for same amount of time before first run.
-		timer = new Timer();
+		// only one per jvm instance
+		if (timer == null) {
+			long frequency = Config.getInstance().getLong(Config.BLUEBOX_DAEMON_DELAY);
+			timer = new Timer();
+			long period = frequency*60*1000;  // repeat every hour.
+			long delay = period;   // delay for same amount of time before first run.
+			timer = new Timer();
+			timer.scheduleAtFixedRate(timerTask = new TimerTask() {
 
-		timer.scheduleAtFixedRate(new TimerTask() {
-
-			public void run() {
-				log.info("Cleanup timer activated");
-				try {
-					cleanUp();
-				} 
-				catch (Exception e) {
-					log.error("Error running message cleanup",e);
-					e.printStackTrace();
+				public void run() {
+					log.info("Cleanup timer activated");
+					try {
+						new Thread(cleanUp()).start();
+					} 
+					catch (Exception e) {
+						log.error("Error running message cleanup",e);
+						e.printStackTrace();
+					}
 				}
-			}
-		}, delay, period);
+			}, delay, period);
+		}
 	}
 
 	public void stop() {
+		log.info("Stopping cleanup timer");
+		if (timer != null) {
+			timer.cancel();
+			timer = null;
+		}
+		if (timerTask != null) {
+			timerTask.cancel();
+			timerTask = null;
+		}
+
 		log.info("Stopping inbox");
 		try {
 			StorageFactory.getInstance().stop();
@@ -117,11 +128,7 @@ public class Inbox implements SimpleMessageListener {
 		catch (Throwable e) {
 			log.error("Error stopping storage :{}",e.getMessage());
 		}
-		log.info("Cleanup timer cancelled");
-		if (timer != null) {
-			timer.cancel();
-			timer = null;
-		}
+
 		log.info("Stopping search engine");
 		try {
 			SearchIndexer.getInstance().stop();
@@ -650,7 +657,7 @@ public class Inbox implements SimpleMessageListener {
 							String emlFile,jsonFile;
 							for (BlueboxMessage msg : mail) {
 								try {
-									
+
 									emlFile = msg.getIdentifier()+".eml";
 									jsonFile = msg.getIdentifier()+".json";
 									ZipEntry zipEntry;
