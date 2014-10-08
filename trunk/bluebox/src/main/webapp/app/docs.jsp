@@ -40,6 +40,12 @@
 					<ol>
 						<li style="list-style-type:none;">Please see the <a href="help.jsp">help and FAQ document</a></li>
 					</ol>
+					<h2>Installation</h2>
+					<ol>
+						<li style="list-style-type:none;">Optional : Install and start MongoDB. Leaving out this step defaults to Derby embedded.</li>
+						<li style="list-style-type:none;">Set up an IP table mapping to route SMTP port requests to the web app :<i>iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500</i></li>
+						<li style="list-style-type:none;">Download the war file and drop into your application container</li>
+					</ol>
 					<h2>REST API</h2>
 					<ol>
 						<li style="list-style-type:none;">For direct integration with test automation, the following REST calls may be used to reduce dependancy on UI
