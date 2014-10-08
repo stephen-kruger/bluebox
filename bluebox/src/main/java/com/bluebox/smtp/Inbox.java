@@ -89,6 +89,7 @@ public class Inbox implements SimpleMessageListener {
 		// now start a background timer for the mail expiration
 		// only one per jvm instance
 		if (timer == null) {
+			log.info("Scheduling cleanup timer");
 			long frequency = Config.getInstance().getLong(Config.BLUEBOX_DAEMON_DELAY);
 			timer = new Timer();
 			long period = frequency*60*1000;  // repeat every hour.
