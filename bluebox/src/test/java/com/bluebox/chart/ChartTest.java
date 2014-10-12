@@ -44,7 +44,7 @@ public class ChartTest extends TestCase {
 				assertEquals("Incorrect status reported for today",COUNT,jo.getInt(""+i));
 			}
 			else {
-				assertEquals("Incorrect status reported for day "+i,1,jo.getInt(""+i));				
+				assertEquals("Incorrect status reported for day "+i,0,jo.getInt(""+i));				
 			}
 		}
 	}
@@ -61,7 +61,7 @@ public class ChartTest extends TestCase {
 				assertEquals("Incorrect status reported for hour "+i,COUNT,jo.getInt(""+i));
 			}
 			else {
-				assertEquals("Incorrect status reported for hour "+i,1,jo.getInt(""+i));				
+				assertEquals("Incorrect status reported for hour "+i,0,jo.getInt(""+i));				
 			}
 		}
 	}
