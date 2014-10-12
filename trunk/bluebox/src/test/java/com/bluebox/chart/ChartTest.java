@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.TestUtils;
-import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.StorageFactory;
 
@@ -24,7 +23,7 @@ public class ChartTest extends TestCase {
 		log.info("Populating chart tests");
 		Inbox.getInstance().deleteAll(); // trigger inbox and storage start
 		TestUtils.addRandom(StorageFactory.getInstance(), COUNT);
-		Utils.waitFor(COUNT);
+		TestUtils.waitFor(COUNT);
 	}
 
 	@Override
@@ -72,16 +71,19 @@ public class ChartTest extends TestCase {
 		log.info(jo.toString());
 		Calendar cal = Calendar.getInstance();
 		int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
-		log.info("Current day is "+dayOfWeek);
-		for (int i = 1; i < 8;i++) {
-			assertNotNull(jo.get(""+i));
-			if (i==dayOfWeek) {
-				assertEquals("Incorrect status reported for day "+i,COUNT,jo.getInt(""+i));
+		int repeat = 10;
+		do {
+			log.debug("Current day is {}",dayOfWeek);
+			for (int i = 1; i < 8;i++) {
+				assertNotNull(jo.get(""+i));
+				if (i==dayOfWeek) {
+					assertEquals("Incorrect status reported for day "+i,COUNT,jo.getInt(""+i));
+				}
+				else {
+					assertEquals("Incorrect status reported for day "+i,0,jo.getInt(""+i));				
+				}
 			}
-			else {
-				assertEquals("Incorrect status reported for day "+i,0,jo.getInt(""+i));				
-			}
-		}
+		} while ((repeat--)>0);
 	}
 
 }

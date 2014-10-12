@@ -62,7 +62,7 @@ public class BlueBoxServerTest extends TestCase {
 		assertEquals("Mailbox was not cleared",0,Inbox.getInstance().getMailCount(State.ANY));
 		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"crashfix.eml");
 		Utils.uploadEML(emlStream);
-		Utils.waitFor(1);
+		TestUtils.waitFor(1);
 		assertEquals("Mail was not delivered",1,Inbox.getInstance().getMailCount(State.ANY));
 	}
 
@@ -137,7 +137,7 @@ public class BlueBoxServerTest extends TestCase {
 			e.printStackTrace();
 			fail("Unexpected exception: " + e);
 		}
-		Utils.waitFor(1);
+		TestUtils.waitFor(1);
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 1)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 1);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		assertEquals("Did not find expected results",1,list.size());
@@ -163,7 +163,7 @@ public class BlueBoxServerTest extends TestCase {
 			fail("Unexpected exception: " + e);
 		}
 
-		Utils.waitFor(3);
+		TestUtils.waitFor(3);
 
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 3)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 3);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
@@ -224,7 +224,7 @@ public class BlueBoxServerTest extends TestCase {
 			e.printStackTrace();
 			fail("Unexpected exception: " + e);
 		}
-		Utils.waitFor(1);
+		TestUtils.waitFor(1);
 		assertTrue("Sent message was not correctly recieved (Got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+")",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 1);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
@@ -288,7 +288,7 @@ public class BlueBoxServerTest extends TestCase {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		Utils.waitFor(2);
+		TestUtils.waitFor(2);
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 2)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 2);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
@@ -309,7 +309,7 @@ public class BlueBoxServerTest extends TestCase {
 			e.printStackTrace();
 			fail("Unexpected exception: " + e);
 		}
-		Utils.waitFor(3);
+		TestUtils.waitFor(3);
 		assertTrue("Did not find expected number of recieved emails (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 3)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 3);
 	}
 
@@ -325,7 +325,7 @@ public class BlueBoxServerTest extends TestCase {
 			fail("Unexpected exception: " + e);
 		}
 		log.info("Waiting for message to get delivered");
-		Utils.waitFor(1);
+		TestUtils.waitFor(1);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		assertTrue("Did not find the expected message",emailIter.hasNext());
@@ -340,7 +340,7 @@ public class BlueBoxServerTest extends TestCase {
 		Inbox inbox = Inbox.getInstance();
 		String chineseStr = "æ¥·ä¹¦ï¼�æ¥·æ›¸";
 		TestUtils.sendMailSMTP(Utils.getRandomAddress(), Utils.getRandomAddress(), null, null, chineseStr, "This is the body");
-		Utils.waitFor(1);
+		TestUtils.waitFor(1);
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		assertTrue("Did not find the expected message",emailIter.hasNext());
@@ -363,7 +363,7 @@ public class BlueBoxServerTest extends TestCase {
 		String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
 		TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", null, null, subject, bodyWithCR);
 
-		Utils.waitFor(1);
+		TestUtils.waitFor(1);
 
 
 		Inbox inbox = Inbox.getInstance();
