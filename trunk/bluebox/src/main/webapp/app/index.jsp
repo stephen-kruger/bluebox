@@ -24,7 +24,7 @@
 		</div>
 			
 		<div class="centerCol" style="display: table-cell;vertical-align: middle;">
-			<h1>Welcome to bluebox</h1>
+			<h1><%=headerResource.getString("welcome")%></h1>
 		</div>
 			
 		<div class="rightCol">
