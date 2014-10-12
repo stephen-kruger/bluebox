@@ -3,7 +3,6 @@ package com.bluebox;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Date;
-import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
@@ -13,6 +12,8 @@ import junit.framework.TestCase;
 
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
@@ -20,15 +21,36 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageIf;
 
 public class TestUtils extends TestCase {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(TestUtils.class);
 
 	public void testLoadEML() throws MessagingException, IOException {
 		MimeMessage message = Utils.loadEML(new FileInputStream("src/test/resources/test-data/m0017.txt"));
 		assertNotNull("No subject",message.getSubject());
 	}
 	
+	public static void waitFor(int count) throws Exception {
+		Inbox inbox = Inbox.getInstance();
+		int retryCount = 5;
+		while ((retryCount-->0)&&(inbox.getMailCount(BlueboxMessage.State.NORMAL)<count)) {
+			try {
+				log.info("Waiting for delivery "+count);
+				Thread.sleep(250);
+			} 
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		if (retryCount<=0) {
+			log.warn("Timed out waiting for messages to arrive");
+			throw new Exception("Timed out waiting for "+count+"messages to arrive");
+		}
+		else {
+			log.info("Found expected message count received");
+		}
+	}
+	
 	public static void sendMailDirect(StorageIf storage, String to, String from) throws Exception {
-		log.fine("Delivering mail to "+to);
+		log.debug("Delivering mail to "+to);
 		Inbox inbox = Inbox.getInstance();
 		MimeMessage message = Utils.createMessage(null,from, to, null,null, Utils.randomLine(25), Utils.randomLine(25));
 		inbox.deliver(from, to, Utils.streamMimeMessage(message));
@@ -36,7 +58,7 @@ public class TestUtils extends TestCase {
 
 	public static void addRandom(StorageIf storage, int count) throws Exception {
 		for (int i = 0; i < count; i++) {
-			log.fine("Adding "+i+" of "+count+" random messages");
+			log.debug("Adding "+i+" of "+count+" random messages");
 			addRandom(storage);
 		}
 	}

@@ -14,7 +14,6 @@ import org.codehaus.jettison.json.JSONObject;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
 import com.bluebox.TestUtils;
-import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageIf;
@@ -70,7 +69,7 @@ public class InboxTest extends TestCase {
 		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email2), null, null, "subject", "body");
 		TestUtils.sendMailSMTP(new InternetAddress("from@from.com"), new InternetAddress(email3), null, null, "subject", "body");
 
-		Utils.waitFor(3);
+		TestUtils.waitFor(3);
 		JSONObject json = inbox.getStatsRecent();
 		log.info(json.toString(3));
 		assertEquals("Incorrectly reported recent stats recipient",new InboxAddress(email3).getAddress(),json.getString(BlueboxMessage.INBOX));

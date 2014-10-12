@@ -58,7 +58,6 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.rest.json.AbstractHandler;
 import com.bluebox.smtp.Inbox;
-import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class Utils {
 	public static final String UTF8 = "UTF-8";
@@ -490,26 +489,7 @@ public class Utils {
 	//		Transport.send(msg);
 	//	}
 
-	public static void waitFor(int count) throws Exception {
-		Inbox inbox = Inbox.getInstance();
-		int retryCount = 5;
-		while ((retryCount-->0)&&(inbox.getMailCount(BlueboxMessage.State.NORMAL)<count)) {
-			try {
-				log.info("Waiting for delivery "+count);
-				Thread.sleep(250);
-			} 
-			catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		if (retryCount<=0) {
-			log.warn("Timed out waiting for messages to arrive");
-			throw new Exception("Timed out waiting for "+count+"messages to arrive");
-		}
-		else {
-			log.info("Found expected message count received");
-		}
-	}
+	
 
 	public static String trimURLParam(String p) {
 		if (p.endsWith("/")) {

@@ -10,6 +10,7 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.mortbay.jetty.testing.HttpTester;
 
+import com.bluebox.TestUtils;
 import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONFolderHandler;
@@ -44,7 +45,7 @@ public class RestTest extends BaseServletTest {
 
 
 		// first we check directly
-		Utils.waitFor(COUNT);
+		TestUtils.waitFor(COUNT);
 
 		assertEquals("Missing mails",COUNT,getMailCount(BlueboxMessage.State.NORMAL));
 
@@ -83,10 +84,10 @@ public class RestTest extends BaseServletTest {
 
 	public void testInlineHandler() throws Exception {
 		Inbox.getInstance().deleteAll();
-		Utils.waitFor(0);
+		TestUtils.waitFor(0);
 		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"attachments.eml");
 		Utils.uploadEML(emlStream);
-		Utils.waitFor(1);
+		TestUtils.waitFor(1);
 		assertEquals("Mail was not delivered",1,Inbox.getInstance().getMailCount(State.ANY));
 
 		List<BlueboxMessage> messages = Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);

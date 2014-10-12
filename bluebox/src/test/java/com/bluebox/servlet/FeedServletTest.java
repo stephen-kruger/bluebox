@@ -7,7 +7,6 @@ import java.util.List;
 import javax.mail.internet.InternetAddress;
 
 import com.bluebox.TestUtils;
-import com.bluebox.Utils;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
@@ -54,7 +53,7 @@ public class FeedServletTest extends BaseServletTest {
 		String to = "junit@junit.com";
 		TestUtils.sendMailSMTP(new InternetAddress("bob@test.com"), new InternetAddress(to), null, null, "feed test", "body");
 
-		Utils.waitFor(1);
+		TestUtils.waitFor(1);
 
 		String feedURL = getBaseURL()+"/feed/inbox?email="+to;
 		log.info("Checking URL:"+feedURL);
