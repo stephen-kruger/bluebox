@@ -7,7 +7,7 @@
 <%@ page import="com.bluebox.rest.json.JSONMessageHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONInboxHandler"%>
-
+<%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
 <%
 	ResourceBundle inboxDetailsResource = ResourceBundle.getBundle("inboxDetails", request.getLocale());
 %>
@@ -87,6 +87,13 @@
 			loadInbox(email,"<%= BlueboxMessage.State.NORMAL.ordinal()%>");
 		}
 		
+		function trimString(s,maxlen) {
+			if (s.length>maxlen) {
+				s = s.substring(0,maxlen)+"...";
+			}	
+			return s;
+		}
+		
 		function loadInbox(email, state) {
 			currentState = state;
 			console.log("loadInbox2:"+email+" >"+state+"<");
@@ -106,8 +113,7 @@
 					document.getElementById("mailTitle").innerHTML = "<%=inboxDetailsResource.getString("allMail")%>";
 				}
 				else {
-					//document.getElementById("mailTitle").innerHTML = "<%=inboxDetailsResource.getString("inboxfor")%>"+email;
-					document.getElementById("mailTitle").innerHTML = email;
+					document.getElementById("mailTitle").innerHTML = trimString(email,22);
 				}
 					
 				// set the check fragment
@@ -306,7 +312,7 @@
 		
 		require(["dojo/domReady!","dojox/data/JsonRestStore"], function(domready, JSONRestStore) {
 			// will not be called until DOM is ready
-	    	var email = "<%=request.getParameter(Inbox.EMAIL)%>";
+	    	var email = "<%=StringEscapeUtils.escapeJavaScript(request.getParameter(Inbox.EMAIL))%>";
 			if (email=="null")
 				email = "";
 			setupTable(email,"<%=BlueboxMessage.State.NORMAL.ordinal()%>");

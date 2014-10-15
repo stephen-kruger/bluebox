@@ -25,4 +25,9 @@ public class InboxAddressTest extends TestCase {
 		InboxAddress a = new InboxAddress("Steve Johnson/MA/XXX");
 		assertEquals("Expected clean email address","Steve_Johnson@MA.XXX",a.getAddress());
 	}
+	
+	public void testParser() throws AddressException {
+		String email = "postmaster@localhost";
+		assertTrue(new InboxAddress(email).isValidAddress());
+	}
 }

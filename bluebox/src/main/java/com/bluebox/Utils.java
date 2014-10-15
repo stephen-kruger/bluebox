@@ -164,36 +164,37 @@ public class Utils {
 		return res;
 	}	
 
-	/*
-	 * Returns the name portion of an email address
-	 * e.g. "Stephen Johnson" <stephen@mail.com> will return "Stephen Johnson"
-	 */
-	public static final String getEmailName(String email) {
-		try {
-			if ((email==null)||(email.trim().length()==0)) {
-				return "*";
-			}
-			// check if it's a Notes address
-			if (Utils.isNotesAddress(email)) {
-				log.info("Converting Notes style address :"+email);
-				email = Utils.convertNotesAddress(email);
-			}
-			else {
-				// if no domain specified, add default
-				if (email.indexOf('@')<0) {
-					email += '@'+Utils.getHostName();
-				}
-			}
-
-			InternetAddress address = new InternetAddress(email);
-			return address.getPersonal()+"";
-		}
-		catch (Throwable e) {
-			log.debug(e.getMessage()+" "+email);
-			e.printStackTrace();
-		}
-		return "";
-	}
+//	/*
+//	 * Returns the name portion of an email address
+//	 * e.g. "Stephen Johnson" <stephen@mail.com> will return "Stephen Johnson"
+//	 */
+//	public static final String getEmailName(String email) {
+//		try {
+//			if ((email==null)||(email.trim().length()==0)) {
+//				return "*";
+//			}
+//			// check if it's a Notes address
+//			if (Utils.isNotesAddress(email)) {
+//				log.info("Converting Notes style address :"+email);
+//				email = Utils.convertNotesAddress(email);
+//			}
+//			else {
+//				// if no domain specified, add default
+//				if (email.indexOf('@')<0) {
+//					email += '@'+Utils.getHostName();
+//				}
+//			}
+//
+////			InternetAddress address = new InternetAddress(email);
+////			return address.getPersonal()+"";
+//			EmailAddress.getPersonalName(email);
+//		}
+//		catch (Throwable e) {
+//			log.debug(e.getMessage()+" "+email);
+//			e.printStackTrace();
+//		}
+//		return "";
+//	}
 
 	//	public static final String getEscapedEmail(String email) {
 	//		return StorageImpl.escape(getEmail(email));
