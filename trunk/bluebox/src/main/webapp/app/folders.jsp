@@ -4,6 +4,7 @@
 <%@ page import="com.bluebox.smtp.Inbox"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.Config"%>
+<%@ page import="org.apache.commons.lang.StringEscapeUtils"%>
 
 <% 
 	ResourceBundle folderDetailResource = ResourceBundle.getBundle("folderDetails",request.getLocale());
@@ -11,7 +12,7 @@
 %>
 <script>		
 	
-	var folderEmail = "<%= request.getParameter(Inbox.EMAIL) %>";
+	var folderEmail = "<%= StringEscapeUtils.escapeJavaScript(request.getParameter(Inbox.EMAIL)) %>";
 	if (folderEmail=="null")
 		folderEmail = "";
 		

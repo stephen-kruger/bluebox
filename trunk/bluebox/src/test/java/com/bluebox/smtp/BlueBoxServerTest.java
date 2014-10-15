@@ -59,6 +59,7 @@ public class BlueBoxServerTest extends TestCase {
 	}
 
 	public void testCrash() throws Exception {
+		Inbox.getInstance().deleteAll();
 		assertEquals("Mailbox was not cleared",0,Inbox.getInstance().getMailCount(State.ANY));
 		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"crashfix.eml");
 		Utils.uploadEML(emlStream);

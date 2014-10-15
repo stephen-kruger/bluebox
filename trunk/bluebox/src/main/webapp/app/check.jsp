@@ -66,7 +66,7 @@
 	               new dijit.form.ComboBox({
 	                   id: "<%= Inbox.EMAIL %>",
 	                   name: "Email",
-	                   value: "<%=email%>",
+	                   value: "<%=org.apache.commons.lang.StringEscapeUtils.escapeJavaScript(email)%>",
 	                   autocomplete:true,
 	                   store: stateStore,
 	                   placeholder: "<%= checkResource.getString("typeaheadPlaceholder") %>",

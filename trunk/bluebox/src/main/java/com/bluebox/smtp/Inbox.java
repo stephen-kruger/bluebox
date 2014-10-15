@@ -27,6 +27,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.codehaus.jettison.json.JSONArray;
@@ -304,29 +305,37 @@ public class Inbox implements SimpleMessageListener {
 	public boolean accept(String from, String recipient) {	
 
 		try {
-			InternetAddress fromIA = new InternetAddress(from);
-			InternetAddress toIA = new InternetAddress(recipient);
+//			InternetAddress fromIA = new InternetAddress(from);
+//			InternetAddress toIA = new InternetAddress(recipient);
 
-			if (Config.getInstance().getBoolean(Config.BLUEBOX_STRICT_CHECKING)) {
-				// validate the email format
-				if (!from.contains("@"))return false;
-				if (!recipient.contains("@"))return false;
-				fromIA.validate();
-				toIA.validate();
+//			if (Config.getInstance().getBoolean(Config.BLUEBOX_STRICT_CHECKING)) {
+//				// validate the email format
+//				if (!from.contains("@"))return false;
+//				if (!recipient.contains("@"))return false;
+//				fromIA.validate();
+//				toIA.validate();
+//			}
+			InboxAddress fromAddress = new InboxAddress(from);
+			InboxAddress recipientAddress = new InboxAddress(recipient);
+			if (!fromAddress.isValidAddress()) {
+				throw new Exception("Invalid from address specified :"+from);
+			}
+			if (!recipientAddress.isValidAddress()) {
+				throw new Exception("Invalid recipient address specified :"+recipient);
 			}
 
 			// check from blacklist
 			for (Object badDomain : fromBlackList) {
-				log.debug(badDomain+"<<<---- Comparing fromBlackList---->>>"+fromIA.getAddress());
-				if (fromIA.getAddress().endsWith(badDomain.toString())) {
+				log.debug(badDomain+"<<<---- Comparing fromBlackList---->>>{}",from);
+				if (fromAddress.getDomain().endsWith(badDomain.toString())) {
 					log.warn("Rejecting mail from "+from+" to "+recipient+" due to blacklisted FROM:"+badDomain);
 					return false;
 				}
 			}
 			// check to blacklist
 			for (Object badDomain : toBlackList) {
-				log.debug(badDomain+"<<<---- Comparing toBlackList---->>>"+toIA.getAddress());
-				if (toIA.getAddress().endsWith(badDomain.toString())) {
+				log.debug(badDomain+"<<<---- Comparing toBlackList---->>>{}",recipient);
+				if (recipientAddress.getDomain().endsWith(badDomain.toString())) {
 					log.warn("Rejecting mail from "+from+" to "+recipient+" due to blacklisted TO:"+badDomain);
 					return false;
 				}
@@ -335,8 +344,8 @@ public class Inbox implements SimpleMessageListener {
 			// check the from whitelist
 			if (fromWhiteList.size()>0) {
 				for (Object goodDomain : fromWhiteList) {
-					log.debug(goodDomain.toString()+"<<<---- Comparing fromWhiteList---->>>"+fromIA.getAddress());
-					if (fromIA.getAddress().endsWith(goodDomain.toString())) {
+					log.debug(goodDomain.toString()+"<<<---- Comparing fromWhiteList---->>>{}",from);
+					if (fromAddress.getDomain().endsWith(goodDomain.toString())) {
 						return true;
 					}
 				}
@@ -347,8 +356,8 @@ public class Inbox implements SimpleMessageListener {
 			// check the to whitelist
 			if (toWhiteList.size()>0) {
 				for (Object goodDomain : toWhiteList) {
-					log.debug(goodDomain.toString()+"<<<---- Comparing toWhiteList---->>>"+toIA.getAddress());
-					if (toIA.getAddress().endsWith(goodDomain.toString())) {
+					log.debug(goodDomain.toString()+"<<<---- Comparing toWhiteList---->>>{}"+recipient);
+					if (recipientAddress.getDomain().endsWith(goodDomain.toString())) {
 						return true;
 					}
 				}
@@ -494,7 +503,7 @@ public class Inbox implements SimpleMessageListener {
 
 		//			hint = QueryParser.escape(hint);
 		SearchIndexer search = SearchIndexer.getInstance();
-		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENTS, (int)start, (int)count, SearchIndexer.SearchFields.RECEIVED,false);
+		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENTS, (int)start, (int)count*10, SearchIndexer.SearchFields.RECEIVED,false);
 		for (int i = 0; i < results.length;i++) {
 			String uid = results[i].get(SearchFields.UID.name());
 			curr = new JSONObject();
@@ -504,7 +513,9 @@ public class Inbox implements SimpleMessageListener {
 			curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENTS.name())).getFullAddress());
 			curr.put("identifier", uid);
 			if (!contains(children,curr.getString("name"))) {
-				children.put(curr);
+				// TODO - nasty perf hit here - need to figure out why search is returning entries with empty inboxes
+				if (getMailCount(inbox,BlueboxMessage.State.NORMAL)>0)
+					children.put(curr);
 			}
 			if (children.length()>=count)
 				break;
@@ -554,9 +565,9 @@ public class Inbox implements SimpleMessageListener {
 
 	private JSONObject updateStatsRecent(String inbox, String from, String subject, String uid) {
 		try {
-			recentStats.put(BlueboxMessage.SUBJECT, subject);
-			recentStats.put(BlueboxMessage.INBOX, inbox);
-			recentStats.put(BlueboxMessage.FROM, from);
+			recentStats.put(BlueboxMessage.SUBJECT, StringEscapeUtils.escapeJavaScript(subject));
+			recentStats.put(BlueboxMessage.INBOX, StringEscapeUtils.escapeJavaScript(inbox));
+			recentStats.put(BlueboxMessage.FROM, StringEscapeUtils.escapeJavaScript(from));
 			recentStats.put(BlueboxMessage.UID, uid);
 		} 
 		catch (JSONException e1) {

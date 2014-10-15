@@ -41,6 +41,7 @@ public class InboxAddress extends Object {
 			if ((email==null)||(email.trim().length()==0)) {
 				return "";
 			}
+			email = Utils.decodeRFC2407(email);
 			// check if it's a Notes address
 			if (Utils.isNotesAddress(email)) {
 				log.info("Converting Notes style address :"+email);
@@ -53,10 +54,9 @@ public class InboxAddress extends Object {
 				}
 			}
 
-			InternetAddress address = new InternetAddress(Utils.decodeRFC2407(email));
-			//			return StorageImpl.escape(address.getAddress());
-			//			return address.getAddress().replace('<', ' ').replace('>', ' ').trim();
-			return address.getAddress();
+//			InternetAddress address = new InternetAddress(Utils.decodeRFC2407(email));
+//			return address.getAddress();
+			return EmailAddress.getInternetAddress(email).getAddress();
 		}
 		catch (Throwable e) {
 			log.debug("Error for {}",email);
@@ -67,7 +67,7 @@ public class InboxAddress extends Object {
 
 	public String getDisplayName() {
 		try {
-			String p = new InternetAddress(address).getPersonal();
+			String p = EmailAddress.getPersonalName(address);//new InternetAddress(address).getPersonal();
 			if (p!=null) {
 				if (p.length()>0) {
 					return p;
@@ -78,5 +78,13 @@ public class InboxAddress extends Object {
 			t.printStackTrace();
 		}
 		return address;
+	}
+
+	public String getDomain() {
+		return EmailAddress.getDomain(address);
+	}
+
+	public boolean isValidAddress() {
+		return EmailAddress.isValidMailbox(address);
 	}
 }
