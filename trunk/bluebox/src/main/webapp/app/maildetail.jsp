@@ -203,44 +203,39 @@
 		loadInboxAndFolder(currentInbox);
 	}
 	
-	/*
-	function displayArrayButton(parentId, array) {
-		try {
-			var parentNode = document.getElementById(parentId);
-			// remove all the previously added buttons
-			while (parentNode.childNodes[0]) {
-				parentNode.removeChild(cells[i].childNodes[0]);
-			}
-		
-			if (array) {
-				for (var i = 0; i < array.length; i++) {
-					createEmailButton(parentId, encodeMyHtml(array[i]));
-				}
-			}
-		}
-		catch (err) {
-			console.log("maildetail2:"+err);
-		}
-	}
-	*/
-	
-	function removeQuotes(str) {
-		return str.replace(/['"]/g,'');
-	}
-	
 	/* This is for the detail section of the viewed email message */
 	function displayArray(label, array, classname) {
 		if (array) {
-			var str = "";
+			var emailButton;
 			for (var i = 0; i < array.length; i++) {
 				if (i>0) {
-					str += ", <a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/mailSmall.png\"/>"+encodeMyHtml(array[i],classname)+"</a>";
+					label.appendChild(document.createTextNode(", "));
 				}
-				else {
-					str += "<a href='#' onclick='loadInboxAndFolder(\""+removeQuotes(array[i])+"\");'><img class=\"mailIcon\" src=\"<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/mailSmall.png\"/>"+encodeMyHtml(array[i], classname)+"</a>";
-				}
+				emailButton = document.createElement('a');
+				emailButton.setAttribute("href","#");
+				emailButton.onclick = (
+						function() {
+				      		var currentEmailAddress = array[i];
+				      		return function() { 
+				          		loadInboxAndFolder(currentEmailAddress);
+				      		}
+				   		}
+				)();
+				var image = document.createElement("img");
+				image.setAttribute("class","mailIcon");
+				image.setAttribute("src",'<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/mailSmall.png');
+				//----
+				var span = document.createElement("span");
+				var attClass = document.createAttribute('class');
+				attClass.value = classname;
+				span.setAttributeNode(attClass);
+				var text = document.createTextNode(array[i]);
+				span.appendChild(image);
+				span.appendChild(text);
+				emailButton.appendChild(span);
+				
+				label.appendChild(emailButton);
 			}
-			label.innerHTML = str;
 		}
 		else {			
 			label.innerHTML = ""; // not set
@@ -251,7 +246,6 @@
 		try {
 			document.getElementById("mailHeaderBlock").style.display="none";
 			document.getElementById("mailToggleBlock").style.display="none";
-		
 			document.getElementById("CcLabel").style.display="none";
 			document.getElementById("From").innerHTML="";
 			document.getElementById("To").innerHTML="";
