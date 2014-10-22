@@ -1,5 +1,6 @@
 package com.bluebox.smtp.storage.derby;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -34,7 +35,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	private static final String PROPS_TABLE = "PROPERTIES";
 	private static final String KEY = "keyname";
 	private static final String VALUE = "value";
-//	private static final String DOW = "DayOfWeek";
+	//	private static final String DOW = "DayOfWeek";
 	public static final String ERROR_COUNT = "error_count";
 	public static final String ERROR_TITLE = "error_title";
 	public static final String ERROR_DATE = "error_date";
@@ -122,11 +123,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	private void dropTables() {
 		try {
-		Connection connection = getConnection();
-		Statement s = connection.createStatement();
-		s.executeUpdate("DROP TABLE "+INBOX_TABLE);
-		s.executeUpdate("DROP TABLE "+PROPS_TABLE);
-		s.close();
+			Connection connection = getConnection();
+			Statement s = connection.createStatement();
+			s.executeUpdate("DROP TABLE "+INBOX_TABLE);
+			s.executeUpdate("DROP TABLE "+PROPS_TABLE);
+			s.close();
 		}
 		catch (Throwable t) {
 			log.warn("Cannot drop tables :"+t.getMessage());
@@ -145,7 +146,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					StorageIf.Props.Sender.name()+" VARCHAR(255), "+
 					StorageIf.Props.Subject.name()+" VARCHAR(255), "+
 					StorageIf.Props.Received.name()+" TIMESTAMP, "+
-//					DOW+" INTEGER, "+
+					//					DOW+" INTEGER, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
 					StorageIf.Props.Size.name()+" BIGINT, "+
 					BlueboxMessage.RAW+" blob(16M))");
@@ -162,7 +163,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 		connection.close();
 
-//		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED,DOW};
+		//		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED,DOW};
 		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED};
 		createIndexes(INBOX_TABLE,indexes);
 
@@ -200,7 +201,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.setString(4, props.getString(StorageIf.Props.Sender.name())); // FROM
 		ps.setString(5, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
 		ps.setTimestamp(6, new java.sql.Timestamp(props.getLong(StorageIf.Props.Received.name()))); // RECEIVED
-//		ps.setInt(7, DerbyFunctions.dayOfWeek(new java.sql.Timestamp(props.getLong(StorageIf.Props.Received.name())))); // DOW
+		//		ps.setInt(7, DerbyFunctions.dayOfWeek(new java.sql.Timestamp(props.getLong(StorageIf.Props.Received.name())))); // DOW
 		ps.setInt(7, props.getInt(StorageIf.Props.State.name())); // STATE
 		ps.setLong(8, props.getLong(StorageIf.Props.Size.name())); // SIZE
 		ps.setBinaryStream(9, blob); // MIMEMESSAGE
@@ -571,16 +572,21 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void logError(String title, InputStream content) {
 		try {
-			int count = logErrorCount();
-			count++;
-			setProperty(ERROR_TITLE+count,title);
-			setProperty(ERROR_DATE+count,new Date().toString());
-			setProperty(ERROR_CONTENT+count,Utils.convertStreamToString(content));
-			setProperty(ERROR_COUNT,Integer.toString(count));
+			logError(title,Utils.convertStreamToString(content));
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
 		}
-		catch (Throwable t) {
-			t.printStackTrace();
-		}
+	}
+
+	@Override
+	public void logError(String title, String content) {
+		int count = logErrorCount();
+		count++;
+		setProperty(ERROR_TITLE+count,title);
+		setProperty(ERROR_DATE+count,new Date().toString());
+		setProperty(ERROR_CONTENT+count,content);
+		setProperty(ERROR_COUNT,Integer.toString(count));
 	}
 
 	@Override
@@ -788,7 +794,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 			while (result.next()) {
 				resultJ.put(result.getString(1), result.getString(2));
-								log.info(result.getString(1)+"<<<>>>"+result.getString(2));
+				log.info(result.getString(1)+"<<<>>>"+result.getString(2));
 			}
 			ps.close();
 			s.close();
@@ -863,7 +869,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			connection.close();
 		}
 	}
-	
+
 	public void createFunction() throws Exception {
 		String method = "create function dayOfWeek\n"+ 
 				"( dateValue timestamp )\n"+ 
@@ -905,7 +911,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			t.printStackTrace();
 		}
 
-//		String sql = "select "+DOW+", count("+StorageIf.Props.Uid.name()+") as cnt from "+INBOX_TABLE+" group by "+DOW+"";
+		//		String sql = "select "+DOW+", count("+StorageIf.Props.Uid.name()+") as cnt from "+INBOX_TABLE+" group by "+DOW+"";
 		// 16.306 ; 14.216 ; 14.636
 		// 15.184 ; 14.590 ; 15.449
 		String sql = "select dow, count("+StorageIf.Props.Uid.name()+") from (select dayOfWeek("+StorageIf.Props.Received.name()+") as dow, "+StorageIf.Props.Uid.name()+" from "+INBOX_TABLE+") as t group by dow";

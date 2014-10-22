@@ -1,8 +1,6 @@
 package com.bluebox.smtp;
 
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -15,11 +13,11 @@ public class InboxAddress extends Object {
 
 	private String address;
 
-	public InboxAddress(String s) throws AddressException {
+	public InboxAddress(String s) {
 		this.address = s;
 	}
 
-	public InboxAddress(HttpServletRequest req) throws AddressException {
+	public InboxAddress(HttpServletRequest req) {
 		this(req.getParameter(Inbox.EMAIL));
 	}
 

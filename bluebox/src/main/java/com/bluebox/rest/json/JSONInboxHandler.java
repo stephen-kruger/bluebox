@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
 
-import javax.mail.internet.AddressException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -28,7 +27,7 @@ public class JSONInboxHandler extends AbstractHandler {
 			String emailStr = extractEmail(extractFragment(req.getRequestURI(),JSON_ROOT,2));
 			inboxAddress = new InboxAddress(emailStr);
 		}
-		catch (AddressException e) {
+		catch (Throwable e) {
 			inboxAddress = null;
 		}
 

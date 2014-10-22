@@ -65,15 +65,11 @@ public interface StorageIf {
 	
 	public void setState(String uid, BlueboxMessage.State state)
 			throws Exception;
-	
-//	public String getProperty(String key, String defaultValue);
-//	
-//	public void setProperty(String key, String value);
-//
-//	public boolean hasProperty(String key);
 		
 	public void logError(String title, InputStream content);
-	
+
+	public void logError(String title, String content);
+
 	public int logErrorCount();
 	
 	public void logErrorClear();

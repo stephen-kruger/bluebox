@@ -23,6 +23,7 @@ public class BlueBoxSMTPServer extends SMTPServer {
 		setHideTLS(true);
 		setRequireTLS(false);
 		setSoftwareName("BlueBox");
+		setConnectionTimeout(10000); // wait 10sec before abandoning connection
 	}
 
 	public BlueBoxSMTPServer(MessageHandlerFactory mhf, AuthenticationHandlerFactory ahf) {
