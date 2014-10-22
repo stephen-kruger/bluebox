@@ -28,6 +28,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.codehaus.jettison.json.JSONArray;
@@ -305,16 +306,6 @@ public class Inbox implements SimpleMessageListener {
 	public boolean accept(String from, String recipient) {	
 
 		try {
-//			InternetAddress fromIA = new InternetAddress(from);
-//			InternetAddress toIA = new InternetAddress(recipient);
-
-//			if (Config.getInstance().getBoolean(Config.BLUEBOX_STRICT_CHECKING)) {
-//				// validate the email format
-//				if (!from.contains("@"))return false;
-//				if (!recipient.contains("@"))return false;
-//				fromIA.validate();
-//				toIA.validate();
-//			}
 			InboxAddress fromAddress = new InboxAddress(from);
 			InboxAddress recipientAddress = new InboxAddress(recipient);
 			if (!fromAddress.isValidAddress()) {
@@ -372,7 +363,7 @@ public class Inbox implements SimpleMessageListener {
 		}
 		catch (Throwable t) {
 			log.error(t.getMessage()+" for from="+from+" and recipient="+recipient);
-			errorLog("Accept error for address "+recipient+" sent by "+from, Utils.convertStringToStream(t.toString()));
+			errorLog("Accept error for address "+recipient+" sent by "+from, ExceptionUtils.getStackTrace(t));
 			//			t.printStackTrace();
 			return false;
 		}
@@ -467,6 +458,10 @@ public class Inbox implements SimpleMessageListener {
 
 	public void errorLog(String title, InputStream is) {
 		StorageFactory.getInstance().logError(title, is);
+	}
+	
+	public void errorLog(String title, String detail) {
+		StorageFactory.getInstance().logError(title, detail);
 	}
 
 	public String errorDetail(String id) {

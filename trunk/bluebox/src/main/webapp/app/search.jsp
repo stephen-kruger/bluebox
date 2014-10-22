@@ -124,16 +124,7 @@
 			        dropDown: menu,
 			        id: "searchScopeSelector"
 			    });
-			    dom.byId("dropDownButtonContainer").appendChild(button.domNode);
-			    
-				// will not be called until DOM is ready
-				//selectMenu("home");
-				//var email = "<%= com.bluebox.smtp.InboxAddress.getEmail(request.getParameter(Inbox.EMAIL)) %>";
-				//	if (email=="null")
-				//		email = "";
-				//initTypeAhead();
-				//loadFolder(email);
-				
+			    dom.byId("dropDownButtonContainer").appendChild(button.domNode);				
 			});
 			
 		</script>

@@ -1,5 +1,6 @@
 package com.bluebox.smtp.storage.mongodb;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -50,11 +51,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public void start() throws Exception {
 		log.info("Starting MongoDB connection");
-//		MongoClientOptions options = MongoClientOptions.builder()
-//                .maxWaitTime(250)
-//                .connectTimeout(250)
-//                .socketTimeout(250)
-//                .build();
+		//		MongoClientOptions options = MongoClientOptions.builder()
+		//                .maxWaitTime(250)
+		//                .connectTimeout(250)
+		//                .socketTimeout(250)
+		//                .build();
 		MongoClient mongoClient = new MongoClient(Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST));
 		db = mongoClient.getDB(DB_NAME);
 		errorFS = new GridFS(mongoClient.getDB(DB_ERR_NAME),DB_ERR_NAME);
@@ -73,11 +74,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return true;
 		}
 		catch (Throwable t) {
-			
+
 		}
 		return false;
 	}
-	
+
 	private void createIndexes() {
 		// create indexes
 		String[] indexes = new String[]{
@@ -430,16 +431,20 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void logError(String title, InputStream content) {
 		try {
-			GridFSInputFile gfs = errorFS.createFile(content);
-			gfs.put("title", title);
-			gfs.put("date", new Date());
-			gfs.save();
-			log.info("Saved with id {}",gfs.getId());
-			content.close();
+			logError(title,Utils.convertStreamToString(content));
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
 		}
-		catch (Throwable t) {
-			t.printStackTrace();
-		}
+	}
+
+	@Override
+	public void logError(String title, String content) {
+		GridFSInputFile gfs = errorFS.createFile(content.getBytes());
+		gfs.put("title", title);
+		gfs.put("date", new Date());
+		gfs.save();
+		log.info("Saved with id {}",gfs.getId());
 	}
 
 	public int logErrorCount() {
@@ -716,7 +721,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		return resultJ;
 	}
-	
+
 	@Override
 	public JSONObject getCountByDayOfWeek() {
 		JSONObject resultJ = new JSONObject();
