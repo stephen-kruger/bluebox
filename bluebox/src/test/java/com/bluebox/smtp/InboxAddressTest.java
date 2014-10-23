@@ -27,7 +27,10 @@ public class InboxAddressTest extends TestCase {
 	}
 	
 	public void testParser() throws AddressException {
-		String email = "postmaster@localhost";
-		assertTrue(new InboxAddress(email).isValidAddress());
+		String email1 = "postmaster@localhost";
+		assertTrue(new InboxAddress(email1).isValidAddress());
+		String email2 = "example.com!nobody@[9.32.154.176]";
+		assertTrue(new InboxAddress(email2).isValidAddress());
+		assertNotNull(new InboxAddress(email2).getDomain());
 	}
 }

@@ -79,7 +79,11 @@ public class InboxAddress extends Object {
 	}
 
 	public String getDomain() {
-		return EmailAddress.getDomain(address);
+		
+		String domain =  EmailAddress.getDomain(address);
+		if (domain==null)
+			return "localhost";
+		return domain;
 	}
 
 	public boolean isValidAddress() {
