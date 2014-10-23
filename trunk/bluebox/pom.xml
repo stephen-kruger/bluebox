@@ -4,14 +4,14 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.1.7</version>
+	<version>4.1.8</version>
 	<name>BlueBox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
 		<slf4j_version>1.7.7</slf4j_version>
 		<lucene_version>4.10.1</lucene_version>
 		<derby_version>10.11.1.1</derby_version>
-		<mongo_version>2.12.3</mongo_version>
+		<mongo_version>2.12.4</mongo_version>
 	</properties>
 
 	<repositories>

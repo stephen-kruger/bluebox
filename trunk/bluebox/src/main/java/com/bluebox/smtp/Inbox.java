@@ -459,7 +459,7 @@ public class Inbox implements SimpleMessageListener {
 	public void errorLog(String title, InputStream is) {
 		StorageFactory.getInstance().logError(title, is);
 	}
-	
+
 	public void errorLog(String title, String detail) {
 		StorageFactory.getInstance().logError(title, detail);
 	}
@@ -493,23 +493,23 @@ public class Inbox implements SimpleMessageListener {
 		// ensure we check for all substrings
 		if (!hint.startsWith("*"))
 			hint = "*"+hint;
-		//		if (hint.length()==1)
-		//			return children;
-
+		if (hint.length()==2) {
+			return children;
+		}
 		//			hint = QueryParser.escape(hint);
 		SearchIndexer search = SearchIndexer.getInstance();
-		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENTS, (int)start, (int)count*10, SearchIndexer.SearchFields.RECEIVED,false);
+		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchIndexer.SearchFields.RECEIVED,false);
 		for (int i = 0; i < results.length;i++) {
 			String uid = results[i].get(SearchFields.UID.name());
 			curr = new JSONObject();
 			InboxAddress inbox;
 			inbox = new InboxAddress(results[i].get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
 			curr.put("name", inbox.getAddress());
-			curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENTS.name())).getFullAddress());
+			curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENT.name())).getFullAddress());
 			curr.put("identifier", uid);
 			if (!contains(children,curr.getString("name"))) {
-				// TODO - nasty perf hit here - need to figure out why search is returning entries with empty inboxes
-				if (getMailCount(inbox,BlueboxMessage.State.NORMAL)>0)
+//				 TODO - nasty perf hit here - need to figure out why search is returning entries with empty inboxes
+//				if (getMailCount(inbox,BlueboxMessage.State.NORMAL)>0)
 					children.put(curr);
 			}
 			if (children.length()>=count)

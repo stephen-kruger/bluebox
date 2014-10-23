@@ -53,7 +53,7 @@ public class SearchIndexer {
 	private IndexWriterConfig config;
 	private static SearchIndexer si;
 	private IndexWriter indexWriter;
-	public enum SearchFields {UID, INBOX, FROM, SUBJECT, RECEIVED, TEXT_BODY, HTML_BODY, SIZE, RECIPIENTS, ANY, BODY};
+	public enum SearchFields {UID, INBOX, FROM, SUBJECT, RECEIVED, TEXT_BODY, HTML_BODY, SIZE, RECIPIENT, RECIPIENTS, ANY, BODY};
 	
 	public static SearchIndexer getInstance() throws IOException {
 		if (si==null) {
@@ -117,6 +117,12 @@ public class SearchIndexer {
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
 							SearchFields.FROM.name()},
+							analyzer);
+			break;
+		case RECIPIENT :
+			queryParser = new MultiFieldQueryParser(
+					new String[] {
+							SearchFields.RECIPIENT.name()},
 							analyzer);
 			break;
 		case RECIPIENTS :
@@ -263,6 +269,7 @@ public class SearchIndexer {
 		Document doc = new Document();
 		doc.add(new StringField(SearchFields.UID.name(), uid, Field.Store.YES));
 		doc.add(new TextField(SearchFields.FROM.name(), from, Field.Store.YES));
+		doc.add(new TextField(SearchFields.RECIPIENT.name(), getRecipient(recipients,inbox), Field.Store.YES));
 		doc.add(new TextField(SearchFields.INBOX.name(), inbox, Field.Store.YES));
 		doc.add(new TextField(SearchFields.SUBJECT.name(), subject, Field.Store.YES));
 		doc.add(new TextField(SearchFields.TEXT_BODY.name(), text, Field.Store.YES));
@@ -272,6 +279,21 @@ public class SearchIndexer {
 		doc.add(new LongField(SearchFields.RECEIVED.name(), received, Field.Store.YES));
 		indexWriter.addDocument(doc);
 		indexWriter.commit();
+	}
+
+	/*
+	 * Figure out which of the recipients this mail is actually being delivered to. If none match, use the Inbox as default;
+	 */
+	private String getRecipient(String recipients, String inbox) {
+		StringTokenizer tok = new StringTokenizer(recipients,",");
+		String linbox = inbox.toLowerCase();
+		while (tok.hasMoreElements()) {
+			String curr = tok.nextToken();
+			if (curr.toLowerCase().contains(linbox)) {
+				return curr;
+			}
+		}
+		return inbox;
 	}
 
 	public static String htmlToString(String html) throws IOException {
