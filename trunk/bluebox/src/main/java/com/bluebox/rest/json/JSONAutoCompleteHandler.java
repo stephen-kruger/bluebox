@@ -52,7 +52,7 @@ public class JSONAutoCompleteHandler extends AbstractHandler {
 	
 	public JSONArray doAutoComplete(Inbox inbox, String hint, String start, String count) {
 		log.debug("doAutoComplete2 {} {} {}",hint,start,count);
-		long startI=0, countI=15;
+		long startI=0, countI=25;
 		try {
 			try {
 				startI = Long.parseLong(start);

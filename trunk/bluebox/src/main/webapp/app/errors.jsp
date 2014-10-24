@@ -5,7 +5,7 @@
 <%
 	Config bbconfig = Config.getInstance();
 	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
-	ResourceBundle menuResource = ResourceBundle.getBundle("menu",request.getLocale());
+	ResourceBundle errorsResource = ResourceBundle.getBundle("errors",request.getLocale());
 	ResourceBundle inboxResource = ResourceBundle.getBundle("inboxDetails",request.getLocale());
 %>
 
@@ -48,7 +48,7 @@
 			    // set the layout structure:
 		    	var view = {
 					cells: [[
-								{name: '<%= menuResource.getString("errors") %>', field: 'title', width: 'auto', editable: false},
+								{name: '<%= errorsResource.getString("errors") %>', field: 'title', width: 'auto', editable: false},
 								{name: '<%= inboxResource.getString("date") %>', field: 'date', width: 'auto', editable: false},
 								{name: 'ID',  field: 'id', hidden: 'true', editable: false}
 					]]
@@ -123,13 +123,14 @@
 	<div class="headerCol"><jsp:include page="menu.jsp" /></div>
 	<div class="colWrapper">		
 		<div class="leftCol">
-			<h2><%= menuResource.getString("errors") %></h2>
+			<h2><%= errorsResource.getString("errorTitle") %></h2>
 		</div>
 			
-		<div class="centerCol">
+		<div class="centerCol" style="display: table-cell;vertical-align: top;">
 			<div>
+				<h3><%= errorsResource.getString("errors") %></h3>
 				<div class=errorList id="gridDiv"></div>
-				<h3>Error details</h3>
+				<h3><%= errorsResource.getString("errorDetails") %></h3>
 				<div id="errorTitle"></div><div id="errorDate"></div>
 				<textarea id="errorBody" data-dojo-type="dijit/form/Textarea" readonly="readonly" class="errorBody"></textarea>	
 			</div>
