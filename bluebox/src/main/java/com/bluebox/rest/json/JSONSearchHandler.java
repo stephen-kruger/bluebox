@@ -83,7 +83,7 @@ public class JSONSearchHandler extends AbstractHandler {
 			log.info("Sending JSON search view for {} first={} last={} orderby={}",search,first,last,orderBy.name());
 			Writer writer = resp.getWriter();
 			long totalCount = inbox.searchInbox(search, writer, first, last-first, SearchIndexer.SearchFields.valueOf(searchScope), orderBy, ascending);
-			log.info("Total result set was length {}",totalCount);
+			log.debug("Total result set was length {}",totalCount);
 			resp.setHeader("Content-Range", "items "+first+"-"+last+"/"+totalCount);//Content-Range: items 0-24/66
 			writer.flush();
 		}

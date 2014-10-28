@@ -47,7 +47,7 @@ public class JSONInboxHandler extends AbstractHandler {
 			t.printStackTrace();
 		}
 		resp.flushBuffer();
-		log.info("Served inbox contents in for "+inboxAddress+" first="+pager.getFirst()+" last="+pager.getLast()+" in "+(new Date().getTime()-startTime)+"ms");
+		log.info("Served inbox contents in for {} first={} last={} in {}ms",inboxAddress,pager.getFirst(),pager.getLast(),(new Date().getTime()-startTime));
 	}
 
 	private BlueboxMessage.State extractState(String uri, String jsonRoot) {

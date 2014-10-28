@@ -36,7 +36,7 @@ public class JSONMessageHandler extends AbstractHandler {
 	 */
 	public void doGetMessageDetail(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		setDefaultHeaders(resp);
-		log.info("doGetMessageDetail:"+req.getRequestURI());
+		log.debug("doGetMessageDetail:{}",req.getRequestURI());
 		Writer out = resp.getWriter();
 		try {
 			String uid = extractFragment(req.getRequestURI(),JSON_ROOT,0);

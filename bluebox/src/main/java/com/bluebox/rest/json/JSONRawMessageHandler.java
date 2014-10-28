@@ -27,7 +27,7 @@ public class JSONRawMessageHandler extends AbstractHandler {
 //			String uri = req.getRequestURI();
 			String uid = extractFragment(req.getRequestURI(), JSON_ROOT, 0);
 			//uri.substring(uri.lastIndexOf("/")+1,uri.length());
-			log.info("Serving raw message for "+uid);
+			log.debug("Serving raw message for {}",uid);
 			BlueboxMessage message = inbox.retrieve(uid);
 			MimeMessage bbm = message.getBlueBoxMimeMessage();
 			resp.setContentType("text/plain");
