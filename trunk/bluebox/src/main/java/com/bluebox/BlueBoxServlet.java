@@ -64,7 +64,6 @@ public class BlueBoxServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(final HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-//		log.info(req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
 			log.debug("doGetMessageDetail");
 			new JSONMessageHandler().doGetMessageDetail(Inbox.getInstance(),req,resp);
@@ -341,7 +340,6 @@ public class BlueBoxServlet extends HttpServlet {
 				jo.put(tw.getId(), tw.getProgress());
 			}
 		}
-//		log.info(jo.toString());
 		return jo;
 	}
 

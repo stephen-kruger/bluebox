@@ -67,7 +67,7 @@ public class JSONFolderHandler extends AbstractHandler {
 				}
 			}
 
-			log.info("Serving folder count for "+emailStr);
+			log.debug("Serving folder count for {}",emailStr);
 			ResourceBundle rb = ResourceBundle.getBundle("folderDetails",req.getLocale());
 
 			JSONObject folders = new JSONObject();

@@ -27,7 +27,7 @@ public class JSONErrorHandler extends AbstractHandler {
 			// tell the grid how many items we have
 			long totalCount = inbox.errorCount();
 			pager.setRange(resp, totalCount);
-			log.info("Sending JSON error view first="+pager.getFirst()+" last="+pager.getLast());
+			log.debug("Sending JSON error view first={} last={}",pager.getFirst(),pager.getLast());
 			Writer writer = resp.getWriter();
 			JSONArray result = inbox.errorCount(pager.getFirst(), pager.getCount());
 			writer.write(result.toString());
@@ -43,7 +43,7 @@ public class JSONErrorHandler extends AbstractHandler {
 
 	public void doGetDetail(Inbox instance, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String id = extractFragment(req.getRequestURI(),JSON_ROOT,0);
-		log.info("Serving error detail for id="+id);
+		log.debug("Serving error detail for id={}",id);
 		resp.setContentType("application/text");
 		Writer writer = resp.getWriter();
 		writer.write(Inbox.getInstance().errorDetail(id));

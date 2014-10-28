@@ -444,7 +444,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		gfs.put("title", title);
 		gfs.put("date", new Date());
 		gfs.save();
-		log.info("Saved with id {}",gfs.getId());
+		log.debug("Saved with id {}",gfs.getId());
 	}
 
 	public int logErrorCount() {
@@ -482,7 +482,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			JSONObject logError;
 			while ((result.length()<count&&cursor.hasNext())) {
 				DBObject dbo = cursor.next();
-				//log.info(dbo.toString());;
 				logError = new JSONObject();
 				logError.put("title", getDBOString(dbo,"title",""));
 				logError.put("date", getDBODate(dbo,"date",new Date()));
@@ -505,7 +504,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			ObjectId oid = new ObjectId(id);
 			GridFSDBFile file = errorFS.findOne(oid);	
-			//log.info("Found file length="+file.getLength()+" type="+file.getContentType());
 			return Utils.convertStreamToString(file.getInputStream());
 		}
 		catch (Throwable t) {
@@ -672,7 +670,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			try {
 				row = (DBObject) result.get("_id");
 				resultJ.put(row.get("day").toString(),result.get("count").toString());
-				//				log.info(">>>"+row.get("day").toString()+" "+result.get("count").toString());
 			} 
 			catch (Throwable e) {
 				e.printStackTrace();
@@ -712,7 +709,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				hour = Integer.parseInt(row.get("hour").toString())+1;
 				if (hour==24) hour = 0;
 				resultJ.put(""+hour,result.get("count").toString());
-				//				log.info(row.toString()+">>>"+hour+" "+result.get("count").toString());
 			} 
 			catch (Throwable e) {
 				e.printStackTrace();
@@ -750,7 +746,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				dayOfWeek = Integer.parseInt(row.get("dayOfWeek").toString());
 				if (dayOfWeek==24) dayOfWeek = 0;
 				resultJ.put(""+dayOfWeek,result.get("count").toString());
-				//log.info(row.toString()+">>>"+dayOfWeek+" "+result.get("count").toString());
 			} 
 			catch (Throwable e) {
 				e.printStackTrace();

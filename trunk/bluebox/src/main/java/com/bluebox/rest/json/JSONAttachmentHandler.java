@@ -27,7 +27,7 @@ public class JSONAttachmentHandler extends AbstractHandler {
 			String uid = extractFragment(uri,JSON_ROOT,2);
 			String index = extractFragment(uri,JSON_ROOT,1);
 			String name = extractFragment(uri,JSON_ROOT,0);
-			log.info("Serving file attachment {} at index {} for message {}"+name,index,uid);
+			log.debug("Serving file attachment {} at index {} for message {}"+name,index,uid);
 			BlueboxMessage message = inbox.retrieve(uid);
 			message.writeAttachment(index, resp);
 		}

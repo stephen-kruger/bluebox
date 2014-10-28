@@ -205,7 +205,7 @@ public class BlueboxMessage {
 			writeDataSource(ds,resp);
 		}
 		catch (Exception se) {
-			log.info("Problem writing attachment :{}",se.getMessage());
+			log.error("Problem writing attachment :{}",se.getMessage());
 		}
 	}
 
@@ -279,7 +279,6 @@ public class BlueboxMessage {
 
 	public static String convertCidLinks(HttpServletRequest request, String uid, String htmlString) {
 		try {
-//			log.info(htmlString.replaceAll("cid:", Utils.getServletBase(request)+"/"+JSONInlineHandler.JSON_ROOT+"/"+uid+"/"));
 			return htmlString.replaceAll("cid:", Utils.getServletBase(request)+"/"+JSONInlineHandler.JSON_ROOT+"/"+uid+"/");
 		} 
 		catch (Throwable e) {
