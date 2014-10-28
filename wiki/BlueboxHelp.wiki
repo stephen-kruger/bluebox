@@ -6,6 +6,7 @@ This one requires no special setup, and uses an embedded Derby database.
   * You will require Java 7.
   * access to the administration page requires user/password for role "bluebox", so edit your tomcat-users.conf file or whatever your app server uses
   * the SMTP server runs by default on port 2500, so you need to map to port 25 using the following command : iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500
+  * to persist this across reboots, save the settings : /sbin/service iptables save
   * Windows users can edit bluebox.properties in the expanded war directory and change the port setting manually to port 25.
 
 
