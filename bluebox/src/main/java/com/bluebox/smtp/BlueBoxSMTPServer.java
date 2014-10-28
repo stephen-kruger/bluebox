@@ -29,12 +29,4 @@ public class BlueBoxSMTPServer extends SMTPServer {
 	public BlueBoxSMTPServer(MessageHandlerFactory mhf, AuthenticationHandlerFactory ahf) {
 		super(mhf, ahf);
 	}
-
-//	@Override
-//	public SSLSocket createSSLSocket(Socket socket) throws IOException {
-//		log.info("Creating SSL socket on "+socket.getInetAddress()+" "+socket.getLocalPort()+1);
-//		NaiveSSLSocketFactory sf =  (NaiveSSLSocketFactory) NaiveSSLSocketFactory.getSocketFactory();
-//        return sf.createSocket(socket);
-//	}
-	
 }
