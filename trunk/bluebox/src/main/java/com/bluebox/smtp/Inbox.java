@@ -197,6 +197,7 @@ public class Inbox implements SimpleMessageListener {
 
 	public void delete(String uid) throws Exception {
 		StorageFactory.getInstance().delete(uid);
+		SearchIndexer.getInstance().deleteDoc(uid);
 	}
 
 	public void deleteAll() {
@@ -244,6 +245,7 @@ public class Inbox implements SimpleMessageListener {
 				for (JSONObject msg : list) {
 					delete(msg.getString(BlueboxMessage.UID));
 				}
+				log.info("Trimmed {} messages",list.size());
 			}
 		}
 		catch (Throwable t) {
@@ -268,8 +270,9 @@ public class Inbox implements SimpleMessageListener {
 		for (BlueboxMessage msg : list) {
 			try {
 				if ((received = msg.getReceived()).before(messageExpireDate)) {
-					StorageFactory.getInstance().delete(msg.getIdentifier());
-					SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
+					//StorageFactory.getInstance().delete(msg.getIdentifier());
+					//SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
+					delete(msg.getIdentifier());
 				}
 				else {
 					log.debug("Not deleting since received:"+received+" but expiry window:"+messageExpireDate);
@@ -287,8 +290,9 @@ public class Inbox implements SimpleMessageListener {
 		for (BlueboxMessage msg : list) {
 			try {
 				if ((received = msg.getReceived()).before(trashExpireDate)) {
-					StorageFactory.getInstance().delete(msg.getIdentifier());
-					SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
+//					StorageFactory.getInstance().delete(msg.getIdentifier());
+//					SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
+					delete(msg.getIdentifier());
 					count++;
 				}
 				else {
