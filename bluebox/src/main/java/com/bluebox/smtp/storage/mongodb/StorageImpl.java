@@ -136,8 +136,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public synchronized BlueboxMessage retrieve(String uid) throws Exception {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
+		log.info("Looking for uid {}",uid);
 		DBObject dbo = db.getCollection(TABLE_NAME).findOne(query);
-
+		if (dbo==null) {
+			log.error("Trying to retrieve non-existent uid {}",uid);
+			throw new Exception("Trying to retrieve non-existent uid "+uid);
+		}
 		return loadMessage(dbo);
 	}
 
