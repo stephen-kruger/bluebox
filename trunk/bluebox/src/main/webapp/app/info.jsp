@@ -123,7 +123,7 @@
 			<h3><%= chartResource.getString("charts_daily_title") %></h3>
 			<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=daily&width=450&height=250"></img>
 			<h3><%= chartResource.getString("charts_hourly_title") %></h3>
-			<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=hourly&width=400&height=250"></img>
+			<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=hourly&width=450&height=250"></img>
 			<h3><%= chartResource.getString("charts_weekly_title") %></h3>
 			<img width="100%" alt="chart" src="<%=request.getContextPath()%>/<%=Charts.CHART_ROOT%>?chart=weekly&width=400&height=250"></img>
 		</div>
