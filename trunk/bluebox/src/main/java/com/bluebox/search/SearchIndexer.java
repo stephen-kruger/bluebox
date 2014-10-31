@@ -366,6 +366,7 @@ public class SearchIndexer {
 			@Override
 			public void run() {
 				DirectoryReader reader=null;
+				int issueCount = 0;
 				try {
 					StorageIf si = StorageFactory.getInstance();
 					reader = DirectoryReader.open(index);
@@ -377,11 +378,17 @@ public class SearchIndexer {
 						Document doc = reader.document(i);
 						if (!si.contains(doc.getField(SearchFields.UID.name()).stringValue())) {
 							log.warn("Search index out of sync for id {}",doc.getField(SearchFields.UID.name()).stringValue());
+							issueCount++;
 						}
+						setProgress(i*100/reader.maxDoc());
 					}
 				}
 				catch (Throwable t) {
 					log.error("Problem vaidating search indexes",t);
+				}
+				finally {
+					setProgress(100);
+					setStatus(issueCount+" invalid docs found");
 				}
 				if (reader!=null) {
 					try {
