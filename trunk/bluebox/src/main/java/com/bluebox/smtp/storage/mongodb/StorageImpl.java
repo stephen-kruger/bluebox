@@ -231,6 +231,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			@Override
 			public void run() {
 				setProgress(0);
+				int issues = 0;
 				try {
 					log.info("Looking for orphaned blobs");
 					// clean up any blobs who have no associated inbox message
@@ -244,6 +245,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 						if (db.getCollection(TABLE_NAME).findOne(query)==null) {
 							log.info("Removing orphaned blob {}",dbo.get("filename"));
 							gfsRaw.remove(dbo);
+							issues++;
 						}
 						count++;
 						setProgress(count*100/cursor.count());
@@ -256,6 +258,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				}
 				finally {
 					setProgress(100);
+					setStatus(issues+" issues fixed");
 				}
 			}
 		};

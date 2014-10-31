@@ -25,6 +25,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -36,6 +37,7 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.Version;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -43,9 +45,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
+import com.bluebox.WorkerThread;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.StorageFactory;
+import com.bluebox.smtp.storage.StorageIf;
 
 public class SearchIndexer {
 	private static final Logger log = LoggerFactory.getLogger(SearchIndexer.class);
@@ -54,7 +59,7 @@ public class SearchIndexer {
 	private static SearchIndexer si;
 	private IndexWriter indexWriter;
 	public enum SearchFields {UID, INBOX, FROM, SUBJECT, RECEIVED, TEXT_BODY, HTML_BODY, SIZE, RECIPIENT, RECIPIENTS, ANY, BODY};
-	
+
 	public static SearchIndexer getInstance() throws IOException {
 		if (si==null) {
 			si = new SearchIndexer();
@@ -90,8 +95,7 @@ public class SearchIndexer {
 		//		querystr = "*"+QueryParser.escape(querystr)+"*";
 		//		querystr = "*"+querystr+"*";
 		QueryParser queryParser;
-		DirectoryReader reader = DirectoryReader.open(index);
-		IndexSearcher searcher = new IndexSearcher(reader);
+
 		Analyzer analyzer = new StandardAnalyzer();
 		switch (fields) {
 		case SUBJECT :
@@ -144,8 +148,10 @@ public class SearchIndexer {
 		}
 		queryParser.setAllowLeadingWildcard(true);
 		queryParser.setDefaultOperator(QueryParser.Operator.AND);
+		DirectoryReader reader = DirectoryReader.open(index);
+		IndexSearcher searcher = new IndexSearcher(reader);
 		try {
-			
+
 
 			Sort sort;
 			try {
@@ -352,6 +358,42 @@ public class SearchIndexer {
 	public synchronized void deleteIndexes() throws IOException {
 		indexWriter.deleteAll();
 		indexWriter.commit();
+	}
+
+	public WorkerThread validate() {
+		WorkerThread wt = new WorkerThread("validatesearch") {
+
+			@Override
+			public void run() {
+				DirectoryReader reader=null;
+				try {
+					StorageIf si = StorageFactory.getInstance();
+					reader = DirectoryReader.open(index);
+					Bits liveDocs = MultiFields.getLiveDocs(reader);
+					for (int i=0; i<reader.maxDoc(); i++) {
+						if (liveDocs != null && !liveDocs.get(i))
+							continue;
+
+						Document doc = reader.document(i);
+						if (!si.contains(doc.getField(SearchFields.UID.name()).stringValue())) {
+							log.warn("Search index out of sync for id {}",doc.getField(SearchFields.UID.name()).stringValue());
+						}
+					}
+				}
+				catch (Throwable t) {
+					log.error("Problem vaidating search indexes",t);
+				}
+				if (reader!=null) {
+					try {
+						reader.close();
+					} catch (IOException e) {
+						log.error("Problem closing search reader",e);
+						e.printStackTrace();
+					}
+				}
+			}
+		};
+		return wt;
 	}
 
 }

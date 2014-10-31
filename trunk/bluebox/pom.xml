@@ -9,7 +9,7 @@
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
 		<slf4j_version>1.7.7</slf4j_version>
-		<lucene_version>4.10.1</lucene_version>
+		<lucene_version>4.10.2</lucene_version>
 		<derby_version>10.11.1.1</derby_version>
 		<mongo_version>2.12.4</mongo_version>
 	</properties>

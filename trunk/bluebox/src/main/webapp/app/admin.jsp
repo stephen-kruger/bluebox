@@ -34,18 +34,30 @@
 					var queryResults = jStore.fetch({
 						  onComplete : 
 							  	function(queryResults, request) {
-								  if (queryResults.backup)
+								  if (queryResults.backup) {
 										backup.set({value: queryResults.backup});
-								  if (queryResults.restore)
+										document.getElementById("backupLabel").innerHTML = queryResults.backup_status;
+								  }
+								  if (queryResults.restore) {
 										restore.set({value: queryResults.restore});
-								  if (queryResults.reindex)
+										document.getElementById("restoreLabel").innerHTML = queryResults.restore_status;
+								  }
+								  if (queryResults.reindex) {
 										reindex.set({value: queryResults.reindex});
-								  if (queryResults.<%=StorageIf.WT_NAME %>)
+										document.getElementById("reindexLabel").innerHTML = queryResults.reindex_status;
+								  }
+								  if (queryResults.<%=StorageIf.WT_NAME %>) {
 									  <%=StorageIf.WT_NAME %>.set({value: queryResults.<%=StorageIf.WT_NAME %>});
-								  if (queryResults.cleanup)
+									  document.getElementById("<%=StorageIf.WT_NAME %>Label").innerHTML = queryResults.<%=StorageIf.WT_NAME %>_status;
+								  }
+								  if (queryResults.cleanup) {
 									  cleanup.set({value: queryResults.cleanup});
-								  if (queryResults.generate)
+									  document.getElementById("cleanupLabel").innerHTML = queryResults.cleanup_status;
+								  }
+								  if (queryResults.generate) {
 									  generate.set({value: queryResults.generate});
+									  document.getElementById("generateLabel").innerHTML = queryResults.generate_status;
+								  }
 								},
 							onError :
 								function(error) {
@@ -143,6 +155,8 @@
 					</td>
 					<td><button onclick="generateEmails();" data-dojo-type="dijit/form/Button" type="button">Go</button></td>
 					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="generate" id="generateProgress" data-dojo-props="maximum:100"></div></td>
+					<td></td>
+					<td align="right"><label data-dojo-id="generatelabel" id="generateLabel"></label></td>
 				</tr>
 				<tr>
 				<td><br/></td>
@@ -168,6 +182,8 @@
 					<td></td>
 					<td><button onclick="pruneMail()" data-dojo-type="dijit/form/Button" type="button">Go</button></td>
 					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="cleanup" id="cleanupProgress" data-dojo-props="maximum:100"></div></td>
+					<td></td>
+					<td align="right"><label data-dojo-id="cleanuplabel" id="cleanupLabel"></label></td>
 				</tr>	
 				<tr>
 				<td><br/></td>
@@ -192,6 +208,8 @@
 					<td></td>
 					<td><button onclick="rebuildSearchIndexes();" data-dojo-type="dijit/form/Button" type="button">Go</button></td>
 					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="reindex" id="reindexProgress" data-dojo-props="maximum:100"></div></td>
+					<td></td>
+					<td align="right"><label data-dojo-id="reindexlabel" id="reindexLabel"></label></td>
 				</tr>
 				<tr>
 				<td><br/></td>
@@ -201,6 +219,8 @@
 					<td></td>
 					<td><button onclick="dbMaintenance()" data-dojo-type="dijit/form/Button" type="button">Go</button></td>
 					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="<%=StorageIf.WT_NAME %>" id="<%=StorageIf.WT_NAME %>Progress" data-dojo-props="maximum:100"></div></td>
+					<td></td>
+					<td align="right"><label data-dojo-id="<%=StorageIf.WT_NAME %>label" id="<%=StorageIf.WT_NAME %>Label"></label></td>
 				</tr>
 				<tr>
 				<td><br/></td>
@@ -210,6 +230,8 @@
 					<td></td>
 					<td><button onclick="dbBackup()" data-dojo-type="dijit/form/Button" type="button">Backup</button></td>
 					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="backup" id="backupProgress" data-dojo-props="maximum:100"></div></td>
+					<td></td>
+					<td align="right"><label data-dojo-id="backuplabel" id="backupLabel"></label></td>
 				</tr>
 				<tr>
 				<td><br/></td>
@@ -219,6 +241,8 @@
 					<td></td>
 					<td><button onclick="dbRestore()" data-dojo-type="dijit/form/Button" type="button">Restore</button></td>
 					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="restore" id="restoreProgress" data-dojo-props="maximum:100"></div></td>
+					<td></td>
+					<td align="right"><label data-dojo-id="restorelabel" id="restoreLabel"></label></td>
 				</tr>
 				<tr>
 				<td><br/></td>

@@ -338,6 +338,7 @@ public class BlueBoxServlet extends HttpServlet {
 		for (WorkerThread tw : workers.values()) {
 			if (tw.getProgress()<=100) {
 				jo.put(tw.getId(), tw.getProgress());
+				jo.put(tw.getId()+"_status", tw.getStatus());
 			}
 		}
 		return jo;

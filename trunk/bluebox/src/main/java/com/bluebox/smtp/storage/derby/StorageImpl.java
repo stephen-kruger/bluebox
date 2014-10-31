@@ -762,6 +762,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				}	
 				finally {
 					setProgress(100);
+					setStatus("Completed");
 				}
 			}
 

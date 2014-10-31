@@ -228,6 +228,7 @@ public class Inbox implements SimpleMessageListener {
 				}
 				finally {
 					setProgress(100);
+					setStatus("Complete");
 				}
 			}
 
@@ -609,6 +610,7 @@ public class Inbox implements SimpleMessageListener {
 				finally {
 					log.info("Finished rebuilding search indexes");
 					setProgress(100);
+					setStatus("Indexes rebuilt");
 				}
 
 			}
@@ -700,7 +702,8 @@ public class Inbox implements SimpleMessageListener {
 					t.printStackTrace();
 				}
 				finally {
-					setProgress(100);					
+					setProgress(100);			
+					setStatus("Backed up "+inbox.getMailCount(BlueboxMessage.State.ANY)+" mails");
 				}
 			}
 
@@ -716,6 +719,7 @@ public class Inbox implements SimpleMessageListener {
 
 			@Override
 			public void run() {
+				int runCount = 0;
 				if (zipFile.exists()) {
 					try {
 						ZipFile archive = new ZipFile(zipFile);
@@ -757,6 +761,7 @@ public class Inbox implements SimpleMessageListener {
 									// index the message
 									MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));
 									SearchIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
+									runCount++;
 
 								}
 								catch (Throwable t) {
@@ -781,6 +786,7 @@ public class Inbox implements SimpleMessageListener {
 					}
 				}
 				setProgress(100);
+				setStatus("Restored "+runCount+" mails");
 			}
 
 		};
