@@ -31,6 +31,7 @@ import com.bluebox.rest.json.JSONMessageUtilHandler;
 import com.bluebox.rest.json.JSONRawMessageHandler;
 import com.bluebox.rest.json.JSONSearchHandler;
 import com.bluebox.rest.json.JSONStatsHandler;
+import com.bluebox.search.SearchIndexer;
 import com.bluebox.smtp.BlueBoxSMTPServer;
 import com.bluebox.smtp.Inbox;
 
@@ -284,6 +285,18 @@ public class BlueBoxServlet extends HttpServlet {
 			}
 			return;
 		}
+		if (req.getRequestURI().indexOf("rest/admin/validatesearch")>=0){
+			try {
+				WorkerThread wt = SearchIndexer.getInstance().validate();
+				startWorker(wt, resp);
+				resp.flushBuffer();
+			} 
+			catch (Exception e) {
+				e.printStackTrace();
+				resp.getWriter().print(e.getMessage());
+			}
+			return;
+		}	
 		log.warn("No handler for "+req.getRequestURI()+" expected :"+req.getContextPath());
 		super.doGet(req, resp);
 	}

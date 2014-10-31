@@ -31,7 +31,7 @@
 				require(["dojox/data/JsonRestStore"], function () {
 					var urlStr = "<%=request.getContextPath()%>/rest/admin/workerstats";
 					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
-					var queryResults = jStore.fetch({
+					jStore.fetch({
 						  onComplete : 
 							  	function(queryResults, request) {
 								  if (queryResults.backup) {
@@ -57,6 +57,10 @@
 								  if (queryResults.generate) {
 									  generate.set({value: queryResults.generate});
 									  document.getElementById("generateLabel").innerHTML = queryResults.generate_status;
+								  }
+								  if (queryResults.validatesearch) {
+									  validatesearch.set({value: queryResults.validatesearch});
+									  document.getElementById("validatesearchLabel").innerHTML = queryResults.validatesearch_status;
 								  }
 								},
 							onError :
@@ -111,6 +115,10 @@
 			genericGet("<%=request.getContextPath()%>/rest/admin/clean","Clean backups requested","Server responded");
 		}
 		
+		function validateSearch() {
+			genericGet("<%=request.getContextPath()%>/rest/admin/validatesearch","Search index validation requested","Server responded");
+		}
+		
 		function genericGet(url,title,content) {
 			dojo.ready(function(){
 				  // The parameters to pass to xhrGet, the url, how to handle it, and the callbacks.
@@ -123,10 +131,10 @@
 				    error: function(error){
 				      console.log("An unexpected error occurred: " + error);
 				    }
-				  }
+				  };
 
 				  // Call the asynchronous xhrGet
-				  var deferred = dojo.xhrGet(xhrArgs);
+				  dojo.xhrGet(xhrArgs);
 				});
 		}
 		
@@ -254,6 +262,14 @@
 				</tr>
 				<tr>
 				<td><br/></td>
+				</tr>
+				<tr>
+					<td><label>Validate search indexes</label></td>
+					<td></td>
+					<td><button onclick="validateSearch()" data-dojo-type="dijit/form/Button" type="button">Validate</button></td>
+					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="validatesearch" id="validatesearchProgress" data-dojo-props="maximum:100"></div></td>
+					<td></td>
+					<td align="right"><label data-dojo-id="validatesearchlabel" id="validatesearchLabel"></label></td>
 				</tr>
 			</table>
 			</div>
