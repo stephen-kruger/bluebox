@@ -4,10 +4,11 @@ package com.bluebox;
 public abstract class WorkerThread implements Runnable {
 
 	private int progress = 0;
-	private String id;
+	private String id, status;
 
 	public WorkerThread(String id) {
 		this.id = id;
+		this.status = "Initialising";
 	}
 
 	public String getId() {
@@ -20,9 +21,17 @@ public abstract class WorkerThread implements Runnable {
 
 	public void setProgress(int p) {
 		this.progress = p;
+		this.status = "Running";
+	}
+	
+	public String getStatus() {
+		return status;
 	}
 
-	
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	@Override
 	public boolean equals(Object obj) {
 		if (((WorkerThread)obj).getId().equals(getId()))

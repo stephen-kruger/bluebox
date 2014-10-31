@@ -395,6 +395,7 @@ public class Utils {
 				}
 				finally {
 					setProgress(100);
+					setStatus("Generated "+count+" messages");
 				}
 			}
 
