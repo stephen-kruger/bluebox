@@ -16,7 +16,7 @@
 	<jsp:include page="dojo.jsp" />
 	<script>		
 		
-		require(["dojo/parser", "dijit/ProgressBar", "dijit/form/Button", "dijit/form/NumberTextBox"]);
+		require(["dojo/parser", "dijit/ProgressBar", "dijit/form/Button", "dijit/form/NumberTextBox","dijit/form/HorizontalSlider","dijit/form/HorizontalRule","dijit/form/HorizontalRuleLabels"]);
 		
 		// start the refresh timer
 		require(["dojox/timing"], function(registry){
@@ -77,19 +77,19 @@
 		}
 		
 		function generateEmails() {
-			genericGet("<%=request.getContextPath()%>/rest/admin/generate?count="+document.getElementById('count').value,
-					"Scheduled generation of "+document.getElementById('count').value+" emails");
+			console.log(dijit.byId("mailCountSlider").value);
+			genericGet("<%=request.getContextPath()%>/rest/admin/generate?count="+dijit.byId("mailCountSlider").value,
+					"Scheduled generation of "+dijit.byId("mailCountSlider").value+" emails");
 		}
 
 		function setBaseCount() {
-			genericGet("<%=request.getContextPath()%>/rest/admin/setbasecount?count="+document.getElementById('setbasecount').value,
+			genericGet("<%=request.getContextPath()%>/rest/admin/setbasecount?count="+dijit.byId("mailCountSlider").value,
 					"<%=adminResource.getString("set_global_action")%>");
 		}
 		
 		function deleteAllMail() {
 			genericConfirmGet("<%=request.getContextPath()%>/rest/admin/clear",
-					"<%=adminResource.getString("delete_all_action")%>",
-					"All deleted");
+					"<%=adminResource.getString("delete_all_action")%>");
 		}
 		
 		function clearErrorLogs() {
@@ -126,8 +126,7 @@
 		
 		function dbClean() {
 			genericConfirmGet("<%=request.getContextPath()%>/rest/admin/clean",
-					"<%=adminResource.getString("clear_backup_action")%>",
-					"Server responded");
+					"<%=adminResource.getString("clear_backup_action")%>");
 		}
 		
 		function validateSearch() {
@@ -135,7 +134,7 @@
 					"<%=adminResource.getString("validate_search_action")%>");
 		}
 		
-		function genericConfirmGet(url,title,content) {
+		function genericConfirmGet(url,title) {
 			require(["dijit/ConfirmDialog", "dojo/domReady!"], function(ConfirmDialog){
 			    myDialog = new ConfirmDialog({
 			        title: "<%=adminResource.getString("confirm_title")%>",
@@ -191,9 +190,29 @@
 				<tr>
 					<td><label><%=adminResource.getString("generate_action")%></label></td>
 					<td>
-					<form id="generate" method="get" action="<%=request.getContextPath()%>/rest/admin/generate">
-						<input id="count" type="text" data-dojo-type="dijit/form/NumberTextBox" name= "count" value="10" data-dojo-props="constraints:{min:10,max:5000,places:0,pattern:'#'},  invalidMessage:'Please enter a value between 10 and 5000'" />
-					</form>
+						<div id="mailCountSlider"
+						    style="width:100%;"
+						    name="horizontalSlider"
+						    data-dojo-type="dijit/form/HorizontalSlider"
+						    data-dojo-props="value:100,
+						    minimum: 10,
+						    maximum:5000,
+						    discreteValues:4991,
+						    intermediateChanges:false,
+						    showButtons:false">
+						    <div data-dojo-type="dijit/form/HorizontalRule" container="bottomDecoration"
+						        count=7 style="height:0.75em;"></div>
+						    <ol data-dojo-type="dijit/form/HorizontalRuleLabels" container="bottomDecoration"
+						        style="height:1em;font-size:75%;color:gray;">
+						        <li>10</li>
+						        <li>100</li>
+						        <li>300</li>
+						        <li>1000</li>
+						        <li>2500</li>
+						        <li>4000</li>
+						        <li>5000</li>
+						    </ol>
+						</div>
 					</td>
 					<td><button onclick="generateEmails();" data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
 					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="generate" id="generateProgress" data-dojo-props="maximum:100"></div></td>
