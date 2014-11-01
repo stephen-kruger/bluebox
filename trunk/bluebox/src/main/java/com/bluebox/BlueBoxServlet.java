@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -132,7 +133,7 @@ public class BlueBoxServlet extends HttpServlet {
 		}
 		if (req.getRequestURI().indexOf("rest/admin/generate")>=0){
 			WorkerThread wt = Utils.generate(req.getSession().getServletContext(), Integer.parseInt(req.getParameter("count")));
-			startWorker(wt, resp);
+			startWorker(wt, req, resp);
 			resp.flushBuffer();	
 			return;
 		}	
@@ -143,7 +144,7 @@ public class BlueBoxServlet extends HttpServlet {
 		}	
 		if (req.getRequestURI().indexOf("rest/admin/rebuildsearchindexes")>=0){
 			WorkerThread wt = Inbox.getInstance().rebuildSearchIndexes();
-			startWorker(wt, resp);
+			startWorker(wt, req, resp);
 			resp.flushBuffer();
 			return;
 		}
@@ -151,7 +152,7 @@ public class BlueBoxServlet extends HttpServlet {
 			log.debug("Prune");
 			try {
 				WorkerThread wt = Inbox.getInstance().cleanUp();
-				startWorker(wt, resp);
+				startWorker(wt, req, resp);
 				resp.flushBuffer();
 			} 
 			catch (Exception e) {
@@ -184,7 +185,7 @@ public class BlueBoxServlet extends HttpServlet {
 		if (req.getRequestURI().indexOf("rest/admin/dbmaintenance")>=0){
 			try {
 				WorkerThread wt = Inbox.getInstance().runMaintenance();
-				startWorker(wt, resp);
+				startWorker(wt, req, resp);
 				resp.flushBuffer();
 			} 
 			catch (Exception e) {
@@ -198,7 +199,7 @@ public class BlueBoxServlet extends HttpServlet {
 				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
 				f.mkdir();
 				WorkerThread wt = Inbox.getInstance().backup(f);
-				startWorker(wt, resp);
+				startWorker(wt, req, resp);
 
 				resp.flushBuffer();
 			} 
@@ -212,7 +213,7 @@ public class BlueBoxServlet extends HttpServlet {
 			try {
 				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
 				WorkerThread wt = Inbox.getInstance().restore(f);
-				startWorker(wt, resp);
+				startWorker(wt, req, resp);
 				resp.flushBuffer();
 			} 
 			catch (Exception e) {
@@ -288,7 +289,7 @@ public class BlueBoxServlet extends HttpServlet {
 		if (req.getRequestURI().indexOf("rest/admin/validatesearch")>=0){
 			try {
 				WorkerThread wt = SearchIndexer.getInstance().validate();
-				startWorker(wt, resp);
+				startWorker(wt, req, resp);
 				resp.flushBuffer();
 			} 
 			catch (Exception e) {
@@ -301,8 +302,9 @@ public class BlueBoxServlet extends HttpServlet {
 		super.doGet(req, resp);
 	}
 
-	private void startWorker(WorkerThread wt, HttpServletResponse resp) throws IOException {
+	private void startWorker(WorkerThread wt, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		// check for running or expired works under this id
+		ResourceBundle rb = ResourceBundle.getBundle("admin",req.getLocale());
 		if (workers.containsKey(wt.getId())) {
 			WorkerThread old = workers.get(wt.getId());
 			if (old.getProgress()>=100) {
@@ -312,10 +314,10 @@ public class BlueBoxServlet extends HttpServlet {
 		if (!workers.containsKey(wt.getId())) {
 			workers.put(wt.getId(),wt);
 			new Thread(wt).start();
-			resp.getWriter().print("Task started");
+			resp.getWriter().print(rb.getString("taskStarted")+":"+wt.getId());
 		}
 		else {
-			resp.getWriter().print("Task aborted - already running");					
+			resp.getWriter().print(rb.getString("taskAborted")+":"+wt.getId());					
 		}
 
 	}
