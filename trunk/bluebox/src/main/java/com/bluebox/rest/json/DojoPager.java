@@ -58,7 +58,7 @@ public class DojoPager {
 		String contentHeader = req.getHeader("Range");
 		setFirst(getStart(contentHeader));
 		setLast(getEnd(contentHeader));
-		
+
 		if (orderBy.size()==0) {
 			orderBy.add(defaultOrder);
 			ascending.add(false);
@@ -101,28 +101,32 @@ public class DojoPager {
 	}
 
 	private int getStart(String contentHeader) {
-		try {
-			// items=0-24, return 0
-			int s = contentHeader.indexOf('=')+1;
-			int e = contentHeader.indexOf("-", s);
-			return Integer.parseInt(contentHeader.substring(s,e));
+		if (contentHeader!=null) {
+			try {
+				// items=0-24, return 0
+				int s = contentHeader.indexOf('=')+1;
+				int e = contentHeader.indexOf("-", s);
+				return Integer.parseInt(contentHeader.substring(s,e));
+			}
+			catch (Throwable t) {
+				log.warning("Invalid Content header :"+contentHeader);
+			}
 		}
-		catch (Throwable t) {
-			log.warning("Invalid Content header :"+contentHeader);
-			return 0;
-		}
+		return 0;
 	}
 
 	private int getEnd(String contentHeader) {
-		try {
-			// items=0-24, return 24
-			int s = contentHeader.indexOf('-')+1;
-			int e = contentHeader.length();
-			return Integer.parseInt(contentHeader.substring(s,e));
+		if (contentHeader!=null) {
+			try {
+				// items=0-24, return 24
+				int s = contentHeader.indexOf('-')+1;
+				int e = contentHeader.length();
+				return Integer.parseInt(contentHeader.substring(s,e));
+			}
+			catch (Throwable t) {
+				log.warning("Invalid Content header :"+contentHeader);
+			}
 		}
-		catch (Throwable t) {
-			log.warning("Invalid Content header :"+contentHeader);
-			return Integer.MAX_VALUE;
-		}
+		return 250;//Integer.MAX_VALUE;
 	}
 }
