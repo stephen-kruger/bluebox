@@ -73,15 +73,21 @@ public class SearchIndexer {
 
 	private SearchIndexer(Directory index) throws IOException {
 		this.index = index;
-		Analyzer analyzer = new StandardAnalyzer();
-		config = new IndexWriterConfig(Version.LATEST, analyzer);
-		config.setUseCompoundFile(true);
-		indexWriter = new IndexWriter(index, config);
+	}
+	
+	public IndexWriter getIndexWriter() throws IOException {
+		if (indexWriter==null) {
+			Analyzer analyzer = new StandardAnalyzer();		
+			config = new IndexWriterConfig(Version.LATEST, analyzer);
+			config.setUseCompoundFile(true);
+			indexWriter = new IndexWriter(index, config);
+		}
+		return indexWriter;
 	}
 
 	public void stop() {
 		try {
-			indexWriter.close();
+			getIndexWriter().close();
 			index.close();
 			si = null;
 		} 
@@ -266,8 +272,8 @@ public class SearchIndexer {
 	}
 
 	public synchronized void deleteDoc(String uid) throws IOException, ParseException {
-		indexWriter.deleteDocuments(new Term(SearchFields.UID.name(),uid));
-		indexWriter.commit();
+		getIndexWriter().deleteDocuments(new Term(SearchFields.UID.name(),uid));
+		getIndexWriter().commit();
 	}
 
 	protected synchronized void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
@@ -283,8 +289,8 @@ public class SearchIndexer {
 		doc.add(new TextField(SearchFields.RECIPIENTS.name(), recipients, Field.Store.YES));
 		doc.add(new LongField(SearchFields.SIZE.name(), size, Field.Store.YES));
 		doc.add(new LongField(SearchFields.RECEIVED.name(), received, Field.Store.YES));
-		indexWriter.addDocument(doc);
-		indexWriter.commit();
+		getIndexWriter().addDocument(doc);
+		getIndexWriter().commit();
 	}
 
 	/*
@@ -356,8 +362,8 @@ public class SearchIndexer {
 	}
 
 	public synchronized void deleteIndexes() throws IOException {
-		indexWriter.deleteAll();
-		indexWriter.commit();
+		getIndexWriter().deleteAll();
+		getIndexWriter().commit();
 	}
 
 	public WorkerThread validate() {
