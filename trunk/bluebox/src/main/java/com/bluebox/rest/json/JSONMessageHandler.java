@@ -14,6 +14,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.owasp.validator.html.AntiSamy;
@@ -47,9 +48,18 @@ public class JSONMessageHandler extends AbstractHandler {
 			JSONObject json = message.toJSON(req.getLocale());
 			
 			json.put(BlueboxMessage.RECEIVED, AbstractStorage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
-			// add in the TO, CC
+			// add in the TO, CC and BCC
 			json.put(BlueboxMessage.TO,BlueboxMessage.toJSONArray(message.getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));	
 			json.put(BlueboxMessage.CC,BlueboxMessage.toJSONArray(message.getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));
+			json.put(BlueboxMessage.BCC,BlueboxMessage.toJSONArray(message.getBlueBoxMimeMessage().getRecipients(RecipientType.BCC)));
+			// note: BCC can be populated if no TO or CC is detected, by using the INBOX metadata
+			if ((json.getJSONArray(BlueboxMessage.TO).length()==0)&&
+					(json.getJSONArray(BlueboxMessage.CC).length()==0)&&
+					(json.getJSONArray(BlueboxMessage.BCC).length()==0)) {
+				JSONArray bcc = new JSONArray();
+				bcc.put(message.getInbox().getFullAddress());
+				json.put(BlueboxMessage.BCC,bcc);
+			}
 			json = securityScan(req,message,json);
 			out.write(json.toString());
 			out.flush();
