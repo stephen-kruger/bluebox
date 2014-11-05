@@ -247,9 +247,11 @@
 			document.getElementById("mailHeaderBlock").style.display="none";
 			document.getElementById("mailToggleBlock").style.display="none";
 			document.getElementById("CcLabel").style.display="none";
+			document.getElementById("BccLabel").style.display="none";
 			document.getElementById("From").innerHTML="";
 			document.getElementById("To").innerHTML="";
 			document.getElementById("Cc").innerHTML="";
+			document.getElementById("Bcc").innerHTML="";
 			document.getElementById("Date").innerHTML="";
 			document.getElementById("Attachment").innerHTML="";
 		}
@@ -279,12 +281,16 @@
 					preventCache: false,
 					load: function(data) {
 						document.getElementById("subjectIcon").style.display="block";
-						if (data.<%=BlueboxMessage.TO%>){
+						if (data.<%=BlueboxMessage.TO%>.length>0){
 							displayArray(document.getElementById("To"), data.<%=BlueboxMessage.TO%>, 'toEmail');
 						}
-						if (data.<%=BlueboxMessage.CC%>){
+						if (data.<%=BlueboxMessage.CC%>.length>0){
 							document.getElementById("CcLabel").style.display="block";
 							displayArray(document.getElementById("Cc"), data.<%=BlueboxMessage.CC%>, 'ccEmail');
+						}
+						if (data.<%=BlueboxMessage.BCC%>.length>0){
+							document.getElementById("BccLabel").style.display="block";
+							displayArray(document.getElementById("Bcc"), data.<%=BlueboxMessage.BCC%>, 'bccEmail');
 						}
 						if (data.<%=BlueboxMessage.FROM%>){
 							displayArray(document.getElementById("From"), data.<%=BlueboxMessage.FROM%>, 'fromEmail');
@@ -514,6 +520,10 @@
 					<tr>
 						<td align="left"><span id="CcLabel" class="headerLabel">&nbsp;<%= mailDetailsResource.getString("cc") %></span>&nbsp;
 							<span id="Cc"></span></td>
+					</tr>
+					<tr>
+						<td align="left"><span id="BccLabel" class="headerLabel">&nbsp;<%= mailDetailsResource.getString("bcc") %></span>&nbsp;
+							<span id="Bcc"></span></td>
 					</tr>
 					<tr>
 						<td align="left"><span class="headerLabel"><%= mailDetailsResource.getString("attachments") %></span>&nbsp;

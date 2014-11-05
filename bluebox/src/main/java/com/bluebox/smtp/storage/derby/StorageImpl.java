@@ -795,7 +795,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 			while (result.next()) {
 				resultJ.put(result.getString(1), result.getString(2));
-				log.info(result.getString(1)+"<<<>>>"+result.getString(2));
 			}
 			ps.close();
 			s.close();
@@ -926,7 +925,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			ResultSet result = ps.getResultSet();
 
 			while (result.next()) {
-				log.info(result.toString());
 				resultJ.put(result.getString(1), result.getString(2));
 			}
 			ps.close();

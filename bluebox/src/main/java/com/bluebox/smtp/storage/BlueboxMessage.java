@@ -36,6 +36,7 @@ public class BlueboxMessage {
 	public static final String FROM = "Sender";
 	public static final String TO = "To";
 	public static final String CC = "Cc";
+	public static final String BCC = "Bcc";
 	public static final String SUBJECT = "Subject";
 	public static final String RECEIVED = "Received";
 	public static final String STATE = "State";
@@ -63,7 +64,7 @@ public class BlueboxMessage {
 		properties = jo;
 		mmw = message;
 	}
-	
+
 	public BlueboxMessage(String id, InboxAddress inbox) {
 		this(id);
 		setInbox(inbox);
@@ -81,7 +82,7 @@ public class BlueboxMessage {
 		setProperty(INBOX, getInbox().getAddress());
 		setProperty(SUBJECT, bbmm.getSubject());
 		setLongProperty(RECEIVED, received.getTime());
-//		setProperty(RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
+		//		setProperty(RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
 		setIntProperty(STATE, State.NORMAL.ordinal());
 		setProperty(SIZE, bbmm.getSize());
 	}
@@ -105,63 +106,70 @@ public class BlueboxMessage {
 		mmw = bbmm;
 	}
 
-//	/*
-//	 * Figure out who this mail was addressed to so we can set the "To" field for use in type-ahead matching.
-//	 * It could be a bcc, cc or a to
-//	 */
-//	public static InternetAddress getRecipient(InboxAddress inbox, MimeMessage bbmm) throws AddressException {
-//		//		InternetAddress inA=new InternetAddress(inbox);
-//		//		inbox = inA.getAddress();
-//		try {
-//			Address[] addr = bbmm.getRecipients(RecipientType.TO);
-//			if (addr!=null) {
-//				for (int i = 0; i < addr.length; i++) {
-//					InternetAddress ia = (InternetAddress) addr[i];
-//					if (ia.getAddress().equals(inbox.getAddress())) {
-//						log.debug("Found TO recipient");
-//						return ia;
-//					}
-//				}
-//			}
-//			addr = bbmm.getRecipients(RecipientType.CC);
-//			if (addr!=null) {
-//				for (int i = 0; i < addr.length; i++) {
-//					InternetAddress ia = (InternetAddress) addr[i];
-//					if (ia.getAddress().equals(inbox.getAddress())) {
-//						log.debug("Found CC recipient");
-//						return ia;
-//					}
-//				}
-//			}
-//			addr = bbmm.getRecipients(RecipientType.BCC);
-//			if (addr!=null) {
-//				for (int i = 0; i < addr.length; i++) {
-//					InternetAddress ia = (InternetAddress) addr[i];
-//					if (ia.getAddress().equals(inbox.getAddress())) {
-//						log.debug("Found BCC recipient");
-//						return ia;
-//					}
-//				}
-//			}
-//		}
-//		catch (Throwable t) {
-//			t.printStackTrace();
-//		}
-//		if (inbox.getAddress()!=null)
-//			if (inbox.getAddress().length()>0)
-//				return new InternetAddress(inbox.getFullAddress());
-//		log.severe("Found no recipient for inbox "+inbox+" maybe "+inbox.getFullAddress());
-//		return new InternetAddress(inbox.getFullAddress());
-//	}
+	//	/*
+	//	 * Figure out who this mail was addressed to so we can set the "To" field for use in type-ahead matching.
+	//	 * It could be a bcc, cc or a to
+	//	 */
+	//	public static InternetAddress getRecipient(InboxAddress inbox, MimeMessage bbmm) throws AddressException {
+	//		//		InternetAddress inA=new InternetAddress(inbox);
+	//		//		inbox = inA.getAddress();
+	//		try {
+	//			Address[] addr = bbmm.getRecipients(RecipientType.TO);
+	//			if (addr!=null) {
+	//				for (int i = 0; i < addr.length; i++) {
+	//					InternetAddress ia = (InternetAddress) addr[i];
+	//					if (ia.getAddress().equals(inbox.getAddress())) {
+	//						log.debug("Found TO recipient");
+	//						return ia;
+	//					}
+	//				}
+	//			}
+	//			addr = bbmm.getRecipients(RecipientType.CC);
+	//			if (addr!=null) {
+	//				for (int i = 0; i < addr.length; i++) {
+	//					InternetAddress ia = (InternetAddress) addr[i];
+	//					if (ia.getAddress().equals(inbox.getAddress())) {
+	//						log.debug("Found CC recipient");
+	//						return ia;
+	//					}
+	//				}
+	//			}
+	//			addr = bbmm.getRecipients(RecipientType.BCC);
+	//			if (addr!=null) {
+	//				for (int i = 0; i < addr.length; i++) {
+	//					InternetAddress ia = (InternetAddress) addr[i];
+	//					if (ia.getAddress().equals(inbox.getAddress())) {
+	//						log.debug("Found BCC recipient");
+	//						return ia;
+	//					}
+	//				}
+	//			}
+	//		}
+	//		catch (Throwable t) {
+	//			t.printStackTrace();
+	//		}
+	//		if (inbox.getAddress()!=null)
+	//			if (inbox.getAddress().length()>0)
+	//				return new InternetAddress(inbox.getFullAddress());
+	//		log.severe("Found no recipient for inbox "+inbox+" maybe "+inbox.getFullAddress());
+	//		return new InternetAddress(inbox.getFullAddress());
+	//	}
 
 	public static JSONArray toJSONArray(Address[] r) {
 		JSONArray ja = new JSONArray();
 		try {
 			if (r!=null)
 				for (int i = 0; i < r.length;i++) {
-					ja.put(Utils.decodeQuotedPrintable(r[i].toString()));
+					try {
+						ja.put(Utils.decodeQuotedPrintable(r[i].toString()));
+					}
+					catch (Throwable t) {
+						log.error(t.getMessage());
+						t.printStackTrace();
+					}
 				}
 		} catch (Throwable e) {
+			log.error(e.getMessage());
 			e.printStackTrace();
 		}
 		return ja;
@@ -267,7 +275,7 @@ public class BlueboxMessage {
 				String key = keys.next();
 				json.put(key, properties.get(key));
 			}
-			
+
 			return json;
 
 		}
@@ -350,7 +358,7 @@ public class BlueboxMessage {
 	public Date getReceived() {
 		return new Date(getLongProperty(RECEIVED));
 	}
-	
+
 	public InboxAddress getInbox() throws AddressException {
 		return new InboxAddress(getProperty(INBOX));
 	}
@@ -358,11 +366,11 @@ public class BlueboxMessage {
 	public void setInbox(InboxAddress inbox) {
 		setProperty(INBOX,inbox.getAddress());
 	}
-	
+
 	public String getSubject() {
 		return getProperty(SUBJECT);
 	}
-	
+
 	public JSONArray getFrom() throws JSONException {
 		return properties.getJSONArray(FROM);
 	}
@@ -370,18 +378,18 @@ public class BlueboxMessage {
 	public long getSize() {
 		return this.getLongProperty(SIZE);
 	}
-	
-//	public static String getFrom(InboxAddress from, MimeMessage bbmm) throws MessagingException {
-//		if (from!=null)
-//			if (from.length()>0)
-//				return from;
-//		if (bbmm.getFrom()!=null) {
-//			if (bbmm.getFrom().length>0) {
-//				return bbmm.getFrom()[0].toString();
-//			}
-//		}
-//		throw new MessagingException("No from address specified");
-//	}
+
+	//	public static String getFrom(InboxAddress from, MimeMessage bbmm) throws MessagingException {
+	//		if (from!=null)
+	//			if (from.length()>0)
+	//				return from;
+	//		if (bbmm.getFrom()!=null) {
+	//			if (bbmm.getFrom().length>0) {
+	//				return bbmm.getFrom()[0].toString();
+	//			}
+	//		}
+	//		throw new MessagingException("No from address specified");
+	//	}
 
 	protected MimeMessageParser getParser() throws Exception {
 		if (parser==null) {
