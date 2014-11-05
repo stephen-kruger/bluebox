@@ -246,6 +246,7 @@
 		try {
 			document.getElementById("mailHeaderBlock").style.display="none";
 			document.getElementById("mailToggleBlock").style.display="none";
+			document.getElementById("ToLabel").style.display="none";
 			document.getElementById("CcLabel").style.display="none";
 			document.getElementById("BccLabel").style.display="none";
 			document.getElementById("From").innerHTML="";
@@ -282,6 +283,7 @@
 					load: function(data) {
 						document.getElementById("subjectIcon").style.display="block";
 						if (data.<%=BlueboxMessage.TO%>.length>0){
+							document.getElementById("ToLabel").style.display="block";
 							displayArray(document.getElementById("To"), data.<%=BlueboxMessage.TO%>, 'toEmail');
 						}
 						if (data.<%=BlueboxMessage.CC%>.length>0){
@@ -513,16 +515,16 @@
 						
 						<td align="right"><span id="Date" class="mailDate"></span></td>
 					</tr>
-					<tr>
+					<tr id="ToLabel">
 						<td align="left"><span class="headerLabel">&nbsp;<%= mailDetailsResource.getString("to") %></span>&nbsp;
 							<span id="To"></span></td>
 					</tr>
-					<tr>
-						<td align="left"><span id="CcLabel" class="headerLabel">&nbsp;<%= mailDetailsResource.getString("cc") %></span>&nbsp;
+					<tr id="CcLabel">
+						<td align="left"><span class="headerLabel">&nbsp;<%= mailDetailsResource.getString("cc") %></span>&nbsp;
 							<span id="Cc"></span></td>
 					</tr>
-					<tr>
-						<td align="left"><span id="BccLabel" class="headerLabel">&nbsp;<%= mailDetailsResource.getString("bcc") %></span>&nbsp;
+					<tr id="BccLabel">
+						<td align="left"><span class="headerLabel">&nbsp;<%= mailDetailsResource.getString("bcc") %></span>&nbsp;
 							<span id="Bcc"></span></td>
 					</tr>
 					<tr>
