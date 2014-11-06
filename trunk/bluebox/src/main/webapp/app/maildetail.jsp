@@ -46,6 +46,13 @@
 	display: inline-table !important;
 }
 
+.bccEmail {
+	font-weight: bold;
+	display: inline;
+	color: Gray;
+	display: inline-table !important;
+}
+
 .fromEmail {
 	font-weight: bold;
 	display: inline;
@@ -95,11 +102,13 @@
 			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftPdf16.png";
 		}
 		if ((attachmentName.indexOf(".ppt")>0)||
+				(attachmentName.indexOf(".pps")>0)||
+				(attachmentName.indexOf(".pot")>0)||
 				(attachmentName.indexOf(".odp")>0)) {
 			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftPresentation16.png";
 		}
 		if ((attachmentName.indexOf(".doc")>0)||
-				(attachmentName.indexOf(".docx")>0)||
+				(attachmentName.indexOf(".dot")>0)||
 				(attachmentName.indexOf(".rtf")>0)||
 				(attachmentName.indexOf(".wps")>0)||
 				(attachmentName.indexOf(".wpd")>0)||
@@ -119,7 +128,7 @@
 		}
 		if ((attachmentName.indexOf(".csv")>0)||
 				(attachmentName.indexOf(".xls")>0)||
-				(attachmentName.indexOf(".xlsx")>0)||
+				(attachmentName.indexOf(".csv")>0)||
 				(attachmentName.indexOf(".xlr")>0)||
 				(attachmentName.indexOf(".ods")>0)||
 				(attachmentName.indexOf(".dat")>0)||
@@ -151,6 +160,12 @@
 		}
 		if ((attachmentName.indexOf(".jpg")>0)||
 				(attachmentName.indexOf(".gif")>0)||
+				(attachmentName.indexOf(".tif")>0)||
+				(attachmentName.indexOf(".jpeg")>0)||
+				(attachmentName.indexOf(".bmp")>0)||
+				(attachmentName.indexOf(".pcx")>0)||
+				(attachmentName.indexOf(".pgm")>0)||
+				(attachmentName.indexOf(".eps")>0)||
 				(attachmentName.indexOf(".png")>0)) {
 			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftGraphic16.png";
 		}
@@ -244,15 +259,11 @@
 	
 	function clearDetail() {
 		try {
-			document.getElementById("mailHeaderBlock").style.display="none";
-			document.getElementById("mailToggleBlock").style.display="none";
-			document.getElementById("ToLabel").style.display="none";
-			document.getElementById("CcLabel").style.display="none";
-			document.getElementById("BccLabel").style.display="none";
 			document.getElementById("From").innerHTML="";
 			document.getElementById("To").innerHTML="";
 			document.getElementById("Cc").innerHTML="";
 			document.getElementById("Bcc").innerHTML="";
+			document.getElementById("Subject").innerHTML = "";
 			document.getElementById("Date").innerHTML="";
 			document.getElementById("Attachment").innerHTML="";
 		}
@@ -261,10 +272,16 @@
 		}
 	}
 	
-	function showDetail() {
+	function setDetailVisibility(visible) {
 		try {
-			document.getElementById("mailHeaderBlock").style.display="block";
-			document.getElementById("mailToggleBlock").style.display="block";
+			if (visible) {
+				document.getElementById("mailHeaderBlock").style.display="block";
+				document.getElementById("mailToggleBlock").style.display="block";
+			}
+			else {
+				document.getElementById("mailHeaderBlock").style.display="none";
+				document.getElementById("mailToggleBlock").style.display="none";
+			}
 		}
 		catch (err) {
 			console.log("maildetail4:"+err);
@@ -275,7 +292,7 @@
 		try {
 			currentUid = uid;
 			clearDetail();
-			showDetail();
+			setDetailVisibility(true);
 			var xhrArgs = {
 					url: "<%=request.getContextPath()%>/<%=JSONMessageHandler.JSON_ROOT%>/"+uid,
 					handleAs: "json",
@@ -286,14 +303,17 @@
 							document.getElementById("ToLabel").style.display="block";
 							displayArray(document.getElementById("To"), data.<%=BlueboxMessage.TO%>, 'toEmail');
 						}
+						else document.getElementById("ToLabel").style.display="none";
 						if (data.<%=BlueboxMessage.CC%>.length>0){
 							document.getElementById("CcLabel").style.display="block";
 							displayArray(document.getElementById("Cc"), data.<%=BlueboxMessage.CC%>, 'ccEmail');
 						}
+						else document.getElementById("CcLabel").style.display="none";
 						if (data.<%=BlueboxMessage.BCC%>.length>0){
 							document.getElementById("BccLabel").style.display="block";
 							displayArray(document.getElementById("Bcc"), data.<%=BlueboxMessage.BCC%>, 'bccEmail');
 						}
+						else document.getElementById("BccLabel").style.display="none";
 						if (data.<%=BlueboxMessage.FROM%>){
 							displayArray(document.getElementById("From"), data.<%=BlueboxMessage.FROM%>, 'fromEmail');
 						}
@@ -303,16 +323,16 @@
 						// subject may be null
 						if (data.Subject)
 							document.getElementById("Subject").innerHTML = data.<%=BlueboxMessage.SUBJECT%>;
-						else
-							document.getElementById("Subject").innerHTML = "";
+							
 						// date field may be null
 						if (data.<%=BlueboxMessage.RECEIVED%>)
 							document.getElementById("Date").innerHTML = data.<%=BlueboxMessage.RECEIVED%>;
-						else
-							document.getElementById("Date").innerHTML = "";
+						
 						if (data.<%=BlueboxMessage.ATTACHMENT%>){
+							document.getElementById("AttachmentsLabel").style.display="block";
 							displayAttachments(uid,"Attachment",data.<%=BlueboxMessage.ATTACHMENT%>);
 						}
+						else document.getElementById("AttachmentsLabel").style.display="none";
 
 						setBodyContent(
 								data.<%=BlueboxMessage.HTML_BODY%>,
@@ -471,7 +491,7 @@
 			    
 			    tc.startup();
 			    
-				clearDetail();
+			    setDetailVisibility(false);
 		
 			});	
 		}
@@ -499,7 +519,7 @@
 			});
 </script>
 
-<div id="mailHeaderBlock" class="headerBox">
+<div id="mailHeaderBlock" style="display:none;" class="headerBox">
 	<table class="headerBoxTable">
 		<tr>
 			<td valign="top" style="width:0px;white-space:nowrap;">
@@ -527,7 +547,7 @@
 						<td align="left"><span class="headerLabel">&nbsp;<%= mailDetailsResource.getString("bcc") %></span>&nbsp;
 							<span id="Bcc"></span></td>
 					</tr>
-					<tr>
+					<tr id="AttachmentsLabel">
 						<td align="left"><span class="headerLabel"><%= mailDetailsResource.getString("attachments") %></span>&nbsp;
 							<div id="Attachment" class="attachmentsEmail"
 								data-dojo-type="dijit/layout/ContentPane"

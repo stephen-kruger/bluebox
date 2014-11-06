@@ -42,9 +42,17 @@
 					</ol>
 					<h2>Installation</h2>
 					<ol>
-						<li style="list-style-type:none;">Optional : Install and start MongoDB. Leaving out this step defaults to Derby embedded.</li>
+						<li style="list-style-type:none;">Download the web application archive from <a href="https://drive.google.com/folderview?id=0B_idaoMmuNnyYW9FS1paTEhuSXc&usp=sharing=sharing">here</a> and drop into your application container</li>
+						<li style="list-style-type:none;">Optionally, install and start <a href="http://www.mongodb.org/">MongoDB</a>. Leaving out this step defaults to instanciating a <a href="http://db.apache.org/derby/">Derby</a> embedded instance.</li>
 						<li style="list-style-type:none;">Set up an IP table mapping to route SMTP port requests to the web app :<i>iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500</i></li>
-						<li style="list-style-type:none;">Download the war file and drop into your application container</li>
+					</ol>
+					<h2>Upgrading</h2>
+					<ol>
+						<li style="list-style-type:none;">From the administration page, backup the mail content</li>
+						<li style="list-style-type:none;">Download the web application archive from <a href="https://drive.google.com/folderview?id=0B_idaoMmuNnyYW9FS1paTEhuSXc&usp=sharing=sharing">here</a> and drop into your application container</li>
+						<li style="list-style-type:none;">Restart the application server</li>
+						<li style="list-style-type:none;">From the administration page, rebuild search indexes</li>
+						<li style="list-style-type:none;">From the administration page, restore the mail content</li>
 					</ol>
 					<h2>REST API</h2>
 					<ol>
