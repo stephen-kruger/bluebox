@@ -200,6 +200,27 @@ public class Inbox implements SimpleMessageListener {
 		SearchIndexer.getInstance().deleteDoc(uid);
 	}
 
+	/*
+	 * Delete the message, and all other mails with same sender address. Add sender to blacklist.
+	 */
+	public void spam(String uid) throws Exception {
+		BlueboxMessage spam = retrieve(uid);
+		JSONArray senders = spam.getFrom();
+		for (int j = 0; j < senders.length();j++) {
+			InboxAddress spammer = new InboxAddress(senders.getString(j));
+			log.info("Searching spam sender={}",spammer.getAddress());
+			Document[] spamList;
+			do {
+				spamList = SearchIndexer.getInstance().search(spammer.getAddress(), SearchIndexer.SearchFields.FROM, 0, 100, SearchIndexer.SearchFields.FROM, true);
+				for (int i = 0; i<spamList.length;i++) {
+					log.info("Marking spam sender={} uid={}",spamList[i].get(SearchIndexer.SearchFields.FROM.name()),spamList[i].get(SearchIndexer.SearchFields.UID.name()));
+					softDelete(spamList[i].get(SearchIndexer.SearchFields.UID.name()));
+				}
+			}
+			while (spamList.length>0);
+		}
+	}
+
 	public void deleteAll() {
 		try {
 			StorageFactory.getInstance().deleteAll();
@@ -291,8 +312,8 @@ public class Inbox implements SimpleMessageListener {
 		for (BlueboxMessage msg : list) {
 			try {
 				if ((received = msg.getReceived()).before(trashExpireDate)) {
-//					StorageFactory.getInstance().delete(msg.getIdentifier());
-//					SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
+					//					StorageFactory.getInstance().delete(msg.getIdentifier());
+					//					SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
 					delete(msg.getIdentifier());
 					count++;
 				}
@@ -481,7 +502,13 @@ public class Inbox implements SimpleMessageListener {
 		return StorageFactory.getInstance().logErrorList(start, count);
 	}
 
-	public void setState(String uid, BlueboxMessage.State state) throws Exception {
+	
+	public void softDelete(String uid) throws Exception {
+		setState(uid, BlueboxMessage.State.DELETED);
+		SearchIndexer.getInstance().deleteDoc(uid);
+	}
+	
+	private void setState(String uid, BlueboxMessage.State state) throws Exception {
 		StorageFactory.getInstance().setState(uid, BlueboxMessage.State.DELETED);
 	}
 
@@ -513,9 +540,9 @@ public class Inbox implements SimpleMessageListener {
 			curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENT.name())).getFullAddress());
 			curr.put("identifier", uid);
 			if (!contains(children,curr.getString("name"))) {
-//				 TODO - nasty perf hit here - need to figure out why search is returning entries with empty inboxes
-//				if (getMailCount(inbox,BlueboxMessage.State.NORMAL)>0)
-					children.put(curr);
+				//				 TODO - nasty perf hit here - need to figure out why search is returning entries with empty inboxes
+				//				if (getMailCount(inbox,BlueboxMessage.State.NORMAL)>0)
+				children.put(curr);
 			}
 			if (children.length()>=count)
 				break;

@@ -5,6 +5,7 @@
 <%@ page import="com.bluebox.Config"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.rest.json.JSONMessageHandler"%>
+<%@ page import="com.bluebox.rest.json.JSONSPAMHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONInboxHandler"%>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
@@ -166,6 +167,77 @@
 			}
 			catch (err) {
 				console.log("maillist2:"+err);
+			}
+		}
+		
+		function spamSelectedRows() {
+			
+			require(["dijit/ConfirmDialog", "dojo/domReady!"], function(ConfirmDialog){
+			    myDialog = new ConfirmDialog({
+			        title: "<%=inboxDetailsResource.getString("spam")%>",
+			        content: "<%=inboxDetailsResource.getString("confirm_spam")%>",
+			        style: "width: 300px",
+			        onExecute:function(){ //Callback function 
+			        	try {
+							var inbox = dijit.byId("grid");
+							var items = inbox.selection.getSelected();
+							var itemList = "";
+							require(["dijit/registry"], function(registry){
+							    var grid = registry.byId("grid");
+								if(items.length){
+									dojo.forEach(items, function(selectedItem){
+										if(selectedItem !== null){
+											itemList += grid.store.getValue(selectedItem, "<%=BlueboxMessage.UID%>")+",";
+										}
+									});
+									spamMail(itemList);
+									if (items.length>1) {
+										inbox.selection.clear();
+									}
+									loadInboxAndFolder(currentEmail, currentState);
+								}
+								else {
+									console.log("<%=inboxDetailsResource.getString("error.noselection")%>");
+								}
+							});
+						}
+						catch (err) {
+							console.log("maillist2:"+err);
+						}
+			        },
+			        onCancel:function(){ 
+			            console.log("Event Cancelled");
+			        }
+			    });
+			    myDialog.show();
+			});
+		}
+		
+		function spamMail(uidList) {
+			try {
+				if (currentUid) {
+					var delUrl = "<%=request.getContextPath()%>/<%=JSONSPAMHandler.JSON_ROOT%>/"+uidList;
+					var xhrArgs = {
+							url: delUrl,
+							handleAs: "json",
+							preventCache: true,
+							load: function(data) {
+								loadInboxAndFolder(currentEmail, currentState);
+								clearDetail();
+							},
+							error: function (error) {
+								console.log("<%=inboxDetailsResource.getString("error.unknown")%>"+error);
+							}
+					};
+		
+					dojo.xhrDelete(xhrArgs);		
+				}
+				else {
+					console.log("<%=inboxDetailsResource.getString("error.noselection")%>");
+				}
+			}
+			catch (err) {
+				console.log("maillist3:"+err);
 			}
 		}
 	
@@ -342,6 +414,10 @@
 					<li><a href="javascript:;" onclick="deleteSelectedRows()">
 							<img class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbDelete.png"
 							alt="<%=inboxDetailsResource.getString("deleteTooltip")%>" /><%=inboxDetailsResource.getString("delete")%></a>
+					</li>
+					<li><a href="javascript:;" onclick="spamSelectedRows()">
+							<img class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbSpam.png"
+							alt="<%=inboxDetailsResource.getString("spamTooltip")%>" /><%=inboxDetailsResource.getString("spam")%></a>
 					</li>
 				</ul>
 			</div>
