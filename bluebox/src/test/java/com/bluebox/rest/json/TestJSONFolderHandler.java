@@ -39,7 +39,7 @@ public class TestJSONFolderHandler extends BaseServletTest {
 		assertEquals("Incorrect Deleted count",0,js.getJSONObject(BlueboxMessage.State.DELETED.name()).getInt("count"));
 		
 		// now delete 1 mail
-		Inbox.getInstance().setState(list.get(0).getString(BlueboxMessage.UID),BlueboxMessage.State.DELETED);
+		Inbox.getInstance().softDelete(list.get(0).getString(BlueboxMessage.UID));
 		js = getRestJSON(url);
 		assertEquals("Incorrect All count",list.size(),js.getJSONObject(BlueboxMessage.State.ANY.name()).getInt("count"));
 		assertEquals("Incorrect Normal count",list.size()-1,js.getJSONObject(BlueboxMessage.State.NORMAL.name()).getInt("count"));

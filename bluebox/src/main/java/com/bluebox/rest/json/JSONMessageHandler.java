@@ -134,7 +134,7 @@ public class JSONMessageHandler extends AbstractHandler {
 					inbox.delete(uid);
 				}
 				else {
-					inbox.setState(uid, BlueboxMessage.State.DELETED);
+					inbox.softDelete(uid);
 				}
 			}
 			JSONObject result = new JSONObject();

@@ -30,6 +30,7 @@ import com.bluebox.rest.json.JSONInlineHandler;
 import com.bluebox.rest.json.JSONMessageHandler;
 import com.bluebox.rest.json.JSONMessageUtilHandler;
 import com.bluebox.rest.json.JSONRawMessageHandler;
+import com.bluebox.rest.json.JSONSPAMHandler;
 import com.bluebox.rest.json.JSONSearchHandler;
 import com.bluebox.rest.json.JSONStatsHandler;
 import com.bluebox.search.SearchIndexer;
@@ -344,6 +345,10 @@ public class BlueBoxServlet extends HttpServlet {
 		log.debug("doDelete :"+req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
 			new JSONMessageHandler().doDelete(Inbox.getInstance(),req,resp);
+			return;
+		}
+		if (req.getRequestURI().indexOf(JSONSPAMHandler.JSON_ROOT)>=0){
+			new JSONSPAMHandler().doDelete(Inbox.getInstance(),req,resp);
 			return;
 		}
 	}
