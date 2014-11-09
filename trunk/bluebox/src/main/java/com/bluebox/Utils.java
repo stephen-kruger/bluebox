@@ -834,4 +834,14 @@ public class Utils {
 		//log.info(jo.toString());
 		return jo;
 	}
+	
+	public static String toString(List<String> list) {
+		StringBuffer listS = new StringBuffer();
+		for (String s : list) {
+			listS.append("<div>").append(s).append("</div>");
+		}
+//		if (listS.length()>0)
+//			return listS.substring(0, listS.length()-1).toString();
+		return listS.toString();
+	}
 }

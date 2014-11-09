@@ -3,6 +3,8 @@
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.chart.Charts" language="java"%>
 <%@ page import="com.bluebox.Config"%>
+<%@ page import="com.bluebox.Utils"%>
+<%@ page import="com.bluebox.smtp.Inbox"%>
 <%
 	Config bbconfig = Config.getInstance();
 	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
@@ -28,6 +30,8 @@
 		.infoValue {
 			font-weight: bold;
 			text-align: right;
+			white-space: normal;
+			display:table-cell;
 		}
 		
 		/* make centre smaller to allow bigge rgraph in rightCol*/
@@ -36,6 +40,26 @@
 		}
 	
 	</style>
+	<script>
+	function resetLists() {
+        dojo.ready(function(){
+			  // The parameters to pass to xhrGet, the url, how to handle it, and the callbacks.
+			  var xhrArgs = {
+			    url: "<%=request.getContextPath()%>/rest/resetlists",
+			    handleAs: "text",
+			    load: function(data){
+			    	window.location.reload();
+			    },
+			    error: function(error){
+			      console.log("An unexpected error occurred: " + error);
+			    }
+			  };
+
+			  // Call the asynchronous xhrGet
+			  dojo.xhrPost(xhrArgs);
+			});
+	}
+	</script>
 </head>
 <body class="<%=bbconfig.getString("dojo_style")%>">
 	<div class="headerCol"><jsp:include page="menu.jsp" /></div>
@@ -47,47 +71,6 @@
 		<div class="centerCol">
 		<div style="text-align:left;">
 			<table>
-				<tr>
-					<td><label><%=infoResource.getString("toblacklist")%></label></td>
-					<td class="infoValue">
-						<%= bbconfig.getFlatList(Config.BLUEBOX_TOBLACKLIST) %>
-					</td>
-					<td></td>
-				</tr>
-				<tr>
-				<td><br/></td>
-				</tr>
-				<tr>
-					<td><label><%=infoResource.getString("fromblacklist")%></label></td>
-					<td class="infoValue">
-						<%= bbconfig.getFlatList(Config.BLUEBOX_FROMBLACKLIST) %>
-					</td>
-					<td></td>
-				</tr>
-				<tr>
-				<td><br/></td>
-				</tr>
-				<tr>
-					<td><label><%=infoResource.getString("towhitelist")%></label></td>
-					<td class="infoValue">
-						<%= bbconfig.getFlatList(Config.BLUEBOX_TOWHITELIST) %>
-					</td>
-					<td></td>
-				</tr>
-				<tr>
-				<td><br/></td>
-				</tr>
-				<tr>
-					<td><label><%=infoResource.getString("fromwhitelist")%></label></td>
-					<td class="infoValue">
-						<%= bbconfig.getFlatList(Config.BLUEBOX_FROMWHITELIST) %>
-					</td>
-					<td></td>
-				</tr>
-				
-				<tr>
-					<td><br/></td>
-				</tr>
 				<tr>
 					<td><label><%=infoResource.getString("messageage")%></label></td>
 					<td class="infoValue">
@@ -114,7 +97,57 @@
 						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_MAX) %>
 					</td>
 				</tr>
+				<tr>
+					<td><br/></td>
+				</tr>
+				<tr>
+					<td><label><%=infoResource.getString("reset")%></label></td>
+					<td align="right"><button onclick="resetLists()" data-dojo-type="dijit/form/Button" type="button"><%=infoResource.getString("resetButton")%></button></td>
+				</tr>
+				<tr>
+					<td><br/></td>
+				</tr>
+				<tr>
+					<td><label><%=infoResource.getString("toblacklist")%></label></td>
+					<td class="infoValue">
+						<%= Utils.toString(Inbox.getInstance().getToBlacklist()) %>
+					</td>
+					<td></td>
+				</tr>
+				<tr>
+				<td><br/></td>
+				</tr>
+				<tr>
+					<td><label><%=infoResource.getString("fromblacklist")%></label></td>
+					<td class="infoValue">
+						<%= Utils.toString(Inbox.getInstance().getFromBlacklist()) %>
+					</td>
+					<td></td>
+				</tr>
+				<tr>
+				<td><br/></td>
+				</tr>
+				<tr>
+					<td><label><%=infoResource.getString("towhitelist")%></label></td>
+					<td class="infoValue">
+						<%= Utils.toString(Inbox.getInstance().getToWhitelist()) %>
+					</td>
+					<td></td>
+				</tr>
+				<tr>
+				<td><br/></td>
+				</tr>
+				<tr>
+					<td><label><%=infoResource.getString("fromwhitelist")%></label></td>
+					<td class="infoValue">
+						<%= Utils.toString(Inbox.getInstance().getFromWhitelist()) %>
+					</td>
+					<td></td>
+				</tr>
 				
+				<tr>
+					<td><br/></td>
+				</tr>
 			</table>
 			</div>
 		</div>

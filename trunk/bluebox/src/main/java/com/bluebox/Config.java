@@ -69,15 +69,15 @@ public class Config extends CompositeConfiguration {
 		return res;
 	}
 	
-	public String getFlatList(String key) {
-		StringBuffer list = new StringBuffer();
-		for (String s : getStringList(key)) {
-			list.append(s).append(',');
-		}
-		if (list.length()>0)
-			return list.substring(0, list.length()-1).toString();
-		return "";
-	}
+//	public String getFlatList(String key) {
+//		StringBuffer list = new StringBuffer();
+//		for (String s : getStringList(key)) {
+//			list.append(s).append(',');
+//		}
+//		if (list.length()>0)
+//			return list.substring(0, list.length()-1).toString();
+//		return "";
+//	}
 	
 	public String getString(String key) {
 		return super.getString(key);

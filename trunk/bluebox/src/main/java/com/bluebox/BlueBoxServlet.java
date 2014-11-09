@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.codehaus.jettison.json.JSONException;
@@ -302,6 +303,8 @@ public class BlueBoxServlet extends HttpServlet {
 		log.warn("No handler for "+req.getRequestURI()+" expected :"+req.getContextPath());
 		super.doGet(req, resp);
 	}
+	
+	
 
 	private void startWorker(WorkerThread wt, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		// check for running or expired works under this id
@@ -335,6 +338,20 @@ public class BlueBoxServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+		if (req.getRequestURI().indexOf("rest/resetlists")>=0) {
+			try {
+				Inbox.getInstance().loadConfig();
+				resp.getWriter().print("Reset lists to defaults");
+				resp.setStatus(HttpStatus.SC_ACCEPTED);
+			} 
+			catch (Exception e) {
+				e.printStackTrace();
+				resp.getWriter().print(e.getMessage());
+				resp.setStatus(HttpStatus.SC_BAD_REQUEST);
+			}
+			resp.flushBuffer();
+			return;
+		}
 		log.warn("Unimplemented doPost :"+req.getRequestURI());
 		super.doPost(req, resp);
 	}
