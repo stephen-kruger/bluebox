@@ -54,10 +54,12 @@ import com.bluebox.smtp.storage.StorageIf;
 
 public class SearchIndexer {
 	private static final Logger log = LoggerFactory.getLogger(SearchIndexer.class);
-	private Directory index;
+	private Directory directory;
 	private IndexWriterConfig config;
 	private static SearchIndexer si;
 	private IndexWriter indexWriter;
+	private IndexSearcher searcher;
+	private DirectoryReader diectoryReader;
 	public enum SearchFields {UID, INBOX, FROM, SUBJECT, RECEIVED, TEXT_BODY, HTML_BODY, SIZE, RECIPIENT, RECIPIENTS, ANY, BODY};
 
 	public static SearchIndexer getInstance() throws IOException {
@@ -72,28 +74,47 @@ public class SearchIndexer {
 	}
 
 	private SearchIndexer(Directory index) throws IOException {
-		this.index = index;
+		this.directory = index;
 	}
-	
+
 	public IndexWriter getIndexWriter() throws IOException {
 		if (indexWriter==null) {
 			Analyzer analyzer = new StandardAnalyzer();		
 			config = new IndexWriterConfig(Version.LATEST, analyzer);
 			config.setUseCompoundFile(true);
-			indexWriter = new IndexWriter(index, config);
+			indexWriter = new IndexWriter(getDirectory(), config);
 		}
 		return indexWriter;
 	}
 
 	public void stop() {
 		try {
+			getDirectoryReader().close();
 			getIndexWriter().close();
-			index.close();
+			getDirectory().close();
 			si = null;
 		} 
 		catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public Directory getDirectory() {
+		return directory;
+	}
+	
+	public DirectoryReader getDirectoryReader() throws IOException {
+		if (diectoryReader==null) {
+			diectoryReader = DirectoryReader.open(getDirectory());
+		}
+		return diectoryReader;
+	}
+	
+	public IndexSearcher getSearcher() throws IOException {
+		if (searcher==null) {
+			searcher = new IndexSearcher(getDirectoryReader());
+		}
+		return searcher;
 	}
 
 	public Document[] search(String querystr, SearchFields fields, int start, int count, SearchFields orderBy, boolean ascending) throws ParseException, IOException {
@@ -154,8 +175,7 @@ public class SearchIndexer {
 		}
 		queryParser.setAllowLeadingWildcard(true);
 		queryParser.setDefaultOperator(QueryParser.Operator.AND);
-		DirectoryReader reader = DirectoryReader.open(index);
-		IndexSearcher searcher = new IndexSearcher(reader);
+
 		try {
 
 
@@ -177,12 +197,12 @@ public class SearchIndexer {
 			// used to calculate number of search results
 
 			TopFieldCollector collector = TopFieldCollector.create(sort, start+count, true, true, true, true);
-			searcher.search(queryParser.parse(querystr),collector);
+			getSearcher().search(queryParser.parse(querystr),collector);
 			ScoreDoc[] hits = collector.topDocs(start,count).scoreDocs;
 			Document[] docs = new Document[hits.length];
 			for (int i = 0; i < hits.length; i++) {
 				int docId = hits[i].doc;
-				docs[i] = searcher.doc(docId);
+				docs[i] = getSearcher().doc(docId);
 			}
 			return docs;
 		}
@@ -193,9 +213,7 @@ public class SearchIndexer {
 			Inbox.getInstance().rebuildSearchIndexes();
 			return new Document[0];
 		}
-		finally {
-			reader.close();
-		}
+
 	}
 
 	public long searchInboxes(String search, Writer writer, int start,	int count, SearchFields fields, SearchFields orderBy, boolean ascending) throws ParseException, IOException {
@@ -371,11 +389,13 @@ public class SearchIndexer {
 
 			@Override
 			public void run() {
-				DirectoryReader reader=null;
+				//DirectoryReader reader=null;
 				int issueCount = 0;
 				try {
 					StorageIf si = StorageFactory.getInstance();
-					reader = DirectoryReader.open(index);
+					//reader = DirectoryReader.open(getDirectory());
+					DirectoryReader reader=SearchIndexer.getInstance().getDirectoryReader();
+
 					Bits liveDocs = MultiFields.getLiveDocs(reader);
 					for (int i=0; i<reader.maxDoc(); i++) {
 						if (liveDocs != null && !liveDocs.get(i))
@@ -395,14 +415,6 @@ public class SearchIndexer {
 				finally {
 					setProgress(100);
 					setStatus(issueCount+" invalid docs found");
-				}
-				if (reader!=null) {
-					try {
-						reader.close();
-					} catch (IOException e) {
-						log.error("Problem closing search reader",e);
-						e.printStackTrace();
-					}
 				}
 			}
 		};

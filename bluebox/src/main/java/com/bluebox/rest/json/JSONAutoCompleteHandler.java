@@ -18,7 +18,7 @@ public class JSONAutoCompleteHandler extends AbstractHandler {
 	public static final String JSON_ROOT = "rest/json/autocomplete";
 	private String START = "start";
 	private String COUNT = "count";
-	private String NAME = "label";
+	public static String NAME = "label";
 	
 	public void doAutoComplete(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		setDefaultHeaders(resp);
