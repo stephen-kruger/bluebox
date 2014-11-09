@@ -215,6 +215,9 @@ public class Inbox implements SimpleMessageListener {
 				for (int i = 0; i<spamList.length;i++) {
 					log.info("Marking spam sender={} uid={}",spamList[i].get(SearchIndexer.SearchFields.FROM.name()),spamList[i].get(SearchIndexer.SearchFields.UID.name()));
 					softDelete(spamList[i].get(SearchIndexer.SearchFields.UID.name()));
+					// blacklist this sender
+					log.info("Blacklisting sender {}",spammer.getDomain());
+					addFromBlacklist(spammer.getDomain());
 				}
 			}
 			while (spamList.length>0);
@@ -342,7 +345,7 @@ public class Inbox implements SimpleMessageListener {
 			}
 
 			// check from blacklist
-			for (Object badDomain : fromBlackList) {
+			for (Object badDomain : getFromBlacklist()) {
 				log.debug(badDomain+"<<<---- Comparing fromBlackList---->>>{}",from);
 				if (fromAddress.getDomain().endsWith(badDomain.toString())) {
 					log.warn("Rejecting mail from "+from+" to "+recipient+" due to blacklisted FROM:"+badDomain);
@@ -350,7 +353,7 @@ public class Inbox implements SimpleMessageListener {
 				}
 			}
 			// check to blacklist
-			for (Object badDomain : toBlackList) {
+			for (Object badDomain : getToBlacklist()) {
 				log.debug(badDomain+"<<<---- Comparing toBlackList---->>>{}",recipient);
 				if (recipientAddress.getDomain().endsWith(badDomain.toString())) {
 					log.warn("Rejecting mail from "+from+" to "+recipient+" due to blacklisted TO:"+badDomain);
@@ -647,23 +650,43 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public void addToWhiteList(String goodDomain) {
+		toWhiteList.remove(goodDomain);		
 		toWhiteList.add(goodDomain);		
+	}
+	
+	public List<String> getToWhitelist() {
+		return toWhiteList;
 	}
 
 	public void addFromWhiteList(String goodDomain) {
+		fromWhiteList.remove(goodDomain);	
 		fromWhiteList.add(goodDomain);	
+	}
+	
+	public List<String> getFromWhitelist() {
+		return fromWhiteList;
 	}
 
 	public void addFromBlacklist(String badDomain) {
+		fromBlackList.remove(badDomain);		
 		fromBlackList.add(badDomain);		
+	}
+	
+	public List<String> getFromBlacklist() {
+		return fromBlackList;
 	}
 
 	public void addToBlacklist(String badDomain) {
+		toBlackList.remove(badDomain);		
 		toBlackList.add(badDomain);		
+	}
+	
+	public List<String> getToBlacklist() {
+		return toBlackList;
 	}
 
 	public void loadConfig() {
-		// set up the blacklists and whielists
+		// set up the blacklists and whitelists
 		fromBlackList = Config.getInstance().getStringList(Config.BLUEBOX_FROMBLACKLIST);
 		toBlackList = Config.getInstance().getStringList(Config.BLUEBOX_TOBLACKLIST);
 		toWhiteList = Config.getInstance().getStringList(Config.BLUEBOX_TOWHITELIST);
