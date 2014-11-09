@@ -23,14 +23,8 @@ public class SearchIndexerTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		//		Config config = Config.getInstance();
-		//		config.setString(Config.BLUEBOX_STORAGE,"com.bluebox.smtp.storage.mongodb.StorageImpl");
-//		Inbox.getInstance();
-//		Inbox.getInstance().deleteAll();
-//		Inbox.getInstance().rebuildSearchIndexes();
 		si = SearchIndexer.getInstance();
 		si.deleteIndexes();
-//		String recipients = "receiever1@here.com, receiever2@here.com";
 		si.addDoc("193398817","receiever1@here.com","sender@there.com","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543);
 		si.addDoc("55320055Z","receiever2@here.com","sender@there.com","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543);
 		si.addDoc("55063554A","receiever3@here.com","sender@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543);
@@ -39,7 +33,7 @@ public class SearchIndexerTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-//		Inbox.getInstance().stop();
+		si.stop();
 	}
 
 	public void testHtmlSearch() throws IOException, ParseException {
@@ -64,12 +58,12 @@ public class SearchIndexerTest extends TestCase {
 		assertEquals("Missing expected search results",1,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 		assertEquals("Missing expected search results",1,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 	}
-	
+
 	public void testRecipientSearch() throws IOException, ParseException {
 		assertEquals("Missing expected search results",1,si.search("receiever1",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED,false).length);
 		assertEquals("Missing expected search results",1,si.search("receiever1@here.com",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED,false).length);
 		assertEquals("Missing expected search results",1,si.search("receiever2",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED,false).length);
-//		assertEquals("Missing expected search results",4,si.search("receiever",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED,false).length);
+		//		assertEquals("Missing expected search results",4,si.search("receiever",SearchIndexer.SearchFields.RECIPIENTS,0,10,SearchIndexer.SearchFields.RECEIVED,false).length);
 	}
 
 	public void testMailIndexing() throws Exception {
@@ -81,7 +75,7 @@ public class SearchIndexerTest extends TestCase {
 		Inbox.getInstance().stop();
 	}
 
-	public void testDelete() throws IOException, ParseException {
+	public void testDelete() throws IOException, ParseException, InterruptedException {
 		si.deleteDoc("55063554A");
 		assertEquals("Missing expected search results",0,si.search("johnson",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 		assertEquals("Missing expected search results",0,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
