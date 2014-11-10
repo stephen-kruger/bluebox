@@ -11,6 +11,7 @@ import javax.mail.internet.InternetAddress;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.mail.EmailException;
 import org.codehaus.jettison.json.JSONObject;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
@@ -140,9 +141,9 @@ public class InboxTest extends TestCase {
 	public void testSoftDelete() throws Exception {
 		inbox.deleteAll();
 		String email1 = "aaading@kkddf.com";
-		String from="from@from.com";
-		TestUtils.sendMailSMTP(new InternetAddress(from), new InternetAddress(email1), null, null, "subject", "body");
-		TestUtils.sendMailSMTP(new InternetAddress(from), new InternetAddress(email1), null, null, "subject", "body");
+		String from="<from@from.com>";
+		TestUtils.sendMailSMTP(new InternetAddress("user one "+from), new InternetAddress(email1), null, null, "subject", "body");
+		TestUtils.sendMailSMTP(new InternetAddress("user two "+from), new InternetAddress(email1), null, null, "subject", "body");
 		Inbox inbox = Inbox.getInstance();
 		assertEquals("Missing mail",2,inbox.getMailCount(BlueboxMessage.State.NORMAL));
 		List<BlueboxMessage> mail = inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true);
@@ -153,6 +154,15 @@ public class InboxTest extends TestCase {
 		assertEquals("Missing deleted mail",2,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.DELETED, 0, 100, BlueboxMessage.SIZE, true).size());
 		assertEquals("Found deleted mail",0,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true).size());
 		assertEquals("Unexpected search data",0,si.search(from, SearchIndexer.SearchFields.FROM, 0, 10, SearchIndexer.SearchFields.FROM, true).length);
+		// test that future sends are rejected by blacklist
+		try {
+			TestUtils.sendMailSMTP(new InternetAddress("user three "+from), new InternetAddress(email1), null, null, "subject", "body");
+			fail("Mail was not rejected by blacklist");
+		}
+		catch (EmailException ex) {
+			log.info("Mail was correctly rejected :"+ex.getMessage());
+		}
+		assertEquals("Found blacklisted mail",0,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true).size());
 	}
 
 }
