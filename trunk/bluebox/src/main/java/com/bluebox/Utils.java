@@ -276,10 +276,10 @@ public class Utils {
 	//		}
 	//	}
 
-	public static void test(ServletContext session, String sz) {
-		log.info("Into test");
-		sendMessage(session,Integer.parseInt(sz));
-	}
+//	public static void test(ServletContext session, String sz) {
+//		log.debug("Into test");
+//		sendMessage(session,Integer.parseInt(sz));
+//	}
 
 	public static InternetAddress[] getRandomAddresses(int count) throws AddressException {
 		InternetAddress[] result = new InternetAddress[count];
@@ -406,7 +406,7 @@ public class Utils {
 	public static void sendMessage(final ServletContext session, final int count) {
 		ExecutorService threadPool = Executors.newFixedThreadPool(10);
 		for (int j = 0; j < count/6; j++) {
-			log.info("Sending message "+j);
+			log.debug("Sending message {}",j);
 			threadPool.execute(new Runnable() {
 
 				@Override
@@ -414,7 +414,7 @@ public class Utils {
 					boolean sent = false;
 					int retryCount = 5;
 					while ((!sent)&&(retryCount-->0)) {
-						log.info("Sending message");
+						log.debug("Sending message");
 						try {
 							MimeMessage msg = createMessage(session,
 									getRandomAddress(),  
@@ -433,7 +433,7 @@ public class Utils {
 							e.printStackTrace();
 							// server overloaded, try again later
 							try {
-								log.info("Waiting to deliver ("+e.getMessage()+")");
+								log.debug("Waiting to deliver ({})",e.getMessage());
 								Thread.sleep(5000);
 							} 
 							catch (InterruptedException e1) {
@@ -468,7 +468,7 @@ public class Utils {
 		if (recipients.size()==0)
 			recipients.add("anonymous@bluebox.lotus.com");
 		for (String recipient : recipients) {
-			log.info("Sending message to "+recipient);
+			log.debug("Sending message to {}",recipient);
 			if (Inbox.getInstance().accept(msg.getFrom()[0].toString(), recipient)) {
 				Inbox.getInstance().deliver(msg.getFrom()[0].toString(), recipient, Utils.streamMimeMessage(msg));
 			}
