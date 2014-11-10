@@ -46,7 +46,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if (started) {
 			throw new Exception("Storage instance already started");
 		}
-		log.info("Starting Derby repository");
+		log.debug("Starting Derby repository");
 		Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
 		int count = 10;
 		while (count-- > 0) {
@@ -54,7 +54,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				started = true;
 				setupTables();
 				log.info("Started Derby repository.");
-				log.info("Adding custom defined functions");
+				log.debug("Adding custom defined functions");
 				try {
 					createFunction();
 				} catch (Exception e) {
@@ -74,20 +74,24 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if (!started) {
 			throw new Exception("Storage instance was not running");
 		}
-		log.info("Removing custom defined functions");
+		log.debug("Removing custom defined functions");
 		try {
 			deleteFunction();
-		} catch (Exception e) {
+		} 
+		catch (Exception e) {
 			e.printStackTrace();
+			log.debug(e.getMessage());
 		}
-		log.info("Stopping Derby repository");
+		log.debug("Stopping Derby repository");
 		try {
 			//StorageFactory.clearInstance();
 			DriverManager.getConnection("jdbc:derby:;shutdown=true");
 		}
 		catch (Throwable t) {
-			log.warn(t.getMessage());
+			log.debug(t.getMessage());
 		}
+		log.info("Stopped Derby repository");
+
 		// force gc to unload the derby classes
 		//http://db.apache.org/derby/docs/10.3/devguide/tdevdvlp20349.html
 		System.gc();
