@@ -204,21 +204,25 @@ public class Inbox implements SimpleMessageListener {
 	 * Delete the message, and all other mails with same sender address. Add sender to blacklist.
 	 */
 	public void spam(String uid) throws Exception {
+		SearchIndexer si = SearchIndexer.getInstance();
 		BlueboxMessage spam = retrieve(uid);
+		softDelete(uid);
 		JSONArray senders = spam.getFrom();
 		for (int j = 0; j < senders.length();j++) {
 			InboxAddress spammer = new InboxAddress(senders.getString(j));
-			log.info("Searching spam sender={}",spammer.getAddress());
+			// blacklist this sender
+			addFromBlacklist(spammer.getDomain());
+			// delete it from search indexes
 			Document[] spamList;
+			int start = 0;
 			do {
-				spamList = SearchIndexer.getInstance().search(spammer.getAddress(), SearchIndexer.SearchFields.FROM, 0, 100, SearchIndexer.SearchFields.FROM, true);
-				for (int i = 0; i<spamList.length;i++) {
-					log.info("Marking spam sender={} uid={}",spamList[i].get(SearchIndexer.SearchFields.FROM.name()),spamList[i].get(SearchIndexer.SearchFields.UID.name()));
-					softDelete(spamList[i].get(SearchIndexer.SearchFields.UID.name()));
-					// blacklist this sender
-					log.info("Blacklisting sender {}",spammer.getDomain());
-					addFromBlacklist(spammer.getDomain());
+				spamList = si.search(spammer.getAddress(), SearchIndexer.SearchFields.FROM, start, 100, SearchIndexer.SearchFields.FROM, true);
+				String spamUid;
+				for (Document spamDoc : spamList) {
+					spamUid = spamDoc.get(SearchIndexer.SearchFields.UID.name());
+					softDelete(spamUid);
 				}
+				start+=100;
 			}
 			while (spamList.length>0);
 		}
@@ -543,8 +547,6 @@ public class Inbox implements SimpleMessageListener {
 			curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENT.name())).getFullAddress());
 			curr.put("identifier", uid);
 			if (!contains(children,curr.getString("name"))) {
-				//				 TODO - nasty perf hit here - need to figure out why search is returning entries with empty inboxes
-				//				if (getMailCount(inbox,BlueboxMessage.State.NORMAL)>0)
 				children.put(curr);
 			}
 			if (children.length()>=count)
@@ -668,6 +670,7 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public void addFromBlacklist(String badDomain) {
+		log.info("Blacklisting domain {}",badDomain);
 		fromBlackList.remove(badDomain);		
 		fromBlackList.add(badDomain);		
 	}

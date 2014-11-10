@@ -31,12 +31,13 @@ import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.SimpleFSDirectory;
+import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Bits;
 import org.apache.lucene.util.Version;
 import org.codehaus.jettison.json.JSONException;
@@ -70,7 +71,8 @@ public class SearchIndexer {
 	}
 
 	private SearchIndexer() throws IOException {
-		this(new SimpleFSDirectory(createTempDirectory()));
+//				this(new SimpleFSDirectory(createTempDirectory()));
+		this(new NIOFSDirectory(createTempDirectory()));
 	}
 
 	private SearchIndexer(Directory index) throws IOException {
@@ -86,6 +88,11 @@ public class SearchIndexer {
 		}
 		return indexWriter;
 	}
+	
+//	private void closeIndexWriter() throws IOException {
+//		getIndexWriter().close();
+//		indexWriter = null;
+//	}
 
 	public void stop() {
 		try {
@@ -102,7 +109,7 @@ public class SearchIndexer {
 	public Directory getDirectory() {
 		return directory;
 	}
-	
+
 	public DirectoryReader getDirectoryReader() throws IOException {
 		if (diectoryReader==null) {
 			diectoryReader = DirectoryReader.open(getDirectory());
@@ -110,17 +117,26 @@ public class SearchIndexer {
 		return diectoryReader;
 	}
 	
+	public void closeDirectoryReader() throws IOException {
+		getDirectoryReader().close();
+		diectoryReader=null;
+	}
+
 	public IndexSearcher getSearcher() throws IOException {
 		if (searcher==null) {
 			searcher = new IndexSearcher(getDirectoryReader());
 		}
 		return searcher;
 	}
+	
+	public void closeSearcher() {
+		searcher=null;
+	}
 
 	public Document[] search(String querystr, SearchFields fields, int start, int count, SearchFields orderBy, boolean ascending) throws ParseException, IOException {
-		//		querystr = QueryParser.escape(querystr);
-		//		querystr = "*"+QueryParser.escape(querystr)+"*";
-		//		querystr = "*"+querystr+"*";
+		//              querystr = QueryParser.escape(querystr);
+		//              querystr = "*"+QueryParser.escape(querystr)+"*";
+		//              querystr = "*"+querystr+"*";
 		QueryParser queryParser;
 
 		Analyzer analyzer = new StandardAnalyzer();
@@ -292,6 +308,23 @@ public class SearchIndexer {
 	public synchronized void deleteDoc(String uid) throws IOException, ParseException {
 		getIndexWriter().deleteDocuments(new Term(SearchFields.UID.name(),uid));
 		getIndexWriter().commit();
+		closeDirectoryReader();
+		closeSearcher();
+	}
+	
+	public void deleteDoc(String value, SearchFields field) throws ParseException, IOException {
+		Analyzer analyzer = new StandardAnalyzer();
+		QueryParser queryParser = new MultiFieldQueryParser(
+				new String[] {
+						field.name()},
+						analyzer);
+		queryParser.setAllowLeadingWildcard(true);
+		queryParser.setDefaultOperator(QueryParser.Operator.AND);
+		Query query = queryParser.parse(value);
+		getIndexWriter().deleteDocuments(query);
+		getIndexWriter().commit();
+		closeDirectoryReader();
+		closeSearcher();
 	}
 
 	protected synchronized void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
@@ -357,7 +390,7 @@ public class SearchIndexer {
 					new ParserDelegator().parse(new StringReader(html), parserCallback, false);
 				}
 				catch (Throwable t) {
-					log.warn("Could not parse html content - indexing all");
+					log.warn("Could not parse html content - indexing all ({})",t.getMessage());
 					sb.append(html);
 				}
 			}
@@ -368,11 +401,8 @@ public class SearchIndexer {
 	public static File createTempDirectory()  throws IOException {
 		//File tmpDir = (File)getServletContext().getAttribute(ServletContext.TEMPDIR);
 		File temp = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox4.lucene");
-
-
 		log.info("Preparing search indexes in "+temp.getCanonicalPath());
-		if(!(temp.mkdir()))
-		{
+		if(!(temp.mkdir())) {
 			log.warn("Re-using index directory: " + temp.getAbsolutePath());
 		}
 		log.info("Configured search indexes in "+temp.getCanonicalPath());
@@ -382,6 +412,8 @@ public class SearchIndexer {
 	public synchronized void deleteIndexes() throws IOException {
 		getIndexWriter().deleteAll();
 		getIndexWriter().commit();
+		si.closeDirectoryReader();
+		si.closeSearcher();
 	}
 
 	public WorkerThread validate() {

@@ -2,6 +2,7 @@ package com.bluebox.smtp;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
@@ -15,6 +16,7 @@ import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
 import com.bluebox.TestUtils;
 import com.bluebox.WorkerThread;
+import com.bluebox.search.SearchIndexer;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageIf;
 
@@ -28,7 +30,7 @@ public class InboxTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		inbox = Inbox.getInstance();
-//		inbox.deleteAll();
+		//		inbox.deleteAll();
 		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(inbox));
 		smtpServer.start();
 		//		int max = 10;
@@ -133,6 +135,24 @@ public class InboxTest extends TestCase {
 		while (wt.getProgress()<100)
 			Thread.sleep(250);
 		assertEquals(3,Inbox.getInstance().getMailCount(BlueboxMessage.State.ANY));
+	}
+
+	public void testSoftDelete() throws Exception {
+		inbox.deleteAll();
+		String email1 = "aaading@kkddf.com";
+		String from="from@from.com";
+		TestUtils.sendMailSMTP(new InternetAddress(from), new InternetAddress(email1), null, null, "subject", "body");
+		TestUtils.sendMailSMTP(new InternetAddress(from), new InternetAddress(email1), null, null, "subject", "body");
+		Inbox inbox = Inbox.getInstance();
+		assertEquals("Missing mail",2,inbox.getMailCount(BlueboxMessage.State.NORMAL));
+		List<BlueboxMessage> mail = inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true);
+		assertEquals("Missing mail",2,mail.size());
+		SearchIndexer si = SearchIndexer.getInstance();
+		assertEquals("Missing search data",2,si.search("from@from.com", SearchIndexer.SearchFields.FROM, 0, 10, SearchIndexer.SearchFields.FROM, true).length);
+		inbox.spam(mail.get(0).getIdentifier());
+		assertEquals("Missing deleted mail",2,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.DELETED, 0, 100, BlueboxMessage.SIZE, true).size());
+		assertEquals("Found deleted mail",0,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true).size());
+		assertEquals("Unexpected search data",0,si.search(from, SearchIndexer.SearchFields.FROM, 0, 10, SearchIndexer.SearchFields.FROM, true).length);
 	}
 
 }
