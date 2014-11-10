@@ -78,7 +78,7 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	private void start() {
-		log.info("Starting inbox");
+		log.debug("Starting inbox");
 
 		// ensure storage instance if loaded and started
 		try {
@@ -91,7 +91,7 @@ public class Inbox implements SimpleMessageListener {
 		// now start a background timer for the mail expiration
 		// only one per jvm instance
 		if (timer == null) {
-			log.info("Scheduling cleanup timer");
+			log.debug("Scheduling cleanup timer");
 			long frequency = Config.getInstance().getLong(Config.BLUEBOX_DAEMON_DELAY);
 			timer = new Timer();
 			long period = frequency*60*1000;  // repeat every hour.
@@ -111,10 +111,12 @@ public class Inbox implements SimpleMessageListener {
 				}
 			}, delay, period);
 		}
+		log.info("Started inbox");
+
 	}
 
 	public void stop() {
-		log.info("Stopping cleanup timer");
+		log.debug("Stopping cleanup timer");
 		if (timer != null) {
 			timer.cancel();
 			timer = null;
@@ -124,7 +126,7 @@ public class Inbox implements SimpleMessageListener {
 			timerTask = null;
 		}
 
-		log.info("Stopping inbox");
+		log.debug("Stopping inbox");
 		try {
 			StorageFactory.getInstance().stop();
 		}
@@ -132,7 +134,7 @@ public class Inbox implements SimpleMessageListener {
 			log.error("Error stopping storage :{}",e.getMessage());
 		}
 
-		log.info("Stopping search engine");
+		log.debug("Stopping search engine");
 		try {
 			SearchIndexer.getInstance().stop();
 		} 
@@ -141,6 +143,7 @@ public class Inbox implements SimpleMessageListener {
 			log.error("Error stopping search engine",e);
 		}
 		inbox = null;
+		log.info("Stopped inbox");
 	}
 
 	public BlueboxMessage retrieve(String uid) throws Exception {

@@ -71,12 +71,13 @@ public class SearchIndexer {
 	}
 
 	private SearchIndexer() throws IOException {
-//				this(new SimpleFSDirectory(createTempDirectory()));
+		//				this(new SimpleFSDirectory(createTempDirectory()));
 		this(new NIOFSDirectory(createTempDirectory()));
 	}
 
 	private SearchIndexer(Directory index) throws IOException {
 		this.directory = index;
+		log.info("Started SearchIndexer");
 	}
 
 	public IndexWriter getIndexWriter() throws IOException {
@@ -88,26 +89,37 @@ public class SearchIndexer {
 		}
 		return indexWriter;
 	}
-	
-//	private void closeIndexWriter() throws IOException {
-//		getIndexWriter().close();
-//		indexWriter = null;
-//	}
+
+	private void closeIndexWriter() throws IOException {
+		getIndexWriter().close();
+		indexWriter = null;
+	}
 
 	public void stop() {
-		try {
-			getDirectoryReader().close();
-			getIndexWriter().close();
-			getDirectory().close();
-			si = null;
-		} 
-		catch (IOException e) {
-			e.printStackTrace();
+		if (si!=null) {
+			try {
+				closeIndexWriter();
+				closeDirectoryReader();
+				closeDirectory();
+				si = null;
+			} 
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
+		else {
+			log.warn("Trying to stop an already stopped SearchIndexer instance");
+		}
+		log.info("Stopped SearchIndexer");
 	}
 
 	public Directory getDirectory() {
 		return directory;
+	}
+
+	public void closeDirectory() throws IOException {
+		getDirectory().close();
+		directory = null;
 	}
 
 	public DirectoryReader getDirectoryReader() throws IOException {
@@ -116,7 +128,7 @@ public class SearchIndexer {
 		}
 		return diectoryReader;
 	}
-	
+
 	public void closeDirectoryReader() throws IOException {
 		getDirectoryReader().close();
 		diectoryReader=null;
@@ -128,7 +140,7 @@ public class SearchIndexer {
 		}
 		return searcher;
 	}
-	
+
 	public void closeSearcher() {
 		searcher=null;
 	}
@@ -311,7 +323,7 @@ public class SearchIndexer {
 		closeDirectoryReader();
 		closeSearcher();
 	}
-	
+
 	public void deleteDoc(String value, SearchFields field) throws ParseException, IOException {
 		Analyzer analyzer = new StandardAnalyzer();
 		QueryParser queryParser = new MultiFieldQueryParser(
@@ -401,11 +413,11 @@ public class SearchIndexer {
 	public static File createTempDirectory()  throws IOException {
 		//File tmpDir = (File)getServletContext().getAttribute(ServletContext.TEMPDIR);
 		File temp = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox4.lucene");
-		log.info("Preparing search indexes in "+temp.getCanonicalPath());
+		log.debug("Preparing search indexes in "+temp.getCanonicalPath());
 		if(!(temp.mkdir())) {
-			log.warn("Re-using index directory: " + temp.getAbsolutePath());
+			log.debug("Re-using index directory: " + temp.getAbsolutePath());
 		}
-		log.info("Configured search indexes in "+temp.getCanonicalPath());
+		log.debug("Configured search indexes in "+temp.getCanonicalPath());
 		return (temp);
 	}
 

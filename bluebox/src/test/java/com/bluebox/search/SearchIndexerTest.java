@@ -72,7 +72,6 @@ public class SearchIndexerTest extends TestCase {
 		si.indexMail(msg);
 		assertEquals("Missing expected search results",1,si.search(msg.getSubject(),SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 		assertEquals("Missing expected search results",1,si.search("steve",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
-		Inbox.getInstance().stop();
 	}
 
 	public void testDelete() throws IOException, ParseException, InterruptedException {
