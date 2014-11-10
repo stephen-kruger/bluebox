@@ -25,10 +25,10 @@ public class SearchIndexerTest extends TestCase {
 		super.setUp();
 		si = SearchIndexer.getInstance();
 		si.deleteIndexes();
-		si.addDoc("193398817","receiever1@here.com","sender@there.com","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543);
-		si.addDoc("55320055Z","receiever2@here.com","sender@there.com","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543);
-		si.addDoc("55063554A","receiever3@here.com","sender@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543);
-		si.addDoc("9900333X","receiever4@here.com","sender@there.com","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543);
+		si.addDoc("193398817","receiever1@here.com","sender1@there.com","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543);
+		si.addDoc("55320055Z","receiever2@here.com","sender2@there.com","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543);
+		si.addDoc("55063554A","receiever3@here.com","sender3@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543);
+		si.addDoc("9900333X","receiever4@here.com","sender4@there.com","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543);
 	}
 
 	@Override
@@ -37,7 +37,7 @@ public class SearchIndexerTest extends TestCase {
 	}
 
 	public void testHtmlSearch() throws IOException, ParseException {
-		assertEquals("Missing expected search results",4,si.search("sender",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",4,si.search("sender*",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 	}
 
 	public void testMultiWord() throws IOException, ParseException {
@@ -76,10 +76,14 @@ public class SearchIndexerTest extends TestCase {
 	}
 
 	public void testDelete() throws IOException, ParseException, InterruptedException {
-		si.deleteDoc("55063554A");
-		assertEquals("Missing expected search results",0,si.search("johnson",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",0,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",1,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		si.deleteDoc("193398817");
+		assertEquals("Missing expected search results",1,si.search("johnson",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,si.search("stephen",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",0,si.search("Lucene in Action",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",0,si.search("sender1@there.com",SearchIndexer.SearchFields.FROM,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,si.search("sender2@there.com",SearchIndexer.SearchFields.FROM,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
+		si.deleteDoc("55320055Z");
+		assertEquals("Missing expected search results",0,si.search("sender2@there.com",SearchIndexer.SearchFields.FROM,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 	}
 
 	public void testTextSearch() throws IOException, ParseException {
@@ -110,7 +114,7 @@ public class SearchIndexerTest extends TestCase {
 
 		// test search in from field
 		sw = new StringWriter();
-		String searchString = "sender";
+		String searchString = "sender*";
 		log.info("Looking for sender "+searchString);
 		SearchIndexer.getInstance().searchInboxes(searchString, sw, 0, 50, SearchIndexer.SearchFields.FROM, SearchIndexer.SearchFields.RECEIVED, true);
 		ja = new JSONArray(sw.toString());
