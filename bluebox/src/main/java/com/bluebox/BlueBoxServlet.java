@@ -21,9 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
-import com.bluebox.chart.Charts;
 import com.bluebox.rest.json.JSONAttachmentHandler;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
+import com.bluebox.rest.json.JSONChartHandler;
 import com.bluebox.rest.json.JSONErrorHandler;
 import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.rest.json.JSONInboxHandler;
@@ -128,9 +128,9 @@ public class BlueBoxServlet extends HttpServlet {
 			new JSONMessageUtilHandler().doGet(Inbox.getInstance(),req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(Charts.CHART_ROOT)>=0){
-			log.debug("doCharts");
-			new Charts().renderChart(req, resp);
+		if (req.getRequestURI().indexOf(JSONChartHandler.JSON_ROOT)>=0){
+			log.info("doGetCharts");
+			new JSONChartHandler().doGet(Inbox.getInstance(),req,resp);
 			return;
 		}
 		if (req.getRequestURI().indexOf("rest/admin/generate")>=0){
