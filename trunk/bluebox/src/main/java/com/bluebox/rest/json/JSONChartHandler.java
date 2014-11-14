@@ -46,7 +46,6 @@ public class JSONChartHandler extends AbstractHandler {
 			t.printStackTrace();
 		}
 		resp.flushBuffer();
-		log.info("Served chart store");
 	}
 
 	private JSONArray convertToArray(JSONObject jo, String key) throws JSONException {
