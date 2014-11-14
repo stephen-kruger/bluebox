@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.TestUtils;
+import com.bluebox.rest.json.JSONChartHandler;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.StorageFactory;
 
@@ -86,4 +87,9 @@ public class ChartTest extends TestCase {
 		} while ((repeat--)>0);
 	}
 
+	public void testScratch() throws JSONException {
+		JSONObject jo = StorageFactory.getInstance().getCountByDayOfWeek();
+		log.info(jo.toString(3));		
+		log.info(JSONChartHandler.convertToArrayPie(jo).toString(3));		
+	}
 }
