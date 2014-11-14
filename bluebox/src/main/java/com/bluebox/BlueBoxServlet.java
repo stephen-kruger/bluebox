@@ -129,7 +129,7 @@ public class BlueBoxServlet extends HttpServlet {
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONChartHandler.JSON_ROOT)>=0){
-			log.info("doGetCharts");
+			log.debug("doGetCharts");
 			new JSONChartHandler().doGet(Inbox.getInstance(),req,resp);
 			return;
 		}
