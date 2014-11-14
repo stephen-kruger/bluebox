@@ -20,7 +20,7 @@ require(["dojox/charting/Chart", "dojox/charting/StoreSeries", "dojo/store/JsonR
 				var dataStore = new JsonRest({target:"<%=request.getContextPath()%>/<%=JSONChartHandler.JSON_ROOT%>/monthly"});
 				var monthlychart = new Chart("monthlychart");
 				monthlychart.setTheme(BlueDusk);
-				monthlychart.addPlot("default", {type: StackedAreas,tension: "X"});
+				monthlychart.addPlot("default", {type: StackedAreas,tension: "X",stroke: { width: 1.5, color: "#CCD6EB" }});
 				monthlychart.addAxis("x");
 				monthlychart.addAxis("y", {vertical: true});
 				try {
@@ -43,7 +43,7 @@ require(["dojox/charting/Chart", "dojox/charting/StoreSeries", "dojo/store/JsonR
 									    function(Pie){
 										    		var monthlychart = new Chart("weeklychart");
 										            monthlychart.setTheme(BlueDusk);
-											        monthlychart.addPlot("default", {type: Pie, fontColor: "white", markers:false, labels:true, labelStyle: "default"});
+											        monthlychart.addPlot("default", {type: Pie, fontColor: "lightGray", stroke: { width: 1.5, color: "#CCD6EB" }, markers:false, labels:true, labelStyle: "default"});
 											    	monthlychart.addSeries("y", data);
 												    monthlychart.render();
 							    		 });
@@ -59,7 +59,7 @@ require(["dojox/charting/Chart", "dojox/charting/StoreSeries", "dojo/store/JsonR
 				var hdataStore = new JsonRest({target:"<%=request.getContextPath()%>/<%=JSONChartHandler.JSON_ROOT%>/hourly"});
 				var hourlychart = new Chart("hourlychart");
 				hourlychart.setTheme(BlueDusk);
-				hourlychart.addPlot("default", {type: StackedAreas,tension: "X"});
+				hourlychart.addPlot("default", {type: StackedAreas,tension: "X",stroke: { width: 1.5, color: "#CCD6EB" }});
 				hourlychart.addAxis("x");
 				hourlychart.addAxis("y", {vertical: true});
 				try {
