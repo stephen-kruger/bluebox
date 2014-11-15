@@ -220,15 +220,21 @@ public class Inbox implements SimpleMessageListener {
 			Document[] spamList;
 			int start = 0;
 			do {
-				spamList = si.search(spammer.getAddress(), SearchIndexer.SearchFields.FROM, start, 100, SearchIndexer.SearchFields.FROM, true);
+				spamList = si.search(spammer.getDomain(), SearchIndexer.SearchFields.FROM, start, 1000, SearchIndexer.SearchFields.FROM, true);
 				String spamUid;
 				for (Document spamDoc : spamList) {
-					spamUid = spamDoc.get(SearchIndexer.SearchFields.UID.name());
-					softDelete(spamUid);
+					try {
+						log.info("Cleaning spam from {}",spamDoc.get(SearchIndexer.SearchFields.FROM.name()));
+						spamUid = spamDoc.get(SearchIndexer.SearchFields.UID.name());
+						softDelete(spamUid);
+					}
+					catch (Throwable t) {
+						log.error("Problem deleting spam {}",t.getMessage());
+					}
 				}
 				start+=100;
 			}
-			while (spamList.length>0);
+			while ((spamList.length>0)&&(start<getMailCount(BlueboxMessage.State.ANY)));
 		}
 	}
 
@@ -924,14 +930,17 @@ public class Inbox implements SimpleMessageListener {
 		//        for jan.schumacher@yahoo.de;
 		//        Fri, 14 Nov 2014 23:57:26 -0600 (CST)
 		try {
-			StringTokenizer toks = new StringTokenizer(message.getHeader("Received")[0]);
-			toks.nextToken();// discard the "from
-			String domain = toks.nextToken();
-			// check from blacklist
-			for (Object badDomain : getFromBlacklist()) {
-				if (domain.endsWith(badDomain.toString())) {
-					log.warn("Rejecting mail in accept phase due to blacklisted sender:"+domain);
-					return true;
+			String[] header = message.getHeader("Received");
+			if ((header!=null)&&(header.length>0)) {
+				StringTokenizer toks = new StringTokenizer(header[0]);
+				toks.nextToken();// discard the "from
+				String domain = toks.nextToken();
+				// check from blacklist
+				for (Object badDomain : getFromBlacklist()) {
+					if (domain.endsWith(badDomain.toString())) {
+						log.warn("Rejecting mail in accept phase due to blacklisted sender:"+domain);
+						return true;
+					}
 				}
 			}
 		}
