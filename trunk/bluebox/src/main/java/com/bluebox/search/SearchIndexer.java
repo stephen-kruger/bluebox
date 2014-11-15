@@ -47,7 +47,6 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
-import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageFactory;
@@ -237,8 +236,6 @@ public class SearchIndexer {
 		catch (IndexNotFoundException ex) {
 			log.error(ex.getMessage());
 			ex.printStackTrace();
-			log.info("Rebuilding search indexes");
-			Inbox.getInstance().rebuildSearchIndexes();
 			return new Document[0];
 		}
 
@@ -424,8 +421,9 @@ public class SearchIndexer {
 	public synchronized void deleteIndexes() throws IOException {
 		getIndexWriter().deleteAll();
 		getIndexWriter().commit();
-		si.closeDirectoryReader();
-		si.closeSearcher();
+		closeIndexWriter();
+		closeDirectoryReader();
+		closeSearcher();
 	}
 
 	public WorkerThread validate() {
@@ -437,18 +435,25 @@ public class SearchIndexer {
 				int issueCount = 0;
 				try {
 					StorageIf si = StorageFactory.getInstance();
-					//reader = DirectoryReader.open(getDirectory());
-					DirectoryReader reader=SearchIndexer.getInstance().getDirectoryReader();
+					SearchIndexer search = SearchIndexer.getInstance();
+					DirectoryReader reader=search.getDirectoryReader();
 
 					Bits liveDocs = MultiFields.getLiveDocs(reader);
 					for (int i=0; i<reader.maxDoc(); i++) {
-						if (liveDocs != null && !liveDocs.get(i))
-							continue;
+						try {
+							if (liveDocs != null && !liveDocs.get(i))
+								continue;
 
-						Document doc = reader.document(i);
-						if (!si.contains(doc.getField(SearchFields.UID.name()).stringValue())) {
-							log.warn("Search index out of sync for id {}",doc.getField(SearchFields.UID.name()).stringValue());
-							issueCount++;
+							Document doc = reader.document(i);
+							String uid = doc.get(SearchFields.UID.name());
+							if (!si.contains(uid)) {
+								log.warn("Search index out of sync for {}",uid);
+								issueCount++;
+								search.deleteDoc(uid);
+							}
+						}
+						catch (Throwable t) {
+							log.error("Could not delete search record {} ({})",i,t.getMessage());
 						}
 						setProgress(i*100/reader.maxDoc());
 					}
@@ -458,7 +463,7 @@ public class SearchIndexer {
 				}
 				finally {
 					setProgress(100);
-					setStatus(issueCount+" invalid docs found");
+					setStatus(issueCount+" invalid docs found and cleaned");
 				}
 			}
 		};

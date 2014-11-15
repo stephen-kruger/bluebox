@@ -711,10 +711,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		for (DBObject result : output.results()) {
 			try {
 				row = (DBObject) result.get("_id");
-				// not sure why, but hour is always off by one
-				// so 12 is returned as 11, etc
-				hour = Integer.parseInt(row.get("hour").toString())+1;
-				if (hour==24) hour = 0;
+				hour = Integer.parseInt(row.get("hour").toString());
+				//if (hour==24) hour = 0;
 				resultJ.put(""+hour,result.get("count").toString());
 			} 
 			catch (Throwable e) {
