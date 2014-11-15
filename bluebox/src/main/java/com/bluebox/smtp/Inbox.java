@@ -22,6 +22,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import javax.mail.Address;
+import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -340,7 +341,6 @@ public class Inbox implements SimpleMessageListener {
 
 	@Override
 	public boolean accept(String from, String recipient) {	
-
 		try {
 			InboxAddress fromAddress = new InboxAddress(from);
 			InboxAddress recipientAddress = new InboxAddress(recipient);
@@ -441,14 +441,17 @@ public class Inbox implements SimpleMessageListener {
 				e.printStackTrace();
 			}
 		}
-
+		data.close();
 	}
 
 	public void deliver(String from, String recipient, MimeMessage mmessage) throws Exception {
+		// if this is a spam blacklisted "from", then abort
+		if (isReceivedBlackListedDomain(mmessage)) {
+			return;
+		}
 		from = getFullAddress(from, mmessage.getFrom());
 		recipient = getFullAddress(recipient, mmessage.getAllRecipients());
 		log.info("Delivering mail for "+recipient+" from "+from);
-		//		InboxAddress inbox = new InboxAddress(BlueboxMessage.getRecipient(new InboxAddress(recipient), mmessage).toString());
 		BlueboxMessage message = StorageFactory.getInstance().store( 
 				from,
 				new InboxAddress(recipient),
@@ -512,12 +515,12 @@ public class Inbox implements SimpleMessageListener {
 		return StorageFactory.getInstance().logErrorList(start, count);
 	}
 
-	
+
 	public void softDelete(String uid) throws Exception {
 		setState(uid, BlueboxMessage.State.DELETED);
 		SearchIndexer.getInstance().deleteDoc(uid);
 	}
-	
+
 	private void setState(String uid, BlueboxMessage.State state) throws Exception {
 		StorageFactory.getInstance().setState(uid, BlueboxMessage.State.DELETED);
 	}
@@ -658,7 +661,7 @@ public class Inbox implements SimpleMessageListener {
 		toWhiteList.remove(goodDomain);		
 		toWhiteList.add(goodDomain);		
 	}
-	
+
 	public List<String> getToWhitelist() {
 		return toWhiteList;
 	}
@@ -667,7 +670,7 @@ public class Inbox implements SimpleMessageListener {
 		fromWhiteList.remove(goodDomain);	
 		fromWhiteList.add(goodDomain);	
 	}
-	
+
 	public List<String> getFromWhitelist() {
 		return fromWhiteList;
 	}
@@ -677,7 +680,7 @@ public class Inbox implements SimpleMessageListener {
 		fromBlackList.remove(badDomain);		
 		fromBlackList.add(badDomain);		
 	}
-	
+
 	public List<String> getFromBlacklist() {
 		return fromBlackList;
 	}
@@ -686,7 +689,7 @@ public class Inbox implements SimpleMessageListener {
 		toBlackList.remove(badDomain);		
 		toBlackList.add(badDomain);		
 	}
-	
+
 	public List<String> getToBlacklist() {
 		return toBlackList;
 	}
@@ -908,5 +911,34 @@ public class Inbox implements SimpleMessageListener {
 
 	}
 
+	/**
+	 * This method parses the Received header to see if the sending SMTP server is on our from blacklist.
+	 * @param message
+	 * @return false if not a blacklisted sender
+	 * @throws MessagingException
+	 */
+	public boolean isReceivedBlackListedDomain(MimeMessage message) throws MessagingException {
+		//		from wallstreetads.org ([193.104.41.200])
+		//        by bluebox.ams01.isc4sb.com
+		//        with SMTP (BlueBox) id I2IKBO4B
+		//        for jan.schumacher@yahoo.de;
+		//        Fri, 14 Nov 2014 23:57:26 -0600 (CST)
+		try {
+			StringTokenizer toks = new StringTokenizer(message.getHeader("Received")[0]);
+			toks.nextToken();// discard the "from
+			String domain = toks.nextToken();
+			// check from blacklist
+			for (Object badDomain : getFromBlacklist()) {
+				if (domain.endsWith(badDomain.toString())) {
+					log.warn("Rejecting mail in accept phase due to blacklisted sender:"+domain);
+					return true;
+				}
+			}
+		}
+		catch (Throwable t) {
+			log.info("Error checking received header :"+t.getMessage());
+		}
+		return false;
+	}
 
 }
