@@ -38,7 +38,7 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 
 	@Override
 	public MessageHandler create(MessageContext ctx) {
-		log.info("Message from {} with address {}",ctx.getHelo(),ctx.getRemoteAddress().toString());
+		log.debug("Message from {} with address {}",ctx.getHelo(),ctx.getRemoteAddress().toString());
 		if ((isBlackListed(ctx.getHelo())||(isBlackListed(ctx.getRemoteAddress().toString())))) {
 			return null;
 		}
