@@ -19,7 +19,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
 import com.bluebox.rest.json.JSONAttachmentHandler;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
@@ -36,6 +35,7 @@ import com.bluebox.rest.json.JSONSearchHandler;
 import com.bluebox.rest.json.JSONStatsHandler;
 import com.bluebox.search.SearchIndexer;
 import com.bluebox.smtp.BlueBoxSMTPServer;
+import com.bluebox.smtp.BlueboxMessageHandlerFactory;
 import com.bluebox.smtp.Inbox;
 
 public class BlueBoxServlet extends HttpServlet {
@@ -52,7 +52,7 @@ public class BlueBoxServlet extends HttpServlet {
 		Inbox inbox = Inbox.getInstance();
 
 		log.info("Starting SMTP server");
-		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(inbox));
+		smtpServer = new BlueBoxSMTPServer(new BlueboxMessageHandlerFactory(inbox));
 		smtpServer.start();
 	}
 	

@@ -79,15 +79,9 @@ require(["dojox/charting/Chart", "dojox/charting/StoreSeries", "dojo/store/JsonR
 
 <div class="leftSideContent">
 	<h2><%= chartResource.getString("charts_daily_title") %></h2>
-	<a href="<%=request.getContextPath()%>/app/info.jsp">
 		<div id="monthlychart" style="width: 300px; height: 150px; margin: 5px auto 0px auto;"></div>
-	</a>
 	<h2><%= chartResource.getString("charts_weekly_title") %></h2>
-	<a href="<%=request.getContextPath()%>/app/info.jsp">
 		<div id="weeklychart" style="width: 300px; height: 150px; margin: 5px auto 0px auto;"></div>
-	</a>
 	<h2><%= chartResource.getString("charts_hourly_title") %></h2>
-	<a href="<%=request.getContextPath()%>/app/info.jsp">
-		<div id="hourlychart" style="width: 300px; height: 150px; margin: 5px auto 0px auto;"></div>
-	</a>
-</div>
+]		<div id="hourlychart" style="width: 300px; height: 150px; margin: 5px auto 0px auto;"></div>
+]</div>

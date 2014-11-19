@@ -127,6 +127,16 @@
 				<td><br/></td>
 				</tr>
 				<tr>
+					<td><label><%=infoResource.getString("smtpblacklist")%></label></td>
+					<td class="infoValue">
+						<%= Utils.toString(Inbox.getInstance().getSMTPBlacklist()) %>
+					</td>
+					<td></td>
+				</tr>
+				<tr>
+				<td><br/></td>
+				</tr>
+				<tr>
 					<td><label><%=infoResource.getString("towhitelist")%></label></td>
 					<td class="infoValue">
 						<%= Utils.toString(Inbox.getInstance().getToWhitelist()) %>

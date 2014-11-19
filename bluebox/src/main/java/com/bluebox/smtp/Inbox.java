@@ -26,6 +26,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeUtility;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -609,12 +610,13 @@ public class Inbox implements SimpleMessageListener {
 
 	private JSONObject updateStatsRecent(String inbox, String from, String subject, String uid) {
 		try {
-			recentStats.put(BlueboxMessage.SUBJECT, StringEscapeUtils.escapeJavaScript(subject));
+			//			recentStats.put(BlueboxMessage.SUBJECT, StringEscapeUtils.escapeJavaScript(MimeUtility.decodeText(subject)));
+			recentStats.put(BlueboxMessage.SUBJECT, MimeUtility.decodeText(subject));
 			recentStats.put(BlueboxMessage.INBOX, StringEscapeUtils.escapeJavaScript(inbox));
 			recentStats.put(BlueboxMessage.FROM, StringEscapeUtils.escapeJavaScript(from));
 			recentStats.put(BlueboxMessage.UID, uid);
 		} 
-		catch (JSONException e1) {
+		catch (Throwable e1) {
 			e1.printStackTrace();
 		}
 
@@ -679,6 +681,10 @@ public class Inbox implements SimpleMessageListener {
 
 	public List<String> getFromWhitelist() {
 		return fromWhiteList;
+	}
+	
+	public List<String> getSMTPBlacklist() {
+		return Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST);		
 	}
 
 	public void addFromBlacklist(String badDomain) {
