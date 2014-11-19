@@ -13,7 +13,6 @@ import junit.framework.TestCase;
 
 import org.apache.commons.mail.EmailException;
 import org.codehaus.jettison.json.JSONObject;
-import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
 import com.bluebox.TestUtils;
 import com.bluebox.WorkerThread;
@@ -32,7 +31,7 @@ public class InboxTest extends TestCase {
 		super.setUp();
 		inbox = Inbox.getInstance();
 		//		inbox.deleteAll();
-		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(inbox));
+		smtpServer = new BlueBoxSMTPServer(new BlueboxMessageHandlerFactory(inbox));
 		smtpServer.start();
 		//		int max = 10;
 		//		do {

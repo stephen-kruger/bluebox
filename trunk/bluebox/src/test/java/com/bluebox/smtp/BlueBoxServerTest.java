@@ -26,7 +26,6 @@ import javax.mail.internet.MimeMessage;
 
 import junit.framework.TestCase;
 
-import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 import org.subethamail.smtp.server.SMTPServer;
 
 import com.bluebox.Config;
@@ -46,7 +45,7 @@ public class BlueBoxServerTest extends TestCase {
 
 	protected void setUp() throws Exception {
 		super.setUp();
-		smtpServer = new BlueBoxSMTPServer(new SimpleMessageListenerAdapter(Inbox.getInstance()));
+		smtpServer = new BlueBoxSMTPServer(new BlueboxMessageHandlerFactory(Inbox.getInstance()));
 		smtpServer.start();
 		log.fine("Test setUp");
 	}
