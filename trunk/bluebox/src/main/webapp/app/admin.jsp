@@ -92,6 +92,11 @@
 					"<%=adminResource.getString("delete_all_action")%>");
 		}
 		
+		function purgeDeletedMail() {
+			genericConfirmGet("<%=request.getContextPath()%>/rest/admin/purge_deleted",
+					"<%=adminResource.getString("purge_deleted_action")%>");
+		}
+		
 		function clearErrorLogs() {
 			genericGet("<%=request.getContextPath()%>/rest/admin/errors",
 					"<%=adminResource.getString("clear_errors_action")%>");
@@ -226,6 +231,14 @@
 					<td><label><%=adminResource.getString("delete_all_action")%></label></td>
 					<td></td>
 					<td><button onclick="deleteAllMail()" data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
+				</tr>
+				<tr>
+				<td><br/></td>
+				</tr>
+				<tr>
+					<td><label><%=adminResource.getString("purge_deleted_action")%></label></td>
+					<td></td>
+					<td><button onclick="purgeDeletedMail()" data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
 				</tr>
 				<tr>
 				<td><br/></td>
