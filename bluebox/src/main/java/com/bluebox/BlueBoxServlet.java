@@ -184,6 +184,16 @@ public class BlueBoxServlet extends HttpServlet {
 			}
 			return;
 		}	
+		if (req.getRequestURI().indexOf("rest/admin/purge_deleted")>=0){
+			try {
+				Inbox.getInstance().purge();
+				resp.getWriter().print("Purged");			} 
+			catch (Exception e) {
+				e.printStackTrace();
+				resp.getWriter().print(e.getMessage());	
+			}
+			return;
+		}	
 		if (req.getRequestURI().indexOf("rest/admin/dbmaintenance")>=0){
 			try {
 				WorkerThread wt = Inbox.getInstance().runMaintenance();

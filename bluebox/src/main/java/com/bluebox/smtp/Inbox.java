@@ -213,7 +213,7 @@ public class Inbox implements SimpleMessageListener {
 			@Override
 			public void run() {
 				for (String uid : uids) {
-					
+
 					try {
 						final BlueboxMessage spam = retrieve(uid);
 						boolean spamAction = true;
@@ -325,57 +325,90 @@ public class Inbox implements SimpleMessageListener {
 		}
 	}
 
-	private void expire() throws Exception {
+	public void expire() throws Exception {
 		Date messageDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_AGE)*60*60*1000));
 		Date trashDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_TRASH_AGE)*60*60*1000));
-		expire(messageDate, trashDate);
+		expireOld(messageDate);
+		expireDeleted(trashDate);
 	}
 
-	private void expire(Date messageExpireDate, Date trashExpireDate) throws Exception {
+	/*
+	 * Remove all deleted mails, regardless of when they were received.
+	 */
+	public void purge() throws Exception {
+		log.info("Cleaning deleted messages");
+		int count  = 0;
+		int start = 0;
+		List<BlueboxMessage> list;
+		do {
+			list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.DELETED, start, 500, BlueboxMessage.RECEIVED, true);
+			for (BlueboxMessage msg : list) {
+				try {
+					delete(msg.getIdentifier());
+					count++;			
+				}
+				catch (Throwable t) {
+					log.warn("Problem cleaning up message {}",msg.getIdentifier());
+				}
+			}
+			start+=500;
+		} while (list.size()>0);
+		log.info("Removed {} deleted messages",count);
+	}
+
+	private void expireOld(Date messageExpireDate) throws Exception {
 		List<BlueboxMessage> list;
 
 		long count = 0;
+		int start = 0;
+		log.info("Cleaning messages received before {}",messageExpireDate);
+		do {
+			list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.NORMAL, start, 1000, BlueboxMessage.RECEIVED, true);
+			Date received;
+			for (BlueboxMessage msg : list) {
+				try {
+					if ((received = msg.getReceived()).before(messageExpireDate)) {
+						delete(msg.getIdentifier());
+					}
+					else {
+						log.debug("Not deleting since received {} but expiry window {}",received,messageExpireDate);
+					}
+				}
+				catch (Throwable t) {
+					log.warn("Problem cleaning up message {} {}",msg.getIdentifier(),t.getMessage());
+				}
+			}
+			count+=1000;
+		} while (list.size()>0);
+		log.info("Cleaned up {} messages",count);
+	}
 
-		log.info("Cleaning messages received before "+messageExpireDate);
-		list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
+	private void expireDeleted(Date trashExpireDate) throws Exception {
+		List<BlueboxMessage> list;
+
+		log.info("Cleaning deleted messages received before {}",trashExpireDate);
+		int count  = 0;
+		int start = 0;
 		Date received;
-		for (BlueboxMessage msg : list) {
-			try {
-				if ((received = msg.getReceived()).before(messageExpireDate)) {
-					//StorageFactory.getInstance().delete(msg.getIdentifier());
-					//SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
-					delete(msg.getIdentifier());
+		do {
+			list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.DELETED, start, 1000, BlueboxMessage.RECEIVED, true);
+			for (BlueboxMessage msg : list) {
+				try {
+					if ((received = msg.getReceived()).before(trashExpireDate)) {
+						delete(msg.getIdentifier());
+						count++;
+					}
+					else {
+						log.debug("Not deleting since received {} but expiry window {}",received,trashExpireDate);
+					}				
 				}
-				else {
-					log.debug("Not deleting since received:"+received+" but expiry window:"+messageExpireDate);
+				catch (Throwable t) {
+					log.warn("Problem cleaning up message {}",msg.getIdentifier());
 				}
 			}
-			catch (Throwable t) {
-				log.warn("Problem cleaning up message "+msg.getIdentifier()+" "+t.getMessage());
-			}
-		}
-		log.info("Cleaned up "+count+" messages");
-
-		log.info("Cleaning deleted messages received before "+trashExpireDate);
-		count  = 0;
-		list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.DELETED, 0, -1, BlueboxMessage.RECEIVED, true);
-		for (BlueboxMessage msg : list) {
-			try {
-				if ((received = msg.getReceived()).before(trashExpireDate)) {
-					//					StorageFactory.getInstance().delete(msg.getIdentifier());
-					//					SearchIndexer.getInstance().deleteDoc(msg.getIdentifier());
-					delete(msg.getIdentifier());
-					count++;
-				}
-				else {
-					log.debug("Not deleting since received:"+received+" but expiry window:"+messageExpireDate);
-				}				
-			}
-			catch (Throwable t) {
-				log.warn("Problem cleaning up message "+msg.getIdentifier());
-			}
-		}
-		log.info("Cleaned up "+count+" deleted messages");
+			start+=1000;
+		} while (list.size()>0);
+		log.info("Cleaned up {} deleted messages",count);
 	}
 
 	@Override
@@ -387,12 +420,12 @@ public class Inbox implements SimpleMessageListener {
 				throw new Exception("Invalid from address specified :"+from);
 			}
 			if (!recipientAddress.isValidAddress()) {
-				throw new Exception("Invalid recipient address specified :"+recipient);
+				throw new Exception("Invalid recipient address specified :{}"+recipient);
 			}
 
 			// check from blacklist
 			for (Object badDomain : getFromBlacklist()) {
-				log.debug(badDomain+"<<<---- Comparing fromBlackList---->>>{}",from);
+				log.debug("{}<<<---- Comparing fromBlackList---->>>{}",badDomain,from);
 				if (fromAddress.getDomain().endsWith(badDomain.toString())) {
 					log.warn("Rejecting mail from "+from+" to "+recipient+" due to blacklisted FROM:"+badDomain);
 					return false;
@@ -400,9 +433,9 @@ public class Inbox implements SimpleMessageListener {
 			}
 			// check to blacklist
 			for (Object badDomain : getToBlacklist()) {
-				log.debug(badDomain+"<<<---- Comparing toBlackList---->>>{}",recipient);
+				log.debug("{}<<<---- Comparing toBlackList---->>>{}",badDomain,recipient);
 				if (recipientAddress.getDomain().endsWith(badDomain.toString())) {
-					log.warn("Rejecting mail from "+from+" to "+recipient+" due to blacklisted TO:"+badDomain);
+					log.warn("Rejecting mail from {} to {} due to blacklisted TO:",from,recipient,badDomain);
 					return false;
 				}
 			}
@@ -415,29 +448,29 @@ public class Inbox implements SimpleMessageListener {
 						return true;
 					}
 				}
-				log.warn("Rejecting mail from "+from+" to "+recipient+" because not in FROM whitelist");
+				log.warn("Rejecting mail from {} to {} because not in FROM whitelist",from,recipient);
 				return false;
 			}
 
 			// check the to whitelist
 			if (toWhiteList.size()>0) {
 				for (Object goodDomain : toWhiteList) {
-					log.debug(goodDomain.toString()+"<<<---- Comparing toWhiteList---->>>{}"+recipient);
+					log.debug("{}<<<---- Comparing toWhiteList---->>>{}",goodDomain,recipient);
 					if (recipientAddress.getDomain().endsWith(goodDomain.toString())) {
 						return true;
 					}
 				}
-				log.warn("Rejecting mail from "+from+" to "+recipient+" because not in TO whitelist");
+				log.warn("Rejecting mail from {} to {} because not in TO whitelist",from,recipient);
 				return false;
 			}
 
 
 			// else we accept everyone
-			log.debug("Accepting mail for "+recipient+" from "+from);
+			log.debug("Accepting mail for {} from {}",recipient,from);
 			return true;
 		}
 		catch (Throwable t) {
-			log.error(t.getMessage()+" for from="+from+" and recipient="+recipient);
+			log.error("{} for from={} and recipient={}",t.getMessage(),from,recipient);
 			errorLog("Accept error for address "+recipient+" sent by "+from, ExceptionUtils.getStackTrace(t));
 			//			t.printStackTrace();
 			return false;
@@ -490,7 +523,7 @@ public class Inbox implements SimpleMessageListener {
 		//		}
 		from = getFullAddress(from, mmessage.getFrom());
 		recipient = getFullAddress(recipient, mmessage.getAllRecipients());
-		log.info("Delivering mail for "+recipient+" from "+from);
+		log.info("Delivering mail for {} from {}",recipient,from);
 		BlueboxMessage message = StorageFactory.getInstance().store( 
 				from,
 				new InboxAddress(recipient),
