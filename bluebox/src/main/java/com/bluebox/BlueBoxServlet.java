@@ -365,7 +365,11 @@ public class BlueBoxServlet extends HttpServlet {
 			return;
 		}
 		if (req.getRequestURI().indexOf(JSONSPAMHandler.JSON_ROOT)>=0){
-			new JSONSPAMHandler().doDelete(Inbox.getInstance(),req,resp);
+			WorkerThread wt = new JSONSPAMHandler().doDelete(Inbox.getInstance(),req,resp);
+			
+			startWorker(wt, req, resp);
+
+			resp.flushBuffer();
 			return;
 		}
 	}

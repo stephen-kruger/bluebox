@@ -22,7 +22,6 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import javax.mail.Address;
-import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -208,35 +207,61 @@ public class Inbox implements SimpleMessageListener {
 	/*
 	 * Delete the message, and all other mails with same sender address. Add sender to blacklist.
 	 */
-	public void spam(String uid) throws Exception {
-		SearchIndexer si = SearchIndexer.getInstance();
-		BlueboxMessage spam = retrieve(uid);
-		softDelete(uid);
-		JSONArray senders = spam.getFrom();
-		for (int j = 0; j < senders.length();j++) {
-			InboxAddress spammer = new InboxAddress(senders.getString(j));
-			// blacklist this sender
-			addFromBlacklist(spammer.getDomain());
-			// delete it from search indexes
-			Document[] spamList;
-			int start = 0;
-			do {
-				spamList = si.search(spammer.getDomain(), SearchIndexer.SearchFields.FROM, start, 1000, SearchIndexer.SearchFields.FROM, true);
-				String spamUid;
-				for (Document spamDoc : spamList) {
-					try {
-						log.info("Cleaning spam from {}",spamDoc.get(SearchIndexer.SearchFields.FROM.name()));
-						spamUid = spamDoc.get(SearchIndexer.SearchFields.UID.name());
-						softDelete(spamUid);
+	public WorkerThread toggleSpam(final String uid) throws Exception {
+		final BlueboxMessage spam = retrieve(uid);
+		WorkerThread wt = new WorkerThread("spam") {
+
+			@Override
+			public void run() {
+				boolean spamAction = true;
+				try {
+					if (spam.getState()==BlueboxMessage.State.NORMAL) {
+						softDelete(uid);
 					}
-					catch (Throwable t) {
-						log.error("Problem deleting spam {}",t.getMessage());
-					}
+					else {
+						softUndelete(uid,spam);
+						spamAction = false;
+					}		
+					// now process all mails looking for same smtp source
+					List<BlueboxMessage> mail;
+					int start = 0;
+					final int count = 500;
+					String smtpDomain = spam.getSMTPSender();
+					do {
+						setProgress((int)(((start+1)*100)/(inbox.getMailCount(BlueboxMessage.State.ANY)+1)));
+						mail = inbox.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
+						log.info("Checking spam from {} to {} of {}",start,(start+count),mail.size());
+						for (BlueboxMessage msg : mail) {
+							try {
+								if (smtpDomain.indexOf(msg.getSMTPSender())>=0) {
+									if (spamAction) {
+										log.info("Spam detected - soft deleting "+msg.getIdentifier());
+										softDelete(msg.getIdentifier());
+									}
+									else {
+										log.info("Spam detected - soft undeleting");
+										softUndelete(msg.getIdentifier(),msg);
+									}
+								}
+							}
+							catch (Throwable t) {
+								log.warn(t.getMessage());
+							}
+						}
+						start += mail.size();
+
+					} while (mail.size()>0);	
 				}
-				start+=100;
+				catch (Throwable t) {
+					log.error("Error toggling spam",t);
+				}
+				finally {
+					setProgress(100);
+				}
 			}
-			while ((spamList.length>0)&&(start<getMailCount(BlueboxMessage.State.ANY)));
-		}
+
+		};
+		return wt;
 	}
 
 	public void deleteAll() {
@@ -452,10 +477,10 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public void deliver(String from, String recipient, MimeMessage mmessage) throws Exception {
-		// if this is a spam blacklisted "from", then abort
-		if (isReceivedBlackListedDomain(mmessage)) {
-			return;
-		}
+		//		// if this is a spam blacklisted "from", then abort
+		//		if (isReceivedBlackListedDomain(mmessage)) {
+		//			return;
+		//		}
 		from = getFullAddress(from, mmessage.getFrom());
 		recipient = getFullAddress(recipient, mmessage.getAllRecipients());
 		log.info("Delivering mail for "+recipient+" from "+from);
@@ -528,8 +553,13 @@ public class Inbox implements SimpleMessageListener {
 		SearchIndexer.getInstance().deleteDoc(uid);
 	}
 
+	public void softUndelete(String uid, BlueboxMessage message) throws Exception {
+		setState(uid, BlueboxMessage.State.NORMAL);
+		SearchIndexer.getInstance().indexMail(message);
+	}
+
 	private void setState(String uid, BlueboxMessage.State state) throws Exception {
-		StorageFactory.getInstance().setState(uid, BlueboxMessage.State.DELETED);
+		StorageFactory.getInstance().setState(uid, state);
 	}
 
 	public JSONArray autoComplete(String hint, long start, long count) throws Exception {
@@ -682,7 +712,7 @@ public class Inbox implements SimpleMessageListener {
 	public List<String> getFromWhitelist() {
 		return fromWhiteList;
 	}
-	
+
 	public List<String> getSMTPBlacklist() {
 		return Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST);		
 	}
@@ -923,37 +953,35 @@ public class Inbox implements SimpleMessageListener {
 
 	}
 
-	/**
-	 * This method parses the Received header to see if the sending SMTP server is on our from blacklist.
-	 * @param message
-	 * @return false if not a blacklisted sender
-	 * @throws MessagingException
-	 */
-	public boolean isReceivedBlackListedDomain(MimeMessage message) throws MessagingException {
-		//		from wallstreetads.org ([193.104.41.200])
-		//        by bluebox.xxx.yyy.com
-		//        with SMTP (BlueBox) id I2IKBO4B
-		//        for jan.schumacher@yahoo.de;
-		//        Fri, 14 Nov 2014 23:57:26 -0600 (CST)
-		try {
-			String[] header = message.getHeader("Received");
-			if ((header!=null)&&(header.length>0)) {
-				StringTokenizer toks = new StringTokenizer(header[0]);
-				toks.nextToken();// discard the "from
-				String domain = toks.nextToken();
-				// check from blacklist
-				for (Object badDomain : getFromBlacklist()) {
-					if (domain.endsWith(badDomain.toString())) {
-						log.warn("Rejecting mail in accept phase due to blacklisted sender:"+domain);
-						return true;
-					}
-				}
-			}
-		}
-		catch (Throwable t) {
-			log.info("Error checking received header :"+t.getMessage());
-		}
-		return false;
-	}
+	//	/**
+	//	 * This method parses the Received header to see if the sending SMTP server is on our from blacklist.
+	//	 * @param message
+	//	 * @return false if not a blacklisted sender
+	//	 * @throws MessagingException
+	//	 */
+	//	public boolean isSameSMTPSender(BlueboxMessage message, String smtpDomain) throws MessagingException {
+	//		//		from wallstreetads.org ([193.104.41.200])
+	//		//        by bluebox.xxx.yyy.com
+	//		//        with SMTP (BlueBox) id I2IKBO4B
+	//		//        for jan.schumacher@yahoo.de;
+	//		//        Fri, 14 Nov 2014 23:57:26 -0600 (CST)
+	//		try {
+	//			String[] header = message.getBlueBoxMimeMessage().getHeader("Received");
+	//			if ((header!=null)&&(header.length>0)) {
+	//				StringTokenizer toks = new StringTokenizer(header[0]);
+	//				toks.nextToken();// discard the "from
+	//				String domain = toks.nextToken();
+	//				// check from blacklist
+	//
+	//				if (domain.indexOf(smtpDomain.toString())>=0) {
+	//					return true;
+	//				}
+	//			}
+	//		}
+	//		catch (Throwable t) {
+	//			log.info("Error checking received header :"+t.getMessage());
+	//		}
+	//		return false;
+	//	}
 
 }
