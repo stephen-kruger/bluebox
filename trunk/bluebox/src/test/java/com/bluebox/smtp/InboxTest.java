@@ -11,7 +11,6 @@ import javax.mail.internet.InternetAddress;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.mail.EmailException;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.TestUtils;
@@ -149,19 +148,11 @@ public class InboxTest extends TestCase {
 		assertEquals("Missing mail",2,mail.size());
 		SearchIndexer si = SearchIndexer.getInstance();
 		assertEquals("Missing search data",2,si.search("from@from.com", SearchIndexer.SearchFields.FROM, 0, 10, SearchIndexer.SearchFields.FROM, true).length);
-		inbox.spam(mail.get(0).getIdentifier());
-		assertEquals("Missing deleted mail",2,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.DELETED, 0, 100, BlueboxMessage.SIZE, true).size());
-		assertEquals("Found deleted mail",0,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true).size());
-		assertEquals("Unexpected search data",0,si.search(from, SearchIndexer.SearchFields.FROM, 0, 10, SearchIndexer.SearchFields.FROM, true).length);
-		// test that future sends are rejected by blacklist
-		try {
-			TestUtils.sendMailSMTP(new InternetAddress("user three "+from), new InternetAddress(email1), null, null, "subject", "body");
-			fail("Mail was not rejected by blacklist");
-		}
-		catch (EmailException ex) {
-			log.info("Mail was correctly rejected :"+ex.getMessage());
-		}
-		assertEquals("Found blacklisted mail",0,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true).size());
+		inbox.softDelete(mail.get(0).getIdentifier());
+		
+		assertEquals("Missing deleted mail",1,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.DELETED, 0, 100, BlueboxMessage.SIZE, true).size());
+		assertEquals("Did not find deleted mail",1,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true).size());
+		assertEquals("Unexpected search data",1,si.search(from, SearchIndexer.SearchFields.FROM, 0, 10, SearchIndexer.SearchFields.FROM, true).length);		
 	}
 
 }

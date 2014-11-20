@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringTokenizer;
 
 import javax.activation.DataSource;
 import javax.mail.Address;
@@ -429,5 +430,21 @@ public class BlueboxMessage {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		getBlueBoxMimeMessage().writeTo(os);
 		return new ByteArrayInputStream(os.toByteArray());
+	}
+	
+	public String getSMTPSender () {
+		try {
+			String[] header = getBlueBoxMimeMessage().getHeader("Received");
+			if ((header!=null)&&(header.length>0)) {
+				StringTokenizer toks = new StringTokenizer(header[0]);
+				toks.nextToken();// discard the "from
+				String domain = toks.nextToken();
+				return domain.trim();
+			}
+		}
+		catch (Throwable t) {
+			log.warn("Error checking received header :"+t.getMessage());
+		}
+		return "";
 	}
 }
