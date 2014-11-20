@@ -20,10 +20,37 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 	private static final Logger log = LoggerFactory.getLogger(BlueboxMessageHandlerFactory.class);
 
 	private List<String> smtpBlackList;
+	private static BlueboxMessageHandlerFactory instance;
+
+	public static BlueboxMessageHandlerFactory getInstance() {
+		return instance;
+	}
 
 	public BlueboxMessageHandlerFactory(Inbox inbox) {
 		super(inbox);
 		smtpBlackList = Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST);
+		instance = this;
+	}
+
+	public void addSMTPBlackList(String domain) {
+		if (domain!=null) {
+			if (domain.trim().length()>0) {
+				log.info("Blacklisting smtp server {}",domain);
+				smtpBlackList.remove(domain);
+				smtpBlackList.add(domain);
+				Config.getInstance().setStringList(Config.BLUEBOX_SMTPBLACKLIST,smtpBlackList);
+			}
+		}
+	}
+
+	public void removeSMTPBlackList(String domain) {
+		if (domain!=null) {
+			if (domain.trim().length()>0) {
+				log.info("Un-blacklisting smtp server {}",domain);
+				smtpBlackList.remove(domain);
+				Config.getInstance().setStringList(Config.BLUEBOX_SMTPBLACKLIST,smtpBlackList);
+			}
+		}
 	}
 
 	public boolean isBlackListed(String domain) {
@@ -52,7 +79,7 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 	public class SpamMessageHandler implements MessageHandler {
 
 		private String from, recipient;
-		
+
 		@Override
 		public void from(String from) throws RejectException {
 			this.from = from;
@@ -74,6 +101,6 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 		public void done() {
 			log.info("Handled spab from={} to={}",from,recipient);
 		}
-		
+
 	}
 }

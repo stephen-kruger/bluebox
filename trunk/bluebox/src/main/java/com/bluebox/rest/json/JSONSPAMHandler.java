@@ -2,6 +2,8 @@ package com.bluebox.rest.json;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,12 +26,13 @@ public class JSONSPAMHandler extends AbstractHandler {
 			String uidList = extractFragment(req.getRequestURI(),JSON_ROOT,0);
 			log.info("Marking spam {}",uidList);
 			StringTokenizer uidArray = new StringTokenizer(uidList,",");
-			String uid;
-//			while (uidArray.hasMoreTokens()) {
-				uid = uidArray.nextToken();
-				log.debug("Marking as SPAM:{}",uid);
-				WorkerThread wt = inbox.toggleSpam(uid);
-//			}
+			List<String> uids = new ArrayList<String>();
+			while (uidArray.hasMoreTokens()) {
+				uids.add(uidArray.nextToken());
+			}
+			log.debug("Marking {} mails as SPAM",uids.size());
+			WorkerThread wt = inbox.toggleSpam(uids);
+
 			JSONObject result = new JSONObject();
 			result.put("message", "ok");
 			Writer out = resp.getWriter();

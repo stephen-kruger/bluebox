@@ -70,6 +70,19 @@ public class Config extends CompositeConfiguration {
 		return res;
 	}
 	
+	public void setStringList(String key, List<String> list) {
+		StringBuffer s = new StringBuffer();
+		for (String entry : list) {
+			s.append(entry).append(super.getListDelimiter());
+		}
+		if (s.length()>0) {
+			setProperty(key, s.substring(0, s.length()-1));
+		}
+		else {
+			setProperty(key,"");
+		}
+	}
+	
 //	public String getFlatList(String key) {
 //		StringBuffer list = new StringBuffer();
 //		for (String s : getStringList(key)) {

@@ -207,59 +207,66 @@ public class Inbox implements SimpleMessageListener {
 	/*
 	 * Delete the message, and all other mails with same sender address. Add sender to blacklist.
 	 */
-	public WorkerThread toggleSpam(final String uid) throws Exception {
-		final BlueboxMessage spam = retrieve(uid);
+	public WorkerThread toggleSpam(final List<String> uids) throws Exception {
 		WorkerThread wt = new WorkerThread("spam") {
 
 			@Override
 			public void run() {
-				boolean spamAction = true;
-				try {
-					if (spam.getState()==BlueboxMessage.State.NORMAL) {
-						softDelete(uid);
-					}
-					else {
-						softUndelete(uid,spam);
-						spamAction = false;
-					}		
-					// now process all mails looking for same smtp source
-					List<BlueboxMessage> mail;
-					int start = 0;
-					final int count = 500;
-					String smtpDomain = spam.getSMTPSender();
-					do {
-						setProgress((int)(((start+1)*100)/(inbox.getMailCount(BlueboxMessage.State.ANY)+1)));
-						mail = inbox.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
-						log.info("Checking spam from {} to {} of {}",start,(start+count),mail.size());
-						for (BlueboxMessage msg : mail) {
-							try {
-								if (smtpDomain.indexOf(msg.getSMTPSender())>=0) {
-									if (spamAction) {
-										log.info("Spam detected - soft deleting "+msg.getIdentifier());
-										softDelete(msg.getIdentifier());
+				for (String uid : uids) {
+					
+					try {
+						final BlueboxMessage spam = retrieve(uid);
+						boolean spamAction = true;
+						if (spam.getState()==BlueboxMessage.State.NORMAL) {
+							softDelete(uid);
+						}
+						else {
+							softUndelete(uid,spam);
+							spamAction = false;
+						}		
+						// now process all mails looking for same smtp source
+						List<BlueboxMessage> mail;
+						int start = 0;
+						final int count = 500;
+						String smtpDomain = spam.getSMTPSender();
+						if (smtpDomain.trim().length()>0) {
+							do {
+								setProgress((int)(((start+1)*100)/(inbox.getMailCount(BlueboxMessage.State.ANY)+1)));
+								mail = inbox.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
+								log.debug("Checking spam from {} to {} of {}",start,(start+count),mail.size());
+								for (BlueboxMessage msg : mail) {
+									try {
+										if (smtpDomain.indexOf(msg.getSMTPSender())>=0) {
+											if (spamAction) {
+												log.info("Spam detected - soft deleting "+msg.getIdentifier());
+												softDelete(msg.getIdentifier());
+											}
+											else {
+												log.info("Spam detected - soft undeleting");
+												softUndelete(msg.getIdentifier(),msg);
+											}
+										}
 									}
-									else {
-										log.info("Spam detected - soft undeleting");
-										softUndelete(msg.getIdentifier(),msg);
+									catch (Throwable t) {
+										log.warn(t.getMessage());
 									}
 								}
-							}
-							catch (Throwable t) {
-								log.warn(t.getMessage());
-							}
-						}
-						start += mail.size();
+								start += mail.size();
 
-					} while (mail.size()>0);	
-				}
-				catch (Throwable t) {
-					log.error("Error toggling spam",t);
-				}
-				finally {
-					setProgress(100);
+							} while (mail.size()>0);	
+						}
+						else {
+							log.info("No smtp sender found, cannot blacklist or un-blacklist");
+						}
+					}
+					catch (Throwable t) {
+						log.error("Error toggling spam",t);
+					}
+					finally {
+						setProgress(100);
+					}
 				}
 			}
-
 		};
 		return wt;
 	}

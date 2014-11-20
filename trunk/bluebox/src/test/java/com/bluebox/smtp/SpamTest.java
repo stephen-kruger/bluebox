@@ -1,5 +1,6 @@
 package com.bluebox.smtp;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,18 +29,39 @@ public class SpamTest extends TestCase {
 		inbox.stop();
 	}
 
-	public void testFromVsSender() throws Exception {
+	public void testSpamToggle() throws Exception {
 		log.info("Checking if spam delivery path is detected");
 		InputStream is = new FileInputStream(new File("src/test/resources/test-data/spam.eml"));
 		Utils.uploadEML(is);
 		List<BlueboxMessage> mails = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, 5, BlueboxMessage.RECEIVED, true);
 		log.info("Marking spam :"+mails.get(0).getSMTPSender());
-		WorkerThread wt = inbox.toggleSpam(mails.get(0).getIdentifier());
+		List<String> uids = new ArrayList<String>();
+		uids.add(mails.get(0).getIdentifier());
+		// toggle spam on
+		WorkerThread wt = inbox.toggleSpam(uids);
 		new Thread(wt).start();
 		while (wt.getProgress()<100)
 			Thread.sleep(500);
 		assertEquals("The sender should be rejected in the deliver phase",0,inbox.getMailCount(BlueboxMessage.State.NORMAL));
+		// toggle spam off
+		wt = inbox.toggleSpam(uids);
+		new Thread(wt).start();
+		while (wt.getProgress()<100)
+			Thread.sleep(500);
+		assertEquals("The sender should be rejected in the deliver phase",1,inbox.getMailCount(BlueboxMessage.State.NORMAL));
 	}
 
-	
+	public void testSMTPBlackList() {
+		BlueboxMessageHandlerFactory mhf = new BlueboxMessageHandlerFactory(inbox);
+		BlueBoxSMTPServer smtpServer = new BlueBoxSMTPServer(mhf);
+		smtpServer.start();
+		String domain = "qwerty.com";
+		assertFalse(mhf.isBlackListed(domain));
+		mhf.addSMTPBlackList(domain);
+		assertTrue(mhf.isBlackListed(domain));
+		mhf.removeSMTPBlackList(domain);
+		assertFalse(mhf.isBlackListed(domain));
+		smtpServer.stop();
+	}
+
 }
