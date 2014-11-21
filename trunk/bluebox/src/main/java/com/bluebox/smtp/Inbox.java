@@ -364,6 +364,7 @@ public class Inbox implements SimpleMessageListener {
 		log.info("Cleaning messages received before {}",messageExpireDate);
 		do {
 			list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.NORMAL, start, 1000, BlueboxMessage.RECEIVED, true);
+			log.info("Expiring block {} to {} with size {}",start,start+1000,list.size());
 			Date received;
 			for (BlueboxMessage msg : list) {
 				try {
@@ -392,6 +393,7 @@ public class Inbox implements SimpleMessageListener {
 		Date received;
 		do {
 			list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.DELETED, start, 1000, BlueboxMessage.RECEIVED, true);
+			log.info("Expiring deleted block {} to {} with size {}",start,start+1000,list.size());
 			for (BlueboxMessage msg : list) {
 				try {
 					if ((received = msg.getReceived()).before(trashExpireDate)) {
