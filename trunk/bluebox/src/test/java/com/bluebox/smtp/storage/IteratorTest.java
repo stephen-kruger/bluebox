@@ -40,4 +40,18 @@ public class IteratorTest extends TestCase {
 		mi = new MessageIterator(null,BlueboxMessage.State.DELETED);
 		assertFalse(mi.hasNext());
 	}
+	
+	public void testStepThroughAllLite() throws Exception {
+		LiteMessageIterator mi = new LiteMessageIterator();
+		assertTrue(mi.hasNext());
+		int count = 0;
+		while (mi.hasNext()) {
+			count++;
+			mi.next();
+		}
+		assertEquals("Missing items in iterator",SIZE,count);
+		
+		mi = new LiteMessageIterator(null,BlueboxMessage.State.DELETED);
+		assertFalse(mi.hasNext());
+	}
 }

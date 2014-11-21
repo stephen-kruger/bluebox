@@ -11,7 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 
 import org.codehaus.jettison.json.JSONArray;
@@ -27,6 +26,7 @@ import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
+import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.StorageIf;
 
 public class StorageImpl extends AbstractStorage implements StorageIf {
@@ -498,7 +498,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return list;
 	}
 
-	public List<JSONObject> listMailLite(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
+	public List<LiteMessage> listMailLite(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		Connection connection = getConnection();
 		String cols = 	BlueboxMessage.UID+","+
 				BlueboxMessage.INBOX+","+
@@ -509,10 +509,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				BlueboxMessage.STATE+","+
 				BlueboxMessage.SIZE;
 		ResultSet result = listMailCommon(cols,connection, email, state, start, count, orderBy, ascending);
-		List<JSONObject> list = new ArrayList<JSONObject>();
+		List<LiteMessage> list = new ArrayList<LiteMessage>();
 		while (result.next()) {
-			JSONObject message = loadMessageJSON(result,locale);			
-			list.add(message);
+			JSONObject message = loadMessageJSON(result);			
+			list.add(new LiteMessage(message));
 		}
 		connection.close();
 		return list;

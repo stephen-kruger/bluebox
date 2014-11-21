@@ -8,13 +8,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Random;
 
 import org.bson.types.ObjectId;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.codehaus.jettison.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +25,7 @@ import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
+import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 import com.mongodb.AggregationOutput;
@@ -357,15 +357,15 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public List<JSONObject> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
+	public List<LiteMessage> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 
-		List<JSONObject> results = new ArrayList<JSONObject>();
+		List<LiteMessage> results = new ArrayList<LiteMessage>();
 		DBCursor cursor = this.listMailCommon(inbox, state, start, count, orderBy, ascending);
 		try {
 			while (cursor.hasNext()) {
 				DBObject dbo = cursor.next();
-				JSONObject m = loadMessageJSON(dbo,locale);
-				results.add(m);
+				JSONObject m = loadMessageJSON(dbo);
+				results.add(new LiteMessage(m));
 			}
 		} 
 		catch (Throwable t) {
