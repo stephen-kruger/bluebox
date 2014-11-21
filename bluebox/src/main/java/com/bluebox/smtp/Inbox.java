@@ -370,6 +370,7 @@ public class Inbox implements SimpleMessageListener {
 				try {
 					if ((received = msg.getReceived()).before(messageExpireDate)) {
 						delete(msg.getIdentifier());
+						count++;
 					}
 					else {
 						log.debug("Not deleting since received {} but expiry window {}",received,messageExpireDate);
@@ -379,7 +380,7 @@ public class Inbox implements SimpleMessageListener {
 					log.warn("Problem cleaning up message {} {}",msg.getIdentifier(),t.getMessage());
 				}
 			}
-			count+=1000;
+			start+=1000;
 		} while (list.size()>0);
 		log.info("Cleaned up {} messages",count);
 	}
