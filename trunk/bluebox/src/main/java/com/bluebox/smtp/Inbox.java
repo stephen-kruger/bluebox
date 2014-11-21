@@ -312,10 +312,16 @@ public class Inbox implements SimpleMessageListener {
 		log.info("Trimming mailboxes");
 		List<JSONObject> list;
 		try {
-			while (StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL)>Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_MAX)) {
-				list = StorageFactory.getInstance().listMailLite(null, BlueboxMessage.State.NORMAL, 0, 50, BlueboxMessage.RECEIVED, true,Locale.getDefault());
+			long max = Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_MAX);
+			long count;
+			while ((count=StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL))>max) {
+				list = StorageFactory.getInstance().listMailLite(null, BlueboxMessage.State.NORMAL, 0, 1000, BlueboxMessage.RECEIVED, true,Locale.getDefault());
+				count = count-max; // how many to delete
 				for (JSONObject msg : list) {
-					delete(msg.getString(BlueboxMessage.UID));
+					if (count-->0)
+						delete(msg.getString(BlueboxMessage.UID));
+					else
+						break;
 				}
 				log.info("Trimmed {} messages",list.size());
 			}
