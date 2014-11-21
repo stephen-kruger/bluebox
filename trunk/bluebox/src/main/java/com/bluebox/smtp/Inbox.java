@@ -46,7 +46,9 @@ import com.bluebox.WorkerThread;
 import com.bluebox.search.SearchIndexer;
 import com.bluebox.search.SearchIndexer.SearchFields;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.MessageIterator;
 import com.bluebox.smtp.storage.StorageFactory;
+import com.bluebox.smtp.storage.StorageIf;
 
 public class Inbox implements SimpleMessageListener {
 	private static final String GLOBAL_COUNT_NODE = "global_message_count";
@@ -191,10 +193,7 @@ public class Inbox implements SimpleMessageListener {
 			return SearchIndexer.getInstance().searchInboxes(search, writer, start, count, searchScope, orderBy, ascending);
 		}
 		catch (IndexNotFoundException inf) {
-			log.info("Detected index problems - rebuilding search indexes");
-			// indexes messed up, so try auto-heal
-			WorkerThread wt = rebuildSearchIndexes();
-			new Thread(wt).start();
+			log.info("Detected index problems ({})",inf.getMessage());
 			return 0;
 		}
 	}
@@ -225,35 +224,30 @@ public class Inbox implements SimpleMessageListener {
 							spamAction = false;
 						}		
 						// now process all mails looking for same smtp source
-						List<BlueboxMessage> mail;
-						int start = 0;
-						final int count = 500;
 						String smtpDomain = spam.getSMTPSender();
 						if (smtpDomain.trim().length()>0) {
-							do {
-								setProgress((int)(((start+1)*100)/(inbox.getMailCount(BlueboxMessage.State.ANY)+1)));
-								mail = inbox.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
-								log.debug("Checking spam from {} to {} of {}",start,(start+count),mail.size());
-								for (BlueboxMessage msg : mail) {
-									try {
-										if (smtpDomain.indexOf(msg.getSMTPSender())>=0) {
-											if (spamAction) {
-												log.info("Spam detected - soft deleting "+msg.getIdentifier());
-												softDelete(msg.getIdentifier());
-											}
-											else {
-												log.info("Spam detected - soft undeleting");
-												softUndelete(msg.getIdentifier(),msg);
-											}
+							BlueboxMessage msg;
+							MessageIterator mi = new MessageIterator();
+							while (mi.hasNext()) {
+								msg = mi.next();
+								setProgress(mi.getProgress());
+								try {
+									if (smtpDomain.indexOf(msg.getSMTPSender())>=0) {
+										if (spamAction) {
+											log.info("Spam detected - soft deleting "+msg.getIdentifier());
+											softDelete(msg.getIdentifier());
+										}
+										else {
+											log.info("Spam detected - soft undeleting");
+											softUndelete(msg.getIdentifier(),msg);
 										}
 									}
-									catch (Throwable t) {
-										log.warn(t.getMessage());
-									}
 								}
-								start += mail.size();
+								catch (Throwable t) {
+									log.warn(t.getMessage());
+								}
+							}		
 
-							} while (mail.size()>0);	
 						}
 						else {
 							log.info("No smtp sender found, cannot blacklist or un-blacklist");
@@ -309,10 +303,10 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	private void trim() {
-		log.info("Trimming mailboxes");
 		List<JSONObject> list;
 		try {
 			long max = Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_MAX);
+			log.info("Trimming mailboxes to limit of {} entries",max);
 			long count;
 			while ((count=StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL))>max) {
 				list = StorageFactory.getInstance().listMailLite(null, BlueboxMessage.State.NORMAL, 0, 1000, BlueboxMessage.RECEIVED, true,Locale.getDefault());
@@ -363,60 +357,42 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	private void expireOld(Date messageExpireDate) throws Exception {
-		List<BlueboxMessage> list;
-
-		long count = 0;
-		int start = 0;
 		log.info("Cleaning messages received before {}",messageExpireDate);
-		do {
-			list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.NORMAL, start, 1000, BlueboxMessage.RECEIVED, true);
-			log.info("Expiring block {} to {} with size {}",start,start+1000,list.size());
-			Date received;
-			for (BlueboxMessage msg : list) {
-				try {
-					if ((received = msg.getReceived()).before(messageExpireDate)) {
-						delete(msg.getIdentifier());
-						count++;
-					}
-					else {
-						log.debug("Not deleting since received {} but expiry window {}",received,messageExpireDate);
-					}
-				}
-				catch (Throwable t) {
-					log.warn("Problem cleaning up message {} {}",msg.getIdentifier(),t.getMessage());
+		BlueboxMessage msg;
+		int count = 0;
+		MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.NORMAL);
+		while (mi.hasNext()) {
+			msg = mi.next();
+			try {
+				if ((msg.getReceived()).before(messageExpireDate)) {
+					delete(msg.getIdentifier());
+					count++;
 				}
 			}
-			start+=1000;
-		} while (list.size()>0);
+			catch (Throwable t) {
+				log.warn("Problem cleaning up message {} {}",msg.getIdentifier(),t.getMessage());
+			}
+		}
 		log.info("Cleaned up {} messages",count);
 	}
 
 	private void expireDeleted(Date trashExpireDate) throws Exception {
-		List<BlueboxMessage> list;
-
 		log.info("Cleaning deleted messages received before {}",trashExpireDate);
-		int count  = 0;
-		int start = 0;
-		Date received;
-		do {
-			list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.DELETED, start, 1000, BlueboxMessage.RECEIVED, true);
-			log.info("Expiring deleted block {} to {} with size {}",start,start+1000,list.size());
-			for (BlueboxMessage msg : list) {
-				try {
-					if ((received = msg.getReceived()).before(trashExpireDate)) {
-						delete(msg.getIdentifier());
-						count++;
-					}
-					else {
-						log.debug("Not deleting since received {} but expiry window {}",received,trashExpireDate);
-					}				
-				}
-				catch (Throwable t) {
-					log.warn("Problem cleaning up message {}",msg.getIdentifier());
-				}
+		BlueboxMessage msg;
+		int count = 0;
+		MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.DELETED);
+		while (mi.hasNext()) {
+			msg = mi.next();
+			try {
+				if ((msg.getReceived()).before(trashExpireDate)) {
+					delete(msg.getIdentifier());
+					count++;
+				}				
 			}
-			start+=1000;
-		} while (list.size()>0);
+			catch (Throwable t) {
+				log.warn("Problem cleaning up message {}",msg.getIdentifier());
+			}
+		}
 		log.info("Cleaned up {} deleted messages",count);
 	}
 
@@ -711,25 +687,13 @@ public class Inbox implements SimpleMessageListener {
 				try {
 					SearchIndexer searchIndexer = SearchIndexer.getInstance();
 					searchIndexer.deleteIndexes();
-					long mailCount = getMailCount(BlueboxMessage.State.ANY);
-					int start = 0;
-					int blocksize = 100;
-					while (start<mailCount) {
-						log.info("Indexing mail batch "+start+" to "+(start+blocksize)+" of "+mailCount);
-						setProgress((int)(start*100/mailCount));
-						try {
-							List<BlueboxMessage> messages = listInbox(null, BlueboxMessage.State.ANY, start, blocksize, BlueboxMessage.RECEIVED, true);
-							for (BlueboxMessage message : messages) {
-								searchIndexer.indexMail(message);
-							}
-						} 
-						catch (Exception e) {
-							e.printStackTrace();
-						}
-						start += blocksize;
+					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.NORMAL);
+					while (mi.hasNext()) {
+						searchIndexer.indexMail(mi.next());						
+						setProgress(mi.getProgress());
 					}
 				} 
-				catch (IOException e) {
+				catch (Throwable e) {
 					e.printStackTrace();
 				}
 				finally {
@@ -808,43 +772,34 @@ public class Inbox implements SimpleMessageListener {
 					log.info("Backing up mail to "+zipFile.getCanonicalPath());
 					BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(zipFile));
 					ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
-					List<BlueboxMessage> mail;
-					int start = 0;
-					final int count = 500;
-					do {
-						setProgress((int)(((start+1)*100)/inbox.getMailCount(BlueboxMessage.State.ANY)));
-						mail = inbox.listInbox(null, BlueboxMessage.State.ANY, start, count, BlueboxMessage.RECEIVED, true);
-						if (mail.size()>0) {
-							log.info("Backing up from "+start+" to "+(start+count)+" to file "+zipFile.getCanonicalPath());
+					BlueboxMessage msg;
+					String emlFile,jsonFile;
+					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.NORMAL);
+					while (mi.hasNext()) {
+						msg = mi.next();
+						setProgress(mi.getProgress());
+						try {
 
-							String emlFile,jsonFile;
-							for (BlueboxMessage msg : mail) {
-								try {
+							emlFile = msg.getIdentifier()+".eml";
+							jsonFile = msg.getIdentifier()+".json";
+							ZipEntry zipEntry;
+							// the blob
+							zipEntry = new ZipEntry(emlFile);
+							zipOutputStream.putNextEntry(zipEntry);
+							msg.getBlueBoxMimeMessage().writeTo(zipOutputStream);
+							zipOutputStream.closeEntry();
 
-									emlFile = msg.getIdentifier()+".eml";
-									jsonFile = msg.getIdentifier()+".json";
-									ZipEntry zipEntry;
-									// the blob
-									zipEntry = new ZipEntry(emlFile);
-									zipOutputStream.putNextEntry(zipEntry);
-									msg.getBlueBoxMimeMessage().writeTo(zipOutputStream);
-									//Utils.copy(Utils.streamMimeMessage(msg.getBlueBoxMimeMessage()), zipOutputStream);
-									zipOutputStream.closeEntry();
-
-									// the metadata
-									zipEntry = new ZipEntry(jsonFile);
-									zipOutputStream.putNextEntry(zipEntry);
-									zipOutputStream.write(msg.toJSON().toString().getBytes());
-									zipOutputStream.closeEntry();
-								}
-								catch (Throwable t) {
-									log.warn(t.getMessage());
-								}
-							}
+							// the metadata
+							zipEntry = new ZipEntry(jsonFile);
+							zipOutputStream.putNextEntry(zipEntry);
+							zipOutputStream.write(msg.toJSON().toString().getBytes());
+							zipOutputStream.closeEntry();
 						}
-						start += mail.size();
+						catch (Throwable t) {
+							log.warn(t.getMessage());
+						}
+					}
 
-					} while (mail.size()>0);	
 					zipOutputStream.close();
 					fileOutputStream.close();
 				}
@@ -906,11 +861,17 @@ public class Inbox implements SimpleMessageListener {
 											}
 										}
 									}
-									// store the message
-									StorageFactory.getInstance().store(jo, archive.getInputStream(zipEntry));
-									// index the message
-									MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));
-									SearchIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
+									// store the message only if it doesn't already exist
+									StorageIf si = StorageFactory.getInstance();
+									if (!si.contains(uid)) {
+										si.store(jo, archive.getInputStream(zipEntry));
+										// index the message
+										MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));
+										SearchIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
+									}
+									else {
+										log.info("Ignoring restore of {}",uid);
+									}
 									runCount++;
 
 								}

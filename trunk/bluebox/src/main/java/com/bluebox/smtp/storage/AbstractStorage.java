@@ -83,12 +83,4 @@ public abstract class AbstractStorage implements StorageIf {
 		return message;
 	}
 	
-	public boolean contains(String uid) {
-		try {
-			return retrieve(uid)!=null;
-		}
-		catch (Throwable t) {
-			return false;
-		}
-	}
 }

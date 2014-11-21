@@ -275,6 +275,25 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return message;
 	}
 
+	public boolean contains(String uid) {
+		boolean contains = false;
+		try {
+			Connection connection = getConnection();
+			PreparedStatement ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.UID+"=?");
+			ps.setString(1, uid);
+			ps.execute();
+			ResultSet result = ps.getResultSet();
+			if (result.next()) {
+				contains = true;
+			}
+			connection.close();
+		}
+		catch (Throwable t) {
+			log.error("Problem checking for uid {} ({})",uid,t.getMessage());
+		}
+		return contains;
+	}
+
 	public String getDBOString(Object dbo, String key, String def) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
