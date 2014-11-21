@@ -46,6 +46,8 @@ import com.bluebox.WorkerThread;
 import com.bluebox.search.SearchIndexer;
 import com.bluebox.search.SearchIndexer.SearchFields;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.LiteMessage;
+import com.bluebox.smtp.storage.LiteMessageIterator;
 import com.bluebox.smtp.storage.MessageIterator;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
@@ -182,9 +184,9 @@ public class Inbox implements SimpleMessageListener {
 		return StorageFactory.getInstance().listMail(inbox, state, start, count, orderBy, ascending);
 	}
 
-	public List<JSONObject> listInboxLite(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale loc) throws Exception {
+	public List<LiteMessage> listInboxLite(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending, Locale loc) throws Exception {
 		log.debug("Sending inbox contents for {}",inbox);
-		return StorageFactory.getInstance().listMailLite(inbox, state, start, count, orderBy, ascending, loc);
+		return StorageFactory.getInstance().listMailLite(inbox, state, start, count, orderBy, ascending);
 	}
 
 	public long searchInbox(String search, Writer writer, int start, int count, SearchIndexer.SearchFields searchScope, SearchIndexer.SearchFields orderBy, boolean ascending) throws Exception {
@@ -303,17 +305,17 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	private void trim() {
-		List<JSONObject> list;
+		List<LiteMessage> list;
 		try {
 			long max = Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_MAX);
 			log.info("Trimming mailboxes to limit of {} entries",max);
 			long count;
 			while ((count=StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL))>max) {
-				list = StorageFactory.getInstance().listMailLite(null, BlueboxMessage.State.NORMAL, 0, 1000, BlueboxMessage.RECEIVED, true,Locale.getDefault());
+				list = StorageFactory.getInstance().listMailLite(null, BlueboxMessage.State.NORMAL, 0, 1000, BlueboxMessage.RECEIVED, true);
 				count = count-max; // how many to delete
-				for (JSONObject msg : list) {
+				for (LiteMessage msg : list) {
 					if (count-->0)
-						delete(msg.getString(BlueboxMessage.UID));
+						delete(msg.getIdentifier());
 					else
 						break;
 				}
@@ -358,9 +360,9 @@ public class Inbox implements SimpleMessageListener {
 
 	private void expireOld(Date messageExpireDate) throws Exception {
 		log.info("Cleaning messages received before {}",messageExpireDate);
-		BlueboxMessage msg;
+		LiteMessage msg;
 		int count = 0;
-		MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.NORMAL);
+		LiteMessageIterator mi = new LiteMessageIterator(null, BlueboxMessage.State.NORMAL);
 		while (mi.hasNext()) {
 			msg = mi.next();
 			try {
@@ -378,9 +380,9 @@ public class Inbox implements SimpleMessageListener {
 
 	private void expireDeleted(Date trashExpireDate) throws Exception {
 		log.info("Cleaning deleted messages received before {}",trashExpireDate);
-		BlueboxMessage msg;
+		LiteMessage msg;
 		int count = 0;
-		MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.DELETED);
+		LiteMessageIterator mi = new LiteMessageIterator(null, BlueboxMessage.State.DELETED);
 		while (mi.hasNext()) {
 			msg = mi.next();
 			try {

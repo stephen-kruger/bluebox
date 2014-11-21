@@ -24,8 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.Inbox;
-import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.LiteMessage;
 
 public class JSONMessageHandler extends AbstractHandler {
 	private static final Logger log = LoggerFactory.getLogger(JSONMessageHandler.class);
@@ -47,7 +47,7 @@ public class JSONMessageHandler extends AbstractHandler {
 			}
 			JSONObject json = message.toJSON(req.getLocale());
 			
-			json.put(BlueboxMessage.RECEIVED, AbstractStorage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
+			json.put(BlueboxMessage.RECEIVED, LiteMessage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
 			// add in the TO, CC and BCC
 			json.put(BlueboxMessage.TO,BlueboxMessage.toJSONArray(message.getBlueBoxMimeMessage().getRecipients(RecipientType.TO)));	
 			json.put(BlueboxMessage.CC,BlueboxMessage.toJSONArray(message.getBlueBoxMimeMessage().getRecipients(RecipientType.CC)));

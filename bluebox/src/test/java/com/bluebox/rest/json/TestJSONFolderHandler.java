@@ -12,6 +12,7 @@ import com.bluebox.Utils;
 import com.bluebox.servlet.BaseServletTest;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.LiteMessage;
 
 public class TestJSONFolderHandler extends BaseServletTest {
 
@@ -30,7 +31,7 @@ public class TestJSONFolderHandler extends BaseServletTest {
 	}
 
 	public void testFolderCount() throws IOException, Exception {
-		List<JSONObject> list = Inbox.getInstance().listInboxLite(null, BlueboxMessage.State.ANY, 0, 100, BlueboxMessage.RECEIVED, true, Locale.getDefault());
+		List<LiteMessage> list = Inbox.getInstance().listInboxLite(null, BlueboxMessage.State.ANY, 0, 100, BlueboxMessage.RECEIVED, true, Locale.getDefault());
 		assertEquals("Missing mails",COUNT,list.size());
 		String url = "/"+JSONFolderHandler.JSON_ROOT;
 		JSONObject js = getRestJSON(url);
@@ -39,7 +40,7 @@ public class TestJSONFolderHandler extends BaseServletTest {
 		assertEquals("Incorrect Deleted count",0,js.getJSONObject(BlueboxMessage.State.DELETED.name()).getInt("count"));
 		
 		// now delete 1 mail
-		Inbox.getInstance().softDelete(list.get(0).getString(BlueboxMessage.UID));
+		Inbox.getInstance().softDelete(list.get(0).getIdentifier());
 		js = getRestJSON(url);
 		assertEquals("Incorrect All count",list.size(),js.getJSONObject(BlueboxMessage.State.ANY.name()).getInt("count"));
 		assertEquals("Incorrect Normal count",list.size()-1,js.getJSONObject(BlueboxMessage.State.NORMAL.name()).getInt("count"));
