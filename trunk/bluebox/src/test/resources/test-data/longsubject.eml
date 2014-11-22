@@ -1,0 +1,65 @@
+Subject: thisisaverylongsubjecttotesthowtheuirendersthetextwithoutbreakingallthelayoutstuffandhopefullyespesctingtherfcspecificationsaroundmaximumsubjectlength
+From: thisisaverylongsendernameaswellhopeitsok <w.m.l@gmx.net>
+Reply-To: <winedt+list@wsg.net>
+Date: 06.08.2002 17:17
+To: thisisaverylongtonameaswellmakesureitrendersok <winedt+list@wsg.net>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv: 1.0.0) Gecko/20020530
+
+
+On 8/6/2002 7:35 AM, Robert W. Kuhn wrote:
+> <support@winedt.com>
+> schrieb am 06.08.2002:
+> > Robert W. Kuhn wrote:
+> >
+> >> Hello,
+> >>
+> >> the WinEdt-Help says:
+> >>
+> >>     In this context, modes refer to groups of settings; for example,
+> >>     you may want to use WinEdt to write your TeX documents as well as
+> >>     e-mail messages, HTML and C++
+> >>
+> >> Is there already a mode for emails - or even better - for
+> >> usenet-postings?
+> >>
+> >> Bye - Robert
+> >>
+> > 
+> > you may be expecting too much here: WinEdt is not designed as an
+> > e-mail or usenet posting managing application. 
+> 
+> No, I do not expect too much here. Perhaps you misunderstood me
+> because of my bad English.
+> 
+> >                                                 You can compose
+> > ASCII messages in WinEdt but in the end you need a mailer with
+> > support for MAPI or DDE (WinEdt has a send mail command - it
+> > assumes the existence of MAPI email program but it can be
+> > configured to work with other email clients that support DDE).
+> > Sometimes *Copy and Paste* is the easiest way (that's how I compose
+> > most of my replies).
+> 
+> Yes, that should be enough.
+> 
+> I use _slrn_ as an usenet-reader and use within slrn WinEdt to compose
+> my messages (slrn then does the rest).
+> 
+> What I mean with a usenet-mode is that the headers have different
+> colors from the text, that WinEdt recognizes the '>' as the
+> quoting-prefix and so on.
+> 
+> Is there already such a mode?
+
+I've uploaded some highlighting for e-mails to:
+
+  http://www.winedt.org/Config/modes/Mail.zip
+
+Tell me how it works for you, please.
+
+Regards,
+Robert.
+
+
+-- 
+The home of WinEdt's community:
+   <http://www.winedt.org>
