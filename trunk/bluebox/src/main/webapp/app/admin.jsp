@@ -200,21 +200,20 @@
 						    name="horizontalSlider"
 						    data-dojo-type="dijit/form/HorizontalSlider"
 						    data-dojo-props="value:100,
-						    minimum: 10,
+						    minimum: 0,
 						    maximum:5000,
-						    discreteValues:4991,
+						    discreteValues:501,
+						    value:100,
 						    intermediateChanges:false,
 						    showButtons:false">
 						    <div data-dojo-type="dijit/form/HorizontalRule" container="bottomDecoration"
-						        count=7 style="height:0.75em;"></div>
+						        count=5 style="height:0.75em;"></div>
 						    <ol data-dojo-type="dijit/form/HorizontalRuleLabels" container="bottomDecoration"
 						        style="height:1em;font-size:75%;color:gray;">
-						        <li>10</li>
-						        <li>100</li>
-						        <li>300</li>
-						        <li>1000</li>
+						        <li>0</li>
+						        <li>1250</li>
 						        <li>2500</li>
-						        <li>4000</li>
+						        <li>3800</li>
 						        <li>5000</li>
 						    </ol>
 						</div>

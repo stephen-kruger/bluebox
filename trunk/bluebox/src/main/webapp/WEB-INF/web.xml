@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns="http://java.sun.com/xml/ns/javaee"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
-      version="3.0">
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	version="3.0">
 
 	<display-name>bluebox</display-name>
 
@@ -22,19 +21,19 @@
 
 	<!-- the RSS feed servlet -->
 	<servlet>
-        <servlet-name>FeedServlet</servlet-name>
-        <servlet-class>com.bluebox.feed.FeedServlet</servlet-class>
-        <init-param>
-            <param-name>default.feed.type</param-name>
-            <param-value>rss_2.0</param-value>
-        </init-param>
-    </servlet>
- 
-    <servlet-mapping>
-         <servlet-name>FeedServlet</servlet-name>
-         <url-pattern>/feed/*</url-pattern>
-    </servlet-mapping>
-	
+		<servlet-name>FeedServlet</servlet-name>
+		<servlet-class>com.bluebox.feed.FeedServlet</servlet-class>
+		<init-param>
+			<param-name>default.feed.type</param-name>
+			<param-value>rss_2.0</param-value>
+		</init-param>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>FeedServlet</servlet-name>
+		<url-pattern>/feed/*</url-pattern>
+	</servlet-mapping>
+
 	<!-- the file upload servlets -->
 	<servlet>
 		<servlet-name>ProgressServlet</servlet-name>
@@ -52,41 +51,47 @@
 		<servlet-name>UploadServlet</servlet-name>
 		<url-pattern>/upload</url-pattern>
 	</servlet-mapping>
-	
+
 	<!-- specify manager role for the admin pages -->
 	<security-constraint>
-	        <web-resource-collection>
-	                <web-resource-name>BlueBoxAdmin</web-resource-name>
-	                <description> accessible by authenticated users of the tomcat role</description>
-	                <url-pattern>/app/admin.jsp</url-pattern>
-	                <url-pattern>/rest/admin/*</url-pattern>
-	                <http-method>GET</http-method>
-	                <http-method>POST</http-method>
-	                <http-method>PUT</http-method>
-	                <http-method>DELETE</http-method>
-	        </web-resource-collection>
-	        <auth-constraint>
-	                <description>These roles are allowed access</description>
-	                <role-name>bluebox</role-name>
-	        </auth-constraint>
+		<web-resource-collection>
+			<web-resource-name>BlueBoxAdmin</web-resource-name>
+			<description> accessible by authenticated users of the tomcat role</description>
+			<url-pattern>/app/admin.jsp</url-pattern>
+			<url-pattern>/rest/admin/*</url-pattern>
+			<http-method>GET</http-method>
+			<http-method>POST</http-method>
+			<http-method>PUT</http-method>
+			<http-method>DELETE</http-method>
+		</web-resource-collection>
+		<auth-constraint>
+			<description>These roles are allowed access</description>
+			<role-name>bluebox</role-name>
+		</auth-constraint>
 	</security-constraint>
 	<login-config>
-	  <auth-method>BASIC</auth-method>
-	  <realm-name>BlueBox Administration</realm-name>
+		<auth-method>BASIC</auth-method>
+		<realm-name>BlueBox Administration</realm-name>
 	</login-config>
-	
+
 	<security-role>
-	        <description>Only 'bluebox' role is allowed to access this web application</description>
-	        <role-name>bluebox</role-name>
+		<description>Only 'bluebox' role is allowed to access this web application</description>
+		<role-name>bluebox</role-name>
 	</security-role>
 
 	<!-- Start page -->
 	<welcome-file-list>
 		<welcome-file>/app/index.jsp</welcome-file>
 	</welcome-file-list>
-	
+
 	<error-page>
-	    <location>/app/error.jsp</location>
-	</error-page>	
+		<location>/app/error.jsp?code=0</location>
+	</error-page>
+
+	<error-page>
+		<!-- Forbidden -->
+		<error-code>403</error-code>
+		<location>/app/error.jsp?code=403</location>
+	</error-page>
 
 </web-app>

@@ -15,7 +15,7 @@
 		</div>
 			
 		<div class="centerCol">
-			<h1>Something went badly wrong</h1>
+			<h1>Something went wrong (Code:<%= request.getParameter("code") %>)</h1>
 			<p>Please try again, or report the problem using the link below.</p>
 			<table style="width:100%;">
 				<tr>
