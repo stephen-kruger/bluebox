@@ -28,9 +28,16 @@
 		
 		.infoValue {
 			font-weight: bold;
+			text-align: left;
+			white-space: normal;
+			display:table-cell;
+		}
+		
+		.infoLabel {
 			text-align: right;
 			white-space: normal;
 			display:table-cell;
+			padding-right:2em;
 		}
 		
 		/* make centre smaller to allow bigge rgraph in rightCol*/
@@ -69,9 +76,9 @@
 			
 		<div class="centerCol">
 		<div style="text-align:left;">
-			<table>
+			<table width="100%">
 				<tr>
-					<td><label><%=infoResource.getString("messageage")%></label></td>
+					<td class="infoLabel"><label><%=infoResource.getString("messageage")%></label></td>
 					<td class="infoValue">
 						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_AGE) %>
 					</td>
@@ -81,7 +88,7 @@
 					<td><br/></td>
 				</tr>
 				<tr>
-					<td><label><%=infoResource.getString("trashage")%></label></td>
+					<td class="infoLabel"><label><%=infoResource.getString("trashage")%></label></td>
 					<td class="infoValue">
 						<%= bbconfig.getString(Config.BLUEBOX_TRASH_AGE) %>
 					</td>
@@ -91,7 +98,7 @@
 					<td><br/></td>
 				</tr>
 				<tr>
-					<td><label><%=infoResource.getString("messagemax")%></label></td>
+					<td class="infoLabel"><label><%=infoResource.getString("messagemax")%></label></td>
 					<td class="infoValue">
 						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_MAX) %>
 					</td>
@@ -100,14 +107,14 @@
 					<td><br/></td>
 				</tr>
 				<tr>
-					<td><label><%=infoResource.getString("reset")%></label></td>
-					<td align="right"><button onclick="resetLists()" data-dojo-type="dijit/form/Button" type="button"><%=infoResource.getString("resetButton")%></button></td>
+					<td class="infoLabel"><label><%=infoResource.getString("reset")%></label></td>
+					<td align="left"><button onclick="resetLists()" data-dojo-type="dijit/form/Button" type="button"><%=infoResource.getString("resetButton")%></button></td>
 				</tr>
 				<tr>
 					<td><br/></td>
 				</tr>
 				<tr>
-					<td><label><%=infoResource.getString("toblacklist")%></label></td>
+					<td class="infoLabel"><label><%=infoResource.getString("toblacklist")%></label></td>
 					<td class="infoValue">
 						<%= Utils.toString(Inbox.getInstance().getToBlacklist()) %>
 					</td>
@@ -117,7 +124,7 @@
 				<td><br/></td>
 				</tr>
 				<tr>
-					<td><label><%=infoResource.getString("fromblacklist")%></label></td>
+					<td class="infoLabel"><label><%=infoResource.getString("fromblacklist")%></label></td>
 					<td class="infoValue">
 						<%= Utils.toString(Inbox.getInstance().getFromBlacklist()) %>
 					</td>
@@ -127,7 +134,7 @@
 				<td><br/></td>
 				</tr>
 				<tr>
-					<td><label><%=infoResource.getString("smtpblacklist")%></label></td>
+					<td class="infoLabel"><label><%=infoResource.getString("smtpblacklist")%></label></td>
 					<td class="infoValue">
 						<%= Utils.toString(Inbox.getInstance().getSMTPBlacklist()) %>
 					</td>
@@ -137,7 +144,7 @@
 				<td><br/></td>
 				</tr>
 				<tr>
-					<td><label><%=infoResource.getString("towhitelist")%></label></td>
+					<td class="infoLabel"><label><%=infoResource.getString("towhitelist")%></label></td>
 					<td class="infoValue">
 						<%= Utils.toString(Inbox.getInstance().getToWhitelist()) %>
 					</td>
@@ -147,7 +154,7 @@
 				<td><br/></td>
 				</tr>
 				<tr>
-					<td><label><%=infoResource.getString("fromwhitelist")%></label></td>
+					<td class="infoLabel"><label><%=infoResource.getString("fromwhitelist")%></label></td>
 					<td class="infoValue">
 						<%= Utils.toString(Inbox.getInstance().getFromWhitelist()) %>
 					</td>

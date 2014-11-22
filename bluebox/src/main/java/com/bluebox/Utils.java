@@ -376,19 +376,26 @@ public class Utils {
 			@Override
 			public void run() {
 				try {
-					for (int i = 0; i < count/6; i++) {
+					int toC,ccC, bccC;
+					int totalCount = 0;
+					Random r = new Random();
+					do {
+						toC = r.nextInt(5);
+						ccC = r.nextInt(5);
+						bccC = r.nextInt(5);
 						MimeMessage msg = createMessage(session,
 								getRandomAddress(),  
-								getRandomAddresses(2),//to
-								getRandomAddresses(2),//cc
-								getRandomAddresses(2),//bcc
+								getRandomAddresses(toC),//to
+								getRandomAddresses(ccC),//cc
+								getRandomAddresses(bccC),//bcc
 								(counter++)+" "+randomLine(35), 
 								randomText(14),
 								true);
 
 						sendMessageDirect(msg);
-						setProgress((i*10*6)/count);
-					}
+						totalCount += toC+ccC+bccC;
+						setProgress((totalCount*100)/count);
+					} while (totalCount<count);
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
@@ -466,7 +473,7 @@ public class Utils {
 
 		// if we load emails from file, there might not be a recipient (bcc)
 		if (recipients.size()==0)
-			recipients.add("anonymous@bluebox.lotus.com");
+			recipients.add("anonymous@bluebox.com");
 		for (String recipient : recipients) {
 			log.debug("Sending message to {}",recipient);
 			if (Inbox.getInstance().accept(msg.getFrom()[0].toString(), recipient)) {
