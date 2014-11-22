@@ -610,13 +610,14 @@ public class Inbox implements SimpleMessageListener {
 		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchIndexer.SearchFields.RECEIVED,false);
 		for (int i = 0; i < results.length;i++) {
 			String uid = results[i].get(SearchFields.UID.name());
-			curr = new JSONObject();
 			InboxAddress inbox;
 			inbox = new InboxAddress(results[i].get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
-			curr.put("name", inbox.getAddress());
-			curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENT.name())).getFullAddress());
-			curr.put("identifier", uid);
-			if (!contains(children,curr.getString("name"))) {
+			
+			if (!contains(children,inbox.getAddress())) {
+				curr = new JSONObject();
+				curr.put("name", inbox.getAddress());
+				curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENT.name())).getFullAddress());
+				curr.put("identifier", uid);
 				children.put(curr);
 			}
 			if (children.length()>=count)
@@ -766,17 +767,17 @@ public class Inbox implements SimpleMessageListener {
 	public WorkerThread backup(final File dir) throws Exception {
 		final Inbox inbox = Inbox.getInstance();
 		WorkerThread wt = new WorkerThread("backup") {
-
+private File zipFile;
 			@Override
 			public void run() {
 				try {
-					File zipFile = new File(dir.getCanonicalPath()+File.separator+"bluebox.zip");
+					zipFile = new File(dir.getCanonicalPath()+File.separator+"bluebox.zip");
 					log.info("Backing up mail to "+zipFile.getCanonicalPath());
 					BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(zipFile));
 					ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
 					BlueboxMessage msg;
 					String emlFile,jsonFile;
-					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.NORMAL);
+					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.ANY);
 					while (mi.hasNext()) {
 						msg = mi.next();
 						setProgress(mi.getProgress());
@@ -810,7 +811,12 @@ public class Inbox implements SimpleMessageListener {
 				}
 				finally {
 					setProgress(100);			
-					setStatus("Backed up "+inbox.getMailCount(BlueboxMessage.State.ANY)+" mails");
+					try {
+						setStatus("Backed up "+inbox.getMailCount(BlueboxMessage.State.ANY)+" mails to "+zipFile.getCanonicalPath());
+					} 
+					catch (IOException e) {
+						setStatus("Error :"+e.getMessage());
+					}
 				}
 			}
 
@@ -826,18 +832,18 @@ public class Inbox implements SimpleMessageListener {
 
 			@Override
 			public void run() {
-				int runCount = 0;
+				int restoreCount = 0;
 				if (zipFile.exists()) {
 					try {
 						ZipFile archive = new ZipFile(zipFile);
 						@SuppressWarnings("rawtypes")
 						Enumeration entries = archive.entries();
-						int i = 0;
+						int progress = 0;
 						int count = archive.size()/2;
 						while (entries.hasMoreElements()) {
 							ZipEntry zipEntry = (ZipEntry) entries.nextElement();
-							setProgress(i*100/count);
-							log.debug("Progress : {}",(i*100/count));
+							setProgress(progress*100/count);
+							log.debug("Progress : {}",(progress*100/count));
 							String uid = zipEntry.getName().substring(0,zipEntry.getName().indexOf('.'));
 							if ((!StorageFactory.getInstance().contains(uid))&&(zipEntry.getName().endsWith("eml"))) {
 								try {
@@ -870,11 +876,11 @@ public class Inbox implements SimpleMessageListener {
 										// index the message
 										MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));
 										SearchIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
+										restoreCount++;
 									}
 									else {
 										log.info("Ignoring restore of {}",uid);
 									}
-									runCount++;
 
 								}
 								catch (Throwable t) {
@@ -882,7 +888,7 @@ public class Inbox implements SimpleMessageListener {
 									log.warn(t.getMessage());
 								}
 							}
-							i++;
+							progress++;
 						}
 						archive.close();
 					} 
@@ -899,7 +905,7 @@ public class Inbox implements SimpleMessageListener {
 					}
 				}
 				setProgress(100);
-				setStatus("Restored "+runCount+" mails");
+				setStatus("Restored "+restoreCount+" mails");
 			}
 
 		};

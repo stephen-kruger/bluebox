@@ -64,6 +64,8 @@
 	font-weight: bold;
 	font-size: 1.5em;
 	float: left;
+	word-wrap: break-word;
+	overflow:hidden;
 }
 
 .headerBox {
@@ -321,8 +323,15 @@
 							currentInbox = data.Inbox;
 						}
 						// subject may be null
-						if (data.Subject)
+						if (data.Subject) {
+							// subject might be very long, chop into 60char segments
+							for (i=80;i<data.Subject.length;i+=80) {
+								if (data.Subject.length>i) {
+									data.Subject = data.Subject.slice(0, i-1) + "<br/>" + data.Subject.slice(i-1);
+								}
+							}
 							document.getElementById("Subject").innerHTML = data.<%=BlueboxMessage.SUBJECT%>;
+						}
 							
 						// date field may be null
 						if (data.<%=BlueboxMessage.RECEIVED%>)
