@@ -1,6 +1,5 @@
 package com.bluebox.smtp.storage.derby;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -597,8 +596,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			logError(title,Utils.convertStreamToString(content));
 		} 
-		catch (IOException e) {
-			e.printStackTrace();
+		catch (Throwable e) {
+//			e.printStackTrace();
+			logError(title,e.getMessage());
 		}
 	}
 

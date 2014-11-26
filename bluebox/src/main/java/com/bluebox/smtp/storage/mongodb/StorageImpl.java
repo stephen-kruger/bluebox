@@ -1,6 +1,5 @@
 package com.bluebox.smtp.storage.mongodb;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -445,8 +444,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			logError(title,Utils.convertStreamToString(content));
 		} 
-		catch (IOException e) {
-			e.printStackTrace();
+		catch (Throwable e) {
+//			e.printStackTrace();
+			logError(title,e.getMessage());
 		}
 	}
 
