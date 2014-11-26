@@ -20,19 +20,21 @@ public class LiteMessageIterator implements Iterator<LiteMessage> {
 	private BlueboxMessage.State state;
 	private int start=0-MAX;
 	private long totalCount, position;
+	private int overflowCount;
 
 	public LiteMessageIterator() throws Exception {
 		this(null,BlueboxMessage.State.ANY);
 	}
-	
+
 	public LiteMessageIterator(InboxAddress address, BlueboxMessage.State state) throws Exception {
 		this.address = address;
 		this.state = state;
 		totalCount =  StorageFactory.getInstance().getMailCount(address, state);
 		position = 0;
+		overflowCount = 0;
 		nextPage();
 	}
-	
+
 	/*
 	 * Return percentage of where this iterator is in the overall set of results.
 	 */
@@ -50,6 +52,9 @@ public class LiteMessageIterator implements Iterator<LiteMessage> {
 
 	@Override
 	public boolean hasNext() {
+		// little check to see we never get into infinite loop
+		if ((overflowCount++)>totalCount)
+			return false;
 		if (!iterator.hasNext()) {
 			// check if another page exists
 			try {

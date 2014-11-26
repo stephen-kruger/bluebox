@@ -404,10 +404,12 @@ public class Inbox implements SimpleMessageListener {
 			InboxAddress fromAddress = new InboxAddress(from);
 			InboxAddress recipientAddress = new InboxAddress(recipient);
 			if (!fromAddress.isValidAddress()) {
-				throw new Exception("Invalid from address specified :"+from);
+				log.warn("Invalid from address specified {} sent to {}",from,recipient);
+				return false;
 			}
 			if (!recipientAddress.isValidAddress()) {
-				throw new Exception("Invalid recipient address specified :{}"+recipient);
+				log.warn("Invalid recipient address specified {} sent from {}",recipient,from);
+				return false;
 			}
 
 			// check from blacklist
@@ -496,8 +498,14 @@ public class Inbox implements SimpleMessageListener {
 			} 
 			catch (Throwable e) {
 				log.error(e.getMessage());
+				try {
+					data.reset();
+				}
+				catch (Throwable t) {
+					// ignore
+				}
 				errorLog("("+e.getMessage()+") Accepting raw message for recipient="+recipient +" "+e.getMessage(), data);
-				e.printStackTrace();
+				//				e.printStackTrace();
 			}
 		}
 		data.close();
@@ -612,7 +620,7 @@ public class Inbox implements SimpleMessageListener {
 			String uid = results[i].get(SearchFields.UID.name());
 			InboxAddress inbox;
 			inbox = new InboxAddress(results[i].get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
-			
+
 			if (!contains(children,inbox.getAddress())) {
 				curr = new JSONObject();
 				curr.put("name", inbox.getAddress());
@@ -767,7 +775,7 @@ public class Inbox implements SimpleMessageListener {
 	public WorkerThread backup(final File dir) throws Exception {
 		final Inbox inbox = Inbox.getInstance();
 		WorkerThread wt = new WorkerThread("backup") {
-private File zipFile;
+			private File zipFile;
 			@Override
 			public void run() {
 				try {
