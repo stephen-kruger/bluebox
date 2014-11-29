@@ -6,17 +6,19 @@ import java.util.Locale;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.servlet.BaseServletTest;
-import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.LiteMessage;
 
 public class TestJSONMessageUtilHandler extends BaseServletTest {
+	private static final Logger log = LoggerFactory.getLogger(TestJSONMessageUtilHandler.class);
 
 
 	public void testGetLinks() throws IOException, Exception {
-		List<LiteMessage> list = Inbox.getInstance().listInboxLite(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true, Locale.getDefault());
+		List<LiteMessage> list = getInbox().listInboxLite(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true, Locale.getDefault());
 		for (LiteMessage jo : list) {
 			String url = "/"+JSONMessageUtilHandler.JSON_ROOT+"/"+jo.getIdentifier()+"/"+JSONMessageUtilHandler.LINKS;
 			JSONObject js = getRestJSON(url);

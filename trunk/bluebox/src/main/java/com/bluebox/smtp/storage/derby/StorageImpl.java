@@ -100,7 +100,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public Connection getConnection() throws Exception {
 		if (!started) {
 			Exception e = new Exception("Storage instance not started");
-			//			e.printStackTrace();
+			e.printStackTrace();
 			throw e;
 		}
 		System.setProperty("derby.language.logQueryPlan", "false");
@@ -597,7 +597,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			logError(title,Utils.convertStreamToString(content));
 		} 
 		catch (Throwable e) {
-//			e.printStackTrace();
+			//			e.printStackTrace();
 			logError(title,e.getMessage());
 		}
 	}

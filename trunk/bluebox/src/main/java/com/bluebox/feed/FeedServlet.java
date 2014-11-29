@@ -15,6 +15,7 @@ import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.StorageFactory;
 import com.rometools.rome.feed.synd.SyndContent;
 import com.rometools.rome.feed.synd.SyndContentImpl;
 import com.rometools.rome.feed.synd.SyndEntry;
@@ -51,7 +52,7 @@ public class FeedServlet extends HttpServlet {
 
 	public void doGet(HttpServletRequest req,HttpServletResponse res) throws IOException {
 		try {
-			SyndFeed feed = getFeed(req);
+			SyndFeed feed = getFeed(null,req);
 
 			String feedType = req.getParameter(FEED_TYPE);
 			feedType = (feedType!=null) ? feedType : _defaultFeedType;
@@ -68,7 +69,7 @@ public class FeedServlet extends HttpServlet {
 		}
 	}
 
-	protected SyndFeed getFeed(HttpServletRequest req) throws IOException,FeedException {
+	protected SyndFeed getFeed(Inbox inbox, HttpServletRequest req) throws IOException,FeedException {
 		String email = req.getParameter("email");
 		SyndFeed feed = new SyndFeedImpl();
 
@@ -83,8 +84,9 @@ public class FeedServlet extends HttpServlet {
 		feed.setLink(Utils.getServletBase(req)+"/app/inbox.jsp?email="+URLEncoder.encode(email,"UTF-8"));
 
 		try {
-			InboxAddress inbox = new InboxAddress(email);
-			List<BlueboxMessage> messages = Inbox.getInstance().listInbox(inbox, BlueboxMessage.State.NORMAL, 0, 15, BlueboxMessage.RECEIVED, false);
+			InboxAddress inboxA = new InboxAddress(email);
+
+			List<BlueboxMessage> messages = StorageFactory.getInstance().listMail(inboxA, BlueboxMessage.State.NORMAL, 0, 15, BlueboxMessage.RECEIVED, false);
 			List<SyndEntry> entries = new ArrayList<SyndEntry>();
 			SyndEntry entry;
 			SyndContent description;

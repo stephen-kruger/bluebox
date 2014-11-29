@@ -2,19 +2,18 @@ package com.bluebox.chart;
 
 import java.util.Calendar;
 
-import junit.framework.TestCase;
-
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bluebox.BaseTestCase;
 import com.bluebox.TestUtils;
 import com.bluebox.rest.json.JSONChartHandler;
-import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.StorageFactory;
 
-public class ChartTest extends TestCase {
+public class ChartTest extends BaseTestCase {
 	private static final Logger log = LoggerFactory.getLogger(ChartTest.class);
 	private static int COUNT = 10;
 
@@ -22,18 +21,11 @@ public class ChartTest extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		log.info("Populating chart tests");
-		Inbox.getInstance().deleteAll(); // trigger inbox and storage start
 		TestUtils.addRandom(StorageFactory.getInstance(), COUNT);
-		TestUtils.waitFor(COUNT);
+		TestUtils.waitFor(getInbox(),COUNT);
 	}
 
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		Inbox.getInstance().deleteAll();
-		Inbox.getInstance().stop();
-	}
-
+	@Test
 	public void testCountByDay() throws JSONException {
 		JSONObject jo = StorageFactory.getInstance().getCountByDay();
 
@@ -50,6 +42,7 @@ public class ChartTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCountByHour() throws JSONException {
 		JSONObject jo = StorageFactory.getInstance().getCountByHour();
 		log.info(jo.toString());
@@ -67,6 +60,7 @@ public class ChartTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCountByDayOfWeek() throws JSONException {
 		JSONObject jo = StorageFactory.getInstance().getCountByDayOfWeek();
 		log.info(jo.toString());
@@ -87,6 +81,7 @@ public class ChartTest extends TestCase {
 		} while ((repeat--)>0);
 	}
 
+	@Test
 	public void testScratch() throws JSONException {
 		JSONObject jo = StorageFactory.getInstance().getCountByDayOfWeek();
 		log.info(jo.toString(3));		

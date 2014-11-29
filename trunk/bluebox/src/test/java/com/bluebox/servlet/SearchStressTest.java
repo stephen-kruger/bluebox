@@ -6,14 +6,17 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bluebox.TestUtils;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
 
 public class SearchStressTest extends BaseServletTest {
 	private static final Logger log = LoggerFactory.getLogger(SearchStressTest.class);
-	private int STRESS_LEVEl = 500;
+	private int STRESS_LEVEL = 500;
 
 	public void setUp() throws Exception {
 		super.setUp();
+		TestUtils.addRandom(getInbox(), COUNT);
+		TestUtils.waitFor(getInbox(), COUNT);
 	}
 
 	@Override
@@ -22,13 +25,13 @@ public class SearchStressTest extends BaseServletTest {
 	}
 
 	public void testStressSearchHandler() throws IOException, Exception {
-		String url = "/"+JSONAutoCompleteHandler.JSON_ROOT+"?"+JSONAutoCompleteHandler.NAME+"=*&start=0&count=10";
-		log.info("Stressing to "+STRESS_LEVEl);
-		for (int i = 0; i < STRESS_LEVEl;i++) {
+		String url = "/"+JSONAutoCompleteHandler.JSON_ROOT+"?"+JSONAutoCompleteHandler.NAME+"=*&start=0&count="+COUNT;
+		log.info("Stressing to "+STRESS_LEVEL);
+		for (int i = 0; i < STRESS_LEVEL;i++) {
 			JSONObject js = getRestJSON(url);
-			assertEquals("Autocomplete did not find expected items",5,js.getJSONArray("items").length());
+			assertEquals("Autocomplete did not find expected items",COUNT,js.getJSONArray("items").length());
 		}
-		log.info("Done search stressing to "+STRESS_LEVEl);
+		log.info("Done search stressing to "+STRESS_LEVEL);
 	}
 
 }

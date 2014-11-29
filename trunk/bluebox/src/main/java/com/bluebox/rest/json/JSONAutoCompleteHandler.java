@@ -27,8 +27,7 @@ public class JSONAutoCompleteHandler extends AbstractHandler {
 		String start = req.getParameter(START);
 		String count = req.getParameter(COUNT);
 		
-		log.debug("doAutoComplete {} {} {}",hint,start,count);
-		
+		log.info("doAutoComplete {} {} {}",hint,start,count);
 		try {
 			JSONObject result = new JSONObject();
 			result.put("identifier","identifier");

@@ -20,16 +20,23 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 	private static final Logger log = LoggerFactory.getLogger(BlueboxMessageHandlerFactory.class);
 
 	private List<String> smtpBlackList;
-	private static BlueboxMessageHandlerFactory instance;
+//	private static BlueboxMessageHandlerFactory instance;
 
-	public static BlueboxMessageHandlerFactory getInstance() {
-		return instance;
+//	public static BlueboxMessageHandlerFactory getInstance() {
+//		if (instance==null) {
+//			instance = new BlueboxMessageHandlerFactory(new Inbox());
+//		}
+//		return instance;
+//	}
+
+	public void stop() {
+//		instance = null;
 	}
-
+	
 	public BlueboxMessageHandlerFactory(Inbox inbox) {
 		super(inbox);
 		smtpBlackList = Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST);
-		instance = this;
+		inbox.setBlueboxMessageHandlerFactory(this);
 	}
 
 	public void addSMTPBlackList(String domain) {
@@ -53,10 +60,14 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 		}
 	}
 
-	public boolean isBlackListed(String domain) {
+	public boolean isBlackListed(MessageContext ctx) {
+		return isBlackListed(ctx.getHelo(),ctx.getRemoteAddress().toString());
+	}
+	
+	public boolean isBlackListed(String helo, String address) {
 		try {
 			for (String bdomain : smtpBlackList) {
-				if (domain.contains(bdomain)) {
+				if ((helo.contains(bdomain))||(address.contains(bdomain))) {
 					return true;
 				}
 			}
@@ -70,8 +81,8 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 	@Override
 	public MessageHandler create(MessageContext ctx) {
 		log.debug("Message from {} with address {}",ctx.getHelo(),ctx.getRemoteAddress().toString());
-		if ((isBlackListed(ctx.getHelo())||(isBlackListed(ctx.getRemoteAddress().toString())))) {
-			return new SpamMessageHandler();
+		if (isBlackListed(ctx)) {
+			return new SpamMessageHandler(ctx);
 		}
 		return super.create(ctx);
 	}
@@ -79,6 +90,11 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 	public class SpamMessageHandler implements MessageHandler {
 
 		private String from, recipient;
+		private MessageContext ctx;
+
+		public SpamMessageHandler(MessageContext ctx) {
+			this.ctx = ctx;
+		}
 
 		@Override
 		public void from(String from) throws RejectException {
@@ -99,7 +115,7 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 
 		@Override
 		public void done() {
-			log.info("Handled spab from={} to={}",from,recipient);
+			log.warn("Rejecting spam to {} from {} based on blacklisted SMTP server {} {}",recipient,from,ctx.getHelo(),ctx.getRemoteAddress());
 		}
 
 	}

@@ -46,7 +46,7 @@ public class JSONErrorHandler extends AbstractHandler {
 		log.debug("Serving error detail for id={}",id);
 		resp.setContentType("application/text");
 		Writer writer = resp.getWriter();
-		writer.write(Inbox.getInstance().errorDetail(id));
+		writer.write(instance.errorDetail(id));
 		writer.flush();
 		writer.close();
 	}

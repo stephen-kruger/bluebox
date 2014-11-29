@@ -436,8 +436,9 @@ public class BlueboxMessage {
 		try {
 			String[] header = getBlueBoxMimeMessage().getHeader("Received");
 			if ((header!=null)&&(header.length>0)) {
-				StringTokenizer toks = new StringTokenizer(header[0]);
-				toks.nextToken();// discard the "from
+				// discard enclosing [] and ()
+				StringTokenizer toks = new StringTokenizer(header[0],"[]()");
+				toks.nextToken();// discard the "from"
 				String domain = toks.nextToken();
 				return domain.trim();
 			}
@@ -445,6 +446,7 @@ public class BlueboxMessage {
 		catch (Throwable t) {
 			log.warn("Error checking received header :"+t.getMessage());
 		}
-		return "";
+		// if no headers found, assume localhost
+		return "localhost";
 	}
 }

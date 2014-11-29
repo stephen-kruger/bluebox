@@ -116,7 +116,7 @@
 				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("toblacklist")%></label></td>
 					<td class="infoValue">
-						<%= Utils.toString(Inbox.getInstance().getToBlacklist()) %>
+						<%= Utils.toString(new Inbox().getToBlacklist()) %>
 					</td>
 					<td></td>
 				</tr>
@@ -126,7 +126,7 @@
 				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("fromblacklist")%></label></td>
 					<td class="infoValue">
-						<%= Utils.toString(Inbox.getInstance().getFromBlacklist()) %>
+						<%= Utils.toString(new Inbox().getFromBlacklist()) %>
 					</td>
 					<td></td>
 				</tr>
@@ -136,7 +136,7 @@
 				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("smtpblacklist")%></label></td>
 					<td class="infoValue">
-						<%= Utils.toString(Inbox.getInstance().getSMTPBlacklist()) %>
+						<%= Utils.toString(new Inbox().getSMTPBlacklist()) %>
 					</td>
 					<td></td>
 				</tr>
@@ -146,7 +146,7 @@
 				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("towhitelist")%></label></td>
 					<td class="infoValue">
-						<%= Utils.toString(Inbox.getInstance().getToWhitelist()) %>
+						<%= Utils.toString(new Inbox().getToWhitelist()) %>
 					</td>
 					<td></td>
 				</tr>
@@ -156,7 +156,7 @@
 				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("fromwhitelist")%></label></td>
 					<td class="infoValue">
-						<%= Utils.toString(Inbox.getInstance().getFromWhitelist()) %>
+						<%= Utils.toString(new Inbox().getFromWhitelist()) %>
 					</td>
 					<td></td>
 				</tr>

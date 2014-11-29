@@ -6,20 +6,24 @@ import java.util.List;
 
 import javax.mail.internet.InternetAddress;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.bluebox.TestUtils;
+import com.bluebox.smtp.storage.StorageFactory;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
 import com.rometools.rome.io.SyndFeedInput;
 
 public class FeedServletTest extends BaseServletTest {
+	private static final Logger log = LoggerFactory.getLogger(FeedServletTest.class);
 
+	
+	@Override
 	public void setUp() throws Exception {
 		super.setUp();
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
+		TestUtils.addRandom(StorageFactory.getInstance(), COUNT);
+		TestUtils.waitFor(getInbox(), COUNT);
 	}
 
 	public void testFeed() throws Exception {
@@ -53,7 +57,7 @@ public class FeedServletTest extends BaseServletTest {
 		String to = "junit@junit.com";
 		TestUtils.sendMailSMTP(new InternetAddress("bob@test.com"), new InternetAddress(to), null, null, "feed test", "body");
 
-		TestUtils.waitFor(1);
+		TestUtils.waitFor(getInbox(),1);
 
 		String feedURL = getBaseURL()+"/feed/inbox?email="+to;
 		log.info("Checking URL:"+feedURL);

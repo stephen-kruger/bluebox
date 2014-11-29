@@ -2,6 +2,8 @@ package com.bluebox.servlet;
 
 import java.io.IOException;
 
+import javax.servlet.ServletException;
+
 import junit.framework.TestCase;
 
 import org.codehaus.jettison.json.JSONObject;
@@ -11,8 +13,8 @@ import org.mortbay.jetty.testing.ServletTester;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.bluebox.TestUtils;
-import com.bluebox.Utils;
+import com.bluebox.BlueBoxServlet;
+import com.bluebox.feed.FeedServlet;
 import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -23,24 +25,23 @@ public abstract class BaseServletTest extends TestCase {
 	private String baseURL;
 	private String contextPath = "/";
 	public ServletHolder bbs, feeds;
-	protected static final Logger log = LoggerFactory.getLogger(BaseServletTest.class);
+	private static final Logger log = LoggerFactory.getLogger(BaseServletTest.class);
 	public static final int COUNT = 5;
 	public static final String RECIPIENT = "user@there.com";
 
 	@Override
 	protected void setUp() throws Exception {
-
 		tester = new ServletTester();
 		tester.setContextPath(contextPath);
 		//ServletHolder jsp = tester.addServlet(org.apache.jasper.servlet.JspServlet.class, "*.jsp");
-		bbs = tester.addServlet(com.bluebox.BlueBoxServlet.class, "/rest/*");
-		feeds = tester.addServlet(com.bluebox.feed.FeedServlet.class, "/feed/*");
+		bbs = tester.addServlet(BlueBoxServlet.class, "/rest/*");
+		feeds = tester.addServlet(FeedServlet.class, "/feed/*");
 
 		tester.setResourceBase("WebContent");
 		//		tester.addServlet(DefaultServlet.class, "/");
 		baseURL = tester.createSocketConnector(false);
 
-		log.info("Starting servlets at "+baseURL);
+		log.debug("Starting servlets at "+baseURL);
 		tester.start();
 
 		// this triggers the servlet to actually start
@@ -49,32 +50,12 @@ public abstract class BaseServletTest extends TestCase {
 		// clear mailboxes
 		getURL("/rest/admin/clear");
 
-		// send some test messages
-		//Utils.sendSingleMessage(COUNT);
-		for (int i = 0; i < COUNT; i++)
-			TestUtils.sendMailSMTP(Utils.getRandomAddress(), Utils.getRandomAddress(), null, null, "subject", "body");
-		getRestJSON("/"+JSONFolderHandler.JSON_ROOT);
-
-//				Thread.sleep(5000);
-
-
-		//		Inbox inbox = Inbox.getInstance();
-		//		InputStream is = new FileInputStream(new File("src/test/resources/test-data/inlineattachments.eml"));
-		//		inbox.deliver("sender@here.com", "user@there.com", is);
-		//
-		//		is = new FileInputStream(new File("src/test/resources/test-data/crash.eml"));
-		//		inbox.deliver("sender@here.com", RECIPIENT, is);
-		//
-		//		is = new FileInputStream(new File("src/test/resources/test-data/m0017.txt"));
-		//		inbox.deliver("sender@here.com", RECIPIENT, is);
-		//		log.fine("Test setUp");
-
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		log.info("Stopping servlet");
+		log.debug("Stopping servlet");
 
 		try {
 			tester.stop();
@@ -88,15 +69,16 @@ public abstract class BaseServletTest extends TestCase {
 		catch (Throwable t) {
 			t.printStackTrace();
 		}
+	}
+	
+	public Inbox getInbox() {
 		try {
-			Inbox inbox = Inbox.getInstance();
-			inbox.deleteAll();
-			inbox.stop();
+			return ((BlueBoxServlet)bbs.getServlet()).getInbox() ;
+		} 
+		catch (ServletException e) {
+			e.printStackTrace();
+			return null;
 		}
-		catch (Throwable t) {
-			t.printStackTrace();
-		}
-
 	}
 
 	public int getMailCount(BlueboxMessage.State state) {
@@ -128,7 +110,7 @@ public abstract class BaseServletTest extends TestCase {
 			return jo;
 		}
 		catch (Throwable t) {
-			log.info(js);
+			log.debug(js);
 			throw t;
 		}
 	}

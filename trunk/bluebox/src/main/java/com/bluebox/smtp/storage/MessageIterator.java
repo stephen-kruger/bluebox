@@ -45,7 +45,7 @@ public class MessageIterator implements Iterator<BlueboxMessage> {
 	private boolean nextPage() throws Exception {
 		start+=MAX;
 		list = StorageFactory.getInstance().listMail(address, state, start, MAX, BlueboxMessage.RECEIVED, true);
-		log.info("Getting page of {} results starting at {} (found {})",MAX,start,list.size());
+		log.debug("Getting page of {} results starting at {} (found {})",MAX,start,list.size());
 		iterator = list.iterator();
 		return list.size()>0;
 	}

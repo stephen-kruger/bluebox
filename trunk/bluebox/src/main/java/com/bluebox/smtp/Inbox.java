@@ -22,6 +22,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import javax.mail.Address;
+import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -63,36 +64,28 @@ public class Inbox implements SimpleMessageListener {
 	public static final String ORDERBY = "OrderBy";
 	private static final Logger log = LoggerFactory.getLogger(Inbox.class);
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
+	private BlueboxMessageHandlerFactory blueboxMessageHandlerFactory;
 
 	private static Timer timer = null;
 	private static TimerTask timerTask = null;
 
-	private static Inbox inbox;
+//	private static Inbox inbox;
+//
+//	public static Inbox getInstance() {
+//		if (inbox == null) {
+//			log.debug("Instantiating inbox instance");
+//			inbox = new Inbox();
+//			inbox.start();
+//		}
+//		return inbox;
+//	}
 
-	public static Inbox getInstance() {
-		if (inbox == null) {
-			inbox = new Inbox();
-			inbox.start();
-		}
-		return inbox;
-	}
-
-	private Inbox() {
-		StorageFactory.getInstance();
+	public Inbox() {
 		loadConfig();
 	}
 
-	private void start() {
+	public void start() {
 		log.debug("Starting inbox");
-
-		// ensure storage instance if loaded and started
-		try {
-			StorageFactory.getInstance().start();
-		} 
-		catch (Exception e) {
-			log.error("Error starting storage instance",e.getMessage());
-			e.printStackTrace();
-		}
 		// now start a background timer for the mail expiration
 		// only one per jvm instance
 		if (timer == null) {
@@ -131,13 +124,13 @@ public class Inbox implements SimpleMessageListener {
 			timerTask = null;
 		}
 
-		log.debug("Stopping inbox");
-		try {
-			StorageFactory.getInstance().stop();
-		}
-		catch (Throwable e) {
-			log.error("Error stopping storage :{}",e.getMessage());
-		}
+//		log.debug("Stopping inbox");
+//		try {
+//			StorageFactory.getInstance().stop();
+//		}
+//		catch (Throwable e) {
+//			log.error("Error stopping storage :{}",e.getMessage());
+//		}
 
 		log.debug("Stopping search engine");
 		try {
@@ -147,7 +140,7 @@ public class Inbox implements SimpleMessageListener {
 			e.printStackTrace();
 			log.error("Error stopping search engine",e);
 		}
-		inbox = null;
+//		inbox = null;
 		log.info("Stopped inbox");
 	}
 
@@ -214,7 +207,8 @@ public class Inbox implements SimpleMessageListener {
 			@Override
 			public void run() {
 				for (String uid : uids) {
-
+					if (isStopped())
+						break;
 					try {
 						final BlueboxMessage spam = retrieve(uid);
 						boolean spamAction = true;
@@ -227,7 +221,12 @@ public class Inbox implements SimpleMessageListener {
 						}		
 						// now process all mails looking for same smtp source
 						String smtpDomain = spam.getSMTPSender();
-						if (smtpDomain.trim().length()>0) {
+						if ((smtpDomain.trim().length()>0)&&(smtpDomain!="localhost")) {
+							// add to blacklist
+							if (blueboxMessageHandlerFactory!=null)
+								blueboxMessageHandlerFactory.addSMTPBlackList(smtpDomain.trim());
+							else
+								log.warn("Cannot blacklist SMTP sender, no handler specified");
 							BlueboxMessage msg;
 							MessageIterator mi = new MessageIterator();
 							while (mi.hasNext()) {
@@ -240,7 +239,7 @@ public class Inbox implements SimpleMessageListener {
 											softDelete(msg.getIdentifier());
 										}
 										else {
-											log.info("Spam detected - soft undeleting");
+											log.info("Spam mismatch detected - soft undeleting");
 											softUndelete(msg.getIdentifier(),msg);
 										}
 									}
@@ -263,6 +262,8 @@ public class Inbox implements SimpleMessageListener {
 					}
 				}
 			}
+
+
 		};
 		return wt;
 	}
@@ -413,44 +414,24 @@ public class Inbox implements SimpleMessageListener {
 			}
 
 			// check from blacklist
-			for (Object badDomain : getFromBlacklist()) {
-				log.debug("{}<<<---- Comparing fromBlackList---->>>{}",badDomain,from);
-				if (fromAddress.getDomain().endsWith(badDomain.toString())) {
-					log.warn("Rejecting mail from "+from+" to "+recipient+" due to blacklisted FROM:"+badDomain);
-					return false;
-				}
+			if (isFromBlackListed(fromAddress)) {
+				return false;
 			}
+
+
 			// check to blacklist
-			for (Object badDomain : getToBlacklist()) {
-				log.debug("{}<<<---- Comparing toBlackList---->>>{}",badDomain,recipient);
-				if (recipientAddress.getDomain().endsWith(badDomain.toString())) {
-					log.warn("Rejecting mail from {} to {} due to blacklisted TO:",from,recipient,badDomain);
-					return false;
-				}
+			if (isToBlackListed(recipientAddress)) {
+				return false;
 			}
 
 			// check the from whitelist
 			if (fromWhiteList.size()>0) {
-				for (Object goodDomain : fromWhiteList) {
-					log.debug(goodDomain.toString()+"<<<---- Comparing fromWhiteList---->>>{}",from);
-					if (fromAddress.getDomain().endsWith(goodDomain.toString())) {
-						return true;
-					}
-				}
-				log.warn("Rejecting mail from {} to {} because not in FROM whitelist",from,recipient);
-				return false;
+				return isFromWhiteListed(fromAddress);
 			}
 
-			// check the to whitelist
+			// check the to whitelist			
 			if (toWhiteList.size()>0) {
-				for (Object goodDomain : toWhiteList) {
-					log.debug("{}<<<---- Comparing toWhiteList---->>>{}",goodDomain,recipient);
-					if (recipientAddress.getDomain().endsWith(goodDomain.toString())) {
-						return true;
-					}
-				}
-				log.warn("Rejecting mail from {} to {} because not in TO whitelist",from,recipient);
-				return false;
+				return isToWhiteListed(recipientAddress);
 			}
 
 
@@ -466,15 +447,67 @@ public class Inbox implements SimpleMessageListener {
 		}
 	}
 
+	public boolean isToBlackListed(InboxAddress recipientAddress) {
+		for (Object badDomain : getToBlacklist()) {
+			log.debug("{}<<<---- Comparing toBlackList---->>>{}",badDomain,recipientAddress);
+			if (recipientAddress.getDomain().endsWith(badDomain.toString())) {
+				log.warn("Rejecting mail to {} due to blacklisted TO:",recipientAddress,badDomain);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isFromBlackListed(InboxAddress fromAddress) {
+		for (Object badDomain : getFromBlacklist()) {
+			log.debug("{}<<<---- Comparing fromBlackList---->>>{}",badDomain,fromAddress);
+			if (fromAddress.getDomain().endsWith(badDomain.toString())) {
+				log.warn("Rejecting mail from {} due to blacklisted FROM {}",fromAddress,badDomain);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isToWhiteListed(InboxAddress recipientAddress) {
+		for (Object goodDomain : toWhiteList) {
+			log.debug("{}<<<---- Comparing toWhiteList---->>>{}",goodDomain,recipientAddress);
+			if (recipientAddress.getDomain().endsWith(goodDomain.toString())) {
+				return true;
+			}
+		}
+		log.warn("Rejecting mail to {} because not in TO whitelist",recipientAddress);
+		return false;
+	}
+
+	public boolean isFromWhiteListed(InboxAddress fromAddress) {
+		for (Object goodDomain : fromWhiteList) {
+			log.debug(goodDomain.toString()+"<<<---- Comparing fromWhiteList---->>>{}",fromAddress);
+			if (fromAddress.getDomain().endsWith(goodDomain.toString())) {
+				return true;
+			}
+		}
+		log.warn("Rejecting mail from {} because not in FROM whitelist",fromAddress);
+		return false;
+	}
+
 	@Override
 	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException {
 		recipient = javax.mail.internet.MimeUtility.decodeText(recipient);
 		from = javax.mail.internet.MimeUtility.decodeText(from);
+		MimeMessage mimeMessage = null;
+		try {
+			mimeMessage = Utils.loadEML(data);
+		} 
+		catch (MessagingException e1) {
+			log.error("Problem loading message",e1);
+			throw new IOException(e1);
+		}
 		// when reading from .eml files, we might get multiple recipients, not sure why they are delivered like this.
 		// when called via SubEtha, they are normally single recipient addresses
+		List<String> recipients = new ArrayList<String>();
 		if (recipient.indexOf(',')>=0) {
 			StringTokenizer tok = new StringTokenizer(recipient,",");
-			List<String> recipients = new ArrayList<String>();
 			String r;
 			while (tok.hasMoreTokens()) {
 				r = tok.nextToken();
@@ -486,53 +519,45 @@ public class Inbox implements SimpleMessageListener {
 					log.info("Skipping duplicate recipient");
 				}
 			}
-			for (String nrec : recipients) {
-				data.mark(Integer.MAX_VALUE);
-				deliver(from, nrec, data);
-				data.reset();
-			}
 		}
 		else {
+			recipients.add(recipient);
+		}
+		// now send the message to each recipient
+		for (String nrec : recipients) {
 			try {
-				deliver(from,recipient,Utils.loadEML(data));
+				deliver(from,nrec,mimeMessage);
 			} 
 			catch (Throwable e) {
 				log.error(e.getMessage());
-				try {
-					data.reset();
-				}
-				catch (Throwable t) {
-					// ignore
-				}
 				errorLog("("+e.getMessage()+") Accepting raw message for recipient="+recipient +" "+e.getMessage(), data);
-				//				e.printStackTrace();
 			}
 		}
-		data.close();
 	}
 
-	public void deliver(String from, String recipient, MimeMessage mmessage) throws Exception {
-		//		// if this is a spam blacklisted "from", then abort
-		//		if (isReceivedBlackListedDomain(mmessage)) {
-		//			return;
-		//		}
-		from = getFullAddress(from, mmessage.getFrom());
-		recipient = getFullAddress(recipient, mmessage.getAllRecipients());
-		log.info("Delivering mail for {} from {}",recipient,from);
-		BlueboxMessage message = StorageFactory.getInstance().store( 
-				from,
-				new InboxAddress(recipient),
-				new Date(),
-				mmessage);
-		// ensure the content is indexed
+	public void deliver(String from, String recipient, MimeMessage mmessage) {
 		try {
-			SearchIndexer.getInstance().indexMail(message);
+			from = getFullAddress(from, mmessage.getFrom());
+			recipient = getFullAddress(recipient, mmessage.getAllRecipients());
+			log.info("Delivering mail for {} from {}",recipient,from);
+			BlueboxMessage message = StorageFactory.getInstance().store( 
+					from,
+					new InboxAddress(recipient),
+					new Date(),
+					mmessage);
+			updateStats(message, recipient, false);
+			// ensure the content is indexed
+			try {
+				SearchIndexer.getInstance().indexMail(message);
+			}
+			catch (Throwable t) {
+				log.error(t.getMessage());
+				t.printStackTrace();
+			}
 		}
 		catch (Throwable t) {
-			log.error(t.getMessage());
-			t.printStackTrace();
+			log.error("Problem delivering message",t);
 		}
-		updateStats(message, recipient, false);
 	}
 
 	/*
@@ -676,7 +701,6 @@ public class Inbox implements SimpleMessageListener {
 
 	private JSONObject updateStatsRecent(String inbox, String from, String subject, String uid) {
 		try {
-			//			recentStats.put(BlueboxMessage.SUBJECT, StringEscapeUtils.escapeJavaScript(MimeUtility.decodeText(subject)));
 			recentStats.put(BlueboxMessage.SUBJECT, MimeUtility.decodeText(subject));
 			recentStats.put(BlueboxMessage.INBOX, StringEscapeUtils.escapeJavaScript(inbox));
 			recentStats.put(BlueboxMessage.FROM, StringEscapeUtils.escapeJavaScript(from));
@@ -685,7 +709,6 @@ public class Inbox implements SimpleMessageListener {
 		catch (Throwable e1) {
 			e1.printStackTrace();
 		}
-
 		return recentStats;
 	}
 
@@ -700,6 +723,7 @@ public class Inbox implements SimpleMessageListener {
 					searchIndexer.deleteIndexes();
 					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.NORMAL);
 					while (mi.hasNext()) {
+						if (isStopped()) break;
 						searchIndexer.indexMail(mi.next());						
 						setProgress(mi.getProgress());
 					}
@@ -720,8 +744,11 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public void addToWhiteList(String goodDomain) {
-		toWhiteList.remove(goodDomain);		
-		toWhiteList.add(goodDomain);		
+		synchronized (toWhiteList) {
+			log.info("Whitelisting mail to domain {}",goodDomain);
+			toWhiteList.remove(goodDomain);		
+			toWhiteList.add(goodDomain);		
+		}
 	}
 
 	public List<String> getToWhitelist() {
@@ -729,8 +756,11 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public void addFromWhiteList(String goodDomain) {
-		fromWhiteList.remove(goodDomain);	
-		fromWhiteList.add(goodDomain);	
+		synchronized (fromWhiteList) {
+			log.info("Whitelisting mail from domain {}",goodDomain);
+			fromWhiteList.remove(goodDomain);	
+			fromWhiteList.add(goodDomain);	
+		}
 	}
 
 	public List<String> getFromWhitelist() {
@@ -742,9 +772,11 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public void addFromBlacklist(String badDomain) {
-		log.info("Blacklisting domain {}",badDomain);
-		fromBlackList.remove(badDomain);		
-		fromBlackList.add(badDomain);		
+		synchronized (fromBlackList) {
+			log.info("Blacklisting mail from domain {}",badDomain);
+			fromBlackList.remove(badDomain);		
+			fromBlackList.add(badDomain);	
+		}
 	}
 
 	public List<String> getFromBlacklist() {
@@ -752,8 +784,11 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public void addToBlacklist(String badDomain) {
-		toBlackList.remove(badDomain);		
-		toBlackList.add(badDomain);		
+		synchronized (toBlackList) {
+			log.info("Blacklisting mail to domain {}",badDomain);
+			toBlackList.remove(badDomain);		
+			toBlackList.add(badDomain);		
+		}
 	}
 
 	public List<String> getToBlacklist() {
@@ -773,7 +808,7 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public WorkerThread backup(final File dir) throws Exception {
-		final Inbox inbox = Inbox.getInstance();
+		final Inbox inbox = this;
 		WorkerThread wt = new WorkerThread("backup") {
 			private File zipFile;
 			@Override
@@ -787,6 +822,7 @@ public class Inbox implements SimpleMessageListener {
 					String emlFile,jsonFile;
 					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.ANY);
 					while (mi.hasNext()) {
+						if (isStopped()) break;
 						msg = mi.next();
 						setProgress(mi.getProgress());
 						try {
@@ -849,6 +885,7 @@ public class Inbox implements SimpleMessageListener {
 						int progress = 0;
 						int count = archive.size()/2;
 						while (entries.hasMoreElements()) {
+							if (isStopped()) break;
 							ZipEntry zipEntry = (ZipEntry) entries.nextElement();
 							setProgress(progress*100/count);
 							log.debug("Progress : {}",(progress*100/count));
@@ -930,6 +967,7 @@ public class Inbox implements SimpleMessageListener {
 				if (dir.exists()) {
 					File[] files = dir.listFiles();
 					for (int i = 0; i < files.length;i++) {
+						if (isStopped()) break;
 						setProgress(i*100/files.length);
 						log.debug("Progress : {}",(i*100/files.length));
 						if (files[i].getName().endsWith("eml")) {
@@ -977,6 +1015,10 @@ public class Inbox implements SimpleMessageListener {
 		};
 		return wt;
 
+	}
+
+	public void setBlueboxMessageHandlerFactory(BlueboxMessageHandlerFactory blueboxMessageHandlerFactory) {
+		this.blueboxMessageHandlerFactory = blueboxMessageHandlerFactory;		
 	}
 
 	//	/**

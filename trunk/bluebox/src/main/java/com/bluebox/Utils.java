@@ -57,13 +57,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.rest.json.AbstractHandler;
+import com.bluebox.search.SearchIndexer;
 import com.bluebox.smtp.Inbox;
+import com.bluebox.smtp.InboxAddress;
+import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.StorageIf;
 
 public class Utils {
 	public static final String UTF8 = "UTF-8";
 	private static final Logger log = LoggerFactory.getLogger(Utils.class);
 	private static int counter=0;
+	private static MimetypesFileTypeMap ftm;
 
+	static {
+		ftm = (MimetypesFileTypeMap) FileTypeMap.getDefaultFileTypeMap();
+		ftm.addMimeTypes("application/document odt ODT");
+		ftm.addMimeTypes("application/presentation odp ODP");
+		ftm.addMimeTypes("application/spreadsheet ods ODS");
+		ftm.addMimeTypes("text/plain txt TXT");
+		ftm.addMimeTypes("image/jpeg jpg JPG");
+		ftm.addMimeTypes("image/png png PNG");
+		ftm.addMimeTypes("image/gif gif GIF");
+		ftm.addMimeTypes("application/zip zip ZIP");
+		FileTypeMap.setDefaultFileTypeMap(ftm);
+	}
+	
 	public static String getHostName() {
 		try {
 			InetAddress addr = InetAddress.getLocalHost();
@@ -200,33 +218,26 @@ public class Utils {
 	//		return StorageImpl.escape(getEmail(email));
 	//	}
 
-	public static String uploadEML(InputStream eml) throws IOException, MessagingException {
+	public static String uploadEML(Inbox inbox, InputStream eml) throws IOException, MessagingException {
 		if (eml==null) {
 			log.error("Could not load eml resource");
 			return "Could not load eml resource";
 		}
 		try {
-			//			Session sess = getSession();
-			//			log.info("Session retrieved :"+sess);
-			//MimeMessage message = new MimeMessage(sess, eml);
-			//			String mstr = Utils.convertStreamToString(eml);
-			//log.info(mstr);
 			MimeMessage message = loadEML(eml);
-			sendMessageDirect(message);
+			sendMessageDirect(inbox,message);
 			eml.close();
 			return "Loaded email ok";
 		}  
 		catch (Throwable e) {
 			e.printStackTrace();
-			return e.toString()+":"+e.getMessage();
-		}
-		finally {
 			try {
 				eml.close();
 			}
-			catch (IOException e) {
-				e.printStackTrace();
+			catch (IOException ioe) {
+				// don't care
 			}
+			return e.toString()+":"+e.getMessage();
 		}
 	}
 
@@ -370,7 +381,7 @@ public class Utils {
 	//		}
 	//	}
 
-	public static WorkerThread generate(final ServletContext session, final int count) {
+	public static WorkerThread generate(final ServletContext session, final Inbox inbox, final int count) {
 		WorkerThread wt = new WorkerThread("generate") {
 
 			@Override
@@ -380,6 +391,7 @@ public class Utils {
 					int totalCount = 0;
 					Random r = new Random();
 					do {
+						if (isStopped()) break;
 						toC = r.nextInt(5);
 						ccC = r.nextInt(5);
 						bccC = r.nextInt(5);
@@ -392,7 +404,7 @@ public class Utils {
 								randomText(14),
 								true);
 
-						sendMessageDirect(msg);
+						sendMessageDirect(inbox,msg);
 						totalCount += toC+ccC+bccC;
 						setProgress((totalCount*100)/count);
 					} while (totalCount<count);
@@ -410,7 +422,7 @@ public class Utils {
 		return wt;
 	}
 
-	public static void sendMessage(final ServletContext session, final int count) {
+	public static void sendMessage(final ServletContext session, final Inbox inbox, final int count) {
 		ExecutorService threadPool = Executors.newFixedThreadPool(10);
 		for (int j = 0; j < count/6; j++) {
 			log.debug("Sending message {}",j);
@@ -432,7 +444,7 @@ public class Utils {
 									randomText(14),
 									true);
 
-							sendMessageDirect(msg);
+							sendMessageDirect(inbox,msg);
 							sent = true;
 
 						} 
@@ -456,7 +468,7 @@ public class Utils {
 		}		
 	}
 
-	private static void sendMessageDirect(MimeMessage msg) throws Exception {
+	private static void sendMessageDirect(Inbox inbox,MimeMessage msg) throws Exception {
 		Address[] to = msg.getRecipients(RecipientType.TO);
 		Address[] cc = msg.getRecipients(RecipientType.CC);
 		Address[] bcc = msg.getRecipients(RecipientType.BCC);
@@ -476,11 +488,35 @@ public class Utils {
 			recipients.add("anonymous@bluebox.com");
 		for (String recipient : recipients) {
 			log.debug("Sending message to {}",recipient);
-			if (Inbox.getInstance().accept(msg.getFrom()[0].toString(), recipient)) {
-				Inbox.getInstance().deliver(msg.getFrom()[0].toString(), recipient, Utils.streamMimeMessage(msg));
+			if (inbox.accept(msg.getFrom()[0].toString(), recipient)) {
+				inbox.deliver(msg.getFrom()[0].toString(), recipient, msg);
 			}
 		}
+	}
+	
+	public static void sendMessageDirect(StorageIf storage,MimeMessage msg) throws Exception {
+		Address[] to = msg.getRecipients(RecipientType.TO);
+		Address[] cc = msg.getRecipients(RecipientType.CC);
+		Address[] bcc = msg.getRecipients(RecipientType.BCC);
+		List<String> recipients = new ArrayList<String>();
+		if (to!=null)
+			for (int i = 0; i < to.length;i++)
+				recipients.add(to[i].toString());
+		if (cc!=null)
+			for (int i = 0; i < cc.length;i++)
+				recipients.add(cc[i].toString());
+		if (bcc!=null)
+			for (int i = 0; i < bcc.length;i++)
+				recipients.add(bcc[i].toString());
 
+		// if we load emails from file, there might not be a recipient (bcc)
+		if (recipients.size()==0)
+			recipients.add("anonymous@bluebox.com");
+		for (String recipient : recipients) {
+			log.debug("Sending message to {}",recipient);
+			BlueboxMessage bbm = storage.store(msg.getFrom()[0].toString(), new InboxAddress(recipient), new Date(), msg);
+			SearchIndexer.getInstance().indexMail(bbm);
+		}
 	}
 
 	//		public static Session getSession() {
@@ -610,16 +646,7 @@ public class Utils {
 		int index = r.nextInt(extensions.length); 
 		String name = Integer.toString(r.nextInt(99))+"-"+names[index];
 
-		MimetypesFileTypeMap ftm = (MimetypesFileTypeMap) FileTypeMap.getDefaultFileTypeMap();
-		ftm.addMimeTypes("application/document odt ODT");
-		ftm.addMimeTypes("application/presentation odp ODP");
-		ftm.addMimeTypes("application/spreadsheet ods ODS");
-		ftm.addMimeTypes("text/plain txt TXT");
-		ftm.addMimeTypes("image/jpeg jpg JPG");
-		ftm.addMimeTypes("image/png png PNG");
-		ftm.addMimeTypes("image/gif gif GIF");
-		ftm.addMimeTypes("application/zip zip ZIP");
-		FileTypeMap.setDefaultFileTypeMap(ftm);
+		
 
 		MimeBodyPart messageBodyPart = new MimeBodyPart();
 		InputStream content;

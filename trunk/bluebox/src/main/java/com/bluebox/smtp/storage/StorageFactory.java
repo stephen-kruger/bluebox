@@ -38,6 +38,13 @@ public class StorageFactory {
 					storageInstance = new com.bluebox.smtp.storage.derby.StorageImpl();
 				}
 			}
+			try {
+				log.debug("Starting Storage");
+				storageInstance.start();
+			} 
+			catch (Exception e) {
+				log.error("Problem starting storage instance",e);
+			}
 		}
 
 		return storageInstance;
