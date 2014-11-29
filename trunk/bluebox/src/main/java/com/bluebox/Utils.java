@@ -878,4 +878,14 @@ public class Utils {
 //			return listS.substring(0, listS.length()-1).toString();
 		return listS.toString();
 	}
+	
+	public static String toCSVString(List<String> list) {
+		StringBuffer listS = new StringBuffer();
+		for (String s : list) {
+			listS.append(s).append(',');
+		}
+		if (listS.length()>0)
+			return listS.substring(0, listS.length()-1).toString();
+		return listS.toString();
+	}
 }

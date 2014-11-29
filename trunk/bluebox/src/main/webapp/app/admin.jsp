@@ -3,6 +3,8 @@
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.smtp.storage.StorageIf"%>
 <%@ page import="com.bluebox.Config"%>
+<%@ page import="com.bluebox.rest.json.JSONAdminHandler"%><%@ page import="com.bluebox.Utils"%>
+<%@ page import="com.bluebox.smtp.Inbox"%>
 <%
 	Config bbconfig = Config.getInstance();
 	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
@@ -30,7 +32,7 @@
 		function updateWorkers() {
 			try {
 				require(["dojox/data/JsonRestStore"], function () {
-					var urlStr = "<%=request.getContextPath()%>/rest/admin/workerstats";
+					var urlStr = "<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/workerstats";
 					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 					jStore.fetch({
 						  onComplete : 
@@ -78,64 +80,69 @@
 		
 		function generateEmails() {
 			console.log(dijit.byId("mailCountSlider").value);
-			genericGet("<%=request.getContextPath()%>/rest/admin/generate?count="+dijit.byId("mailCountSlider").value,
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/generate?count="+dijit.byId("mailCountSlider").value,
 					"Scheduled generation of "+dijit.byId("mailCountSlider").value+" emails");
 		}
 
 		function setBaseCount() {
-			genericGet("<%=request.getContextPath()%>/rest/admin/setbasecount?count="+dijit.byId("mailCountSlider").value,
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/setbasecount?count="+dijit.byId("setbasecount").value,
 					"<%=adminResource.getString("set_global_action")%>");
 		}
 		
+		function setSMTPBlacklist() {
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/setsmtpblacklist?value="+dijit.byId("setsmtpblacklist").value,
+					"<%=adminResource.getString("set_smtpblacklist_action")%>");
+		}
+		
 		function deleteAllMail() {
-			genericConfirmGet("<%=request.getContextPath()%>/rest/admin/clear",
+			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/clear",
 					"<%=adminResource.getString("delete_all_action")%>");
 		}
 		
 		function purgeDeletedMail() {
-			genericConfirmGet("<%=request.getContextPath()%>/rest/admin/purge_deleted",
+			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/purge_deleted",
 					"<%=adminResource.getString("purge_deleted_action")%>");
 		}
 		
 		function clearErrorLogs() {
-			genericGet("<%=request.getContextPath()%>/rest/admin/errors",
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/errors",
 					"<%=adminResource.getString("clear_errors_action")%>");
 		}
 		
 		function pruneMail() {
-			genericGet("<%=request.getContextPath()%>/rest/admin/prune",
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/prune",
 					"<%=adminResource.getString("prune_action")%>");
 		}
 		
 		function rebuildSearchIndexes() {
-			genericConfirmGet("<%=request.getContextPath()%>/rest/admin/rebuildsearchindexes",
+			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/rebuildsearchindexes",
 					"<%=adminResource.getString("rebuild_search_action")%>",
 					"Started");
 		}
 		
 		function dbMaintenance() {
-			genericGet("<%=request.getContextPath()%>/rest/admin/dbmaintenance",
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/dbmaintenance",
 					"<%=adminResource.getString("db_maintenance_action")%>");
 		}
 		
 		function dbBackup() {
-			genericGet("<%=request.getContextPath()%>/rest/admin/backup",
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/backup",
 					"<%=adminResource.getString("backup_action")%>");
 		}
 		
 		function dbRestore() {
-			genericConfirmGet("<%=request.getContextPath()%>/rest/admin/restore",
+			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/restore",
 					"<%=adminResource.getString("restore_action")%>",
 					"Server responded");
 		}
 		
 		function dbClean() {
-			genericConfirmGet("<%=request.getContextPath()%>/rest/admin/clean",
+			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/clean",
 					"<%=adminResource.getString("clear_backup_action")%>");
 		}
 		
 		function validateSearch() {
-			genericGet("<%=request.getContextPath()%>/rest/admin/validatesearch",
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/validatesearch",
 					"<%=adminResource.getString("validate_search_action")%>");
 		}
 		
@@ -267,7 +274,7 @@
 				<tr>
 					<td><label><%=adminResource.getString("set_global_action")%></label></td>
 					<td>
-					<form method="get" action="<%=request.getContextPath()%>/rest/admin/setbasecount">
+					<form method="get" action="<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT %>/setbasecount">
 					<input id="setbasecount" type="text" data-dojo-type="dijit/form/NumberTextBox" name="setbasecount" value="25000000" data-dojo-props="constraints:{pattern: '#',min:0,max:99999999,places:0},  invalidMessage:'Please enter a value between 10 and 5000'" />
 					</form>
 					</td>
@@ -335,6 +342,18 @@
 					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="validatesearch" id="validatesearchProgress" data-dojo-props="maximum:100"></div></td>
 					<td></td>
 					<td align="right"><label data-dojo-id="validatesearchlabel" id="validatesearchLabel"></label></td>
+				</tr>
+				<tr>
+				<td><br/></td>
+				</tr>								
+				<tr>
+					<td><label><%=adminResource.getString("set_smtpblacklist_action")%></label></td>
+					<td>
+					<form method="get" action="<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT %>/setsmtpblacklist">
+					<input id="setsmtpblacklist" type="text" data-dojo-type="dijit/form/TextBox" name="setsmtpblacklist" value="<%= Utils.toCSVString(new Inbox().getSMTPBlacklist()) %>"/>
+					</form>
+					</td>
+					<td><button onclick="setSMTPBlacklist();" data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
 				</tr>
 			</table>
 			</div>

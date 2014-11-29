@@ -770,6 +770,10 @@ public class Inbox implements SimpleMessageListener {
 	public List<String> getSMTPBlacklist() {
 		return Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST);		
 	}
+	
+	public void setSMTPBlacklist(String s) {
+		blueboxMessageHandlerFactory.setSMTPBlacklist(s);
+	}
 
 	public void addFromBlacklist(String badDomain) {
 		synchronized (fromBlackList) {

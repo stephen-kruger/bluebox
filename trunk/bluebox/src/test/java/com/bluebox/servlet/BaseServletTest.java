@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.BlueBoxServlet;
 import com.bluebox.feed.FeedServlet;
+import com.bluebox.rest.json.JSONAdminHandler;
 import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -44,11 +45,8 @@ public abstract class BaseServletTest extends TestCase {
 		log.debug("Starting servlets at "+baseURL);
 		tester.start();
 
-		// this triggers the servlet to actually start
-		getRestJSON("/"+JSONFolderHandler.JSON_ROOT);
-
 		// clear mailboxes
-		getURL("/rest/admin/clear");
+		getURL("/"+JSONAdminHandler.JSON_ROOT+"/clear");
 
 	}
 

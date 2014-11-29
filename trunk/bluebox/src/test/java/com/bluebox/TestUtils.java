@@ -29,7 +29,7 @@ public class TestUtils extends TestCase {
 	}
 	
 	public static void waitFor(Inbox inbox, int count) throws Exception {
-		int retryCount = 5;
+		int retryCount = 5*count;
 		while ((retryCount-->0)&&(inbox.getMailCount(BlueboxMessage.State.NORMAL)<count)) {
 			try {
 				log.info("Waiting for delivery "+count);
