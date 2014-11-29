@@ -1,6 +1,5 @@
 package com.bluebox;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,13 +12,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpStatus;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bluebox.rest.json.JSONAdminHandler;
 import com.bluebox.rest.json.JSONAttachmentHandler;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONChartHandler;
@@ -33,10 +32,10 @@ import com.bluebox.rest.json.JSONRawMessageHandler;
 import com.bluebox.rest.json.JSONSPAMHandler;
 import com.bluebox.rest.json.JSONSearchHandler;
 import com.bluebox.rest.json.JSONStatsHandler;
-import com.bluebox.search.SearchIndexer;
 import com.bluebox.smtp.BlueBoxSMTPServer;
 import com.bluebox.smtp.BlueboxMessageHandlerFactory;
 import com.bluebox.smtp.Inbox;
+import com.bluebox.smtp.storage.StorageFactory;
 
 public class BlueBoxServlet extends HttpServlet {
 	private static final Logger log = LoggerFactory.getLogger(BlueBoxServlet.class);
@@ -71,6 +70,14 @@ public class BlueBoxServlet extends HttpServlet {
 
 		// shut down the inbox
 		inbox.stop();
+		
+		try {
+			StorageFactory.getInstance().stop();
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		log.info("Stopped");
 	}
 
@@ -145,160 +152,12 @@ public class BlueBoxServlet extends HttpServlet {
 			new JSONChartHandler().doGet(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf("rest/admin/generate")>=0){
-			WorkerThread wt = Utils.generate(req.getSession().getServletContext(), inbox, Integer.parseInt(req.getParameter("count")));
-			startWorker(wt, req, resp);
-			resp.flushBuffer();	
-			return;
-		}	
-		if (req.getRequestURI().indexOf("rest/admin/setbasecount")>=0){
-			inbox.setStatsGlobalCount(Long.parseLong(req.getParameter("count")));
-			resp.getWriter().print("Set to "+req.getParameter("count"));	
-			return;
-		}	
-		if (req.getRequestURI().indexOf("rest/admin/rebuildsearchindexes")>=0){
-			WorkerThread wt = inbox.rebuildSearchIndexes();
-			startWorker(wt, req, resp);
-			resp.flushBuffer();
+		if (req.getRequestURI().indexOf(JSONAdminHandler.JSON_ROOT)>=0){
+			log.debug("doGetAdmin");
+			new JSONAdminHandler().doGet(this,inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf("rest/admin/prune")>=0){
-			log.debug("Prune");
-			try {
-				WorkerThread wt = inbox.cleanUp();
-				startWorker(wt, req, resp);
-				resp.flushBuffer();
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());	
-			}
-			return;
-		}							
-		if (req.getRequestURI().indexOf("rest/admin/errors")>=0){
-			try {
-				inbox.clearErrors();
-				resp.getWriter().print("Cleared errors");	
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());	
-			}
-			return;
-		}	
-		if (req.getRequestURI().indexOf("rest/admin/clear")>=0){
-			try {
-				inbox.deleteAll();
-				resp.getWriter().print("Cleaned");			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());	
-			}
-			return;
-		}	
-		if (req.getRequestURI().indexOf("rest/admin/purge_deleted")>=0){
-			try {
-				inbox.purge();
-				resp.getWriter().print("Purged");			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());	
-			}
-			return;
-		}	
-		if (req.getRequestURI().indexOf("rest/admin/dbmaintenance")>=0){
-			try {
-				WorkerThread wt = inbox.runMaintenance();
-				startWorker(wt, req, resp);
-				resp.flushBuffer();
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());	
-			}
-			return;
-		}	
-		if (req.getRequestURI().indexOf("rest/admin/backup")>=0){
-			try {
-				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
-				f.mkdir();
-				WorkerThread wt = inbox.backup(f);
-				startWorker(wt, req, resp);
-
-				resp.flushBuffer();
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());
-			}
-			return;
-		}	
-		if (req.getRequestURI().indexOf("rest/admin/restore")>=0){
-			try {
-				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
-				WorkerThread wt = inbox.restore(f);
-				startWorker(wt, req, resp);
-				resp.flushBuffer();
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());
-			}
-			return;
-		}	
-		if (req.getRequestURI().indexOf("rest/admin/clean")>=0){
-			try {
-				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
-				FileUtils.deleteDirectory(f);
-				resp.getWriter().print("Cleaned "+f.getCanonicalPath());
-				resp.flushBuffer();
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());
-			}
-			return;
-		}	
-		if (req.getRequestURI().indexOf("rest/admin/settoblacklist")>=0){
-			String blacklist = req.getParameter("blacklist");
-			Config.getInstance().setString(Config.BLUEBOX_TOBLACKLIST, blacklist);
-			inbox.loadConfig();
-			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
-			return;
-		}
-		if (req.getRequestURI().indexOf("rest/admin/setfromblacklist")>=0){
-			String blacklist = req.getParameter("blacklist");
-			Config.getInstance().setString(Config.BLUEBOX_FROMBLACKLIST, blacklist);
-			inbox.loadConfig();
-			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
-			return;
-		}
-
-		if (req.getRequestURI().indexOf("rest/admin/settowhitelist")>=0){
-			String whitelist = req.getParameter("whitelist");
-			Config.getInstance().setString(Config.BLUEBOX_TOWHITELIST, whitelist);
-			inbox.loadConfig();
-			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
-			return;
-		}
-		if (req.getRequestURI().indexOf("rest/admin/setfromwhitelist")>=0){
-			String whitelist = req.getParameter("whitelist");
-			Config.getInstance().setString(Config.BLUEBOX_FROMWHITELIST, whitelist);
-			inbox.loadConfig();
-			resp.sendRedirect(req.getContextPath()+"/app/admin.jsp");
-			return;
-		}
-		if (req.getRequestURI().indexOf("rest/admin/workerstats")>=0){
-			try {
-				resp.getWriter().print(getWorkerStatus().toString());
-				resp.flushBuffer();
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());
-			}
-			return;
-		}
+		
 		if (req.getRequestURI().indexOf("rest/updateavailable")>=0) {
 			try {
 				resp.getWriter().print(Utils.updateAvailable().toString());
@@ -310,25 +169,14 @@ public class BlueBoxServlet extends HttpServlet {
 			}
 			return;
 		}
-		if (req.getRequestURI().indexOf("rest/admin/validatesearch")>=0){
-			try {
-				WorkerThread wt = SearchIndexer.getInstance().validate();
-				startWorker(wt, req, resp);
-				resp.flushBuffer();
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());
-			}
-			return;
-		}	
+		
 		log.warn("No handler for "+req.getRequestURI()+" expected :"+req.getContextPath());
 		super.doGet(req, resp);
 	}
 
 
 
-	private void startWorker(WorkerThread wt, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	public void startWorker(WorkerThread wt, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		// check for running or expired works under this id
 		ResourceBundle rb = ResourceBundle.getBundle("admin",req.getLocale());
 		if (workers.containsKey(wt.getId())) {

@@ -101,7 +101,7 @@ Content-Type: application/embed+json;charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
 {
-"gadget": "https://apps.daily.tester.lll.com/Software/resources/web/com.ibm.social.ee/SoftwareEE.xml",
+"gadget": "https://apps.daily.tester.lll.com/Software/resources/web/com.xxx.social.ee/SoftwareEE.xml",
 "context": {
 "isPublic":"false","eventType":"files.notification.share","actor":{"Software":{"state":"active","isExternal":"false"},"objectType":"person","id":"urn:lsid:lconn.lll.com:profiles.person:20018034","displayName":"005 fvtb"},"numLikes":"0","summary":"","title":"document000018.docx","numComments":"0","updated":"false","id":"e3e1b2c8-eb4a-43f9-a30e-fd1eb12a3779","SoftwareContentUrl":"https:\/\/apps.daily.tester.lll.com\/files\/form\/api\/library\/7ad3de72-8614-4815-8dd8-0f6663d8991e\/document\/e3e1b2c8-eb4a-43f9-a30e-fd1eb12a3779\/entry","itemUrl":"\/app\/file\/e3e1b2c8-eb4a-43f9-a30e-fd1eb12a3779",
 "email": "true",

@@ -2,7 +2,9 @@ package com.bluebox.smtp;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
@@ -37,6 +39,19 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 		super(inbox);
 		smtpBlackList = Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST);
 		inbox.setBlueboxMessageHandlerFactory(this);
+	}
+	
+	public void setSMTPBlacklist(String s) {
+		List<String> list = new ArrayList<String>();
+		StringTokenizer tok = new StringTokenizer(s,",");
+		while (tok.hasMoreTokens())
+			list.add(tok.nextToken().trim());
+		setSMTPBlacklist(list);
+	}
+	
+	public void setSMTPBlacklist(List<String> list) {
+		Config.getInstance().setStringList(Config.BLUEBOX_SMTPBLACKLIST, list);
+		smtpBlackList = Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST);
 	}
 
 	public void addSMTPBlackList(String domain) {
