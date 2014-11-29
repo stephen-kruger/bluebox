@@ -5,6 +5,7 @@ public abstract class WorkerThread implements Runnable {
 
 	private int progress = 0;
 	private String id, status;
+	private boolean stop = false;
 
 	public WorkerThread(String id) {
 		this.id = id;
@@ -40,4 +41,12 @@ public abstract class WorkerThread implements Runnable {
 	}
 
 	public abstract void run();
+
+	public void stop() {
+		stop  = true;
+	}
+	
+	public boolean isStopped() {
+		return stop;
+	}
 }

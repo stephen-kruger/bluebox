@@ -244,6 +244,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					DBObject dbo;
 					int count = 0;
 					while(cursor.hasNext()) {
+						if (isStopped()) break;
 						dbo = cursor.next();
 						BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, dbo.get("filename").toString());
 						if (db.getCollection(TABLE_NAME).findOne(query)==null) {

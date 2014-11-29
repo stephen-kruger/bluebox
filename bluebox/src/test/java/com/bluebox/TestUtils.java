@@ -28,8 +28,7 @@ public class TestUtils extends TestCase {
 		assertNotNull("No subject",message.getSubject());
 	}
 	
-	public static void waitFor(int count) throws Exception {
-		Inbox inbox = Inbox.getInstance();
+	public static void waitFor(Inbox inbox, int count) throws Exception {
 		int retryCount = 5;
 		while ((retryCount-->0)&&(inbox.getMailCount(BlueboxMessage.State.NORMAL)<count)) {
 			try {
@@ -49,9 +48,8 @@ public class TestUtils extends TestCase {
 		}
 	}
 	
-	public static void sendMailDirect(StorageIf storage, String to, String from) throws Exception {
+	public static void sendMailDirect(Inbox inbox, String to, String from) throws Exception {
 		log.debug("Delivering mail to "+to);
-		Inbox inbox = Inbox.getInstance();
 		MimeMessage message = Utils.createMessage(null,from, to, null,null, Utils.randomLine(25), Utils.randomLine(25));
 		inbox.deliver(from, to, Utils.streamMimeMessage(message));
 	}
@@ -70,6 +68,10 @@ public class TestUtils extends TestCase {
 				new Date(),
 				Utils.createMessage(null,"steve@there.com", "steve@here.com", "steve@here.com", "steve@here.com", Utils.randomLine(25), Utils.randomLine(25)));
 		return message;
+	}
+	
+	public static void addRandom(Inbox inbox, int count) throws Exception {
+		new Thread(Utils.generate(null, inbox, count)).start();
 	}
 
 	//	public static MimeMessageWrapper createBlueBoxMimeMessage(Session session, InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body, boolean attachment) throws MessagingException, IOException {

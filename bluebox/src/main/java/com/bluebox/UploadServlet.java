@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
+import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -17,6 +18,8 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+
+import com.bluebox.smtp.storage.StorageFactory;
 
 public class UploadServlet extends HttpServlet {
 
@@ -59,7 +62,8 @@ public class UploadServlet extends HttpServlet {
 
 							if (item.getSize()>0) {
 								log.info("Loading file "+item.getName()+" with size "+item.getSize());
-								Utils.uploadEML(item.getInputStream());
+								MimeMessage message = Utils.loadEML(item.getInputStream());
+								Utils.sendMessageDirect(StorageFactory.getInstance(),message);
 							}
 							else {
 								log.warning("Ignoring empty file upload");

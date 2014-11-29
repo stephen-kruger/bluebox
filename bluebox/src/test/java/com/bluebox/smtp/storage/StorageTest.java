@@ -11,37 +11,21 @@ import java.util.logging.Logger;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-import junit.framework.TestCase;
-
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 
+import com.bluebox.BaseTestCase;
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
 import com.bluebox.search.SearchIndexer;
-import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 
-public class StorageTest extends TestCase {
+public class StorageTest extends BaseTestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
 	private int SIZE = 20;
 
-
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		Inbox.getInstance();
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		log.fine("Cleaning up messages after tests");
-		Inbox.getInstance().deleteAll();
-		Inbox.getInstance().stop();
-	}
 
 	@Test
 	public void testAutoComplete2() throws Exception {
@@ -59,17 +43,18 @@ public class StorageTest extends TestCase {
 		BlueboxMessage m1 = StorageFactory.getInstance().store(from, ia, new Date(), message);
 		SearchIndexer.getInstance().indexMail(m1);
 
-		assertEquals("Autocomplete not working as expected",1,Inbox.getInstance().autoComplete("First Name*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,Inbox.getInstance().autoComplete("ste*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,Inbox.getInstance().autoComplete("ste*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,Inbox.getInstance().autoComplete("Ste*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,Inbox.getInstance().autoComplete("joh*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,Inbox.getInstance().autoComplete("Nam*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,Inbox.getInstance().autoComplete("stephen.johnson*", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("First Name*", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("ste*", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("ste*", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("Ste*", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("joh*", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("Nam*", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("stephen.johnson*", 0, 10).length());
 		// Lucene cannot search this for some reason
-//		assertEquals("Autocomplete not working as expected",1,Inbox.getInstance().autoComplete(ia.getAddress(), 0, 10).length());
+//		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete(ia.getAddress(), 0, 10).length());
 	}
 
+	@Test
 	public void testState() throws Exception {
 		BlueboxMessage original = TestUtils.addRandom(StorageFactory.getInstance());
 		assertEquals("Expected to find our mail added",1,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
@@ -92,6 +77,7 @@ public class StorageTest extends TestCase {
 //		}
 	}
 
+	@Test
 	public void testAddAndRetrieve() throws Exception {
 		StorageFactory.getInstance().deleteAll();
 		InboxAddress inbox = new InboxAddress("Stephen johnson <steve.johnson@test.com>");
@@ -117,6 +103,7 @@ public class StorageTest extends TestCase {
 //		log.info(stored.toJSON());
 	}
 	
+	@Test
 	public void testInboxAndFullName() throws Exception {
 		InboxAddress inbox = new InboxAddress("Stephen johnson <steve@test.com>");
 		MimeMessage message = Utils.createMessage(null,
@@ -133,6 +120,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Stored recipient did not match original",inbox.getAddress(),stored.getInbox().getAddress());
 	}
 
+	@Test
 	public void testRetrieve() throws Exception {
 		for (int i = 0; i < 20; i++) {
 			BlueboxMessage original = TestUtils.addRandom(StorageFactory.getInstance());
@@ -154,6 +142,7 @@ public class StorageTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testMailCount() throws Exception {
 		assertEquals("Expected to find no mail",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
 		assertEquals("Expected to find no mail",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.DELETED));
@@ -177,6 +166,7 @@ public class StorageTest extends TestCase {
 
 	}
 
+	@Test
 	public void testAddAndDelete() throws Exception {
 		int count = SIZE;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
@@ -190,6 +180,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Expected to find our mails added",count,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
 	}
 
+	@Test
 	public void testListEmail() throws Exception {
 		int count = SIZE;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
@@ -205,6 +196,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Should not find any mails for "+inbox2,0,mails.size());
 	}
 
+	@Test
 	public void testListInbox() throws Exception {
 		int count = SIZE;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
@@ -216,6 +208,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Expected to find our mails added",count,inboxList.length());
 	}
 
+	@Test
 	public void testJSONDetail() throws Exception {
 		int count = 2;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.ANY));
@@ -231,6 +224,7 @@ public class StorageTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testPaging() throws Exception {
 		int count = SIZE;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
@@ -244,6 +238,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Paging did not return correct amount of results",0,results.size());
 	}
 
+	@Test
 	public void testPagingWithEmail() throws Exception {
 		int count = SIZE;
 		InboxAddress email = new InboxAddress("steve@here.com");
@@ -259,6 +254,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Paging did not return correct amount of results",0,results.size());
 	}
 
+	@Test
 	public void testOrderByDate() throws Exception {
 		int count = SIZE;
 		InboxAddress email = new InboxAddress("steve@here.com");
@@ -279,6 +275,7 @@ public class StorageTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testOrderBySize() throws Exception {
 		int count = SIZE;
 		InboxAddress email = new InboxAddress("steve@here.com");
@@ -294,6 +291,7 @@ public class StorageTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testAutoComplete() throws Exception {
 		String name = "Monica Smith";
 		InboxAddress email = new InboxAddress(name+" <monica.smith@test.com>");
@@ -313,42 +311,43 @@ public class StorageTest extends TestCase {
 		SearchIndexer.getInstance().indexMail(m2);
 		SearchIndexer.getInstance().indexMail(m3);
 		
-		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("mon*", 0, 10).length());
-		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("monica*", 0, 10).length());
-		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("monica.smith*", 0, 10).length());
-		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("Mon*", 0, 10).length());
-		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("smi*", 0, 10).length());
-		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("Smi*", 0, 10).length());
-		//		assertEquals("Message not found",1,Inbox.getInstance().autoComplete(inbox, 0, 10).length());
-		assertEquals("Message not found",1,Inbox.getInstance().autoComplete("ith*", 0, 10).length());
-		log.info(Inbox.getInstance().autoComplete(name+"*", 0, 10).toString(3));
-		assertEquals("Message not found",1,Inbox.getInstance().autoComplete(name+"*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("mon*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("monica*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("monica.smith*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("Mon*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("smi*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("Smi*", 0, 10).length());
+		//		assertEquals("Message not found",1,getInbox().autoComplete(inbox, 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("ith*", 0, 10).length());
+		log.info(getInbox().autoComplete(name+"*", 0, 10).toString(3));
+		assertEquals("Message not found",1,getInbox().autoComplete(name+"*", 0, 10).length());
 
 		// test for search of name
-		assertEquals("Message not found",1,Inbox.getInstance().autoComplete(name+"*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete(name+"*", 0, 10).length());
 
 		// check we get the full name in the result
-		JSONArray ja = Inbox.getInstance().autoComplete(name+"*", 0, 10);
+		JSONArray ja = getInbox().autoComplete(name+"*", 0, 10);
 		//		log.info(ja.toString(3));
 		//		log.info(name.toLowerCase());
 		assertTrue("Did not return full name",ja.toString().toLowerCase().indexOf(name.toLowerCase())>0);
 
 		// check for partial firstname
-		ja = Inbox.getInstance().autoComplete("Monica*", 0, 10);
+		ja = getInbox().autoComplete("Monica*", 0, 10);
 		log.info(ja.toString(3));
 		assertTrue("Did not return search on first name",ja.toString().toLowerCase().indexOf(name.toLowerCase())>0);
 
 		// check for partial secondname
-		ja = Inbox.getInstance().autoComplete("Smith*", 0, 10);
+		ja = getInbox().autoComplete("Smith*", 0, 10);
 		log.info(ja.toString(3));
 		assertTrue("Did not return search on last name",ja.toString().toLowerCase().indexOf(name.toLowerCase())>0);
 
 		// check for empty string
-		ja = Inbox.getInstance().autoComplete("*", 0, 10);
+		ja = getInbox().autoComplete("*", 0, 10);
 		log.info(ja.toString(3));
 		assertEquals("Did not return results",1,ja.length());
 	}
 
+	@Test
 	public void testAutoCompleteEmpty() throws Exception {
 		InboxAddress inbox = new InboxAddress("monica.smith@test.com");
 		String name = "Another Name";
@@ -367,11 +366,12 @@ public class StorageTest extends TestCase {
 		SearchIndexer.getInstance().indexMail(StorageFactory.getInstance().store(inbox.getAddress(), inbox, new Date(), message));
 
 		// check for empty string
-		JSONArray ja = Inbox.getInstance().autoComplete("", 0, 10);
+		JSONArray ja = getInbox().autoComplete("", 0, 10);
 		log.info(ja.toString(3));
 		assertEquals("Did not return results",1,ja.length());
 	}
 
+	@Test
 	public void testPerf() throws Exception {
 		int MAX = 50;
 		int STEP = 5;
@@ -408,7 +408,8 @@ public class StorageTest extends TestCase {
 		writer.close();
 		writer2.close();
 	}
-
+	
+	@Test
 	public void testErrorStorage() throws JSONException {
 		StorageFactory.getInstance().logErrorClear();
 		assertEquals("Error log should be empty",0,StorageFactory.getInstance().logErrorCount());

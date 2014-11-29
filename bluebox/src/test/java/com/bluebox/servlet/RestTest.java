@@ -8,7 +8,10 @@ import java.util.List;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.junit.Test;
 import org.mortbay.jetty.testing.HttpTester;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
@@ -16,21 +19,13 @@ import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.rest.json.JSONInlineHandler;
 import com.bluebox.rest.json.JSONMessageHandler;
-import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public class RestTest extends BaseServletTest {
+	private static final Logger log = LoggerFactory.getLogger(RestTest.class);
 
-	public void setUp() throws Exception {
-		super.setUp();
-	}
-
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
-
+	@Test
 	public void testAutocomplete() throws IOException, Exception {
 		String url = "/"+JSONAutoCompleteHandler.JSON_ROOT+"?start=0&count=10&name=*";
 		JSONObject js = getRestJSON(url);
@@ -41,11 +36,14 @@ public class RestTest extends BaseServletTest {
 		log.info(js.toString(3));
 	}
 
+	@Test
 	public void testInbox() throws Exception {
-
+		// send some test messages
+		for (int i = 0; i < COUNT; i++)
+			TestUtils.sendMailSMTP(Utils.getRandomAddress(), Utils.getRandomAddress(), null, null, "subject", "body");
 
 		// first we check directly
-		TestUtils.waitFor(COUNT);
+		TestUtils.waitFor(getInbox(),COUNT);
 
 		assertEquals("Missing mails",COUNT,getMailCount(BlueboxMessage.State.NORMAL));
 
@@ -82,15 +80,14 @@ public class RestTest extends BaseServletTest {
 		assertTrue(child.has("email"));
 	}
 
+	@Test
 	public void testInlineHandler() throws Exception {
-		Inbox.getInstance().deleteAll();
-		TestUtils.waitFor(0);
 		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"attachments.eml");
-		Utils.uploadEML(emlStream);
-		TestUtils.waitFor(1);
-		assertEquals("Mail was not delivered",1,Inbox.getInstance().getMailCount(State.ANY));
+		Utils.uploadEML(getInbox(),emlStream);
+		TestUtils.waitFor(getInbox(),1);
+		assertEquals("Mail was not delivered",1,getInbox().getMailCount(State.ANY));
 
-		List<BlueboxMessage> messages = Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
+		List<BlueboxMessage> messages = getInbox().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
 		BlueboxMessage msg = messages.get(0);
 		HttpTester request = new HttpTester();
 		// now retrieve the atachment by name
@@ -116,8 +113,9 @@ public class RestTest extends BaseServletTest {
 		assertEquals(200,response.getStatus());
 	}
 
+	@Test
 	public void testJSONMessageHandler() throws IOException, Exception {
-		List<BlueboxMessage> messages = Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
+		List<BlueboxMessage> messages = getInbox().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
 		for (BlueboxMessage message : messages) {
 			String url = "/"+JSONMessageHandler.JSON_ROOT+"/"+message.getIdentifier();
 			JSONObject js = getRestJSON(url);

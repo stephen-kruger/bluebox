@@ -440,6 +440,7 @@ public class SearchIndexer {
 
 					Bits liveDocs = MultiFields.getLiveDocs(reader);
 					for (int i=0; i<reader.maxDoc(); i++) {
+						if (isStopped()) break;
 						try {
 							if (liveDocs != null && !liveDocs.get(i))
 								continue;

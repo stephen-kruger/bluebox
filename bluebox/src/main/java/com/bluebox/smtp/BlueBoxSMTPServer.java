@@ -11,21 +11,31 @@ import com.bluebox.Utils;
 
 public class BlueBoxSMTPServer extends SMTPServer {
 	private static final Logger log = LoggerFactory.getLogger(BlueBoxSMTPServer.class);
+	private BlueboxMessageHandlerFactory inbox;
 
 	public BlueBoxSMTPServer(BlueboxMessageHandlerFactory mhf) {
 		super(mhf);
 		Config bbconfig = Config.getInstance();
 		setHostName(Utils.getHostName());
 		setPort(bbconfig.getInt(Config.BLUEBOX_PORT));
-		log.info("Starting SMTP server on {} and port {}",Utils.getHostName(),bbconfig.getInt(Config.BLUEBOX_PORT));
+		log.debug("Starting SMTP server on {} and port {}",Utils.getHostName(),bbconfig.getInt(Config.BLUEBOX_PORT));
 		setMaxConnections(bbconfig.getInt(Config.BLUEBOX_MAXCONNECTIONS));
 		setHideTLS(true);
 		setRequireTLS(false);
-		setSoftwareName("BlueBox");
+		setSoftwareName("BlueBox V"+bbconfig.getString(Config.BLUEBOX_VERSION));
 		setConnectionTimeout(10000); // wait 10sec before abandoning connection
+		this.inbox = mhf;
 	}
 
 	public BlueBoxSMTPServer(BlueboxMessageHandlerFactory mhf, AuthenticationHandlerFactory ahf) {
 		super(mhf, ahf);
 	}
+
+	@Override
+	public synchronized void stop() {
+		super.stop();
+		inbox.stop();
+	}
+
+
 }

@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import com.bluebox.TestUtils;
 import com.bluebox.smtp.Inbox;
+import com.bluebox.smtp.InboxAddress;
 
 public class BlueBoxServletTest extends BaseServletTest {
 
@@ -34,7 +35,7 @@ public class BlueBoxServletTest extends BaseServletTest {
 			fail("Mail to not blacklisted");
 		} 
 
-		Inbox inbox = Inbox.getInstance();
+		Inbox inbox = getInbox();
 		inbox.addToBlacklist("qwerty.com");
 
 		try {
@@ -53,53 +54,22 @@ public class BlueBoxServletTest extends BaseServletTest {
 
 	@Test
 	public void testBlacklistFrom() throws IOException, Exception {
-		try {
-			TestUtils.sendMailSMTP(new InternetAddress("test@here.com"), new InternetAddress("steve@blackdomain.com"), null, null, "subject", "body");
-
-			fail("Mail to not blacklisted");
-		} 
-		catch (EmailException e) {
-			// expected
-		}
-		catch (Exception e) {
-			fail("Mail to not blacklisted");
-		} 
-
-		Inbox inbox = Inbox.getInstance();
+		Inbox inbox = getInbox();
 		inbox.addFromBlacklist("qwerty.com");
-
-		try {
-			TestUtils.sendMailSMTP(new InternetAddress("test@qwerty.com"), new InternetAddress("steve@here.com"), null, null, "subject", "body");
-			fail("Mail from not blacklisted");
-		} 
-		catch (EmailException e) {
-			// expected
-		}
-		catch (Exception e) {
-			fail("Mail from not blacklisted");
-		}
+		assertTrue(inbox.isFromBlackListed(new InboxAddress("test@qwerty.com")));
+		assertFalse(inbox.isToBlackListed(new InboxAddress("test@qwerty.com")));
+		assertFalse(inbox.accept("from@qwerty.com", "to@here.com"));
+		assertTrue(inbox.accept("from@test.com", "to@qwerty.com"));
 	}
 
 	@Test
 	public void testToWhitelist() throws IOException, Exception {
-
-		Inbox inbox = Inbox.getInstance();
+		Inbox inbox = getInbox();
 		inbox.addToWhiteList("qwerty.com");
-		try {
-			TestUtils.sendMailSMTP(new InternetAddress("test@here.com"), new InternetAddress("steve@here.com"), null, null, "subject", "body");
-
-			fail("Mail to not whitelisted");
-		} 
-		catch (EmailException e) {
-			// expected
-		}
-		catch (Exception e) {
-			fail("accepted Mail to not whitelisted");
-		} 
-
-		TestUtils.sendMailSMTP(new InternetAddress("test@qwerty.com"), new InternetAddress("steve@qwerty.com"), null, null, "subject", "body");
-
-
+		assertTrue(inbox.isToWhiteListed(new InboxAddress("test@qwerty.com")));
+		assertFalse(inbox.isFromWhiteListed(new InboxAddress("test@qwerty.com")));
+		assertFalse(inbox.accept("test@here.com", "steve@here.com"));
+		assertTrue(inbox.accept("test@qwerty.com", "steve@qwerty.com"));
 	}
 
 
