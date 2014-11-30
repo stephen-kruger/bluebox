@@ -26,6 +26,7 @@ import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.LiteMessage;
+import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
 public class StorageImpl extends AbstractStorage implements StorageIf {
@@ -89,6 +90,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (Throwable t) {
 			log.debug(t.getMessage());
 		}
+		StorageFactory.clearInstance();
 		log.info("Stopped Derby repository");
 
 		// force gc to unload the derby classes

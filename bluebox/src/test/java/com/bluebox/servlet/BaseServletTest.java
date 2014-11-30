@@ -53,6 +53,9 @@ public abstract class BaseServletTest extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
+		// clear mailboxes
+		getURL("/"+JSONAdminHandler.JSON_ROOT+"/clear");
+				
 		log.debug("Stopping servlet");
 
 		try {

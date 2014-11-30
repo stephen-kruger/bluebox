@@ -312,7 +312,7 @@ public class InboxTest extends BaseTestCase {
 		assertTrue("Message should  not have been delivered (got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+" instead of 0)",inbox.getMailCount(BlueboxMessage.State.NORMAL) == 0);
 
 		try {
-			TestUtils.sendMailSMTP(new InternetAddress("test@example.com"),Utils.getRandomAddress(), Utils.getRandomAddress(), Utils.getRandomAddress(), testSubject, testBody);
+			TestUtils.sendMailSMTP(new InternetAddress("test@wallstreetads.org"),Utils.getRandomAddress(), Utils.getRandomAddress(), Utils.getRandomAddress(), testSubject, testBody);
 			fail("The mail should have thrown an exception");
 		} 
 		catch (Exception e) {
