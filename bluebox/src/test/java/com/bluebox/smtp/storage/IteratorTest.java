@@ -14,7 +14,7 @@ public class IteratorTest extends BaseTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		log.info("Populating testdata");
-		TestUtils.addRandom(StorageFactory.getInstance(), SIZE);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(), SIZE);
 	}
 
 	public void testStepThroughAll() throws Exception {

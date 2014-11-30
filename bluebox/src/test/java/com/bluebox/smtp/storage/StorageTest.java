@@ -56,7 +56,7 @@ public class StorageTest extends BaseTestCase {
 
 	@Test
 	public void testState() throws Exception {
-		BlueboxMessage original = TestUtils.addRandom(StorageFactory.getInstance());
+		BlueboxMessage original = TestUtils.addRandomDirect(StorageFactory.getInstance());
 		assertEquals("Expected to find our mail added",1,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
 		assertEquals("Expected to find our mail added",1,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.ANY));
 		StorageFactory.getInstance().setState(original.getIdentifier(),BlueboxMessage.State.DELETED);
@@ -123,7 +123,7 @@ public class StorageTest extends BaseTestCase {
 	@Test
 	public void testRetrieve() throws Exception {
 		for (int i = 0; i < 20; i++) {
-			BlueboxMessage original = TestUtils.addRandom(StorageFactory.getInstance());
+			BlueboxMessage original = TestUtils.addRandomDirect(StorageFactory.getInstance());
 			try {
 				BlueboxMessage saved = StorageFactory.getInstance().retrieve(original.getIdentifier());
 				assertEquals("The uid of the retrieved object did not match the one we saved",original.getIdentifier(),saved.getIdentifier());
@@ -151,7 +151,7 @@ public class StorageTest extends BaseTestCase {
 		assertEquals("Expected to find no mail",0,StorageFactory.getInstance().getMailCount(new InboxAddress("idontexist@nowhere.com"),BlueboxMessage.State.DELETED));
 		assertEquals("Expected to find no mail",0,StorageFactory.getInstance().getMailCount(new InboxAddress("idontexist@nowhere.com"),BlueboxMessage.State.ANY));
 
-		BlueboxMessage original = TestUtils.addRandom(StorageFactory.getInstance());
+		BlueboxMessage original = TestUtils.addRandomDirect(StorageFactory.getInstance());
 		assertEquals("Expected to find our mail added",1,StorageFactory.getInstance().getMailCount(original.getInbox(),BlueboxMessage.State.NORMAL));
 		assertEquals("Expected to find our mail added",0,StorageFactory.getInstance().getMailCount(original.getInbox(),BlueboxMessage.State.DELETED));
 		assertEquals("Expected to find our mail added",1,StorageFactory.getInstance().getMailCount(original.getInbox(),BlueboxMessage.State.ANY));
@@ -170,13 +170,13 @@ public class StorageTest extends BaseTestCase {
 	public void testAddAndDelete() throws Exception {
 		int count = SIZE;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
-		TestUtils.addRandom(StorageFactory.getInstance());
+		TestUtils.addRandomDirect(StorageFactory.getInstance());
 
 		assertEquals("Expected to find our mail added",1,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
 		assertEquals("Expected to find our mail added",1,StorageFactory.getInstance().getMailCount(new InboxAddress("steve@here.com"),BlueboxMessage.State.NORMAL));
 		StorageFactory.getInstance().deleteAll();
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
-		TestUtils.addRandom(StorageFactory.getInstance(),count);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(),count);
 		assertEquals("Expected to find our mails added",count,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
 	}
 
@@ -184,7 +184,7 @@ public class StorageTest extends BaseTestCase {
 	public void testListEmail() throws Exception {
 		int count = SIZE;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
-		TestUtils.addRandom(StorageFactory.getInstance(),count);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(),count);
 		InboxAddress inbox = new InboxAddress("steve@here.com");
 		List<BlueboxMessage> mails = StorageFactory.getInstance().listMail(inbox, BlueboxMessage.State.NORMAL, 0,SIZE,BlueboxMessage.RECEIVED, true);
 		assertEquals("Expected to find our mails added",count,StorageFactory.getInstance().getMailCount(inbox, BlueboxMessage.State.NORMAL));
@@ -200,7 +200,7 @@ public class StorageTest extends BaseTestCase {
 	public void testListInbox() throws Exception {
 		int count = SIZE;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
-		TestUtils.addRandom(StorageFactory.getInstance(),count);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(),count);
 		InboxAddress inbox = new InboxAddress("steve@here.com");
 		StringWriter sw = new StringWriter();
 		StorageFactory.getInstance().listInbox(inbox, BlueboxMessage.State.NORMAL, sw, 0,SIZE,BlueboxMessage.RECEIVED, true, Locale.getDefault());
@@ -212,7 +212,7 @@ public class StorageTest extends BaseTestCase {
 	public void testJSONDetail() throws Exception {
 		int count = 2;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.ANY));
-		TestUtils.addRandom(StorageFactory.getInstance(),count);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(),count);
 		List<BlueboxMessage> mail = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.ANY, 0,SIZE,BlueboxMessage.RECEIVED, true);
 
 		for (BlueboxMessage message : mail) {
@@ -228,7 +228,7 @@ public class StorageTest extends BaseTestCase {
 	public void testPaging() throws Exception {
 		int count = SIZE;
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
-		TestUtils.addRandom(StorageFactory.getInstance(),count);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(),count);
 		List<BlueboxMessage> results;
 		results = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.NORMAL, 0, 10,BlueboxMessage.RECEIVED, true);
 		assertEquals("Paging did not return correct amount of results",10,results.size());
@@ -243,7 +243,7 @@ public class StorageTest extends BaseTestCase {
 		int count = SIZE;
 		InboxAddress email = new InboxAddress("steve@here.com");
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
-		TestUtils.addRandom(StorageFactory.getInstance(),count);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(),count);
 		List<BlueboxMessage> results;
 		int pageSize = 5;
 		results = StorageFactory.getInstance().listMail(email, BlueboxMessage.State.NORMAL, 0, pageSize,BlueboxMessage.RECEIVED, true);
@@ -259,7 +259,7 @@ public class StorageTest extends BaseTestCase {
 		int count = SIZE;
 		InboxAddress email = new InboxAddress("steve@here.com");
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
-		TestUtils.addRandom(StorageFactory.getInstance(),count);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(),count);
 		List<BlueboxMessage> results = StorageFactory.getInstance().listMail(email, BlueboxMessage.State.NORMAL, 0, -1,BlueboxMessage.RECEIVED, true);
 		assertEquals("Paging did not return correct amount of results",SIZE,results.size());
 		BlueboxMessage prev = null;
@@ -280,7 +280,7 @@ public class StorageTest extends BaseTestCase {
 		int count = SIZE;
 		InboxAddress email = new InboxAddress("steve@here.com");
 		assertEquals("Did not expect to find anything",0,StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL));
-		TestUtils.addRandom(StorageFactory.getInstance(),count);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(),count);
 		List<BlueboxMessage> results = StorageFactory.getInstance().listMail(email, BlueboxMessage.State.NORMAL, 0, -1,BlueboxMessage.SIZE, true);
 		assertEquals("Paging did not return correct amount of results",SIZE,results.size());
 		long currSize=0, prevSize=-1;
@@ -385,7 +385,7 @@ public class StorageTest extends BaseTestCase {
 		long count=0,time;
 		for (int i = 0; i < MAX; i++) {
 			log.info("Perf at "+count+" of "+(MAX*STEP));
-			TestUtils.addRandom(StorageFactory.getInstance(),STEP);
+			TestUtils.addRandomDirect(StorageFactory.getInstance(),STEP);
 			count += STEP;
 			now = new Date();
 			StorageFactory.getInstance().getMailCount(email,BlueboxMessage.State.NORMAL);

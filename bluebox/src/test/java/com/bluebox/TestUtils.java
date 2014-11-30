@@ -54,14 +54,14 @@ public class TestUtils extends TestCase {
 		inbox.deliver(from, to, Utils.streamMimeMessage(message));
 	}
 
-	public static void addRandom(StorageIf storage, int count) throws Exception {
+	public static void addRandomDirect(StorageIf storage, int count) throws Exception {
 		for (int i = 0; i < count; i++) {
 			log.debug("Adding "+i+" of "+count+" random messages");
-			addRandom(storage);
+			addRandomDirect(storage);
 		}
 	}
 
-	public static BlueboxMessage addRandom(StorageIf storage) throws Exception {
+	public static BlueboxMessage addRandomDirect(StorageIf storage) throws Exception {
 		BlueboxMessage message = storage.store(
 				"steve@there.com",
 				new InboxAddress("steve@here.com"),
@@ -70,8 +70,12 @@ public class TestUtils extends TestCase {
 		return message;
 	}
 	
-	public static void addRandom(Inbox inbox, int count) throws Exception {
-		new Thread(Utils.generate(null, inbox, count)).start();
+//	public static void addRandom(Inbox inbox, int count) throws Exception {
+//		new Thread(Utils.generate(null, inbox, count)).start();
+//	}
+	
+	public static void addRandomNoThread(Inbox inbox, int count) throws Exception {
+		Utils.generateNoThread(null, inbox, count);
 	}
 
 	//	public static MimeMessageWrapper createBlueBoxMimeMessage(Session session, InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body, boolean attachment) throws MessagingException, IOException {

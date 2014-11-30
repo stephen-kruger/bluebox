@@ -21,7 +21,7 @@ public class ChartTest extends BaseTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		log.info("Populating chart tests");
-		TestUtils.addRandom(StorageFactory.getInstance(), COUNT);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(), COUNT);
 		TestUtils.waitFor(getInbox(),COUNT);
 	}
 
