@@ -78,6 +78,7 @@ public class BlueboxMessage {
 	public void setBlueBoxMimeMessage(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws IOException, MessagingException, SQLException, JSONException {
 		mmw = bbmm;
 		log.debug("Persisting mime message");
+//		setProperty(FROM,"[\""+from+"\"]");
 		setProperty(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
 		setProperty(RECIPIENT, recipient.getFullAddress());
 		setProperty(INBOX, getInbox().getAddress());

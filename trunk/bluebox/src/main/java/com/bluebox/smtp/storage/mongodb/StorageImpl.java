@@ -45,6 +45,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	private static final String DB_ERR_NAME = "bluebox_errors";
 	private static final String TABLE_NAME = "inbox";
 	private static final String PROPS_TABLE_NAME = "properties";
+	private MongoClient mongoClient;
 	private DB db;
 	private GridFS errorFS;
 
@@ -55,10 +56,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		//                .connectTimeout(250)
 		//                .socketTimeout(250)
 		//                .build();
-		MongoClient mongoClient = new MongoClient(Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST));
+		mongoClient = new MongoClient(Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST));
 		db = mongoClient.getDB(DB_NAME);
 		errorFS = new GridFS(mongoClient.getDB(DB_ERR_NAME),DB_ERR_NAME);
-
 		createIndexes();
 
 		log.debug("Started MongoDB connection");
@@ -100,7 +100,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	public void stop() throws Exception {
+		mongoClient.close();
 		StorageFactory.clearInstance();
+		log.info("Stopped Mongo client");
 	}
 
 	public void store(JSONObject props, InputStream blob) throws Exception {

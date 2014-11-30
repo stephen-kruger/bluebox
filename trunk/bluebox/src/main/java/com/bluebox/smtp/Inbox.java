@@ -69,17 +69,6 @@ public class Inbox implements SimpleMessageListener {
 	private static Timer timer = null;
 	private static TimerTask timerTask = null;
 
-//	private static Inbox inbox;
-//
-//	public static Inbox getInstance() {
-//		if (inbox == null) {
-//			log.debug("Instantiating inbox instance");
-//			inbox = new Inbox();
-//			inbox.start();
-//		}
-//		return inbox;
-//	}
-
 	public Inbox() {
 		loadConfig();
 	}
