@@ -37,7 +37,7 @@ public class TestJSONFolderHandler extends BaseServletTest {
 
 	@Test
 	public void testFolderCount() throws IOException, Exception {
-		TestUtils.addRandom(StorageFactory.getInstance(), COUNT);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(), COUNT);
 		List<LiteMessage> list = getInbox().listInboxLite(null, BlueboxMessage.State.ANY, 0, 100, BlueboxMessage.RECEIVED, true, Locale.getDefault());
 		assertEquals("Missing mails",COUNT,list.size());
 		String url = "/"+JSONFolderHandler.JSON_ROOT;

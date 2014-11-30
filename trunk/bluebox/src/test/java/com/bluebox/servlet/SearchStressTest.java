@@ -15,7 +15,7 @@ public class SearchStressTest extends BaseServletTest {
 
 	public void setUp() throws Exception {
 		super.setUp();
-		TestUtils.addRandom(getInbox(), COUNT);
+		TestUtils.addRandomNoThread(getInbox(), COUNT);
 		TestUtils.waitFor(getInbox(), COUNT);
 	}
 

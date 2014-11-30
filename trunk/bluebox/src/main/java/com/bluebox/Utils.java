@@ -81,7 +81,7 @@ public class Utils {
 		ftm.addMimeTypes("application/zip zip ZIP");
 		FileTypeMap.setDefaultFileTypeMap(ftm);
 	}
-	
+
 	public static String getHostName() {
 		try {
 			InetAddress addr = InetAddress.getLocalHost();
@@ -182,37 +182,37 @@ public class Utils {
 		return res;
 	}	
 
-//	/*
-//	 * Returns the name portion of an email address
-//	 * e.g. "Stephen Johnson" <stephen@mail.com> will return "Stephen Johnson"
-//	 */
-//	public static final String getEmailName(String email) {
-//		try {
-//			if ((email==null)||(email.trim().length()==0)) {
-//				return "*";
-//			}
-//			// check if it's a Notes address
-//			if (Utils.isNotesAddress(email)) {
-//				log.info("Converting Notes style address :"+email);
-//				email = Utils.convertNotesAddress(email);
-//			}
-//			else {
-//				// if no domain specified, add default
-//				if (email.indexOf('@')<0) {
-//					email += '@'+Utils.getHostName();
-//				}
-//			}
-//
-////			InternetAddress address = new InternetAddress(email);
-////			return address.getPersonal()+"";
-//			EmailAddress.getPersonalName(email);
-//		}
-//		catch (Throwable e) {
-//			log.debug(e.getMessage()+" "+email);
-//			e.printStackTrace();
-//		}
-//		return "";
-//	}
+	//	/*
+	//	 * Returns the name portion of an email address
+	//	 * e.g. "Stephen Johnson" <stephen@mail.com> will return "Stephen Johnson"
+	//	 */
+	//	public static final String getEmailName(String email) {
+	//		try {
+	//			if ((email==null)||(email.trim().length()==0)) {
+	//				return "*";
+	//			}
+	//			// check if it's a Notes address
+	//			if (Utils.isNotesAddress(email)) {
+	//				log.info("Converting Notes style address :"+email);
+	//				email = Utils.convertNotesAddress(email);
+	//			}
+	//			else {
+	//				// if no domain specified, add default
+	//				if (email.indexOf('@')<0) {
+	//					email += '@'+Utils.getHostName();
+	//				}
+	//			}
+	//
+	////			InternetAddress address = new InternetAddress(email);
+	////			return address.getPersonal()+"";
+	//			EmailAddress.getPersonalName(email);
+	//		}
+	//		catch (Throwable e) {
+	//			log.debug(e.getMessage()+" "+email);
+	//			e.printStackTrace();
+	//		}
+	//		return "";
+	//	}
 
 	//	public static final String getEscapedEmail(String email) {
 	//		return StorageImpl.escape(getEmail(email));
@@ -287,10 +287,10 @@ public class Utils {
 	//		}
 	//	}
 
-//	public static void test(ServletContext session, String sz) {
-//		log.debug("Into test");
-//		sendMessage(session,Integer.parseInt(sz));
-//	}
+	//	public static void test(ServletContext session, String sz) {
+	//		log.debug("Into test");
+	//		sendMessage(session,Integer.parseInt(sz));
+	//	}
 
 	public static InternetAddress[] getRandomAddresses(int count) throws AddressException {
 		InternetAddress[] result = new InternetAddress[count];
@@ -422,6 +422,33 @@ public class Utils {
 		return wt;
 	}
 
+	public static void generateNoThread(final ServletContext session, final Inbox inbox, final int count) {
+		try {
+			int toC,ccC, bccC;
+			int totalCount = 0;
+			Random r = new Random();
+			do {
+				toC = r.nextInt(5);
+				ccC = r.nextInt(5);
+				bccC = r.nextInt(5);
+				MimeMessage msg = createMessage(session,
+						getRandomAddress(),  
+						getRandomAddresses(toC),//to
+						getRandomAddresses(ccC),//cc
+						getRandomAddresses(bccC),//bcc
+						(counter++)+" "+randomLine(35), 
+						randomText(14),
+						true);
+
+				sendMessageDirect(inbox,msg);
+				totalCount += toC+ccC+bccC;
+			} while (totalCount<count);
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
 	public static void sendMessage(final ServletContext session, final Inbox inbox, final int count) {
 		ExecutorService threadPool = Executors.newFixedThreadPool(10);
 		for (int j = 0; j < count/6; j++) {
@@ -493,7 +520,7 @@ public class Utils {
 			}
 		}
 	}
-	
+
 	public static void sendMessageDirect(StorageIf storage,MimeMessage msg) throws Exception {
 		Address[] to = msg.getRecipients(RecipientType.TO);
 		Address[] cc = msg.getRecipients(RecipientType.CC);
@@ -534,7 +561,7 @@ public class Utils {
 	//		Transport.send(msg);
 	//	}
 
-	
+
 
 	public static String trimURLParam(String p) {
 		if (p.endsWith("/")) {
@@ -646,7 +673,7 @@ public class Utils {
 		int index = r.nextInt(extensions.length); 
 		String name = Integer.toString(r.nextInt(99))+"-"+names[index];
 
-		
+
 
 		MimeBodyPart messageBodyPart = new MimeBodyPart();
 		InputStream content;
@@ -868,17 +895,17 @@ public class Utils {
 		//log.info(jo.toString());
 		return jo;
 	}
-	
+
 	public static String toString(List<String> list) {
 		StringBuffer listS = new StringBuffer();
 		for (String s : list) {
 			listS.append("<div>").append(s).append("</div>");
 		}
-//		if (listS.length()>0)
-//			return listS.substring(0, listS.length()-1).toString();
+		//		if (listS.length()>0)
+		//			return listS.substring(0, listS.length()-1).toString();
 		return listS.toString();
 	}
-	
+
 	public static String toCSVString(List<String> list) {
 		StringBuffer listS = new StringBuffer();
 		for (String s : list) {

@@ -35,7 +35,7 @@ public class StorageTest extends TestCase {
 	}
 
 	public void testListMail() throws Exception {
-		BlueboxMessage message = TestUtils.addRandom(si);
+		BlueboxMessage message = TestUtils.addRandomDirect(si);
 //		String id = si.add(UUID.randomUUID().toString(), "test@nowhere.com", "Test Name <test@nowhere.com>", "send@here.com", "this is a subject", new Date(), State.NORMAL, 45,  new ByteArrayInputStream(blob));
 
 //		Log.info("Added mail "+message.getInbox());
@@ -64,7 +64,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Mailbox should be empty",0,si.getMailCount(State.ANY));
 
 //		String id = si.add(UUID.randomUUID().toString(), "test@nowhere.com", "Test Name <test@nowhere.com>", "send@here.com", "this is a subject", new Date(), State.NORMAL, 45,  new ByteArrayInputStream(blob));
-		BlueboxMessage message = TestUtils.addRandom(si);
+		BlueboxMessage message = TestUtils.addRandomDirect(si);
 
 		assertEquals("Mailbox should not be empty",1,si.getMailCount(State.ANY));
 		assertEquals("Mailbox should not be empty",1,si.getMailCount(State.NORMAL));
@@ -83,7 +83,7 @@ public class StorageTest extends TestCase {
 
 	public void testUpdateState() throws Exception {
 //		String id = si.add(UUID.randomUUID().toString(), "test@nowhere.com", "Test Name <test@nowhere.com>", "send@here.com", "this is a subject", new Date(), State.NORMAL, 45, new ByteArrayInputStream(blob));
-		BlueboxMessage message = TestUtils.addRandom(si);
+		BlueboxMessage message = TestUtils.addRandomDirect(si);
 		assertEquals("Mailbox should be empty",1,si.getMailCount(State.NORMAL));
 		assertEquals("Mailbox should be empty",0,si.getMailCount(State.DELETED));
 		assertEquals("Mailbox should be empty",1,si.getMailCount(State.ANY));

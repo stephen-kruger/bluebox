@@ -22,7 +22,7 @@ public class FeedServletTest extends BaseServletTest {
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
-		TestUtils.addRandom(StorageFactory.getInstance(), COUNT);
+		TestUtils.addRandomDirect(StorageFactory.getInstance(), COUNT);
 		TestUtils.waitFor(getInbox(), COUNT);
 	}
 

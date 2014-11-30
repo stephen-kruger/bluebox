@@ -64,7 +64,7 @@ public class SearchIndexerTest extends BaseTestCase {
 
 	@Test
 	public void testMailIndexing() throws Exception {
-		BlueboxMessage msg = TestUtils.addRandom(StorageFactory.getInstance());
+		BlueboxMessage msg = TestUtils.addRandomDirect(StorageFactory.getInstance());
 		getSearchIndexer().indexMail(msg);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search(msg.getSubject(),SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("steve",SearchIndexer.SearchFields.ANY,0,10,SearchIndexer.SearchFields.SUBJECT,false).length);
