@@ -53,6 +53,7 @@ public abstract class BaseServletTest extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		super.tearDown();
+		log.info("Shutting down servlets");
 		// clear mailboxes
 		getURL("/"+JSONAdminHandler.JSON_ROOT+"/clear");
 				

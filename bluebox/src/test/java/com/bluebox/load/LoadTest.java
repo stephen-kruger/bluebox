@@ -33,7 +33,7 @@ public class LoadTest extends BaseTestCase {
 	}
 	
 	@Test
-	@PerfTest(invocations = 50, threads = 2)
+	@PerfTest(invocations = 10, threads = 2)
 	public void testLoad() throws Exception {
 		// send some mail
 		TestUtils.addRandomNoThread(getInbox(), 10);

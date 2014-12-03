@@ -15,6 +15,9 @@ public class InboxAddress extends Object {
 
 	public InboxAddress(String s) {
 		this.address = s;
+		// for test case testNoDomain
+		if (address.indexOf('@')<=0)
+			address = getAddress();
 	}
 
 	public InboxAddress(HttpServletRequest req) {
