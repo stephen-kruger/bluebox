@@ -95,6 +95,7 @@ public class Utils {
 			return hostname;
 		} 
 		catch (UnknownHostException e) {
+			log.error("Could not find hostname",e);
 			return "localhost";
 		}
 	}

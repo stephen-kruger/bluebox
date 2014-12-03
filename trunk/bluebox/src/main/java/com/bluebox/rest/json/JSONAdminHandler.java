@@ -6,8 +6,8 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.FileUtils;
-import org.mortbay.jetty.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,7 +194,7 @@ public class JSONAdminHandler extends AbstractHandler {
 			inbox.setSMTPBlacklist(req.getParameter("value"));
 			return;
 		}	
-		resp.sendError(HttpStatus.ORDINAL_400_Bad_Request, "No such command");
+		resp.sendError(HttpStatus.SC_BAD_REQUEST, "No such command");
 	}
 
 
