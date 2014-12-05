@@ -94,7 +94,7 @@
 						</requires>
 						<sourceEncoding>UTF-8</sourceEncoding>
 						<group>bluebox</group>
-						<summary>Promiscuous, non-forwarding SMTP server and mail mnager for dynamic email receiving</summary>
+						<summary>Promiscuous, non-forwarding SMTP server and webmail interface for dynamic email receiving and testing</summary>
 						<username>tomcat</username>
 						<groupname>tomcat</groupname>
 						<mappings>
