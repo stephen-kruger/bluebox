@@ -12,6 +12,9 @@
 		<lucene_version>4.10.2</lucene_version>
 		<derby_version>10.11.1.1</derby_version>
 		<mongo_version>2.12.4</mongo_version>
+		<rpm.file.owner>tomcat</rpm.file.owner>
+		<rpm.context.file.target>bluebox-rpm</rpm.context.file.target>
+		<rpm.context.file.source>${project.build.directory}/bluebox.war</rpm.context.file.source>
 	</properties>
 
 	<repositories>
@@ -76,6 +79,47 @@
 								<targetPath>/</targetPath>
 							</resource>
 						</webResources>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>rpm-maven-plugin</artifactId>
+					<version>2.1</version>
+					<configuration>
+						<targetVendor>redhat</targetVendor>
+						<requires>
+							<require>tomcat6,mongodb-org</require>
+						</requires>
+						<sourceEncoding>UTF-8</sourceEncoding>
+						<group>bluebox</group>
+						<mappings>
+							<mapping>
+								<directory>${rpm.context.file.target}</directory>
+								<configuration>true</configuration>
+								<filemode>755</filemode>
+								<username>${rpm.file.owner}</username>
+								<groupname>${rpm.file.owner}</groupname>
+								<sources>
+									<source>
+										<location>${rpm.context.file.source}</location>
+									</source>
+								</sources>
+							</mapping>
+						</mappings>
+						<preinstallScriptlet>
+							<script>/etc/init.d/tomcat6 stop</script>
+						</preinstallScriptlet>
+						<postinstallScriptlet>
+							<script>
+								echo "removing ${apps.deploy.directory}"
+								rm -rf
+								${apps.deploy.directory}
+								echo "removing
+								${tomcat.work.directory}/*"
+								rm -rf ${tomcat.work.directory}/*
+								/etc/init.d/tomcat6 start
+							</script>
+						</postinstallScriptlet>
 					</configuration>
 				</plugin>
 			</plugins>
@@ -160,11 +204,8 @@
 			<artifactId>commons-fileupload</artifactId>
 			<version>1.3.1</version>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.james.protocols</groupId>
-			<artifactId>protocols-smtp</artifactId>
-			<version>1.6.3</version>
-		</dependency>
+		<!-- <dependency> <groupId>org.apache.james.protocols</groupId> <artifactId>protocols-smtp</artifactId> 
+			<version>1.6.3</version> </dependency> -->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-email</artifactId>
