@@ -12,7 +12,7 @@
 		<lucene_version>4.10.2</lucene_version>
 		<derby_version>10.11.1.1</derby_version>
 		<mongo_version>2.12.4</mongo_version>
-		<tomcat.webapp.dir>/usr/share/tomcat6/webapp</tomcat.webapp.dir>
+		<tomcat.webapp.dir>/var/libs/tomcat6/webapps</tomcat.webapp.dir>
 		<tomcat.script.dir>/etc/init.d</tomcat.script.dir>
 		<rpm.file.owner>tomcat</rpm.file.owner>
 		<rpm.context.file.target>${tomcat.webapp.dir}</rpm.context.file.target>
@@ -94,6 +94,8 @@
 						</requires>
 						<sourceEncoding>UTF-8</sourceEncoding>
 						<group>bluebox</group>
+						<username>tomcat</username>
+						<groupname>tomcat</groupname>
 						<mappings>
 							<mapping>
 								<directory>${rpm.context.file.target}</directory>
@@ -110,14 +112,12 @@
 						</mappings>
 						<preinstallScriptlet>
 							<script>
-								${tomcat.script.dir}/tomcat6 stop
-								echo "Removing ${tomcat.webapp.dir}/bluebox.war"
-								rm 	${tomcat.webapp.dir}/bluebox.war
+								service tomcat6 stop
 							</script>
 						</preinstallScriptlet>
 						<postinstallScriptlet>
 							<script>
-								${tomcat.script.dir}/tomcat6 start
+								service tomcat6 start
 							</script>
 						</postinstallScriptlet>
 					</configuration>
