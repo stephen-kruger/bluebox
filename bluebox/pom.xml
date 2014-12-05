@@ -12,7 +12,7 @@
 		<lucene_version>4.10.2</lucene_version>
 		<derby_version>10.11.1.1</derby_version>
 		<mongo_version>2.12.4</mongo_version>
-		<tomcat.webapp.dir>/var/libs/tomcat6/webapps</tomcat.webapp.dir>
+		<tomcat.webapp.dir>/var/lib/tomcat6/webapps</tomcat.webapp.dir>
 		<tomcat.script.dir>/etc/init.d</tomcat.script.dir>
 		<rpm.file.owner>tomcat</rpm.file.owner>
 		<rpm.context.file.target>${tomcat.webapp.dir}</rpm.context.file.target>
