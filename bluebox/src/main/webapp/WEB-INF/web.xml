@@ -67,6 +67,8 @@
 		<auth-constraint>
 			<description>These roles are allowed access</description>
 			<role-name>bluebox</role-name>
+			<role-name>manager</role-name>
+			<role-name>admin</role-name>
 		</auth-constraint>
 	</security-constraint>
 	<login-config>
