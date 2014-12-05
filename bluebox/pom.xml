@@ -4,8 +4,8 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.2.4</version>
-	<name>BlueBox</name>
+	<version>4.2.5</version>
+	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
 		<slf4j_version>1.7.7</slf4j_version>
