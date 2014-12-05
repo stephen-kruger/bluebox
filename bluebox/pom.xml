@@ -114,10 +114,11 @@
 						<preinstallScriptlet>
 							<script>
 								if [ "$1" = "1" ]; then
-  									echo "Performing bluebox initial install"
+  									echo "Performing bluebox initial install..."
 								elif [ "$1" = "2" ]; then
-  									echo "Performing bluebox upgrade"
+  									echo "Performing bluebox upgrade..."
   									/sbin/service tomcat6 stop
+  									echo "Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
   									rm -rf ${tomcat.webapp.dir}/bluebox
 								fi
 							</script>
@@ -127,7 +128,7 @@
 								if [ "$1" = "1" ]; then
   									echo "Please start the application server : service tomcat6 start"
 								elif [ "$1" = "2" ]; then
-  									echo "Restarting application server to complete installation"
+  									echo "Restarting tomcat to complete installation..."
   									/sbin/service tomcat6 start
 								fi								
 							</script>
