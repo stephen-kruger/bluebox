@@ -15,6 +15,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
@@ -39,8 +40,8 @@ public class JSONMessageUtilHandler extends AbstractHandler {
 			log.debug("Serving links for {}",uid);
 			BlueboxMessage message = inbox.retrieve(uid);
 			JSONArray links = getLinks(message.getHtml(req));
-			resp.setContentType("application/json");
-			resp.setCharacterEncoding("utf-8");
+			resp.setContentType(JSON_CONTENT_TYPE);
+			resp.setCharacterEncoding(Utils.UTF8);
 			JSONObject result = new JSONObject();
 			result.put(LINKS, links);
 			resp.getWriter().print(result.toString());

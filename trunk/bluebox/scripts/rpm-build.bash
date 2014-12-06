@@ -1,0 +1,1 @@
+# this script publishes the RPM to the Git hosted yum repository

@@ -76,7 +76,7 @@
 			
 		<div class="centerCol">
 		<div style="text-align:left;">
-			<table width="100%">
+			<table>
 				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("messageage")%></label></td>
 					<td class="infoValue">

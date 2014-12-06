@@ -17,26 +17,6 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 public class JSONSearchHandler extends AbstractHandler {
 	private static final Logger log = LoggerFactory.getLogger(JSONSearchHandler.class);
 	public static final String JSON_ROOT = "rest/json/search";
-
-//	protected static String extractSearch(String uri, String fragment) {
-//		// /bluebox/rest/json/search/bluemail%20team%20%
-//		try {
-//			String search;
-//			if (uri.endsWith(fragment)) {
-//				return "";
-//			}
-//			else {
-//				int pos1 = uri.indexOf(fragment)+fragment.length()+1;
-//				int pos2 = uri.lastIndexOf('/');
-//				search = uri.substring(pos1,pos2);
-//				return URLDecoder.decode(search,"UTF-8");
-//			}
-//		}
-//		catch (Throwable e) {
-//			log.severe("No search specified in "+uri);
-//			return "";
-//		}
-//	}
 	
 	public void doSearchInbox(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		setDefaultHeaders(resp);

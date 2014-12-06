@@ -599,7 +599,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			logError(title,Utils.convertStreamToString(content));
 		} 
 		catch (Throwable e) {
-			//			e.printStackTrace();
 			logError(title,e.getMessage());
 		}
 	}

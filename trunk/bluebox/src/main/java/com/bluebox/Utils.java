@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
-import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +48,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.apache.commons.fileupload.util.mime.MimeUtility;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -100,20 +100,17 @@ public class Utils {
 		}
 	}
 
-	public static String convertStreamToString(java.io.InputStream is) throws IOException {
-		Scanner scanner = new Scanner(is);
-		scanner.useDelimiter("\\A");
-		String result = scanner.hasNext() ? scanner.next() : "";
+	public static String convertStreamToString(InputStream is) throws IOException {
+		String result = IOUtils.toString(is);
 		is.close();
-		scanner.close();
 		return result;
 	}
 
 	public static InputStream convertStringToStream(String s) {
 		try {
-			return new ByteArrayInputStream(s.getBytes("UTF-8"));
+			return IOUtils.toInputStream(s,UTF8);
 		} 
-		catch (UnsupportedEncodingException e) {
+		catch (Throwable e) {
 			e.printStackTrace();
 			return null;
 		}
@@ -618,8 +615,6 @@ public class Utils {
 			MimeBodyPart htmlBodyPart = new MimeBodyPart();
 			htmlBodyPart.setContent("<html><head><script>alert('gotcha!');</script></head><body><font color=\"red\">"+body.replaceAll("\n", "</br>")+"</font></body></html>","text/html; charset=\""+UTF8+"\"");
 
-			//htmlBodyPart.setHeader("Content-Type","text/plain; charset=\"utf-8\"");
-			//htmlBodyPart.setHeader("Content-Transfer-Encoding", "quoted-printable");
 			multipart.addBodyPart(htmlBodyPart);
 
 			// randomly create up to 5 attachment
@@ -744,7 +739,7 @@ public class Utils {
 
 			// Set up character stream
 			Reader r = new java.io.BufferedReader(new java.io.InputStreamReader(in, encoding));
-			Writer w = new BufferedWriter(new java.io.OutputStreamWriter(out, "UTF8"));
+			Writer w = new BufferedWriter(new java.io.OutputStreamWriter(out, UTF8));
 
 			// Copy characters from input to output.  The InputStreamReader
 			// converts from the input encoding to Unicode,, and the OutputStreamWriter
@@ -786,7 +781,7 @@ public class Utils {
 					s = s.substring(0,s.lastIndexOf('='));
 				}
 
-				s = new String(QuotedPrintableCodec.decodeQuotedPrintable(s.getBytes(Charset.forName("UTF-8"))),"UTF-8");
+				s = new String(QuotedPrintableCodec.decodeQuotedPrintable(s.getBytes(Charset.forName(UTF8))),UTF8);
 				res.append(s);
 			} 
 			catch (Throwable e) {
