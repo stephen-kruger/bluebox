@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.io.IOUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -78,15 +79,13 @@ public class BlueboxMessage {
 	public void setBlueBoxMimeMessage(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws IOException, MessagingException, SQLException, JSONException {
 		mmw = bbmm;
 		log.debug("Persisting mime message");
-//		setProperty(FROM,"[\""+from+"\"]");
 		setProperty(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
 		setProperty(RECIPIENT, recipient.getFullAddress());
 		setProperty(INBOX, getInbox().getAddress());
 		setProperty(SUBJECT, bbmm.getSubject());
 		setLongProperty(RECEIVED, received.getTime());
-		//		setProperty(RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
 		setIntProperty(STATE, State.NORMAL.ordinal());
-		setProperty(SIZE, bbmm.getSize());
+		setLongProperty(SIZE, Utils.getSize(bbmm));
 	}
 
 	public InboxAddress getRecipient() throws AddressException {
@@ -242,7 +241,7 @@ public class BlueboxMessage {
 				throw new Exception("No attachment found");
 			log.debug("Setting mime type to {}",ds.getContentType());
 			resp.setContentType(ds.getContentType());
-			Utils.copy(ds.getInputStream(),resp.getOutputStream());		
+			IOUtils.copy(ds.getInputStream(),resp.getOutputStream());		
 		}
 		catch (Throwable t) {
 			log.error(t.getMessage());
@@ -295,15 +294,6 @@ public class BlueboxMessage {
 			e.printStackTrace();
 		}
 		return htmlString;
-	}
-
-	private void setProperty(String name, long value) {
-		try {
-			properties.put(name, value);
-		} 
-		catch (JSONException e) {
-			e.printStackTrace();
-		}
 	}
 
 	private void setProperty(String name, Object value) {
@@ -378,20 +368,8 @@ public class BlueboxMessage {
 	}
 
 	public long getSize() {
-		return this.getLongProperty(SIZE);
+		return getLongProperty(SIZE);
 	}
-
-	//	public static String getFrom(InboxAddress from, MimeMessage bbmm) throws MessagingException {
-	//		if (from!=null)
-	//			if (from.length()>0)
-	//				return from;
-	//		if (bbmm.getFrom()!=null) {
-	//			if (bbmm.getFrom().length>0) {
-	//				return bbmm.getFrom()[0].toString();
-	//			}
-	//		}
-	//		throw new MessagingException("No from address specified");
-	//	}
 
 	protected MimeMessageParser getParser() throws Exception {
 		if (parser==null) {

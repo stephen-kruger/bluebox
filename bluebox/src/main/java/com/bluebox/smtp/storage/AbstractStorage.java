@@ -19,6 +19,7 @@ import com.bluebox.smtp.storage.BlueboxMessage.State;
 public abstract class AbstractStorage implements StorageIf {
 	public static final String DB_NAME = "bluebox401";
 	
+	@Override
 	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
 		List<LiteMessage> mail = listMailLite(inbox, state, start, count, orderBy, ascending);
 		int index = 0;
@@ -33,6 +34,7 @@ public abstract class AbstractStorage implements StorageIf {
 		writer.flush();
 	}
 	
+	@Override
 	public abstract List<LiteMessage> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending) throws Exception;
 	
 	public abstract String getDBOString(Object dbo, String key, String def);
@@ -53,7 +55,7 @@ public abstract class AbstractStorage implements StorageIf {
 	public JSONObject loadMessageJSON(Object dbo) throws Exception {
 		JSONObject message = new JSONObject();
 		message.put(BlueboxMessage.UID,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()));
-		message.put(BlueboxMessage.FROM,new JSONArray(getDBOString(dbo,BlueboxMessage.FROM,"['bluebox@bluebox.com']")));
+		message.put(BlueboxMessage.FROM,new JSONArray(getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']")));
 		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
 		message.put(BlueboxMessage.RECIPIENT,getDBOString(dbo,BlueboxMessage.RECIPIENT,""));
 		message.put(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, new Date()).getTime());
@@ -62,9 +64,8 @@ public abstract class AbstractStorage implements StorageIf {
 		message.put(BlueboxMessage.SIZE,getDBOLong(dbo,BlueboxMessage.SIZE,0));
 		return message;
 	}
-	
-	
 
+	@Override
 	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
 		String uid = UUID.randomUUID().toString();
 		BlueboxMessage message = new BlueboxMessage(uid,recipient);

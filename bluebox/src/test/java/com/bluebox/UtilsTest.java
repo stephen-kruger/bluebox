@@ -10,6 +10,7 @@ import junit.framework.TestCase;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.junit.Test;
 import org.subethamail.smtp.util.Base64;
 
 import com.bluebox.smtp.InboxAddress;
@@ -17,6 +18,7 @@ import com.bluebox.smtp.InboxAddress;
 public class UtilsTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
 
+	@Test
 	public void testGetEmail() throws AddressException {
 		assertEquals("The email portion was not extracted correctly","steve@nowhere.com",new InboxAddress("Stephen Johnson <steve@nowhere.com>").getAddress());
 		assertEquals("The email portion was not extracted correctly","csgdaily@bluebox.xxx.com",new InboxAddress("\"csgdaily@bluebox.xxx.com \" <csgdaily@bluebox.xxx.com>").getAddress());
@@ -24,6 +26,7 @@ public class UtilsTest extends TestCase {
 		assertEquals("The email portion was not extracted correctly","steve@nowhere.com",new InboxAddress("<steve@nowhere.com>").getAddress());
 	}
 
+	@Test
 	public void testUTF8Decode() throws UnsupportedEncodingException {
 		//		String src = "è¿™æ˜¯ä¸€ä¸ªä¸»é¢˜";//6L+Z5piv5LiA5Liq5Li76aKY
 		String src2 = "这是一个主题";
@@ -34,6 +37,7 @@ public class UtilsTest extends TestCase {
 		assertEquals("UTF-8 was not correctly  decoded",src2,Utils.decodeQuotedPrintable(encodedStr));
 	}
 
+	@Test
 	public void testNotesAddressConversion() throws AddressException, UnsupportedEncodingException {
 		String notes = "Stephen Johnson/Ireland/XXX";
 		String email = Utils.convertNotesAddress(notes);
@@ -58,6 +62,7 @@ public class UtilsTest extends TestCase {
 		assertNotNull("No address set", ia.getAddress());
 	}
 
+	@Test
 	public void testDecodeQuotedPrinted() {
 		String quoted  ="<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.=\r\n"+
 				"w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">=0A<html xmlns=3D\"http://www.=\r\n"+
@@ -74,6 +79,7 @@ public class UtilsTest extends TestCase {
 		assertEquals("String did not decode correctly",unquoted.length(),test.length());
 	}
 	
+	@Test
 	public void testUpdateCheck() {
 		assertTrue(Utils.isVersionNewer("2.0.0", "1.0.0"));
 		assertFalse(Utils.isVersionNewer("2.0.0", "2.0.0"));
@@ -81,6 +87,7 @@ public class UtilsTest extends TestCase {
 		assertFalse(Utils.isVersionNewer("1.1.0", "2.1.0"));
 	}
 	
+	@Test
 	public void testOnlineUpdateCheck() throws JSONException {
 		JSONObject jo = Utils.updateAvailable();
 		jo = Utils.updateAvailable();

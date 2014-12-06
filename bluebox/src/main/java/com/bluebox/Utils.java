@@ -1,15 +1,11 @@
 package com.bluebox;
 
-import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -450,7 +446,6 @@ public class Utils {
 	public static void sendMessage(final ServletContext session, final Inbox inbox, final int count) {
 		ExecutorService threadPool = Executors.newFixedThreadPool(10);
 		for (int j = 0; j < count/6; j++) {
-			log.debug("Sending message {}",j);
 			threadPool.execute(new Runnable() {
 
 				@Override
@@ -458,7 +453,6 @@ public class Utils {
 					boolean sent = false;
 					int retryCount = 5;
 					while ((!sent)&&(retryCount-->0)) {
-						log.debug("Sending message");
 						try {
 							MimeMessage msg = createMessage(session,
 									getRandomAddress(),  
@@ -512,7 +506,6 @@ public class Utils {
 		if (recipients.size()==0)
 			recipients.add("anonymous@bluebox.com");
 		for (String recipient : recipients) {
-			log.debug("Sending message to {}",recipient);
 			if (inbox.accept(msg.getFrom()[0].toString(), recipient)) {
 				inbox.deliver(msg.getFrom()[0].toString(), recipient, msg);
 			}
@@ -541,32 +534,6 @@ public class Utils {
 			log.debug("Sending message to {}",recipient);
 			BlueboxMessage bbm = storage.store(msg.getFrom()[0].toString(), new InboxAddress(recipient), new Date(), msg);
 			SearchIndexer.getInstance().indexMail(bbm);
-		}
-	}
-
-	//		public static Session getSession() {
-	//			Properties mailProps = getMailProperties();
-	//			Session session = Session.getInstance(mailProps, null);
-	//			session.setDebug(false);
-	//			return session;
-	//		}
-	//
-	//	public static void sendMessage(InternetAddress from, String subject, String body, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, boolean attachment) throws MessagingException, IOException {
-	//		Properties mailProps = getMailProperties();
-	//		Session session = Session.getInstance(mailProps, null);
-	//		session.setDebug(false);
-	//		MimeMessage msg = createMessage(session, from, to, cc, bcc, subject, body, attachment);
-	//		Transport.send(msg);
-	//	}
-
-
-
-	public static String trimURLParam(String p) {
-		if (p.endsWith("/")) {
-			return p.substring(0,p.length()-1);
-		}
-		else {
-			return p;
 		}
 	}
 
@@ -618,7 +585,7 @@ public class Utils {
 			multipart.addBodyPart(htmlBodyPart);
 
 			// randomly create up to 5 attachment
-			int attachmentCount = new Random().nextInt(5);
+			int attachmentCount = new Random().nextInt(25);
 			for (int i = 0; i < attachmentCount; i++)
 				multipart.addBodyPart(createAttachment(session));
 
@@ -642,31 +609,9 @@ public class Utils {
 				"bigpic.jpg",
 				"BlueBox.png",
 				"cv-template-Marketing-Manager.doc"
-		}; 
-		String[] extensions = new String[] {
-				".odt",
-				".odp",
-				".ods",
-				".txt",
-				".png",
-				".jpg",
-				".png",
-				"doc"
-		}; 
-		String[] mime = new String[] {
-				"application/document",
-				"application/presentation",
-				"application/spreadsheet",
-				"text/plain",
-				"image/png",
-				"image/jpeg",
-				"image/png",
-				"application/document"
-		}; 
+		};
 
-		//		String root = "src/main/webapp/data/";
-
-		int index = r.nextInt(extensions.length); 
+		int index = r.nextInt(names.length); 
 		String name = Integer.toString(r.nextInt(99))+"-"+names[index];
 
 
@@ -679,8 +624,7 @@ public class Utils {
 		else {
 			content = new FileInputStream("src/main/webapp/data/"+names[index]);
 		}
-		DataSource source = new ByteArrayDataSource(content,mime[index]);
-		//		source.setFileTypeMap(ftm);
+		DataSource source = new ByteArrayDataSource(content,ftm.getContentType(names[index]));
 		messageBodyPart.setFileName(name);
 		messageBodyPart.setContentID(UUID.randomUUID().toString());
 		messageBodyPart.setDataHandler(new DataHandler(source));
@@ -731,33 +675,33 @@ public class Utils {
 		return name;
 	}
 
-	public static String convertEncoding(String text, String encoding) {
-		try {
-			// set up byte streams
-			InputStream in = new ByteArrayInputStream(text.getBytes());
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-			// Set up character stream
-			Reader r = new java.io.BufferedReader(new java.io.InputStreamReader(in, encoding));
-			Writer w = new BufferedWriter(new java.io.OutputStreamWriter(out, UTF8));
-
-			// Copy characters from input to output.  The InputStreamReader
-			// converts from the input encoding to Unicode,, and the OutputStreamWriter
-			// converts from Unicode to the output encoding.  Characters that cannot be
-			// represented in the output encoding are output as '?'
-			char[] buffer = new char[4096];
-			int len;
-			while((len = r.read(buffer)) != -1) 
-				w.write(buffer, 0, len);
-			r.close();
-			w.flush();
-			return out.toString();
-		}
-		catch (Throwable t) {
-			t.printStackTrace();
-			return text;
-		}
-	}
+	//	public static String convertEncoding(String text, String encoding) {
+	//		try {
+	//			// set up byte streams
+	//			InputStream in = new ByteArrayInputStream(text.getBytes());
+	//			ByteArrayOutputStream out = new ByteArrayOutputStream();
+	//
+	//			// Set up character stream
+	//			Reader r = new java.io.BufferedReader(new java.io.InputStreamReader(in, encoding));
+	//			Writer w = new BufferedWriter(new java.io.OutputStreamWriter(out, UTF8));
+	//
+	//			// Copy characters from input to output.  The InputStreamReader
+	//			// converts from the input encoding to Unicode,, and the OutputStreamWriter
+	//			// converts from Unicode to the output encoding.  Characters that cannot be
+	//			// represented in the output encoding are output as '?'
+	//			char[] buffer = new char[4096];
+	//			int len;
+	//			while((len = r.read(buffer)) != -1) 
+	//				w.write(buffer, 0, len);
+	//			r.close();
+	//			w.flush();
+	//			return out.toString();
+	//		}
+	//		catch (Throwable t) {
+	//			t.printStackTrace();
+	//			return text;
+	//		}
+	//	}
 
 	//	public static String decodeQuotedPrintable(String quoted) {
 	//		try {
@@ -794,15 +738,7 @@ public class Utils {
 	}
 
 	public static byte[] convertStreamToBytes(InputStream binaryStream) throws IOException {
-		return convertStreamToString(binaryStream).getBytes();
-	}
-
-	public static void copy(InputStream is, OutputStream os) throws IOException {
-		int byteRead;
-		while((byteRead=is.read())>=0)
-			os.write(byteRead);
-
-		os.flush();
+		return IOUtils.toByteArray(binaryStream);
 	}
 
 	public static InputStream streamMimeMessage(MimeMessage msg) throws IOException, MessagingException {
@@ -887,8 +823,6 @@ public class Utils {
 		jo.put("current_version", Config.getInstance().getString(Config.BLUEBOX_VERSION));
 		jo.put("available_version", props.getProperty(Config.BLUEBOX_VERSION));
 		jo.put("online_war", props.getProperty("online_war"));			
-
-		//log.info(jo.toString());
 		return jo;
 	}
 
@@ -897,8 +831,6 @@ public class Utils {
 		for (String s : list) {
 			listS.append("<div>").append(s).append("</div>");
 		}
-		//		if (listS.length()>0)
-		//			return listS.substring(0, listS.length()-1).toString();
 		return listS.toString();
 	}
 
@@ -910,5 +842,24 @@ public class Utils {
 		if (listS.length()>0)
 			return listS.substring(0, listS.length()-1).toString();
 		return listS.toString();
+	}
+
+	public static long getSize(MimeMessage bbmm) {
+		long count = 0;
+		try {
+			count = bbmm.getSize();
+			if (count<0) {
+				log.warn("Manually calculating message size");
+				count=0;
+				InputStream is = bbmm.getInputStream();
+				while (is.read()>=0)
+					count++;
+				is.close();
+			}
+		} 
+		catch (Throwable e) {
+			e.printStackTrace();
+		}
+		return count;
 	}
 }

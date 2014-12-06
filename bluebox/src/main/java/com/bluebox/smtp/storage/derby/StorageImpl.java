@@ -42,6 +42,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public static final String ERROR_CONTENT = "error_content";
 	private boolean started = false;
 
+	@Override
 	public void start() throws Exception {
 		if (started) {
 			throw new Exception("Storage instance already started");
@@ -70,6 +71,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
+	@Override
 	public void stop() throws Exception {
 		if (!started) {
 			throw new Exception("Storage instance was not running");
@@ -101,9 +103,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public Connection getConnection() throws Exception {
 		if (!started) {
-			Exception e = new Exception("Storage instance not started");
-			e.printStackTrace();
-			throw e;
+//			Exception e = new Exception("Storage instance not started");
+//			e.printStackTrace();
+//			throw e;
+			log.error("Storage instance not started, trying to recover");
+			StorageFactory.clearInstance();
+			StorageFactory.getInstance().start();
+			return ((StorageImpl)StorageFactory.getInstance()).getConnection();
 		}
 		System.setProperty("derby.language.logQueryPlan", "false");
 		String url = "jdbc:derby:"+DB_NAME+";create=true";
@@ -197,6 +203,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		connection.close();
 	}
 
+	@Override
 	public void store(JSONObject props, InputStream blob) throws Exception {
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
@@ -252,6 +259,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	//		return message;
 	//	}
 
+	@Override
 	public void delete(String id) throws Exception {
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.UID+"=?");
@@ -262,6 +270,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		log.debug("Removed mail entry "+id);
 	}
 
+	@Override
 	public BlueboxMessage retrieve(String uid) throws Exception {
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.UID+"=?");
@@ -276,6 +285,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return message;
 	}
 
+	@Override
 	public boolean contains(String uid) {
 		boolean contains = false;
 		try {
@@ -295,6 +305,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return contains;
 	}
 
+	@Override
 	public String getDBOString(Object dbo, String key, String def) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
@@ -336,6 +347,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
+	@Override
 	public Date getDBODate(Object dbo, String key, Date def) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
@@ -347,6 +359,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return def;
 	}
 
+	@Override
 	public InputStream getDBORaw(Object dbo, String key) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
@@ -359,6 +372,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
+	@Override
 	public void deleteAll(InboxAddress inbox) throws Exception {
 		log.debug("Deleting inbox "+inbox);
 		Connection connection = getConnection();
@@ -485,6 +499,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return ps.getResultSet();
 	}
 
+	@Override
 	public List<BlueboxMessage> listMail(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		Connection connection = getConnection();
 		ResultSet result = listMailCommon("*",connection, email, state, start, count, orderBy, ascending);
@@ -499,6 +514,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return list;
 	}
 
+	@Override
 	public List<LiteMessage> listMailLite(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		Connection connection = getConnection();
 		String cols = 	BlueboxMessage.UID+","+
