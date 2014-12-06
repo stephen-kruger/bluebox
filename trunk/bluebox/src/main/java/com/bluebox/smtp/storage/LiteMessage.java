@@ -7,8 +7,6 @@ import java.util.Locale;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
-import com.bluebox.smtp.InboxAddress;
-
 public class LiteMessage {
 
 	private JSONObject data;
@@ -37,18 +35,21 @@ public class LiteMessage {
 		return new Date(data.getLong(BlueboxMessage.RECEIVED));		
 	}
 
-	public InboxAddress getInbox() throws JSONException {
-		return new InboxAddress(data.getString(BlueboxMessage.INBOX));		
-	}
+//	public InboxAddress getInbox() throws JSONException {
+//		return new InboxAddress(data.getString(BlueboxMessage.INBOX));		
+//	}
 
+	/*
+	 * Convert the date and size to something pretty
+	 */
 	public String prettyJSON(Locale locale) throws JSONException {
-		// convert the date and size to something pretty
-		data.put(BlueboxMessage.RECEIVED,dateToString(new Date(data.getLong(BlueboxMessage.RECEIVED)),locale));
+		JSONObject tmp = new JSONObject(data.toString());
+		tmp.put(BlueboxMessage.RECEIVED,dateToString(new Date(data.getLong(BlueboxMessage.RECEIVED)),locale));
 		long size = data.getLong(BlueboxMessage.SIZE)/1000;
 		if (size==0)
 			size = 1;
-		data.put(BlueboxMessage.SIZE,size+"K");
-		return data.toString();
+		tmp.put(BlueboxMessage.SIZE,size+"K");
+		return tmp.toString();
 	}
 	
 	public static String dateToString(Date date, Locale locale) {

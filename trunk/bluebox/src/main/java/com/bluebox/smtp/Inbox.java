@@ -86,6 +86,7 @@ public class Inbox implements SimpleMessageListener {
 			timer = new Timer();
 			timer.scheduleAtFixedRate(timerTask = new TimerTask() {
 
+				@Override
 				public void run() {
 					log.info("Cleanup timer activated");
 					try {
@@ -387,14 +388,23 @@ public class Inbox implements SimpleMessageListener {
 		}
 		log.info("Cleaned up {} deleted messages",count);
 	}
+	
+	/*
+	 * Some Non Delivery Records have null or <> as from. This hacks in a default
+	 * email to allow delivery of the bounced message.
+	 */
+	public String checkBounce(String from) {
+		if ((from==null)||(from.length()==0)||(from.equals("<>"))) {
+			from = "bounce@"+Utils.getHostName();
+		}
+		return from;
+	}
 
 	@Override
 	public boolean accept(String from, String recipient) {	
 		try {
 			// if no From is specified, treat as a bounce message and send to bounce@<hostname> inbox
-			if ((from==null)||(from.length()==0)||(from.equals("<>"))) {
-				from = "bounced@"+Utils.getHostName();
-			}
+			from = checkBounce(from);
 			InboxAddress fromAddress = new InboxAddress(from);
 			InboxAddress recipientAddress = new InboxAddress(recipient);
 			if (!fromAddress.isValidAddress()) {
@@ -488,10 +498,10 @@ public class Inbox implements SimpleMessageListener {
 	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException {
 		recipient = javax.mail.internet.MimeUtility.decodeText(recipient);
 		from = javax.mail.internet.MimeUtility.decodeText(from);
+		
 		// if no From is specified, treat as a bounce message and send to bounce@<hostname> inbox
-		if ((from==null)||(from.length()==0)||(from.equals("<>"))) {
-			from = "bounced@"+Utils.getHostName();
-		}
+		from = checkBounce(from);
+		
 		MimeMessage mimeMessage = null;
 		try {
 			mimeMessage = Utils.loadEML(data);

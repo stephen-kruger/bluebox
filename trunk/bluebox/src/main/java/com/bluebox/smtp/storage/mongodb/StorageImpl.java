@@ -50,6 +50,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	private DB db;
 	private GridFS errorFS;
 
+	@Override
 	public void start() throws Exception {
 		log.info("Starting MongoDB connection");
 		//		MongoClientOptions options = MongoClientOptions.builder()
@@ -100,12 +101,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}  
 	}
 
+	@Override
 	public void stop() throws Exception {
 		mongoClient.close();
 		StorageFactory.clearInstance();
 		log.info("Stopped Mongo client");
 	}
 
+	@Override
 	public void store(JSONObject props, InputStream blob) throws Exception {
 		DBCollection coll = db.getCollection(TABLE_NAME);
 		DBObject bson = ( DBObject ) JSON.parse( props.toString() );
@@ -136,6 +139,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	//		return message;
 	//	}
 
+	@Override
 	public synchronized BlueboxMessage retrieve(String uid) throws Exception {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
 		log.debug("Looking for uid {}",uid);
@@ -146,6 +150,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return loadMessage(dbo);
 	}
 	
+	@Override
 	public boolean contains(String uid) {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
 		DBObject dbo = db.getCollection(TABLE_NAME).findOne(query);
@@ -194,6 +199,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
+	@Override
 	public Date getDBODate(Object dbo, String key, Date def) {
 		DBObject mo = (DBObject)dbo;
 		if (mo.containsField(key))
@@ -204,6 +210,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
+	@Override
 	public InputStream getDBORaw(Object dbo, String uid) {
 		try {
 			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
@@ -226,6 +233,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		gfsRaw.remove(gfsRaw.findOne(uid));
 	}
 
+	@Override
 	public void deleteAll(InboxAddress inbox) throws Exception {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.INBOX, inbox.getAddress());
 		db.getCollection(TABLE_NAME).remove(query);
@@ -335,6 +343,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return db.getCollection(TABLE_NAME).find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
 	}
 
+	@Override
 	public List<BlueboxMessage> listMail(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		List<BlueboxMessage> results = new ArrayList<BlueboxMessage>();
 		DBCursor cursor = listMailCommon(inbox, state, start, count, orderBy, ascending);
@@ -457,6 +466,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		logError(title,IOUtils.toInputStream(content));
 	}
 
+	@Override
 	public int logErrorCount() {
 		DBCursor cursor = errorFS.getFileList();
 		try {
@@ -473,6 +483,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return 0;
 	}
 
+	@Override
 	public void logErrorClear() {
 		try {
 			log.info("Clearing error db");
@@ -484,6 +495,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
+	@Override
 	public JSONArray logErrorList(int start, int count) {
 		DBCursor cursor = errorFS.getFileList();
 		try {
