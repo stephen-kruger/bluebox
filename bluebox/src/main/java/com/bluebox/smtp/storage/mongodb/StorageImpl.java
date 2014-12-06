@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import org.apache.commons.io.IOUtils;
 import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -444,22 +445,16 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void logError(String title, InputStream content) {
-		try {
-			logError(title,Utils.convertStreamToString(content));
-		} 
-		catch (Throwable e) {
-//			e.printStackTrace();
-			logError(title,e.getMessage());
-		}
-	}
-
-	@Override
-	public void logError(String title, String content) {
-		GridFSInputFile gfs = errorFS.createFile(content.getBytes());
+		GridFSInputFile gfs = errorFS.createFile(content);
 		gfs.put("title", title);
 		gfs.put("date", new Date());
 		gfs.save();
 		log.debug("Saved with id {}",gfs.getId());
+	}
+
+	@Override
+	public void logError(String title, String content) {
+		logError(title,IOUtils.toInputStream(content));
 	}
 
 	public int logErrorCount() {
@@ -518,7 +513,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public String logErrorContent(String id) {
 		try {
 			ObjectId oid = new ObjectId(id);
-			GridFSDBFile file = errorFS.findOne(oid);	
+			GridFSDBFile file = errorFS.findOne(oid);
 			return Utils.convertStreamToString(file.getInputStream());
 		}
 		catch (Throwable t) {

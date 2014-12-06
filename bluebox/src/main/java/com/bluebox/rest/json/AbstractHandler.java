@@ -14,6 +14,7 @@ import com.bluebox.smtp.InboxAddress;
 
 public class AbstractHandler {
 	private static final Logger log = Logger.getAnonymousLogger();
+	public static final String JSON_CONTENT_TYPE = "text/x-json;charset=UTF-8";
 
 	protected void setDefaultHeaders(HttpServletResponse resp) {
 		resp.setHeader("Pragma", "No-cache");

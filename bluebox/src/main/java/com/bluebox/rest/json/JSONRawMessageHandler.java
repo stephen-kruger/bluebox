@@ -12,6 +12,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
@@ -31,7 +32,7 @@ public class JSONRawMessageHandler extends AbstractHandler {
 			BlueboxMessage message = inbox.retrieve(uid);
 			MimeMessage bbm = message.getBlueBoxMimeMessage();
 			resp.setContentType("text/plain");
-			resp.setCharacterEncoding("utf-8");
+			resp.setCharacterEncoding(Utils.UTF8);
 			OutputStream os = resp.getOutputStream();
 			bbm.writeTo(os);
 			os.flush();

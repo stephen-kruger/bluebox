@@ -113,13 +113,13 @@ public class Inbox implements SimpleMessageListener {
 			timerTask = null;
 		}
 
-//		log.debug("Stopping inbox");
-//		try {
-//			StorageFactory.getInstance().stop();
-//		}
-//		catch (Throwable e) {
-//			log.error("Error stopping storage :{}",e.getMessage());
-//		}
+		//		log.debug("Stopping inbox");
+		//		try {
+		//			StorageFactory.getInstance().stop();
+		//		}
+		//		catch (Throwable e) {
+		//			log.error("Error stopping storage :{}",e.getMessage());
+		//		}
 
 		log.debug("Stopping search engine");
 		try {
@@ -129,7 +129,7 @@ public class Inbox implements SimpleMessageListener {
 			e.printStackTrace();
 			log.error("Error stopping search engine",e);
 		}
-//		inbox = null;
+		//		inbox = null;
 		log.info("Stopped inbox");
 	}
 
@@ -391,6 +391,10 @@ public class Inbox implements SimpleMessageListener {
 	@Override
 	public boolean accept(String from, String recipient) {	
 		try {
+			// if no From is specified, treat as a bounce message and send to bounce@<hostname> inbox
+			if ((from==null)||(from.length()==0)||(from.equals("<>"))) {
+				from = "bounced@"+Utils.getHostName();
+			}
 			InboxAddress fromAddress = new InboxAddress(from);
 			InboxAddress recipientAddress = new InboxAddress(recipient);
 			if (!fromAddress.isValidAddress()) {
@@ -484,6 +488,10 @@ public class Inbox implements SimpleMessageListener {
 	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException {
 		recipient = javax.mail.internet.MimeUtility.decodeText(recipient);
 		from = javax.mail.internet.MimeUtility.decodeText(from);
+		// if no From is specified, treat as a bounce message and send to bounce@<hostname> inbox
+		if ((from==null)||(from.length()==0)||(from.equals("<>"))) {
+			from = "bounced@"+Utils.getHostName();
+		}
 		MimeMessage mimeMessage = null;
 		try {
 			mimeMessage = Utils.loadEML(data);
@@ -759,7 +767,7 @@ public class Inbox implements SimpleMessageListener {
 	public List<String> getSMTPBlacklist() {
 		return Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST);		
 	}
-	
+
 	public void setSMTPBlacklist(String s) {
 		blueboxMessageHandlerFactory.setSMTPBlacklist(s);
 	}

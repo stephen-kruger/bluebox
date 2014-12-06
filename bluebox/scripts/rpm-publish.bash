@@ -1,0 +1,1 @@
+# this script updates svn and builds the new rpm
