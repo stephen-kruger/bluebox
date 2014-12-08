@@ -386,9 +386,9 @@ public class Utils {
 					Random r = new Random();
 					do {
 						if (isStopped()) break;
-						toC = r.nextInt(5);
-						ccC = r.nextInt(5);
-						bccC = r.nextInt(5);
+						toC = r.nextInt(count-totalCount+1);
+						ccC = r.nextInt(count-toC-totalCount+1);
+						bccC = r.nextInt(count-ccC-toC-totalCount+1);
 						MimeMessage msg = createMessage(session,
 								getRandomAddress(),  
 								getRandomAddresses(toC),//to
@@ -422,9 +422,9 @@ public class Utils {
 			int totalCount = 0;
 			Random r = new Random();
 			do {
-				toC = r.nextInt(5);
-				ccC = r.nextInt(5);
-				bccC = r.nextInt(5);
+				toC = r.nextInt(count-totalCount+1);
+				ccC = r.nextInt(count-toC-totalCount+1);
+				bccC = r.nextInt(count-ccC-toC-totalCount+1);
 				MimeMessage msg = createMessage(session,
 						getRandomAddress(),  
 						getRandomAddresses(toC),//to
