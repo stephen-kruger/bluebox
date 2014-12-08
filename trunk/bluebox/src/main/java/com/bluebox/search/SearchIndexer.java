@@ -148,6 +148,22 @@ public class SearchIndexer {
 		//              querystr = QueryParser.escape(querystr);
 		//              querystr = "*"+QueryParser.escape(querystr)+"*";
 		//              querystr = "*"+querystr+"*";
+		boolean leadingWC=false, trailingWC=false;
+		if (querystr.endsWith("*")) {
+			querystr = querystr.substring(0,querystr.length()-1);
+			trailingWC=true;
+		}
+		if (querystr.startsWith("*")) {
+			querystr = querystr.substring(1,querystr.length());
+			leadingWC = true;
+		}
+		querystr = QueryParser.escape(querystr);
+
+		if (leadingWC)
+			querystr = "*"+querystr;
+		if (trailingWC) {
+			querystr = querystr+"*";
+		}
 		QueryParser queryParser;
 
 		Analyzer analyzer = new StandardAnalyzer();

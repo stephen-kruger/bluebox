@@ -1,0 +1,5 @@
+[Bluebox]
+name=Bluebox
+baseurl=https://stephen-kruger.github.io/bluebox/yum/noarch
+enabled=1
+gpgcheck=0
