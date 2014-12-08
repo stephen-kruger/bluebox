@@ -44,7 +44,7 @@ public class TestUtils extends TestCase {
 			throw new Exception("Timed out waiting for "+count+"messages to arrive");
 		}
 		else {
-			log.info("Found expected message count received");
+			log.info("Found expected message count received:"+count);
 		}
 	}
 	
@@ -69,10 +69,6 @@ public class TestUtils extends TestCase {
 				Utils.createMessage(null,"steve@there.com", "steve@here.com", "steve@here.com", "steve@here.com", Utils.randomLine(25), Utils.randomLine(25)));
 		return message;
 	}
-	
-//	public static void addRandom(Inbox inbox, int count) throws Exception {
-//		new Thread(Utils.generate(null, inbox, count)).start();
-//	}
 	
 	public static void addRandomNoThread(Inbox inbox, int count) throws Exception {
 		Utils.generateNoThread(null, inbox, count);

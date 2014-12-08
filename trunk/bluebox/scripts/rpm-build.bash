@@ -30,8 +30,19 @@ function checkSvn() {
                 echo "Subversion detected"
         fi
 }
+
+function checkCreaterepo() {
+        if command_exists `which createrepo`; then
+        echo "Please install createrepo"
+        exit
+        else
+                echo "Createrepo detected"
+        fi
+}
+
 checkMaven
 checkSvn
+checkCreaterepo
 
 cd $BLUEBOX_SRC
 export BLUEBOX_SRC=`pwd`
