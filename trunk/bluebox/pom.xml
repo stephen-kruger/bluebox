@@ -121,6 +121,8 @@
   									/sbin/service mongodb stop
   									echo "Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
   									rm -rf ${tomcat.webapp.dir}/bluebox
+  									echo "Cleaning Lucence lock file"
+  									rm -rf /var/cache/tomcat6/temp/bluebox4.lucene/write.lock
 								fi
 							</script>
 						</preinstallScriptlet>
