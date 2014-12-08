@@ -117,6 +117,7 @@ public class SearchIndexerTest extends BaseTestCase {
 		log.info("Looking for sender "+searchString);
 		SearchIndexer.getInstance().searchInboxes(searchString, sw, 0, 50, SearchIndexer.SearchFields.FROM, SearchIndexer.SearchFields.RECEIVED, true);
 		ja = new JSONArray(sw.toString());
+		log.info(ja.toString(3));
 		assertTrue("No 'Subject' found in search results",ja.length()>0);
 
 		// test search in subject
