@@ -115,4 +115,10 @@ public interface StorageIf {
 	JSONObject getCountByHour();
 
 	JSONObject getCountByDayOfWeek();
+	
+	public void setProperty(String key, String value);
+	
+	public String getProperty(String key);
+	
+	public long getLongProperty(String key);
 }

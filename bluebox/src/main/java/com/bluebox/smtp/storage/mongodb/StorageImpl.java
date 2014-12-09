@@ -774,4 +774,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		return resultJ;
 	}
+
+	@Override
+	public String getProperty(String key) {
+		return getProperty(key,"");
+	}
+
+	@Override
+	public long getLongProperty(String key) {
+		return Long.parseLong(getProperty(key,"0"));
+	}
 }
