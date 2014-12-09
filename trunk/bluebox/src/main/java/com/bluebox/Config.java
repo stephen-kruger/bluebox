@@ -2,7 +2,7 @@ package com.bluebox;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.prefs.Preferences;
+//import java.util.prefs.Preferences;
 
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
@@ -33,7 +33,7 @@ public class Config extends CompositeConfiguration {
 	public static final String BLUEBOX_STORAGE_CONFIG   = "bluebox_storage_config";
 	public static final String BLUEBOX_STRICT_CHECKING  = "bluebox_strict";
 
-	Preferences prefs = Preferences.systemNodeForPackage(Config.class);
+//	Preferences prefs = Preferences.systemNodeForPackage(Config.class);
 
 	private Config() {
 		addConfiguration(new SystemConfiguration());
@@ -106,8 +106,8 @@ public class Config extends CompositeConfiguration {
 //	}
 	
 	public void setString(String key, String value) {
-		// save the setting so it's available across restarts
-		prefs.put(key, value);
+		// TODO save the setting so it's available across restarts
+//		prefs.put(key, value);
 		super.setProperty(key, value);
 	}
 	

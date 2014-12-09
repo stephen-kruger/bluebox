@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.prefs.Preferences;
+//import java.util.prefs.Preferences;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -55,7 +55,7 @@ import com.bluebox.smtp.storage.StorageIf;
 
 public class Inbox implements SimpleMessageListener {
 	private static final String GLOBAL_COUNT_NODE = "global_message_count";
-	Preferences prefs = Preferences.userNodeForPackage(Inbox.class);
+//	Preferences prefs = Preferences.userNodeForPackage(Inbox.class);
 	private JSONObject recentStats = new JSONObject();
 
 	public static final String EMAIL = "Email";
@@ -682,11 +682,11 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public long getStatsGlobalCount() {
-		return prefs.getLong(GLOBAL_COUNT_NODE, 0);	
+		return StorageFactory.getInstance().getLongProperty(GLOBAL_COUNT_NODE);	
 	}
 
 	public void setStatsGlobalCount(long count) {
-		prefs.putLong(GLOBAL_COUNT_NODE,count);
+		StorageFactory.getInstance().setProperty(GLOBAL_COUNT_NODE,Long.toString(count));
 	}
 
 	private void incrementGlobalCount() {

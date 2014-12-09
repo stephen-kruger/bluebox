@@ -41,6 +41,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public static final String ERROR_DATE = "error_date";
 	public static final String ERROR_CONTENT = "error_content";
 	private boolean started = false;
+	
 
 	@Override
 	public void start() throws Exception {
@@ -978,6 +979,16 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 
 		return resultJ;
+	}
+
+	@Override
+	public String getProperty(String key) {
+		return getProperty(key,"");
+	}
+
+	@Override
+	public long getLongProperty(String key) {
+		return Long.parseLong(getProperty(key,"0"));
 	}
 
 }

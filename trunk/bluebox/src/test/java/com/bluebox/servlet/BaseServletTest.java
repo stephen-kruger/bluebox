@@ -107,14 +107,9 @@ public abstract class BaseServletTest extends TestCase {
 		assertNull(response.getMethod());
 		assertEquals(200,response.getStatus());
 		String js = response.getContent();
-		try {
 			JSONObject jo = new JSONObject(js);
 			return jo;
-		}
-		catch (Throwable t) {
-			log.debug(js);
-			throw t;
-		}
+
 	}
 
 	public String getURL(String url) throws IOException, Exception {
