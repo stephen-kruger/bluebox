@@ -53,13 +53,3 @@ rm -rf $BLUEBOX_SRC/target/rpm/*
 
 echo "Building sources"
 mvn clean compile war:war rpm:rpm
-
-echo "Creating local Yum repository in $BLUEBOX_SRC/target/rpm/bluebox/RPMS/noarch"
-createrepo $BLUEBOX_SRC/target/rpm/bluebox/RPMS/noarch
-
-echo "Copying new repo info to Github root $BLUEBOX_SRC/../bluebox.git/yum"
-cp -R $BLUEBOX_SRC/target/rpm/bluebox/RPMS/noarch $BLUEBOX_SRC/../bluebox.git/yum
-
-echo "Checking rpm info"
-rpm -qip `find $BLUEBOX_SRC -name bluebox*.rpm`
-sudo yum clean all
