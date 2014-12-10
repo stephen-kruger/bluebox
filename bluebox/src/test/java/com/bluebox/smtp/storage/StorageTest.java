@@ -423,4 +423,17 @@ public class StorageTest extends BaseTestCase {
 		log.info("Looking for id "+id);
 		assertEquals("Incorrect content","This is a blob",getBlueBoxStorageIf().logErrorContent(id));
 	}
+	
+	@Test
+	public void testProperties() {
+		StorageIf si = getBlueBoxStorageIf();
+		String key = "test.property";
+		si.setProperty(key, "12345");
+		assertEquals("Property not correctly set","12345",si.getProperty(key));
+		si.setProperty(key, "abcdef");
+		assertEquals("Property not correctly set","abcdef",si.getProperty(key));
+		assertEquals("Default value not correctly returned","qwerty",si.getProperty("somthingrandom","qwerty"));		
+		si.setLongProperty(key, 143);
+		assertEquals("Property not correctly set",(long)143,si.getLongProperty(key));
+	}
 }

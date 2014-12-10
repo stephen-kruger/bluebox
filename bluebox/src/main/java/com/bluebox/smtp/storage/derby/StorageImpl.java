@@ -10,7 +10,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -559,6 +558,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	public void setProperty(String key, String value) {
+		log.info("------>"+key);
 		if (value.length()>512) {
 			value = value.substring(0,512);
 			log.error("Truncating data to fit 512 field");
@@ -603,11 +603,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			log.warn(t.getMessage());
 		}
 		return value;
-	}
-
-	public boolean hasProperty(String key) {
-		String r = Long.toString(new Random().nextLong());
-		return !getProperty(key,r).equals(r);		
 	}
 
 	@Override
@@ -979,16 +974,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 
 		return resultJ;
-	}
-
-	@Override
-	public String getProperty(String key) {
-		return getProperty(key,"");
-	}
-
-	@Override
-	public long getLongProperty(String key) {
-		return Long.parseLong(getProperty(key,"0"));
 	}
 
 }

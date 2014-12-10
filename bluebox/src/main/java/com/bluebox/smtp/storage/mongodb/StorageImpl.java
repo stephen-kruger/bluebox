@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.io.IOUtils;
 import org.bson.types.ObjectId;
@@ -408,50 +407,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-	public void setProperty(String key, String value) {
-		//not allowed to have '.'s in field names
-		key = key.replace('.', 'x');
-		DBCollection coll = db.getCollection(PROPS_TABLE_NAME);		
-		BasicDBObject dbObject = new BasicDBObject();
-		dbObject.put("name", key); 
-		// your update condition
-		DBCursor cursor = coll.find(dbObject);
-		try {
-			if (cursor.count()>0) {
-				DBObject dbo = cursor.next();
-				DBObject newObject =  dbo;
-				newObject.put(key,value);			
-				//add field, either a new field or any existing field
-				coll.findAndModify(dbObject, newObject);
-			}
-			else {
-				coll.insert(dbObject.append(key, value));
-			}
-		}
-		catch (Throwable t) {
-			t.printStackTrace();
-		}
-		finally {
-			cursor.close();
-		}
-	}
-
-	public String getProperty(String key, String defaultValue) {
-		//not allowed to have '.'s in field names
-		key = key.replace('.', 'x');
-		@SuppressWarnings("unchecked")
-		List<String> keys = db.getCollection(PROPS_TABLE_NAME).distinct(key);
-		if (keys.size()>0)
-			return keys.get(0);
-		else		
-			return defaultValue;
-	}
-
-	public boolean hasProperty(String key) {
-		String r = Long.toString(new Random().nextLong());
-		return !getProperty(key,r).equals(r);		
-	}
-
 	@Override
 	public void logError(String title, InputStream content) {
 		GridFSInputFile gfs = errorFS.createFile(content);
@@ -774,14 +729,43 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		return resultJ;
 	}
-
-	@Override
-	public String getProperty(String key) {
-		return getProperty(key,"");
+	
+	public void setProperty(String key, String value) {
+		//not allowed to have '.'s in field names
+		key = key.replace('.', 'x');
+		DBCollection coll = db.getCollection(PROPS_TABLE_NAME);		
+		BasicDBObject dbObject = new BasicDBObject();
+		dbObject.put("name", key); 
+		// your update condition
+		DBCursor cursor = coll.find(dbObject);
+		try {
+			if (cursor.count()>0) {
+				DBObject dbo = cursor.next();
+				DBObject newObject =  dbo;
+				newObject.put(key,value);			
+				//add field, either a new field or any existing field
+				coll.findAndModify(dbObject, newObject);
+			}
+			else {
+				coll.insert(dbObject.append(key, value));
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		finally {
+			cursor.close();
+		}
 	}
 
-	@Override
-	public long getLongProperty(String key) {
-		return Long.parseLong(getProperty(key,"0"));
+	public String getProperty(String key, String defaultValue) {
+		//not allowed to have '.'s in field names
+		key = key.replace('.', 'x');
+		@SuppressWarnings("unchecked")
+		List<String> keys = db.getCollection(PROPS_TABLE_NAME).distinct(key);
+		if (keys.size()>0)
+			return keys.get(0);
+		else		
+			return defaultValue;
 	}
 }

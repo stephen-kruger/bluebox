@@ -5,6 +5,7 @@ import java.io.Writer;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Random;
 import java.util.UUID;
 
 import javax.mail.internet.MimeMessage;
@@ -74,4 +75,29 @@ public abstract class AbstractStorage implements StorageIf {
 		return message;
 	}
 	
+	@Override
+	public String getProperty(String key) {
+		return getProperty(key,"");
+	}
+
+	@Override
+	public void setLongProperty(String key, long value) {
+		setProperty(key,Long.toString(value));		
+	}
+	
+	@Override
+	public long getLongProperty(String key) {
+		return getLongProperty(key,0);
+	}
+
+	@Override
+	public long getLongProperty(String key, long defaultValue) {
+		return Long.parseLong(getProperty(key,Long.toString(defaultValue)));
+	}
+	
+	@Override
+	public boolean hasProperty(String key) {
+		String r = Long.toString(new Random().nextLong());
+		return !getProperty(key,r).equals(r);		
+	}
 }
