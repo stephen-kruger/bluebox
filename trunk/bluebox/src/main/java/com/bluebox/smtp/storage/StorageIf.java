@@ -118,7 +118,15 @@ public interface StorageIf {
 	
 	public void setProperty(String key, String value);
 	
+	public void setLongProperty(String key, long value);
+	
 	public String getProperty(String key);
+
+	public String getProperty(String key, String defaultValue);
 	
 	public long getLongProperty(String key);
+	
+	public long getLongProperty(String key, long defaultValue);
+
+	public boolean hasProperty(String key);
 }

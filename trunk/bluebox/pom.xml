@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.2.10</version>
+	<version>4.2.11</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
@@ -115,6 +115,8 @@
 							<script>
 								if [ "$1" = "1" ]; then
   									echo "Performing bluebox initial install..."
+  									echo "Set tomcat6 to start on boot"
+  									/sbin/chkconfig tomcat6 on
 								elif [ "$1" = "2" ]; then
   									echo "Performing bluebox upgrade..."
   									/sbin/service tomcat6 stop
@@ -122,7 +124,7 @@
   									echo "Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
   									rm -rf ${tomcat.webapp.dir}/bluebox
   									echo "Cleaning Lucence lock file"
-  									rm -rf /var/cache/tomcat6/temp/bluebox4.lucene/write.lock
+  									rm -rf /usr/share/tomcat6/temp/bluebox4.lucene/write.lock
 								fi
 							</script>
 						</preinstallScriptlet>
