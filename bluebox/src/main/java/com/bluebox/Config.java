@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 //import java.util.prefs.Preferences;
 
+import java.util.StringTokenizer;
+
 import org.apache.commons.configuration.CompositeConfiguration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -106,20 +108,26 @@ public class Config extends CompositeConfiguration {
 //	}
 	
 	public void setString(String key, String value) {
-		// TODO save the setting so it's available across restarts
-//		prefs.put(key, value);
 		super.setProperty(key, value);
 	}
 	
-//	public List<String> getList(String key) {
-//		return super.getL
-//		String props = getString(key);
-//		List<String> res = new ArrayList<String>();
-//		StringTokenizer tok = new StringTokenizer(props,",");
-//		while (tok.hasMoreTokens()) {
-//			res.add(tok.nextToken().trim());
-//		}
-//		return res;
-//	}
+	public static List<String> toList(String props) {
+		List<String> res = new ArrayList<String>();
+		StringTokenizer tok = new StringTokenizer(props,",");
+		while (tok.hasMoreTokens()) {
+			res.add(tok.nextToken().trim());
+		}
+		return res;
+	}
 
+	public static String toString(List<String> list) {
+		StringBuffer sb = new StringBuffer();
+		for (String s : list) {
+			sb.append(s).append(',');
+		}
+		if (list.size()>0)
+			return sb.substring(0, sb.length()-1);
+		else
+			return sb.toString();
+	}
 }

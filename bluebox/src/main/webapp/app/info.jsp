@@ -107,13 +107,6 @@
 					<td><br/></td>
 				</tr>
 				<tr>
-					<td class="infoLabel"><label><%=infoResource.getString("reset")%></label></td>
-					<td align="left"><button onclick="resetLists()" data-dojo-type="dijit/form/Button" type="button"><%=infoResource.getString("resetButton")%></button></td>
-				</tr>
-				<tr>
-					<td><br/></td>
-				</tr>
-				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("toblacklist")%></label></td>
 					<td class="infoValue">
 						<%= Utils.toString(new Inbox().getToBlacklist()) %>

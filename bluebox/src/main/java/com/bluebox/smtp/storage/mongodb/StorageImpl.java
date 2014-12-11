@@ -732,7 +732,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	
 	public void setProperty(String key, String value) {
 		//not allowed to have '.'s in field names
-		key = key.replace('.', 'x');
+		key = key.replace('.', '_');
 		DBCollection coll = db.getCollection(PROPS_TABLE_NAME);		
 		BasicDBObject dbObject = new BasicDBObject();
 		dbObject.put("name", key); 
@@ -760,7 +760,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public String getProperty(String key, String defaultValue) {
 		//not allowed to have '.'s in field names
-		key = key.replace('.', 'x');
+		key = key.replace('.', '_');
 		@SuppressWarnings("unchecked")
 		List<String> keys = db.getCollection(PROPS_TABLE_NAME).distinct(key);
 		if (keys.size()>0)
