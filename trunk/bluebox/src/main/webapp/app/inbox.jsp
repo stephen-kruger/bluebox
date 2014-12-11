@@ -16,6 +16,35 @@
 		require(["dojo/domReady!"], function(domReady){
 			selectMenu("inbox");
 		});
+		require([
+		         "dojo/_base/kernel",
+		         "dojo/parser",
+		         "dojox/dgauges/components/default/CircularLinearGauge"]
+		      );
+		
+		function startGaugeTimer() {
+			try {
+				console.log("into gauge timer");
+				// start the refresh timer
+				require(["dojox/timing"], function(registry){
+					var t = new dojox.timing.Timer(10000);
+					t.onTick = function() {
+						console.log("tick gauge timer");
+						loadCombined();
+					}
+					t.start();
+				});
+			}
+			catch (err) {
+				console.log("menu3:"+err);
+			}
+		}
+		
+		require(["dojo/domReady!"], function() {
+			console.log("starting gauge timer");
+			// will not be called until DOM is ready
+			startGaugeTimer();
+		});
 	</script>
 	<style type="text/css">
 		
@@ -39,6 +68,12 @@
 				<div style="display:table-row">
 					<jsp:include page="check.jsp" />
 				</div>
+				<div class="seperator"></div>
+				<h2>Mails per hour</h2>
+				<div style="display: block;margin-left: auto;margin-right: auto ">
+					<div id="mphGauge" data-dojo-type="dojox/dgauges/components/default/CircularLinearGauge" value="0" minimum="0" maximum="1000" style="width:150px; height:150px"></div>
+				</div>
+
 			</div>
 		</div>
 			

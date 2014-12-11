@@ -26,6 +26,15 @@ public class StorageTest extends BaseTestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
 	private int SIZE = 20;
 
+	@Test
+	public void testMPH() throws Exception {
+		TestUtils.addRandomDirect(getBlueBoxStorageIf(),100);
+		StorageIf si = getBlueBoxStorageIf();
+		JSONObject mph = si.getMPH();
+		assertEquals("MPH was wrong",100,mph.getInt("mph"));
+		assertEquals("MPH24 was wrong",4,mph.getInt("mph24"));
+		log.info(mph.toString());
+	}
 
 	@Test
 	public void testAutoComplete2() throws Exception {

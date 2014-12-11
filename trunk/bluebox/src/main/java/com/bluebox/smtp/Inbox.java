@@ -705,6 +705,10 @@ public class Inbox implements SimpleMessageListener {
 	public JSONObject getStatsActiveSender() {	
 		return StorageFactory.getInstance().getMostActiveSender();
 	}
+	
+	public JSONObject getMPH() {
+		return StorageFactory.getInstance().getMPH();
+	}
 
 	private JSONObject updateStatsRecent(String inbox, String from, String subject, String uid) {
 		try {
