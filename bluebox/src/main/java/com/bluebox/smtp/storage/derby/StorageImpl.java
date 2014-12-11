@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -974,6 +975,56 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 
 
+		return resultJ;
+	}
+	
+	@Override
+	public JSONObject getMPH() {
+		Date started = new Date();
+		JSONObject resultJ = new JSONObject();
+		
+		// get mail count for last hour
+		try {
+			Connection connection = getConnection();
+			Date lastHour = new Date(new Date().getTime()-60*60*1000);// one hour ago
+			String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received+") > TIMESTAMP('" + new Timestamp(lastHour.getTime()) + "')";
+			PreparedStatement ps;
+			ps = connection.prepareStatement(sql);
+			ps.execute();
+			ResultSet result = ps.getResultSet();
+
+			while (result.next()) {
+				resultJ.put("mph", result.getInt(1));
+			}
+			ps.close();
+			connection.close();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+			log.warn("Seems no hourly stats are available");
+		}
+
+		// get mail count average for last 24 hour
+//		try {
+//			Connection connection = getConnection();
+//			Date last24Hour = new Date(new Date().getTime()-24*60*60*1000);// 24 hours ago
+//			String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received+") > TIMESTAMP('" + new Timestamp(last24Hour.getTime()) + "')";
+//			PreparedStatement ps;
+//			ps = connection.prepareStatement(sql);
+//			ps.execute();
+//			ResultSet result = ps.getResultSet();
+//
+//			while (result.next()) {
+//				resultJ.put("mph24", result.getInt(1)/24);
+//			}
+//			ps.close();
+//			connection.close();
+//		}
+//		catch (Throwable t) {
+//			t.printStackTrace();
+//			log.warn("Seems no hourly stats are available");
+//		}
+		log.info("Got mph stats in {}ms",new Date().getTime()-started.getTime());
 		return resultJ;
 	}
 

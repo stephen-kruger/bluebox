@@ -80,6 +80,22 @@
 									document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = "<%= statsResource.getString("no_update") %>";
 								}
 								document.getElementById("statsGlobalCount").innerHTML = '<%= statsResource.getString("traffic_text1") %> <span id="statsGlobalCount">'+queryResults.<%=BlueboxMessage.COUNT%>+'</span> <%= statsResource.getString("traffic_text2") %>';
+								if (document.getElementById("mphGauge")) {
+									require(["dijit/registry"], function(registry){
+									    var mphGauge = registry.byId("mphGauge");
+									    if (mphGauge) {
+									    	//if (mphGauge.get('maximum')<queryResults.mph.mph) {
+											//	console.log("Updating gauge maximum"+queryResults.mph.mph);
+									    	//	mphGauge.set('maximum', queryResults.mph.mph*2);
+									    	//}
+									    	//else {
+											//	console.log("Not updating gauge maximum="+mphGauge.get('maximum')+" value="+queryResults.mph.mph);
+									    	//}
+									    	mphGauge.set('value', queryResults.mph.mph);
+									    	mphGauge.refreshRendering();
+									    }
+								    });
+								}
 							}
 				});
 			});

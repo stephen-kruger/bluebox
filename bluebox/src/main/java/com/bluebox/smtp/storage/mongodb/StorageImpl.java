@@ -148,7 +148,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		return loadMessage(dbo);
 	}
-	
+
 	@Override
 	public boolean contains(String uid) {
 		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
@@ -729,7 +729,44 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		return resultJ;
 	}
-	
+
+	@Override
+	public JSONObject getMPH() {
+		JSONObject resultJ = new JSONObject();
+		int mph;
+		// now fill in query results
+		// db.posts.find({created_on: {$gte: start, $lt: end}});
+		// db.gpsdatas.find({"createdAt" : { $gte : new ISODate("2012-01-12T20:15:31Z") }});
+		Date lastHour = new Date(new Date().getTime()-60*60*1000);// one hour ago
+		BasicDBObject query = new BasicDBObject();
+
+		// calculate mph for last hour
+		query.put(StorageIf.Props.Received.name(), new BasicDBObject("$gte", lastHour));
+		DBCursor output = db.getCollection(TABLE_NAME).find(query);
+		mph = output.count();
+		output.close();
+		try {
+			resultJ.put("mph", mph);
+		} 
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		// calculate mph for last 24 hours
+//		Date last24Hour = new Date(new Date().getTime()-24*60*60*1000);// 24 hours ago
+//		query.put(StorageIf.Props.Received.name(), new BasicDBObject("$gte", last24Hour));
+//		output = db.getCollection(TABLE_NAME).find(query);
+//		mph24 = output.count()/24;
+//		output.close();
+//		try {
+//			resultJ.put("mph24", mph24);
+//		} 
+//		catch (JSONException e) {
+//			e.printStackTrace();
+//		}
+		return resultJ;
+	}
+
 	public void setProperty(String key, String value) {
 		//not allowed to have '.'s in field names
 		key = key.replace('.', '_');
@@ -758,6 +795,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
+	@Override
 	public String getProperty(String key, String defaultValue) {
 		//not allowed to have '.'s in field names
 		key = key.replace('.', '_');
@@ -768,4 +806,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		else		
 			return defaultValue;
 	}
+
+
 }

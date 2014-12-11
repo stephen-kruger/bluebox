@@ -87,7 +87,8 @@ public class JSONStatsHandler extends AbstractHandler {
 			result.put("recent",inbox.getStatsRecent());
 			result.put("active",inbox.getStatsActiveInbox());
 			result.put("sender",inbox.getStatsActiveSender());
-
+			result.put("mph",inbox.getMPH());
+log.info(inbox.getMPH().toString());
 			Writer writer = resp.getWriter();
 			writer.write(result.toString(3));
 			writer.flush();

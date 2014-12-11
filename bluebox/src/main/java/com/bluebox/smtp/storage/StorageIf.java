@@ -112,9 +112,14 @@ public interface StorageIf {
 	 */
 	public JSONObject getCountByDay();
 
-	JSONObject getCountByHour();
+	public JSONObject getCountByHour();
 
-	JSONObject getCountByDayOfWeek();
+	public JSONObject getCountByDayOfWeek();
+
+	/*
+	 * Return number of mails per hour
+	 */
+	public JSONObject getMPH();
 	
 	public void setProperty(String key, String value);
 	
