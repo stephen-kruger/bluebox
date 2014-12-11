@@ -117,6 +117,11 @@
   									echo "Performing bluebox initial install..."
   									echo "Set tomcat6 to start on boot"
   									/sbin/chkconfig tomcat6 on
+  									echo "Mapping SMTP port 25 to 2500"
+  									/sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500
+  									echo "Persist across reboots"
+  									/sbin/chkconfig iptables on
+  									/sbin/service iptables save
 								elif [ "$1" = "2" ]; then
   									echo "Performing bluebox upgrade..."
   									/sbin/service tomcat6 stop
