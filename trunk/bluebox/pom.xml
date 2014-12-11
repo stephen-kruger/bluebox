@@ -125,7 +125,7 @@
 								elif [ "$1" = "2" ]; then
   									echo "Performing bluebox upgrade..."
   									/sbin/service tomcat6 stop
-  									/sbin/service mongodb stop
+  									/sbin/service mongod stop
   									echo "Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
   									rm -rf ${tomcat.webapp.dir}/bluebox
   									echo "Cleaning Lucence lock file"
@@ -139,7 +139,7 @@
   									echo "Please start the application server : service tomcat6 start"
 								elif [ "$1" = "2" ]; then
   									echo "Restarting tomcat to complete installation..."
-  									/sbin/service mongodb start
+  									/sbin/service mongod start
   									/sbin/service tomcat6 start
 								fi								
 							</script>
