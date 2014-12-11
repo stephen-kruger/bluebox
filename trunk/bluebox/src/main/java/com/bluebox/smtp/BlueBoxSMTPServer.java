@@ -11,7 +11,6 @@ import com.bluebox.Utils;
 
 public class BlueBoxSMTPServer extends SMTPServer {
 	private static final Logger log = LoggerFactory.getLogger(BlueBoxSMTPServer.class);
-	private BlueboxMessageHandlerFactory inbox;
 
 	public BlueBoxSMTPServer(BlueboxMessageHandlerFactory mhf) {
 		super(mhf);
@@ -24,7 +23,6 @@ public class BlueBoxSMTPServer extends SMTPServer {
 		setRequireTLS(false);
 		setSoftwareName("BlueBox V"+bbconfig.getString(Config.BLUEBOX_VERSION));
 		setConnectionTimeout(10000); // wait 10sec before abandoning connection
-		this.inbox = mhf;
 	}
 
 	public BlueBoxSMTPServer(BlueboxMessageHandlerFactory mhf, AuthenticationHandlerFactory ahf) {
@@ -34,7 +32,6 @@ public class BlueBoxSMTPServer extends SMTPServer {
 	@Override
 	public synchronized void stop() {
 		super.stop();
-		inbox.stop();
 	}
 
 

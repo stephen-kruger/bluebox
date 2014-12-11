@@ -2,56 +2,44 @@ package com.bluebox.smtp;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.bluebox.Config;
+import com.bluebox.smtp.storage.StorageFactory;
 
 
 public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter implements MessageHandlerFactory {
 	private static final Logger log = LoggerFactory.getLogger(BlueboxMessageHandlerFactory.class);
 
 	private List<String> smtpBlackList;
-//	private static BlueboxMessageHandlerFactory instance;
-
-//	public static BlueboxMessageHandlerFactory getInstance() {
-//		if (instance==null) {
-//			instance = new BlueboxMessageHandlerFactory(new Inbox());
-//		}
-//		return instance;
-//	}
-
-	public void stop() {
-//		instance = null;
-	}
 	
 	public BlueboxMessageHandlerFactory(Inbox inbox) {
 		super(inbox);
-		smtpBlackList = Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST);
+		setSMTPBlacklist(Config.toList(StorageFactory.getInstance().getProperty(Config.BLUEBOX_SMTPBLACKLIST, 
+				Config.getInstance().getString(Config.BLUEBOX_SMTPBLACKLIST))));
 		inbox.setBlueboxMessageHandlerFactory(this);
 	}
 	
-	public void setSMTPBlacklist(String s) {
-		List<String> list = new ArrayList<String>();
-		StringTokenizer tok = new StringTokenizer(s,",");
-		while (tok.hasMoreTokens())
-			list.add(tok.nextToken().trim());
-		setSMTPBlacklist(list);
+	public void setSMTPBlacklist(String props) {
+		setSMTPBlacklist(Config.toList(props));
 	}
 	
 	public void setSMTPBlacklist(List<String> list) {
 		Config.getInstance().setStringList(Config.BLUEBOX_SMTPBLACKLIST, list);
-		smtpBlackList = Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST);
+		
+		// persist to storage
+		StorageFactory.getInstance().setProperty(Config.BLUEBOX_SMTPBLACKLIST,Config.toString(Config.getInstance().getStringList(Config.BLUEBOX_SMTPBLACKLIST)));
+		
+		smtpBlackList = list;
 	}
 
 	public void addSMTPBlackList(String domain) {
@@ -60,7 +48,7 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 				log.info("Blacklisting smtp server {}",domain);
 				smtpBlackList.remove(domain);
 				smtpBlackList.add(domain);
-				Config.getInstance().setStringList(Config.BLUEBOX_SMTPBLACKLIST,smtpBlackList);
+				setSMTPBlacklist(smtpBlackList);
 			}
 		}
 	}
@@ -70,7 +58,7 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 			if (domain.trim().length()>0) {
 				log.info("Un-blacklisting smtp server {}",domain);
 				smtpBlackList.remove(domain);
-				Config.getInstance().setStringList(Config.BLUEBOX_SMTPBLACKLIST,smtpBlackList);
+				setSMTPBlacklist(smtpBlackList);
 			}
 		}
 	}

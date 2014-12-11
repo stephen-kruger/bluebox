@@ -558,7 +558,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	public void setProperty(String key, String value) {
-		log.info("------>"+key);
+		final String randomStr = "DKSLDLKDFSURTJDSFIDFGHSJHGFSEYRIBVC";
+		log.debug("------>{}={}",key,value);
 		if (value.length()>512) {
 			value = value.substring(0,512);
 			log.error("Truncating data to fit 512 field");
@@ -566,7 +567,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			Connection connection = getConnection();
 			PreparedStatement ps;
-			if (getProperty(key,"xxx").equals("xxx")) {
+			if (getProperty(key,randomStr).equals(randomStr)) {
 				ps = connection.prepareStatement("INSERT INTO "+PROPS_TABLE+" VALUES (?,?)");
 				ps.setString(1, key);
 				ps.setString(2, value);

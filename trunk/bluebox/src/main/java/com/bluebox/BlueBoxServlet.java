@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -210,20 +209,6 @@ public class BlueBoxServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
-		if (req.getRequestURI().indexOf("rest/resetlists")>=0) {
-			try {
-				inbox.loadConfig();
-				resp.getWriter().print("Reset lists to defaults");
-				resp.setStatus(HttpStatus.SC_ACCEPTED);
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());
-				resp.setStatus(HttpStatus.SC_BAD_REQUEST);
-			}
-			resp.flushBuffer();
-			return;
-		}
 		log.warn("Unimplemented doPost :"+req.getRequestURI());
 		super.doPost(req, resp);
 	}
