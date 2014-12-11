@@ -1001,7 +1001,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
-			log.warn("Seems no hourly stats are available");
+			log.warn("Seems no mph stats are available");
+			try {
+				resultJ.put("mph", 0);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
 
 		// get mail count average for last 24 hour
