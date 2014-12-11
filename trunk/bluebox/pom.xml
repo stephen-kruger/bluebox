@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.2.13</version>
+	<version>4.2.14</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
@@ -127,7 +127,7 @@
   									echo "Shutting down tomcat"
   									/sbin/service tomcat6 stop
   									sleep 2
-  									"echo "Shutting down MongoDB""
+  									echo "Shutting down MongoDB"
   									/sbin/service mongod stop
   									sleep 2
   									echo "Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
