@@ -35,7 +35,7 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 
 		assertEquals("Should not trigger for one character", 0, handler.doAutoComplete(getInbox(), "j", "0", "10").length());
 		assertTrue("No results found", handler.doAutoComplete(getInbox(), "Joe", "0", "10").length()>0);
-		log.info(handler.doAutoComplete(getInbox(), "Joe", "0", "10").toString(3));
+		log.debug(handler.doAutoComplete(getInbox(), "Joe", "0", "10").toString(3));
 		assertTrue("Unexpected results found", handler.doAutoComplete(getInbox(), "Joe", "0", "10").getJSONObject(0).getString("label").toLowerCase().contains("joe"));
 		assertTrue("Case sensitivity problem", handler.doAutoComplete(getInbox(), "joe", "0", "10").length()>0);
 		assertEquals("Uniqueness problem", 1, handler.doAutoComplete(getInbox(), "joe", "0", "10").length());
