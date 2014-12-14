@@ -119,7 +119,7 @@ public interface StorageIf {
 	/*
 	 * Return number of mails per hour
 	 */
-	public JSONObject getMPH();
+	public JSONObject getMPH(InboxAddress inbox);
 	
 	public void setProperty(String key, String value);
 	

@@ -82,8 +82,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	private void createIndexes() {
 		// create indexes
 		String[] indexes = new String[]{
-				BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.SUBJECT, 
-				BlueboxMessage.FROM,BlueboxMessage.RECEIVED,BlueboxMessage.SIZE,BlueboxMessage.STATE};
+				StorageIf.Props.Uid.name(),StorageIf.Props.Inbox.name(),StorageIf.Props.Subject.name(), 
+				StorageIf.Props.Sender.name(),StorageIf.Props.Received.name(),StorageIf.Props.Size.name(),StorageIf.Props.State.name()};
 		for (int i = 0; i < indexes.length;i++) {
 			try {
 				db.getCollection(TABLE_NAME).createIndex(new BasicDBObject(indexes[i], 1));
@@ -140,7 +140,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public synchronized BlueboxMessage retrieve(String uid) throws Exception {
-		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
+		BasicDBObject query = new BasicDBObject(StorageIf.Props.Uid.name(), uid);
 		log.debug("Looking for uid {}",uid);
 		DBObject dbo = db.getCollection(TABLE_NAME).findOne(query);
 		if (dbo==null) {
@@ -151,7 +151,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public boolean contains(String uid) {
-		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
+		BasicDBObject query = new BasicDBObject(StorageIf.Props.Uid.name(), uid);
 		DBObject dbo = db.getCollection(TABLE_NAME).findOne(query);
 		return (dbo!=null);
 	}
@@ -225,7 +225,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void delete(String uid) {
-		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
+		BasicDBObject query = new BasicDBObject(StorageIf.Props.Uid.name(), uid);
 		db.getCollection(TABLE_NAME).remove(query);	
 		// remove the RAW blob too
 		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
@@ -234,7 +234,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void deleteAll(InboxAddress inbox) throws Exception {
-		BasicDBObject query = new BasicDBObject(BlueboxMessage.INBOX, inbox.getAddress());
+		BasicDBObject query = new BasicDBObject(StorageIf.Props.Inbox.name(), inbox.getAddress());
 		db.getCollection(TABLE_NAME).remove(query);
 		new Thread(cleanRaw()).start();
 	}
@@ -256,7 +256,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					while(cursor.hasNext()) {
 						if (isStopped()) break;
 						dbo = cursor.next();
-						BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, dbo.get("filename").toString());
+						BasicDBObject query = new BasicDBObject(StorageIf.Props.Uid.name(), dbo.get("filename").toString());
 						if (db.getCollection(TABLE_NAME).findOne(query)==null) {
 							log.info("Removing orphaned blob {}",dbo.get("filename"));
 							gfsRaw.remove(dbo);
@@ -310,7 +310,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public long getMailCount(BlueboxMessage.State state) throws Exception {
 		BasicDBObject query = new BasicDBObject();
 		if (state != BlueboxMessage.State.ANY)
-			query.append(BlueboxMessage.STATE, state.ordinal());
+			query.append(StorageIf.Props.State.name(), state.ordinal());
 		return db.getCollection(TABLE_NAME).count(query);
 	}
 
@@ -320,9 +320,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return getMailCount(state);
 		BasicDBObject query = new BasicDBObject();
 		if (state != BlueboxMessage.State.ANY)
-			query.append(BlueboxMessage.STATE, state.ordinal());
+			query.append(StorageIf.Props.State.name(), state.ordinal());
 		if (inbox!=null)
-			query.append(BlueboxMessage.INBOX, inbox.getAddress());
+			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
 		long start = new Date().getTime();
 		long count = db.getCollection(TABLE_NAME).count(query);
 		log.debug("Calculated mail count in {}",(new Date().getTime()-start)+"ms");
@@ -332,9 +332,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public DBCursor listMailCommon(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 		BasicDBObject query = new BasicDBObject();
 		if (state != BlueboxMessage.State.ANY)
-			query.append(BlueboxMessage.STATE, state.ordinal());
+			query.append(StorageIf.Props.State.name(), state.ordinal());
 		if ((inbox!=null)&&(inbox.getFullAddress().length()>0))
-			query.append(BlueboxMessage.INBOX, inbox.getAddress());
+			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
 		int sortBit;
 		if (ascending) sortBit = 1; else sortBit = -1;
 		if (count<0)
@@ -390,12 +390,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void setState(String uid, BlueboxMessage.State state) throws Exception {
-		BasicDBObject query = new BasicDBObject(BlueboxMessage.UID, uid);
+		BasicDBObject query = new BasicDBObject(StorageIf.Props.Uid.name(), uid);
 		DBCursor cursor = db.getCollection(TABLE_NAME).find(query);
 		try {
 			if (cursor.hasNext()) {
 				DBObject dbo = cursor.next();
-				dbo.put(BlueboxMessage.STATE, state.ordinal());
+				dbo.put(StorageIf.Props.State.name(), state.ordinal());
 				db.getCollection(TABLE_NAME).update(query, dbo);
 			}
 		}
@@ -494,7 +494,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		JSONObject jo = new JSONObject();
 		try {
 			jo.put(Inbox.EMAIL,"");
-			jo.put(BlueboxMessage.RECIPIENT,"");
+			jo.put(StorageIf.Props.Recipient.name(),"");
 			jo.put(BlueboxMessage.COUNT,0);
 		} 
 		catch (JSONException e) {
@@ -505,7 +505,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		sum.put("$sum", 1);
 
 		DBObject group = new BasicDBObject();
-		group.put("_id", "$"+BlueboxMessage.RECIPIENT);
+		group.put("_id", "$"+StorageIf.Props.Recipient.name());
 		group.put(BlueboxMessage.COUNT, sum);
 
 		DBObject all = new BasicDBObject();
@@ -520,7 +520,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				InboxAddress ia = new InboxAddress(result.get("_id").toString());
 
 				jo.put(Inbox.EMAIL,ia.getFullAddress());
-				jo.put(BlueboxMessage.RECIPIENT,ia.getDisplayName());
+				jo.put(StorageIf.Props.Recipient.name(),ia.getDisplayName());
 				jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
 				break;// only care about first result
 			} 
@@ -546,7 +546,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public JSONObject getMostActiveSender() {
 		JSONObject jo = new JSONObject();
 		try {
-			jo.put(BlueboxMessage.INBOX,"");
+			jo.put(StorageIf.Props.Inbox.name(),"");
 			jo.put(BlueboxMessage.COUNT,0);
 		} 
 		catch (JSONException e) {
@@ -555,7 +555,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		DBObject sum = new BasicDBObject();sum.put("$sum", 1);
 		DBObject group = new BasicDBObject();
-		group.put("_id", "$"+BlueboxMessage.FROM);
+		group.put("_id", "$"+StorageIf.Props.Sender.name());
 		group.put(BlueboxMessage.COUNT, sum);
 		DBObject all = new BasicDBObject();
 		all.put("$group", group);
@@ -565,7 +565,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		for (DBObject result : output.results()) {
 			try {
-				jo.put(BlueboxMessage.FROM,new JSONArray(result.get("_id").toString()).get(0));
+				jo.put(StorageIf.Props.Sender.name(),new JSONArray(result.get("_id").toString()).get(0));
 				jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
 				break;// only care about first result
 			} 
@@ -590,15 +590,15 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	//	public JSONObject getMostActiveOld() {
 	//		JSONObject jo = new JSONObject();
 	//		try {
-	//			jo.put(BlueboxMessage.INBOX,"");
+	//			jo.put(StorageIf.Props.Inbox.name(),"");
 	//			jo.put(BlueboxMessage.COUNT,0);
 	//			@SuppressWarnings("unchecked")
-	//			List<String> inboxes = db.getCollection(TABLE_NAME).distinct(BlueboxMessage.INBOX);
+	//			List<String> inboxes = db.getCollection(TABLE_NAME).distinct(StorageIf.Props.Inbox.name());
 	//			long currcount, maxcount = 0;
 	//			for (String inbox : inboxes) {
 	//				currcount = getMailCount(new InboxAddress(inbox), BlueboxMessage.State.NORMAL);
 	//				if (currcount>maxcount) {
-	//					jo.put(BlueboxMessage.INBOX,inbox);
+	//					jo.put(StorageIf.Props.Inbox.name(),inbox);
 	//					jo.put(BlueboxMessage.COUNT,currcount);
 	//					maxcount = currcount;
 	//				}
@@ -613,7 +613,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	//	@SuppressWarnings("unchecked")
 	//	@Override
 	//	public List<String> listUniqueInboxes() {
-	//		List<String> inboxes = db.getCollection(TABLE_NAME).distinct(BlueboxMessage.INBOX);
+	//		List<String> inboxes = db.getCollection(TABLE_NAME).distinct(StorageIf.Props.Inbox.name());
 	//		return inboxes;
 	//	}
 
@@ -731,7 +731,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public JSONObject getMPH() {
+	public JSONObject getMPH(InboxAddress inbox) {
 		JSONObject resultJ = new JSONObject();
 		int mph;
 		// now fill in query results
@@ -742,6 +742,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		// calculate mph for last hour
 		query.put(StorageIf.Props.Received.name(), new BasicDBObject("$gte", lastHour));
+		if ((inbox!=null)&&(inbox.getFullAddress().trim().length()>0)) {
+			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
+
+		}
 		DBCursor output = db.getCollection(TABLE_NAME).find(query);
 		mph = output.count();
 		output.close();
@@ -753,17 +757,17 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 
 		// calculate mph for last 24 hours
-//		Date last24Hour = new Date(new Date().getTime()-24*60*60*1000);// 24 hours ago
-//		query.put(StorageIf.Props.Received.name(), new BasicDBObject("$gte", last24Hour));
-//		output = db.getCollection(TABLE_NAME).find(query);
-//		mph24 = output.count()/24;
-//		output.close();
-//		try {
-//			resultJ.put("mph24", mph24);
-//		} 
-//		catch (JSONException e) {
-//			e.printStackTrace();
-//		}
+		//		Date last24Hour = new Date(new Date().getTime()-24*60*60*1000);// 24 hours ago
+		//		query.put(StorageIf.Props.Received.name(), new BasicDBObject("$gte", last24Hour));
+		//		output = db.getCollection(TABLE_NAME).find(query);
+		//		mph24 = output.count()/24;
+		//		output.close();
+		//		try {
+		//			resultJ.put("mph24", mph24);
+		//		} 
+		//		catch (JSONException e) {
+		//			e.printStackTrace();
+		//		}
 		return resultJ;
 	}
 

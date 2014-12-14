@@ -36,7 +36,7 @@ public class JSONMessageUtilHandler extends AbstractHandler {
 	 */
 	public void doGetLinks(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		try {
-			String uid = extractFragment(req.getRequestURI(), JSON_ROOT, 1);
+			String uid = extractFragment(req.getRequestURI(), JSON_ROOT, 0);
 			log.debug("Serving links for {}",uid);
 			BlueboxMessage message = inbox.retrieve(uid);
 			JSONArray links = getLinks(message.getHtml(req));

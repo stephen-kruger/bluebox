@@ -667,9 +667,9 @@ public class Utils {
 		//			notes = notes.replaceAll("%", ".");
 		//		else
 		//			notes = notes.replaceAll("%", "/");
-		String domain = AbstractHandler.extractFragment(notes, 0);
+		String domain = AbstractHandler.extractFragment(notes, 2);
 		String subdomain = AbstractHandler.extractFragment(notes, 1);
-		String name = AbstractHandler.extractFragment(notes, 2);
+		String name = AbstractHandler.extractFragment(notes, 0);
 
 		name = name+" "+"<"+name.replace(' ', '_')+"@"+subdomain+"."+domain+">";
 		return name;

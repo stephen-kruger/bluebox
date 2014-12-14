@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.2.14</version>
+	<version>4.2.15</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
@@ -124,33 +124,29 @@
   									/sbin/service iptables save
 								elif [ "$1" = "2" ]; then
   									echo "Performing bluebox upgrade..."
-  									echo "Shutting down tomcat"
+  									echo "1/4: Shutting down tomcat"
   									/sbin/service tomcat6 stop
-  									sleep 2
-  									echo "Shutting down MongoDB"
+  									echo "2/4: Shutting down MongoDB"
   									/sbin/service mongod stop
-  									sleep 2
-  									echo "Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
+  									echo "3/4: Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
   									rm -rf ${tomcat.webapp.dir}/bluebox
-  									echo "Cleaning Lucence lock file"
+  									echo "4/4: Cleaning Lucence lock file"
   									rm -rf /usr/share/tomcat6/temp/bluebox4.lucene/write.lock
 								fi
+								echo "Installing bluebox war file"
 							</script>
 						</preinstallScriptlet>
 						<postinstallScriptlet>
 							<script>
+								echo "Completed war file installation, restarting services"
 								if [ "$1" = "1" ]; then
   									echo "Please start the application server : service tomcat6 start"
 								elif [ "$1" = "2" ]; then
-									echo "Cleaning Lucence lock file"
-  									rm -rf /usr/share/tomcat6/temp/bluebox4.lucene/write.lock
   									echo "Restarting tomcat to complete installation..."
-  									echo "Starting MongoDB"
+  									echo "1/2: Starting MongoDB"
   									/sbin/service mongod start
-  									sleep 2
-  									echo "Starting tomcat"
+  									echo "2/2: Starting tomcat"
   									/sbin/service tomcat6 start
-  									sleep 2
 								fi								
 							</script>
 						</postinstallScriptlet>
@@ -163,7 +159,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.11</version>
+			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

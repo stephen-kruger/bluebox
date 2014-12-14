@@ -26,7 +26,7 @@ public class JSONChartHandler extends AbstractHandler {
 		try {
 			Writer writer = resp.getWriter();
 			String s = "";
-			String chartType = extractFragment(req.getRequestURI(), 0);
+			String chartType = extractFragment(req.getRequestURI(), JSON_ROOT, 0);
 			if (chartType.equals("monthly")) {
 				s = convertToArray(StorageFactory.getInstance().getCountByDay(),"value").toString();
 			}

@@ -1,6 +1,7 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.Config"%>
+<%@ page import="com.bluebox.rest.json.JSONStatsHandler" language="java"%>
 
 <%
 	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
@@ -22,15 +23,48 @@
 		         "dojox/dgauges/components/default/CircularLinearGauge"]
 		      );
 		
+		function updateMph(emailAddress) {
+			try {
+				require(["dojox/data/JsonRestStore"], function () {
+					var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.MPH_STAT %>/"+escape(emailAddress)+"/";
+					console.log(urlStr);
+					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
+					var queryResults = jStore.fetch({
+						  onComplete : 
+							  	function(queryResults, request) {
+									if (document.getElementById("mphGauge")) {
+										require(["dijit/registry"], function(registry){
+										    var mphGauge = registry.byId("mphGauge");
+										    if (mphGauge) {
+										    	//if (mphGauge.get('maximum')<queryResults.mph.mph) {
+												//	console.log("Updating gauge maximum"+queryResults.mph.mph);
+										    	//	mphGauge.set('maximum', queryResults.mph.mph*2);
+										    	//}
+										    	//else {
+												//	console.log("Not updating gauge maximum="+mphGauge.get('maximum')+" value="+queryResults.mph.mph);
+										    	//}
+										    	mphGauge.set('value', queryResults.mph);
+										    	mphGauge.refreshRendering();
+										    }
+									    });
+									}	
+								}
+					});
+				});
+			}
+			catch (err) {
+				console.log("stats3:"+err);
+			}
+		}
+		
 		function startGaugeTimer() {
 			try {
-				console.log("into gauge timer");
+				updateMph(folderEmail);
 				// start the refresh timer
 				require(["dojox/timing"], function(registry){
-					var t = new dojox.timing.Timer(10000);
+					var t = new dojox.timing.Timer(5000);
 					t.onTick = function() {
-						console.log("tick gauge timer");
-						loadCombined();
+						updateMph(folderEmail);
 					}
 					t.start();
 				});

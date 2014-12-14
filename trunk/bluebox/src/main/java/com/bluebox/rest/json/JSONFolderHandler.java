@@ -56,7 +56,7 @@ public class JSONFolderHandler extends AbstractHandler {
 		try {
 			//			InboxAddress email = new InboxAddress(extractEmail(uri,JSON_ROOT));
 			InboxAddress email=null;
-			String emailStr = extractEmail(extractFragment(uri,JSON_ROOT,1));
+			String emailStr = extractEmail(extractFragment(uri,JSON_ROOT,0));
 			if (emailStr.trim().length()>0) {
 				if (emailStr.startsWith("*@")) {
 					emailStr="";

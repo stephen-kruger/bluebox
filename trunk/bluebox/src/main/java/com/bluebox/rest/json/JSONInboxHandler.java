@@ -24,7 +24,7 @@ public class JSONInboxHandler extends AbstractHandler {
 		// get the desired email
 		InboxAddress inboxAddress;
 		try {
-			String emailStr = extractEmail(extractFragment(req.getRequestURI(),JSON_ROOT,2));
+			String emailStr = extractEmail(extractFragment(req.getRequestURI(),JSON_ROOT,0));
 			inboxAddress = new InboxAddress(emailStr);
 		}
 		catch (Throwable e) {

@@ -22,8 +22,8 @@ public class JSONSearchHandler extends AbstractHandler {
 		setDefaultHeaders(resp);
 		// get the desired email
 //		String search = extractSearch(req.getRequestURI(),JSON_ROOT);
-		String search = extractFragment(req.getRequestURI(), JSON_ROOT, 1);
-		String searchScope = extractFragment(req.getRequestURI(), JSON_ROOT, 2);
+		String search = extractFragment(req.getRequestURI(), JSON_ROOT, 0);
+		String searchScope = extractFragment(req.getRequestURI(), JSON_ROOT, 1);
 		// check sort order, which comes in a strange format "sort(-Subject)=null"
 		SearchIndexer.SearchFields orderBy = SearchIndexer.SearchFields.RECEIVED;
 		boolean ascending = true;

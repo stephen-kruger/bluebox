@@ -38,11 +38,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.Inbox;
+import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONStatsHandler extends AbstractHandler {
 	private static final Logger log = LoggerFactory.getLogger(JSONStatsHandler.class);
 	public static final String JSON_ROOT = "rest/json/stats";
+	public static final String MPH_STAT = "stats_mph";
 	public static final String GLOBAL_STAT = "stats_global";
 	public static final String RECENT_STAT = "stats_recent";
 	public static final String ACTIVE_STAT = "stats_active";
@@ -50,32 +52,38 @@ public class JSONStatsHandler extends AbstractHandler {
 	public static final String COMBINED_STAT = "stats_combined";
 
 	public void doGet(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(GLOBAL_STAT)) {
+
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,0).equals(GLOBAL_STAT)) {
 			log.debug("Process global stat");
 			doGetGlobalStats(inbox,req,resp);
 			return;
 		}
-		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(RECENT_STAT)) {
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,0).equals(RECENT_STAT)) {
 			log.debug("Process recent stat");
 			doGetRecentStats(inbox,req,resp);
 			return;
 		}
-		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(ACTIVE_STAT)) {
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,0).equals(ACTIVE_STAT)) {
 			log.debug("Process active stat");
 			doGetActiveStats(inbox,req,resp);
 			return;
 		}
-		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(SENDER_STAT)) {
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,0).equals(SENDER_STAT)) {
 			log.debug("Process active senderstat");
 			doGetSenderStats(inbox,req,resp);
 			return;
 		}
-		if (extractFragment(req.getRequestURI(), JSON_ROOT,1).equals(COMBINED_STAT)) {
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,0).equals(COMBINED_STAT)) {
 			log.debug("Process combined stat");
 			doGetCombinedStats(inbox,req,resp);
 			return;
 		}
-		log.error("Unknown request :"+req.getRequestURI()+" <<<>>> "+extractFragment(req.getRequestURI(), JSON_ROOT,1));
+		if (extractFragment(req.getRequestURI(), JSON_ROOT,0).equals(MPH_STAT)) {
+			log.debug("Process combined stat");
+			doGetMphStats(inbox,req,resp);
+			return;
+		}
+		log.error("Unknown request :"+req.getRequestURI());
 	}
 
 	private void doGetCombinedStats(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -87,7 +95,23 @@ public class JSONStatsHandler extends AbstractHandler {
 			result.put("recent",inbox.getStatsRecent());
 			result.put("active",inbox.getStatsActiveInbox());
 			result.put("sender",inbox.getStatsActiveSender());
-			result.put("mph",inbox.getMPH());
+			Writer writer = resp.getWriter();
+			writer.write(result.toString(3));
+			writer.flush();
+			writer.close();
+		}
+		catch (Throwable t) {
+			log.error(t.getMessage());
+			t.printStackTrace();
+		}
+		resp.flushBuffer();
+	}
+	
+	private void doGetMphStats(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+
+		setDefaultHeaders(resp);
+		try {
+			JSONObject result = inbox.getMPH(new InboxAddress(extractFragment(req.getRequestURI(),MPH_STAT,1)));
 			Writer writer = resp.getWriter();
 			writer.write(result.toString(3));
 			writer.flush();
