@@ -41,7 +41,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public static final String ERROR_DATE = "error_date";
 	public static final String ERROR_CONTENT = "error_content";
 	private boolean started = false;
-	
+
 
 	@Override
 	public void start() throws Exception {
@@ -104,9 +104,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public Connection getConnection() throws Exception {
 		if (!started) {
-//			Exception e = new Exception("Storage instance not started");
-//			e.printStackTrace();
-//			throw e;
+			//			Exception e = new Exception("Storage instance not started");
+			//			e.printStackTrace();
+			//			throw e;
 			log.error("Storage instance not started, trying to recover");
 			StorageFactory.clearInstance();
 			StorageFactory.getInstance().start();
@@ -977,19 +977,26 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		return resultJ;
 	}
-	
+
 	@Override
-	public JSONObject getMPH() {
+	public JSONObject getMPH(InboxAddress inbox) {
 		Date started = new Date();
 		JSONObject resultJ = new JSONObject();
-		
+
 		// get mail count for last hour
 		try {
+			String emailBit = "";
+			if ((inbox!=null)&&(inbox.getFullAddress().trim().length()>0)) {
+				emailBit = " AND "+StorageIf.Props.Inbox.name()+"=? ";
+			}
 			Connection connection = getConnection();
 			Date lastHour = new Date(new Date().getTime()-60*60*1000);// one hour ago
-			String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received+") > TIMESTAMP('" + new Timestamp(lastHour.getTime()) + "')";
+			String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received.name()+") > TIMESTAMP('" + new Timestamp(lastHour.getTime()) + "')"+emailBit;
 			PreparedStatement ps;
 			ps = connection.prepareStatement(sql);
+			if ((inbox!=null)&&(inbox.getFullAddress().trim().length()>0)) {
+				ps.setString(1, inbox.getAddress()); 
+			}
 			ps.execute();
 			ResultSet result = ps.getResultSet();
 
@@ -1010,25 +1017,25 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 
 		// get mail count average for last 24 hour
-//		try {
-//			Connection connection = getConnection();
-//			Date last24Hour = new Date(new Date().getTime()-24*60*60*1000);// 24 hours ago
-//			String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received+") > TIMESTAMP('" + new Timestamp(last24Hour.getTime()) + "')";
-//			PreparedStatement ps;
-//			ps = connection.prepareStatement(sql);
-//			ps.execute();
-//			ResultSet result = ps.getResultSet();
-//
-//			while (result.next()) {
-//				resultJ.put("mph24", result.getInt(1)/24);
-//			}
-//			ps.close();
-//			connection.close();
-//		}
-//		catch (Throwable t) {
-//			t.printStackTrace();
-//			log.warn("Seems no hourly stats are available");
-//		}
+		//		try {
+		//			Connection connection = getConnection();
+		//			Date last24Hour = new Date(new Date().getTime()-24*60*60*1000);// 24 hours ago
+		//			String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received+") > TIMESTAMP('" + new Timestamp(last24Hour.getTime()) + "')";
+		//			PreparedStatement ps;
+		//			ps = connection.prepareStatement(sql);
+		//			ps.execute();
+		//			ResultSet result = ps.getResultSet();
+		//
+		//			while (result.next()) {
+		//				resultJ.put("mph24", result.getInt(1)/24);
+		//			}
+		//			ps.close();
+		//			connection.close();
+		//		}
+		//		catch (Throwable t) {
+		//			t.printStackTrace();
+		//			log.warn("Seems no hourly stats are available");
+		//		}
 		log.info("Got mph stats in {}ms",new Date().getTime()-started.getTime());
 		return resultJ;
 	}

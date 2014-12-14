@@ -49,8 +49,6 @@ public class BlueBoxServlet extends HttpServlet {
 	public void init() throws ServletException {
 		log.debug("Initialising BlueBox "+getServletContext().getContextPath());
 		log.debug("Starting SMTP server");
-//		log.info("user.home="+System.getProperty("user.home"));
-//		log.info(">>>"+System.getProperties().toString());
 		inbox = new Inbox();
 		inbox.start();
 		smtpServer = new BlueBoxSMTPServer(new BlueboxMessageHandlerFactory(inbox));

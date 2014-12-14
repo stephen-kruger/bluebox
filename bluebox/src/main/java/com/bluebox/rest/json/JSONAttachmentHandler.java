@@ -24,9 +24,9 @@ public class JSONAttachmentHandler extends AbstractHandler {
 
 		try {
 			String uri = req.getRequestURI();
-			String uid = extractFragment(uri,JSON_ROOT,2);
+			String uid = extractFragment(uri,JSON_ROOT,0);
 			String index = extractFragment(uri,JSON_ROOT,1);
-			String name = extractFragment(uri,JSON_ROOT,0);
+			String name = extractFragment(uri,JSON_ROOT,2);
 			log.debug("Serving file attachment {} at index {} for message {}"+name,index,uid);
 			BlueboxMessage message = inbox.retrieve(uid);
 			message.writeAttachment(index, resp);

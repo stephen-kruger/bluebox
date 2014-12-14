@@ -35,39 +35,41 @@ public class AbstractHandler {
 	/*
 	 * This will extract the uri fragment at position index, where the last fragment is 0
 	 * So for /aaa/bbb/ccc/ddd
-	 * extractFragment(0) = ddd
-	 * extractFragment(1) = ccc
-	 * extractFragment(2) = bbb etc
+	 * extractFragment(0) = aaa
+	 * extractFragment(1) = bbb
+	 * extractFragment(2) = ccc
+	 * extractFragment(3) = ddd etc
 	 * 
 	 * 	for /aaa/bbb/ccc/ddd/
-	 * extractFragment(0) = ""
-	 * extractFragment(1) = "ddd"
+	 * extractFragment(0) = aaa
+	 * extractFragment(3) = ddd
+	 * extractFragment(3) = ""
 	 */
 	public static String extractFragment(String uri, int index) {
 		try {
-			if (uri.endsWith("/")) {
-				if (index==0) {
-					return "";
+			StringTokenizer tok = new StringTokenizer(uri,"/",true);
+			List<String> list = new ArrayList<String>();
+			String token="", prevToken;
+			while (tok.hasMoreTokens()) {
+				prevToken = token;
+				token = tok.nextToken();
+				if ("/".equals(token)) {
+					if ("/".equals(prevToken))
+						list.add("");
 				}
 				else {
-					index--;
+					try {
+						list.add(URLDecoder.decode(token,Utils.UTF8));
+					} catch (UnsupportedEncodingException e) {
+						list.add(token);
+						e.printStackTrace();
+					}
 				}
 			}
-			StringTokenizer tok = new StringTokenizer(uri,"/",false);
-			List<String> list = new ArrayList<String>();
-			String token;
-			while (tok.hasMoreTokens()) {
-				token = tok.nextToken();
-				try {
-					list.add(URLDecoder.decode(token,Utils.UTF8));
-				} catch (UnsupportedEncodingException e) {
-					list.add(token);
-					e.printStackTrace();
-				}
-			}
-			return list.get(list.size()-index-1);
+			//			System.out.println(uri+">>>>>>>>>>>>>>>"+list.get(index));
+			return list.get(index);
 		}
-		catch (ArrayIndexOutOfBoundsException ex) {
+		catch (Throwable ex) {
 			return "";
 		}
 	}
@@ -79,18 +81,18 @@ public class AbstractHandler {
 	 * Form 2: looks for a uid in form xxx/yyy/zzz/uid
 	 * where fragment = xxx/yyy/zzz/
 	 */
-	public static String xextractUid(String uri, String fragment) {
-//		// Form 1
-//		int start = uri.indexOf(fragment)+fragment.length()+1;
-//		int end = uri.indexOf("/", start+1);
-//
-//		// Form 2
-//		if (end<0) {
-//			end = uri.length();
-//		}
-//		return uri.substring(start,end);
-		return extractFragment(uri,fragment,1);
-	}
+	//	public static String xextractUid(String uri, String fragment) {
+	//		//		// Form 1
+	//		//		int start = uri.indexOf(fragment)+fragment.length()+1;
+	//		//		int end = uri.indexOf("/", start+1);
+	//		//
+	//		//		// Form 2
+	//		//		if (end<0) {
+	//		//			end = uri.length();
+	//		//		}
+	//		//		return uri.substring(start,end);
+	//		return extractFragment(uri,fragment,1);
+	//	}
 
 
 

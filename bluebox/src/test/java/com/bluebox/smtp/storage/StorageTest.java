@@ -30,10 +30,25 @@ public class StorageTest extends BaseTestCase {
 	public void testMPH() throws Exception {
 		TestUtils.addRandomDirect(getBlueBoxStorageIf(),100);
 		StorageIf si = getBlueBoxStorageIf();
-		JSONObject mph = si.getMPH();
+		JSONObject mph = si.getMPH(null);
 		assertEquals("MPH was wrong",100,mph.getInt("mph"));
-		assertEquals("MPH24 was wrong",4,mph.getInt("mph24"));
+		//		assertEquals("MPH24 was wrong",4,mph.getInt("mph24"));
 		log.info(mph.toString());
+	}
+
+	@Test
+	public void testMPHInboxAddress() throws Exception {
+		String addr = "test@here.com";
+		StorageIf si = getBlueBoxStorageIf();
+		JSONObject mph = si.getMPH(new InboxAddress(addr));
+		assertEquals("MPH was wrong",0,mph.getInt("mph"));
+		for (int i = 0; i < 10; i++) {
+			TestUtils.sendMailDirect(getInbox(), addr, "sender@there.com");
+			mph = si.getMPH(new InboxAddress(addr));
+			assertEquals("MPH was wrong",i+1,mph.getInt("mph"));
+			mph = si.getMPH(new InboxAddress("idontexist@me.com"));
+			assertEquals("MPH was wrong",0,mph.getInt("mph"));
+		}
 	}
 
 	@Test
@@ -60,7 +75,7 @@ public class StorageTest extends BaseTestCase {
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("Nam*", 0, 10).length());
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("stephen.johnson*", 0, 10).length());
 		// Lucene cannot search this for some reason
-//		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete(ia.getAddress(), 0, 10).length());
+		//		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete(ia.getAddress(), 0, 10).length());
 	}
 
 	@Test
@@ -76,14 +91,14 @@ public class StorageTest extends BaseTestCase {
 		assertEquals("Expected to find our mail added",1,getBlueBoxStorageIf().getMailCount(BlueboxMessage.State.ANY));
 		List<BlueboxMessage> list = getBlueBoxStorageIf().listMail(null, BlueboxMessage.State.ANY, 0, 12, BlueboxMessage.RECEIVED, true);
 		assertEquals("Expected to find our mail added",1,list.size());
-//		for (BlueboxMessage m : list) {
-//			try {
-//				log.info(m.toJSON());
-//			} 
-//			catch (JSONException e) {
-//				e.printStackTrace();
-//			}
-//		}
+		//		for (BlueboxMessage m : list) {
+		//			try {
+		//				log.info(m.toJSON());
+		//			} 
+		//			catch (JSONException e) {
+		//				e.printStackTrace();
+		//			}
+		//		}
 	}
 
 	@Test
@@ -108,10 +123,10 @@ public class StorageTest extends BaseTestCase {
 		assertEquals("Received time did not match",bbm.getReceived(),stored.getReceived());
 		assertEquals("Subjects did not match",bbm.getSubject(),stored.getSubject());
 		assertEquals("Subjects did not match",message.getSubject(),storedMM.getSubject());
-//		assertEquals("From did not match",bbm.getProperty(BlueboxMessage.FROM),stored.getProperty(BlueboxMessage.FROM));
-//		log.info(stored.toJSON());
+		//		assertEquals("From did not match",bbm.getProperty(BlueboxMessage.FROM),stored.getProperty(BlueboxMessage.FROM));
+		//		log.info(stored.toJSON());
 	}
-	
+
 	@Test
 	public void testInboxAndFullName() throws Exception {
 		InboxAddress inbox = new InboxAddress("Stephen johnson <steve@test.com>");
@@ -125,7 +140,7 @@ public class StorageTest extends BaseTestCase {
 				false);
 		BlueboxMessage bbm = getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message);
 		BlueboxMessage stored = getBlueBoxStorageIf().retrieve(bbm.getIdentifier());
-//		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
+		//		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
 		assertEquals("Stored recipient did not match original",inbox.getAddress(),stored.getInbox().getAddress());
 	}
 
@@ -317,7 +332,7 @@ public class StorageTest extends BaseTestCase {
 		SearchIndexer.getInstance().indexMail(m1);
 		SearchIndexer.getInstance().indexMail(m2);
 		SearchIndexer.getInstance().indexMail(m3);
-		
+
 		assertEquals("Message not found",1,getInbox().autoComplete("mon*", 0, 10).length());
 		assertEquals("Message not found",1,getInbox().autoComplete("monica*", 0, 10).length());
 		assertEquals("Message not found",1,getInbox().autoComplete("monica.smith*", 0, 10).length());
@@ -415,7 +430,7 @@ public class StorageTest extends BaseTestCase {
 		writer.close();
 		writer2.close();
 	}
-	
+
 	@Test
 	public void testErrorStorage() throws JSONException {
 		getBlueBoxStorageIf().logErrorClear();
@@ -432,7 +447,7 @@ public class StorageTest extends BaseTestCase {
 		log.info("Looking for id "+id);
 		assertEquals("Incorrect content","This is a blob",getBlueBoxStorageIf().logErrorContent(id));
 	}
-	
+
 	@Test
 	public void testProperties() {
 		StorageIf si = getBlueBoxStorageIf();
