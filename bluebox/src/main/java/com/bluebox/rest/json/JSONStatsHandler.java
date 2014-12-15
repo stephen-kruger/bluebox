@@ -111,7 +111,7 @@ public class JSONStatsHandler extends AbstractHandler {
 
 		setDefaultHeaders(resp);
 		try {
-			JSONObject result = inbox.getMPH(new InboxAddress(extractFragment(req.getRequestURI(),MPH_STAT,1)));
+			JSONObject result = inbox.getMPH(new InboxAddress(extractFragment(req.getRequestURI(),MPH_STAT,0)));
 			Writer writer = resp.getWriter();
 			writer.write(result.toString(3));
 			writer.flush();
