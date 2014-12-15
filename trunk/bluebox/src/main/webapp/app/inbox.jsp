@@ -105,7 +105,7 @@
 				<div class="seperator"></div>
 				<h2>Mails per hour</h2>
 				<div style="display: block;margin-left: auto;margin-right: auto ">
-					<div id="mphGauge" data-dojo-type="dojox/dgauges/components/default/CircularLinearGauge" value="0" minimum="0" maximum="1000" style="width:150px; height:150px"></div>
+					<div id="mphGauge" data-dojo-type="dojox/dgauges/components/default/CircularLinearGauge" value="0" minimum="0" maximum="600" style="width:150px; height:150px"></div>
 				</div>
 
 			</div>

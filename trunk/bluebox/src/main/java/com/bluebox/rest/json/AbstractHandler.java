@@ -5,15 +5,17 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
 
 public class AbstractHandler {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(AbstractHandler.class);
 	public static final String JSON_CONTENT_TYPE = "text/x-json;charset=UTF-8";
 
 	protected void setDefaultHeaders(HttpServletResponse resp) {
@@ -54,6 +56,7 @@ public class AbstractHandler {
 				prevToken = token;
 				token = tok.nextToken();
 				if ("/".equals(token)) {
+					// check for form xxx//zzz
 					if ("/".equals(prevToken))
 						list.add("");
 				}
@@ -66,10 +69,10 @@ public class AbstractHandler {
 					}
 				}
 			}
-			//			System.out.println(uri+">>>>>>>>>>>>>>>"+list.get(index));
 			return list.get(index);
 		}
 		catch (Throwable ex) {
+			// this happens for the form /aa/bb/cc/ when you get index 3
 			return "";
 		}
 	}
@@ -105,7 +108,7 @@ public class AbstractHandler {
 			return new InboxAddress(emailFragment).getAddress();
 		}
 		catch (Throwable e) {
-			log.severe("Problem decoding email : "+emailFragment);
+			log.error("Problem decoding email : {}",emailFragment);
 			return "";
 		}
 	}
