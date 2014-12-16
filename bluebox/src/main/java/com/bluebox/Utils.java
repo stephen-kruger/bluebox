@@ -1,8 +1,8 @@
 package com.bluebox;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -235,9 +235,18 @@ public class Utils {
 		}
 	}
 
-	public static MimeMessage loadEML(InputStream emlStream) throws MessagingException, IOException {
-		MimeMessage message = new MimeMessage(null,emlStream);
-		emlStream.close();
+//	public static MimeMessage loadEML(InputStream emlStream) throws MessagingException, IOException {
+//		File f = File.createTempFile("bluebox", "spool");
+//		log.info("Spooling to disk "+f.getCanonicalPath());
+//		f.deleteOnExit();
+//		IOUtils.copy(emlStream, new FileOutputStream(f));
+//		return loadEML(new FileInputStream(f));
+//	}
+	
+	public static MimeMessage loadEML(InputStream fileStream) throws MessagingException, IOException {
+		// first spool to disk
+		MimeMessage message = new MimeMessage(null,fileStream);
+		fileStream.close();
 		return message;
 	}
 
@@ -742,9 +751,13 @@ public class Utils {
 	}
 
 	public static InputStream streamMimeMessage(MimeMessage msg) throws IOException, MessagingException {
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		msg.writeTo(os);
-		return new ByteArrayInputStream(os.toByteArray());
+		// spool to disk to prevent out of memory errors
+		// TODO - see if this doesn't create missing file handle leak
+		File f = File.createTempFile("bluebox", "spool");
+		f.deleteOnExit();
+		FileOutputStream fos = new FileOutputStream(f);
+		msg.writeTo(fos);
+		return new FileInputStream(f);
 	}
 
 	public static String getServletBase(HttpServletRequest request) {

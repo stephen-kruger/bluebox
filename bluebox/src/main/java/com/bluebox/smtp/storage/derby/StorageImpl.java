@@ -161,7 +161,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					//					DOW+" INTEGER, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
 					StorageIf.Props.Size.name()+" BIGINT, "+
-					BlueboxMessage.RAW+" blob(16M))");
+					BlueboxMessage.RAW+" blob(128M))");
 		}
 		catch (Throwable t) {
 			log.debug(t.getMessage());

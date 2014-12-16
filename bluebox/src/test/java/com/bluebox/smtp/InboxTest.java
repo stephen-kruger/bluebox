@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -499,4 +500,27 @@ public class InboxTest extends BaseTestCase {
 //		assertEquals("Body did not match",bodyWithCR,email.getText());
 	}
 
+	@Test
+	public void testSendHugeSMTP() throws Exception {
+		String subject = "My country is dying";
+		String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
+		List<File> attachments = new ArrayList<File>();
+		for (int i = 0; i < 4; i++)
+			attachments.add(new File("./target/bluebox/WEB-INF/lib/derby-10.11.1.1.jar"));
+		TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", null, null, subject, bodyWithCR, attachments);
+
+		TestUtils.waitFor(getInbox(),1);
+
+
+		Inbox inbox = getInbox();
+		assertEquals("Sent message was not correctly recieved (Got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+")",1,inbox.getMailCount(BlueboxMessage.State.NORMAL));
+		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
+		Iterator<BlueboxMessage> emailIter = list.iterator();
+		BlueboxMessage email = (BlueboxMessage) emailIter.next();
+		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
+		assertEquals("Subject did not match",subject,mimeMessage.getSubject().toString());
+		// TODO - figure out why this does not work
+//		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
+//		assertEquals("Body did not match",bodyWithCR,email.getText());
+	}
 }
