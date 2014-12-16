@@ -1,7 +1,8 @@
 package com.bluebox.smtp.storage;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
@@ -26,6 +27,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 import com.bluebox.MimeMessageParser;
 import com.bluebox.Utils;
@@ -406,9 +408,12 @@ public class BlueboxMessage {
 	}
 
 	public InputStream getRawMessage() throws IOException, MessagingException, SQLException {
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		getBlueBoxMimeMessage().writeTo(os);
-		return new ByteArrayInputStream(os.toByteArray());
+		// need to spool to disk in case message is too large to fit in memory
+		File f = Utils.getTempFile();
+		FileOutputStream fos = new FileOutputStream(f);
+		getBlueBoxMimeMessage().writeTo(fos);
+		fos.close();
+		return new FileInputStream(f);
 	}
 	
 	public String getSMTPSender () {

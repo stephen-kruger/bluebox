@@ -63,6 +63,7 @@ public class Utils {
 	public static final String UTF8 = "UTF-8";
 	private static final Logger log = LoggerFactory.getLogger(Utils.class);
 	private static int counter=0;
+	private static List<File>tempFiles = new ArrayList<File>(20);
 	private static MimetypesFileTypeMap ftm;
 
 	static {
@@ -234,14 +235,6 @@ public class Utils {
 			return e.toString()+":"+e.getMessage();
 		}
 	}
-
-//	public static MimeMessage loadEML(InputStream emlStream) throws MessagingException, IOException {
-//		File f = File.createTempFile("bluebox", "spool");
-//		log.info("Spooling to disk "+f.getCanonicalPath());
-//		f.deleteOnExit();
-//		IOUtils.copy(emlStream, new FileOutputStream(f));
-//		return loadEML(new FileInputStream(f));
-//	}
 	
 	public static MimeMessage loadEML(InputStream fileStream) throws MessagingException, IOException {
 		// first spool to disk
@@ -746,18 +739,33 @@ public class Utils {
 		return res.toString();
 	}
 
-	public static byte[] convertStreamToBytes(InputStream binaryStream) throws IOException {
-		return IOUtils.toByteArray(binaryStream);
-	}
+//	public static byte[] convertStreamToBytes(InputStream binaryStream) throws IOException {
+//		return IOUtils.toByteArray(binaryStream);
+//	}
 
 	public static InputStream streamMimeMessage(MimeMessage msg) throws IOException, MessagingException {
 		// spool to disk to prevent out of memory errors
-		// TODO - see if this doesn't create missing file handle leak
-		File f = File.createTempFile("bluebox", "spool");
-		f.deleteOnExit();
+		File f = getTempFile();
 		FileOutputStream fos = new FileOutputStream(f);
 		msg.writeTo(fos);
+		fos.close();
 		return new FileInputStream(f);
+	}
+	
+	public static File getTempFile() throws IOException {
+		File f = File.createTempFile("bluebox", "spool");
+		f.deleteOnExit();	
+		if (tempFiles.size()>20) {
+			File old = tempFiles.remove(0);
+			if (!old.delete()) {
+				log.error("Could not delete temporary file :{}",old.getCanonicalPath());
+			}
+//			else {
+//				log.info("Deleted temporary file :{}",old.getCanonicalPath());
+//			}
+		}
+		tempFiles.add(f);
+		return f;
 	}
 
 	public static String getServletBase(HttpServletRequest request) {
