@@ -226,7 +226,7 @@ public class InboxTest extends BaseTestCase {
 		} 
 		if (input.ready()) {
 			String s = input.readLine();
-			System.out.println(">>> "+s);
+			log.info(s);
 		}
 		else {
 			log.severe("No data!");
@@ -235,7 +235,6 @@ public class InboxTest extends BaseTestCase {
 	
 	private void safeWrite(BufferedWriter output,String s) {
 		try {
-			System.out.println("<<< "+s);
 			output.write(s+"\r\n");
 			output.flush();
 		} 
@@ -268,6 +267,23 @@ public class InboxTest extends BaseTestCase {
 		BlueboxMessage email = (BlueboxMessage) list.get(0);
 		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertTrue(mimeMessage.getSubject().equals(testSubject));
+	}
+	
+	/*
+	 * Not really a test, but verify the logs contain message indicating temp file was deleted.
+	 */
+	public void testFileHandlesLimit() throws Exception {
+		String testBody = "testSend Test Body";
+		String testSubject = "testSend Test Subject";
+		for (int i = 0; i < 30; i++) {
+			TestUtils.sendMailSMTP(Utils.getRandomAddress().toString(), 
+					new InternetAddress("suresh%hserus.net@here.com").toString(),
+					null,
+					null,
+					testSubject, 
+					testBody);
+		}
+		TestUtils.waitFor(getInbox(), 30);
 	}
 
 	@Test
