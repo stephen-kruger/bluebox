@@ -77,28 +77,6 @@ public class AbstractHandler {
 		}
 	}
 
-	/*
-	 * Form 1: looks for a uid in form xxx/yyy/zzz/uid/qqq
-	 * where fragment = xxx/yyy/zzz/
-	 * or
-	 * Form 2: looks for a uid in form xxx/yyy/zzz/uid
-	 * where fragment = xxx/yyy/zzz/
-	 */
-	//	public static String xextractUid(String uri, String fragment) {
-	//		//		// Form 1
-	//		//		int start = uri.indexOf(fragment)+fragment.length()+1;
-	//		//		int end = uri.indexOf("/", start+1);
-	//		//
-	//		//		// Form 2
-	//		//		if (end<0) {
-	//		//			end = uri.length();
-	//		//		}
-	//		//		return uri.substring(start,end);
-	//		return extractFragment(uri,fragment,1);
-	//	}
-
-
-
 	protected static String extractEmail(String emailFragment) {
 		try {
 			emailFragment = URLDecoder.decode(emailFragment,Utils.UTF8);

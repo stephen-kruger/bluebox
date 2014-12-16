@@ -86,78 +86,79 @@ public class BlueBoxServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(final HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
+		String uri = req.getRequestURI(); 
+		if (uri.indexOf(JSONMessageHandler.JSON_ROOT)>=0){
 			log.debug("doGetMessageDetail");
 			new JSONMessageHandler().doGetMessageDetail(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSONAutoCompleteHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONAutoCompleteHandler.JSON_ROOT)>=0){
 			log.debug("JSONAutoCompleteHandler");
 			new JSONAutoCompleteHandler().doAutoComplete(inbox, req, resp);
 			return;
 		}	
-		if (req.getRequestURI().indexOf(JSONInlineHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONInlineHandler.JSON_ROOT)>=0){
 			log.debug("doGetInlineAttachment");
 			new JSONInlineHandler().doGetInlineAttachment(inbox,req,resp);
 			return;
 		}		
-		if (req.getRequestURI().indexOf(JSONAttachmentHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONAttachmentHandler.JSON_ROOT)>=0){
 			log.debug("doGetMessageAttachment");
 			new JSONAttachmentHandler().doGetMessageAttachment(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSONRawMessageHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONRawMessageHandler.JSON_ROOT)>=0){
 			log.debug("doGetRawDetail");
 			new JSONRawMessageHandler().doGetRawDetail(inbox,req,resp);
 			return;
 		}		
-		if (req.getRequestURI().indexOf(JSONInboxHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONInboxHandler.JSON_ROOT)>=0){
 			log.debug("doGetInbox");
 			new JSONInboxHandler().doGetInbox(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSONSearchHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONSearchHandler.JSON_ROOT)>=0){
 			log.debug("doSearchInbox");
 			new JSONSearchHandler().doSearchInbox(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSONFolderHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONFolderHandler.JSON_ROOT)>=0){
 			log.debug("doGetFolder");
 			new JSONFolderHandler().doGetFolder(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSONStatsHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONStatsHandler.JSON_ROOT)>=0){
 			log.debug("doGetStats");
 			new JSONStatsHandler().doGet(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSONErrorHandler.JSON_DETAIL_ROOT)>=0){
+		if (uri.indexOf(JSONErrorHandler.JSON_DETAIL_ROOT)>=0){
 			log.debug("doGetErrorDetail");
 			new JSONErrorHandler().doGetDetail(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSONErrorHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONErrorHandler.JSON_ROOT)>=0){
 			log.debug("doGetErrors");
 			new JSONErrorHandler().doGet(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSONMessageUtilHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONMessageUtilHandler.JSON_ROOT)>=0){
 			log.debug("doGetErrors");
 			new JSONMessageUtilHandler().doGet(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSONChartHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONChartHandler.JSON_ROOT)>=0){
 			log.debug("doGetCharts");
 			new JSONChartHandler().doGet(inbox,req,resp);
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSONAdminHandler.JSON_ROOT)>=0){
+		if (uri.indexOf(JSONAdminHandler.JSON_ROOT)>=0){
 			log.debug("doGetAdmin");
 			new JSONAdminHandler().doGet(this,inbox,req,resp);
 			return;
 		}
 		
-		if (req.getRequestURI().indexOf("rest/updateavailable")>=0) {
+		if (uri.indexOf("rest/updateavailable")>=0) {
 			try {
 				resp.getWriter().print(Utils.updateAvailable().toString());
 				resp.flushBuffer();
@@ -169,7 +170,7 @@ public class BlueBoxServlet extends HttpServlet {
 			return;
 		}
 		
-		log.warn("No handler for "+req.getRequestURI()+" expected :"+req.getContextPath());
+		log.warn("No handler for "+uri+" expected :"+req.getContextPath());
 		super.doGet(req, resp);
 	}
 

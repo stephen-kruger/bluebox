@@ -1,8 +1,11 @@
 package com.bluebox;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
@@ -90,6 +93,10 @@ public class TestUtils extends TestCase {
 	}
 
 	public static void sendMailSMTP(String from, String to, String cc, String bcc, String subject, String body) throws EmailException {
+		sendMailSMTP(from, to, cc, bcc, subject, body, new ArrayList<File>());
+	}
+
+	public static void sendMailSMTP(String from, String to, String cc, String bcc, String subject, String body, List<File> attachments) throws EmailException {
 		HtmlEmail email = new HtmlEmail();
 		email.setHostName("localhost");
 		email.setSmtpPort(Config.getInstance().getInt(Config.BLUEBOX_PORT));
@@ -105,6 +112,15 @@ public class TestUtils extends TestCase {
 			email.addCc(cc);
 		if (bcc!=null)
 			email.addBcc(bcc);
+		
+		for (File file : attachments) {
+			try {
+				log.info("Adding attachment "+file.getCanonicalPath());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			email.attach(file);
+		}
 		email.send();
 	}
 

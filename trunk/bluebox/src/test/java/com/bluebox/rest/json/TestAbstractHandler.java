@@ -22,13 +22,13 @@ public class TestAbstractHandler extends TestCase {
 		assertEquals("Field was not properly extracted","bbb",AbstractHandler.extractFragment(uri, JSON_ROOT, 1));
 		assertEquals("Field was not properly extracted","aaa",AbstractHandler.extractFragment(uri, JSON_ROOT, 0));
 		
-		uri = "/bluebox/rest/json/stats/stats_mph//";
-		assertEquals("Field was not properly extracted","stats_mph",AbstractHandler.extractFragment(uri, JSON_ROOT, 4));
+		uri = JSON_ROOT+"/rest/json/stats/stats_mph//";
+		assertEquals("Field was not properly extracted","stats_mph",AbstractHandler.extractFragment(uri, JSON_ROOT, 3));
 		assertEquals("Field was not properly extracted","",AbstractHandler.extractFragment(uri, JSON_ROOT, 5));
 		
-		uri = "/bluebox/rest/json/stats/stats_mph/bob@test.com";
-		assertEquals("Field was not properly extracted","stats_mph",AbstractHandler.extractFragment(uri, JSON_ROOT, 4));
-		assertEquals("Field was not properly extracted","bob@test.com",AbstractHandler.extractFragment(uri, JSON_ROOT, 5));
+		uri = JSON_ROOT+"/rest/json/stats/stats_mph/bob@test.com";
+		assertEquals("Field was not properly extracted","stats_mph",AbstractHandler.extractFragment(uri, JSON_ROOT, 3));
+		assertEquals("Field was not properly extracted","bob@test.com",AbstractHandler.extractFragment(uri, JSON_ROOT, 4));
 
 		uri = JSON_ROOT+"/aaa/bbb//ddd";
 		assertEquals("Field was not properly extracted","",AbstractHandler.extractFragment(uri, JSON_ROOT, 2));
