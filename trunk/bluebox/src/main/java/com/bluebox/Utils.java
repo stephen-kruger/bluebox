@@ -177,42 +177,6 @@ public class Utils {
 		return res;
 	}	
 
-	//	/*
-	//	 * Returns the name portion of an email address
-	//	 * e.g. "Stephen Johnson" <stephen@mail.com> will return "Stephen Johnson"
-	//	 */
-	//	public static final String getEmailName(String email) {
-	//		try {
-	//			if ((email==null)||(email.trim().length()==0)) {
-	//				return "*";
-	//			}
-	//			// check if it's a Notes address
-	//			if (Utils.isNotesAddress(email)) {
-	//				log.info("Converting Notes style address :"+email);
-	//				email = Utils.convertNotesAddress(email);
-	//			}
-	//			else {
-	//				// if no domain specified, add default
-	//				if (email.indexOf('@')<0) {
-	//					email += '@'+Utils.getHostName();
-	//				}
-	//			}
-	//
-	////			InternetAddress address = new InternetAddress(email);
-	////			return address.getPersonal()+"";
-	//			EmailAddress.getPersonalName(email);
-	//		}
-	//		catch (Throwable e) {
-	//			log.debug(e.getMessage()+" "+email);
-	//			e.printStackTrace();
-	//		}
-	//		return "";
-	//	}
-
-	//	public static final String getEscapedEmail(String email) {
-	//		return StorageImpl.escape(getEmail(email));
-	//	}
-
 	public static String uploadEML(Inbox inbox, InputStream eml) throws IOException, MessagingException {
 		if (eml==null) {
 			log.error("Could not load eml resource");
@@ -242,52 +206,7 @@ public class Utils {
 		fileStream.close();
 		return message;
 	}
-
-	//	public static void testInlineImages(Inbox inbox) {
-	//		try {
-	//			Session sess = getSession();
-	//			MimeMessage message = new MimeMessage(sess);
-	//	        message.setSubject("HTML  mail with images");
-	//	        message.setFrom(new InternetAddress("me@sender.com"));
-	//	        message.addRecipient(Message.RecipientType.TO,new InternetAddress("you@receiver.com"));
-	//
-	//	        //
-	//	        // This HTML mail have to 2 part, the BODY and the embedded image
-	//	        //
-	//	        Multipart multipart = new MimeMultipart("related");
-	//
-	//	        // first part  (the html)
-	//	        BodyPart messageBodyPart = new MimeBodyPart();
-	//	        String htmlText = "<H1>Hello</H1><img src=\"cid:image\">";
-	//	        messageBodyPart.setContent(htmlText, "text/html; charset=\""+MimeMessageWrapper.UTF8+"\"");
-	//
-	//	        // add it
-	//	        multipart.addBodyPart(messageBodyPart);
-	//	        
-	//	        // second part (the image)
-	//	        messageBodyPart = new MimeBodyPart();
-	//	        DataSource fds = new FileDataSource("C:\\workspaces\\workspace.galileo\\bluebox\\scratch\\BlueBox2.png");
-	//	        messageBodyPart.setDataHandler(new DataHandler(fds));
-	//	        messageBodyPart.setHeader("Content-ID","<image>");
-	//
-	//	        // add it
-	//	        multipart.addBodyPart(messageBodyPart);
-	//
-	//	        // put everything together
-	//	        message.setContent(multipart);
-	//
-	//			Transport.send(message);
-	//		}  
-	//		catch (MessagingException e) {
-	//			e.printStackTrace();
-	//		}
-	//	}
-
-	//	public static void test(ServletContext session, String sz) {
-	//		log.debug("Into test");
-	//		sendMessage(session,Integer.parseInt(sz));
-	//	}
-
+	
 	public static InternetAddress[] getRandomAddresses(int count) throws AddressException {
 		InternetAddress[] result = new InternetAddress[count];
 		for (int i = 0; i < count ;i++) {
@@ -677,33 +596,6 @@ public class Utils {
 		return name;
 	}
 
-	//	public static String convertEncoding(String text, String encoding) {
-	//		try {
-	//			// set up byte streams
-	//			InputStream in = new ByteArrayInputStream(text.getBytes());
-	//			ByteArrayOutputStream out = new ByteArrayOutputStream();
-	//
-	//			// Set up character stream
-	//			Reader r = new java.io.BufferedReader(new java.io.InputStreamReader(in, encoding));
-	//			Writer w = new BufferedWriter(new java.io.OutputStreamWriter(out, UTF8));
-	//
-	//			// Copy characters from input to output.  The InputStreamReader
-	//			// converts from the input encoding to Unicode,, and the OutputStreamWriter
-	//			// converts from Unicode to the output encoding.  Characters that cannot be
-	//			// represented in the output encoding are output as '?'
-	//			char[] buffer = new char[4096];
-	//			int len;
-	//			while((len = r.read(buffer)) != -1) 
-	//				w.write(buffer, 0, len);
-	//			r.close();
-	//			w.flush();
-	//			return out.toString();
-	//		}
-	//		catch (Throwable t) {
-	//			t.printStackTrace();
-	//			return text;
-	//		}
-	//	}
 
 	//	public static String decodeQuotedPrintable(String quoted) {
 	//		try {
@@ -738,10 +630,6 @@ public class Utils {
 		}
 		return res.toString();
 	}
-
-//	public static byte[] convertStreamToBytes(InputStream binaryStream) throws IOException {
-//		return IOUtils.toByteArray(binaryStream);
-//	}
 
 	public static InputStream streamMimeMessage(MimeMessage msg) throws IOException, MessagingException {
 		// spool to disk to prevent out of memory errors
