@@ -535,7 +535,12 @@ public class Inbox implements SimpleMessageListener {
 			} 
 			catch (Throwable e) {
 				log.error(e.getMessage());
-				errorLog("("+e.getMessage()+") Accepting raw message for recipient="+recipient +" "+e.getMessage(), data);
+				try {
+					errorLog("("+e.getMessage()+") Error accepting raw message for recipient="+nrec, mimeMessage.getInputStream());
+				} 
+				catch (MessagingException e1) {
+					errorLog("("+e1.getMessage()+") error logging message recipient="+nrec,"Unable to show data");
+				}
 			}
 		}
 	}
