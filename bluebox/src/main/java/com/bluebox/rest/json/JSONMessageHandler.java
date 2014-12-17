@@ -45,7 +45,7 @@ public class JSONMessageHandler extends AbstractHandler {
 			if (message == null) {
 				log.error("Could not find message with uid="+uid);
 			}
-			JSONObject json = message.toJSON(req.getLocale());
+			JSONObject json = message.toJSON();
 			
 			json.put(BlueboxMessage.RECEIVED, LiteMessage.dateToString(new Date(json.getLong(BlueboxMessage.RECEIVED)),req.getLocale()));
 			// add in the TO, CC and BCC

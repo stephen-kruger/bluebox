@@ -7,15 +7,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.StringTokenizer;
 
 import javax.activation.DataSource;
 import javax.mail.Address;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,7 +26,6 @@ import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import com.bluebox.MimeMessageParser;
 import com.bluebox.Utils;
@@ -81,7 +79,12 @@ public class BlueboxMessage {
 	public void setBlueBoxMimeMessage(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws IOException, MessagingException, SQLException, JSONException {
 		mmw = bbmm;
 		log.debug("Persisting mime message");
-		setProperty(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
+		if ((from==null)||(from.length()==0)) {
+			setProperty(FROM,toJSONArray(getBlueBoxMimeMessage().getFrom()));
+		}
+		else {
+			setProperty(FROM,toJSONArray(new Address[]{new InternetAddress(from)}));
+		}
 		setProperty(RECIPIENT, recipient.getFullAddress());
 		setProperty(INBOX, getInbox().getAddress());
 		setProperty(SUBJECT, bbmm.getSubject());
@@ -255,14 +258,14 @@ public class BlueboxMessage {
 		}
 	}
 
-	public JSONObject toJSON() throws Exception {
-		return toJSON(Locale.getDefault());
-	}
+//	public JSONObject toJSON() throws Exception {
+//		return toJSON(Locale.getDefault());
+//	}
 
-	public JSONObject toJSON(Locale locale) throws Exception {
+	public JSONObject toJSON() throws Exception {
 		JSONObject json;
 		try {
-			json = new JSONObject();				
+			json = new JSONObject(properties.toString());				
 
 			List<DataSource> ds = getParser().getAttachmentList();
 			JSONArray ja = new JSONArray();
@@ -272,19 +275,19 @@ public class BlueboxMessage {
 			if (ja.length()>0)
 				json.put(ATTACHMENT, ja);
 
-			@SuppressWarnings("unchecked")
-			Iterator<String> keys = properties.keys();
-			while (keys.hasNext()) {
-				String key = keys.next();
-				json.put(key, properties.get(key));
-			}
+//			@SuppressWarnings("unchecked")
+//			Iterator<String> keys = properties.keys();
+//			while (keys.hasNext()) {
+//				String key = keys.next();
+//				json.put(key, properties.get(key));
+//			}
 
 			return json;
 
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
-			return new JSONObject();
+			return properties;
 		}				
 	}
 
@@ -415,7 +418,7 @@ public class BlueboxMessage {
 		fos.close();
 		return new FileInputStream(f);
 	}
-	
+
 	public String getSMTPSender () {
 		try {
 			String[] header = getBlueBoxMimeMessage().getHeader("Received");

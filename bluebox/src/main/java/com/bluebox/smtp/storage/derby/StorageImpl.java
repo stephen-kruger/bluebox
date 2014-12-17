@@ -1036,7 +1036,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		//			t.printStackTrace();
 		//			log.warn("Seems no hourly stats are available");
 		//		}
-		log.info("Got mph stats in {}ms",new Date().getTime()-started.getTime());
+		log.debug("Got mph stats in {}ms",new Date().getTime()-started.getTime());
 		return resultJ;
 	}
 
