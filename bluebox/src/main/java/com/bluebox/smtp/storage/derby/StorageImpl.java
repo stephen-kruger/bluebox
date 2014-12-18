@@ -161,7 +161,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					//					DOW+" INTEGER, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
 					StorageIf.Props.Size.name()+" BIGINT, "+
-					BlueboxMessage.RAW+" blob(128M))");
+					BlueboxMessage.RAW+" blob(64M))");
 		}
 		catch (Throwable t) {
 			log.debug(t.getMessage());
@@ -214,7 +214,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.setString(4, props.getString(StorageIf.Props.Sender.name())); // FROM
 		ps.setString(5, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
 		ps.setTimestamp(6, new java.sql.Timestamp(props.getLong(StorageIf.Props.Received.name()))); // RECEIVED
-		//		ps.setInt(7, DerbyFunctions.dayOfWeek(new java.sql.Timestamp(props.getLong(StorageIf.Props.Received.name())))); // DOW
 		ps.setInt(7, props.getInt(StorageIf.Props.State.name())); // STATE
 		ps.setLong(8, props.getLong(StorageIf.Props.Size.name())); // SIZE
 		ps.setBinaryStream(9, blob); // MIMEMESSAGE
@@ -502,6 +501,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public List<BlueboxMessage> listMail(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
+		log.info("List mail called from start={}, count={}",start,count);
 		Connection connection = getConnection();
 		ResultSet result = listMailCommon("*",connection, email, state, start, count, orderBy, ascending);
 

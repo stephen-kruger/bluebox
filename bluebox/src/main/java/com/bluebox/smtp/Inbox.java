@@ -386,7 +386,7 @@ public class Inbox implements SimpleMessageListener {
 		}
 		log.info("Cleaned up {} deleted messages",count);
 	}
-	
+
 	/*
 	 * Some Non Delivery Records have null or <> as from. This hacks in a default
 	 * email to allow delivery of the bounced message.
@@ -496,18 +496,19 @@ public class Inbox implements SimpleMessageListener {
 	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException {
 		recipient = javax.mail.internet.MimeUtility.decodeText(recipient);
 		from = javax.mail.internet.MimeUtility.decodeText(from);
-		
+
 		// if no From is specified, treat as a bounce message and send to bounce@<hostname> inbox
 		from = checkBounce(from);
-		
-		MimeMessage mimeMessage = null;
-		try {
-			mimeMessage = Utils.loadEML(data);
-		} 
-		catch (MessagingException e1) {
-			log.error("Problem loading message",e1);
-			throw new IOException(e1);
-		}
+
+		//		MimeMessage mimeMessage = null;
+		//		try {
+		//			mimeMessage = Utils.loadEML(data);
+		//		} 
+		//		catch (MessagingException e1) {
+		//			log.error("Problem loading message",e1);
+		//			throw new IOException(e1);
+		//		}
+		File spooledMessage = Utils.getSpooledStreamFile(data);
 		// when reading from .eml files, we might get multiple recipients, not sure why they are delivered like this.
 		// when called via SubEtha, they are normally single recipient addresses
 		List<String> recipients = new ArrayList<String>();
@@ -529,23 +530,33 @@ public class Inbox implements SimpleMessageListener {
 			recipients.add(recipient);
 		}
 		// now send the message to each recipient
-		for (String nrec : recipients) {
-			try {
-				deliver(from,nrec,mimeMessage);
-			} 
-			catch (Throwable e) {
-				log.error(e.getMessage());
+		MimeMessage message;
+		try {
+			message = Utils.loadEML(new FileInputStream(spooledMessage));
+			for (String nrec : recipients) {
 				try {
-					errorLog("("+e.getMessage()+") Error accepting raw message for recipient="+nrec, mimeMessage.getInputStream());
+					deliver(from,nrec,message, spooledMessage);
 				} 
-				catch (MessagingException e1) {
-					errorLog("("+e1.getMessage()+") error logging message recipient="+nrec,"Unable to show data");
+				catch (Throwable e) {
+					log.error(e.getMessage());
+					try {
+						errorLog("("+e.getMessage()+") Error accepting raw message for recipient="+nrec, new FileInputStream(spooledMessage));
+					} 
+					catch (Throwable e1) {
+						errorLog("("+e1.getMessage()+") error logging message recipient="+nrec,"Unable to show data");
+					}
 				}
 			}
 		}
+		catch (MessagingException me) {
+			throw new IOException(me);
+		}
+		finally {
+			spooledMessage.delete();
+		}
 	}
 
-	public void deliver(String from, String recipient, MimeMessage mmessage) {
+	public void deliver(String from, String recipient, MimeMessage mmessage, File spooledMessage) {
 		try {
 			from = getFullAddress(from, mmessage.getFrom());
 			recipient = getFullAddress(recipient, mmessage.getAllRecipients());
@@ -554,7 +565,8 @@ public class Inbox implements SimpleMessageListener {
 					from,
 					new InboxAddress(recipient),
 					new Date(),
-					mmessage);
+					mmessage,
+					spooledMessage);
 			updateStats(message, recipient, false);
 			// ensure the content is indexed
 			try {
@@ -708,7 +720,7 @@ public class Inbox implements SimpleMessageListener {
 	public JSONObject getStatsActiveSender() {	
 		return StorageFactory.getInstance().getMostActiveSender();
 	}
-	
+
 	public JSONObject getMPH(InboxAddress inbox) {
 		return StorageFactory.getInstance().getMPH(inbox);
 	}

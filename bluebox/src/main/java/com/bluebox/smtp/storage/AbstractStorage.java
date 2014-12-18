@@ -1,5 +1,7 @@
 package com.bluebox.smtp.storage;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.Date;
@@ -18,6 +20,7 @@ import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public abstract class AbstractStorage implements StorageIf {
+//	private static final Logger log = LoggerFactory.getLogger(AbstractStorage.class);
 	public static final String DB_NAME = "bluebox401";
 	
 	@Override
@@ -67,11 +70,13 @@ public abstract class AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
+	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm, File spooledFile) throws Exception {
 		String uid = UUID.randomUUID().toString();
 		BlueboxMessage message = new BlueboxMessage(uid,recipient);
 		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
-		store(message.toJSON(),Utils.streamMimeMessage(bbmm));
+		// now store in underlying db
+		InputStream is = new FileInputStream(spooledFile);
+		store(message.toJSON(),is);
 		return message;
 	}
 	

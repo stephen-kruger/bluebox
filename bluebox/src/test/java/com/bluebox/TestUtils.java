@@ -2,7 +2,10 @@ package com.bluebox;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -15,6 +18,7 @@ import junit.framework.TestCase;
 
 import org.apache.commons.mail.EmailException;
 import org.apache.commons.mail.HtmlEmail;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +30,7 @@ import com.bluebox.smtp.storage.StorageIf;
 public class TestUtils extends TestCase {
 	private static final Logger log = LoggerFactory.getLogger(TestUtils.class);
 
+	@Test
 	public void testLoadEML() throws MessagingException, IOException {
 		MimeMessage message = Utils.loadEML(new FileInputStream("src/test/resources/test-data/m0017.txt"));
 		assertNotNull("No subject",message.getSubject());
@@ -54,7 +59,16 @@ public class TestUtils extends TestCase {
 	public static void sendMailDirect(Inbox inbox, String to, String from) throws Exception {
 		log.debug("Delivering mail to "+to);
 		MimeMessage message = Utils.createMessage(null,from, to, null,null, Utils.randomLine(25), Utils.randomLine(25));
-		inbox.deliver(from, to, Utils.streamMimeMessage(message));
+		
+		inbox.deliver(from, to, message, getSpooledMessage(message));
+	}
+
+	public static File getSpooledMessage(MimeMessage message) throws IOException, MessagingException {
+		File f = Utils.getTempFile();
+		OutputStream os = new FileOutputStream(f);
+		message.writeTo(os);
+		os.close();
+		return f;
 	}
 
 	public static void addRandomDirect(StorageIf storage, int count) throws Exception {
@@ -64,12 +78,28 @@ public class TestUtils extends TestCase {
 		}
 	}
 
+	@Test
+	public void testMimeMessageCreation() throws MessagingException, IOException {
+		MimeMessage original = Utils.createMessage(null, "test@here.com", "test@here.com", "test@here.com", "test@here.com", "subject", "body");
+		File f = Utils.getTempFile();
+		OutputStream os = new FileOutputStream(f);
+		original.writeTo(os);
+		os.close();
+		InputStream is = new FileInputStream(f);
+		MimeMessage copy = Utils.loadEML(is);
+		is.close();
+		f.delete();
+		assertEquals("Mismatched subject",copy.getSubject(),original.getSubject());
+	}
+	
 	public static BlueboxMessage addRandomDirect(StorageIf storage) throws Exception {
+		MimeMessage mm = Utils.createMessage(null,"steve@there.com", "steve@here.com", "steve@here.com", "steve@here.com", Utils.randomLine(25), Utils.randomLine(25));
 		BlueboxMessage message = storage.store(
 				"steve@there.com",
 				new InboxAddress("steve@here.com"),
 				new Date(),
-				Utils.createMessage(null,"steve@there.com", "steve@here.com", "steve@here.com", "steve@here.com", Utils.randomLine(25), Utils.randomLine(25)));
+				mm,
+				getSpooledMessage(mm));
 		return message;
 	}
 	

@@ -3,7 +3,6 @@ package com.bluebox;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletContext;
@@ -18,12 +17,13 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.storage.StorageFactory;
 
 public class UploadServlet extends HttpServlet {
 
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final org.slf4j.Logger log = LoggerFactory.getLogger(UploadServlet.class);
 	private static final long serialVersionUID = 1L;
 	public static final long MAX_UPLOAD_IN_MEGS = 5;
 
@@ -66,13 +66,13 @@ public class UploadServlet extends HttpServlet {
 								Utils.sendMessageDirect(StorageFactory.getInstance(),message);
 							}
 							else {
-								log.warning("Ignoring empty file upload");
+								log.warn("Ignoring empty file upload");
 								res.put("error", "Empty file specified");
 							}
 							result.put(res);
 						}
 						catch (Throwable t) {
-							log.severe(t.getMessage());
+							log.error(t.getMessage());
 							res.put("error", t.getMessage());
 						}
 					}

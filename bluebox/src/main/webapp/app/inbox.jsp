@@ -59,7 +59,6 @@
 		
 		function startGaugeTimer() {
 			try {
-				updateMph(folderEmail);
 				// start the refresh timer
 				require(["dojox/timing"], function(registry){
 					var t = new dojox.timing.Timer(5000);
@@ -105,7 +104,7 @@
 				<div class="seperator"></div>
 				<h2>Mails per hour</h2>
 				<div style="display: block;margin-left: auto;margin-right: auto ">
-					<div id="mphGauge" data-dojo-type="dojox/dgauges/components/default/CircularLinearGauge" value="0" minimum="0" maximum="600" style="width:150px; height:150px"></div>
+					<div id="mphGauge" data-dojo-type="dojox/dgauges/components/default/CircularLinearGauge" value="0" minimum="0" maximum="600" style="width:120px; height:120px"></div>
 				</div>
 
 			</div>
