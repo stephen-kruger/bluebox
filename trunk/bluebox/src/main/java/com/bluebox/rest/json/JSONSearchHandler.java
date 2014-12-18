@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.search.SearchIndexer;
+import com.bluebox.search.SearchIndexer.SearchFields;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
@@ -22,8 +23,8 @@ public class JSONSearchHandler extends AbstractHandler {
 		setDefaultHeaders(resp);
 		// get the desired email
 //		String search = extractSearch(req.getRequestURI(),JSON_ROOT);
-		String search = extractFragment(req.getRequestURI(), JSON_ROOT, 0);
-		String searchScope = extractFragment(req.getRequestURI(), JSON_ROOT, 1);
+		String search = extractFragment(req.getRequestURI(), JSON_ROOT, 1);
+		String searchScopeStr = extractFragment(req.getRequestURI(), JSON_ROOT, 0);
 		// check sort order, which comes in a strange format "sort(-Subject)=null"
 		SearchIndexer.SearchFields orderBy = SearchIndexer.SearchFields.RECEIVED;
 		boolean ascending = true;
@@ -62,7 +63,15 @@ public class JSONSearchHandler extends AbstractHandler {
 			// tell the grid how many items we have
 			log.info("Sending JSON search view for {} first={} last={} orderby={}",search,first,last,orderBy.name());
 			Writer writer = resp.getWriter();
-			long totalCount = inbox.searchInbox(search, writer, first, last-first, SearchIndexer.SearchFields.valueOf(searchScope), orderBy, ascending);
+			SearchFields searchScope;
+			try {
+				searchScope = SearchIndexer.SearchFields.valueOf(searchScopeStr);
+			}
+			catch (Throwable t) {
+				log.error("Invalid search scope :{}",searchScopeStr);
+				searchScope = SearchIndexer.SearchFields.ANY;
+			}
+			long totalCount = inbox.searchInbox(search, writer, first, last-first, searchScope , orderBy, ascending);
 			log.debug("Total result set was length {}",totalCount);
 			resp.setHeader("Content-Range", "items "+first+"-"+last+"/"+totalCount);//Content-Range: items 0-24/66
 			writer.flush();
