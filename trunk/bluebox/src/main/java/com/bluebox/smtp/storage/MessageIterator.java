@@ -13,7 +13,7 @@ import com.bluebox.smtp.InboxAddress;
  */
 public class MessageIterator implements Iterator<BlueboxMessage> {
 	private static final Logger log = LoggerFactory.getLogger(MessageIterator.class);
-	private static int MAX = 1000;
+	private static int MAX = 100;
 	private List<BlueboxMessage> list;
 	private Iterator<BlueboxMessage> iterator;
 	private InboxAddress address;

@@ -36,6 +36,7 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldCollector;
+import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Bits;
@@ -129,8 +130,10 @@ public class SearchIndexer {
 	}
 
 	public void closeDirectoryReader() throws IOException {
-		getDirectoryReader().close();
-		diectoryReader=null;
+		if (diectoryReader!=null) {
+			diectoryReader.close();
+			diectoryReader=null;
+		}
 	}
 
 	public IndexSearcher getSearcher() throws IOException {
@@ -287,7 +290,7 @@ public class SearchIndexer {
 	public void indexMail(BlueboxMessage message) throws IOException, JSONException, Exception {
 		addDoc(message.getIdentifier(),
 				message.getInbox().getFullAddress(),
-				Utils.decodeQuotedPrintable(message.getFrom().getString(0)),
+				Utils.decodeQuotedPrintable(Utils.toCSVString(message.getFrom())),
 				Utils.decodeQuotedPrintable(message.getSubject()),
 				message.getHtml(null),
 				message.getText(),
@@ -353,7 +356,7 @@ public class SearchIndexer {
 	}
 
 	protected synchronized void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
-		log.debug("Indexing mail "+uid+" "+from);
+		log.debug("Indexing mail [] []",uid,from);
 		Document doc = new Document();
 		doc.add(new StringField(SearchFields.UID.name(), uid, Field.Store.YES));
 		doc.add(new TextField(SearchFields.FROM.name(), from, Field.Store.YES));
@@ -365,8 +368,17 @@ public class SearchIndexer {
 		doc.add(new TextField(SearchFields.RECIPIENTS.name(), recipients, Field.Store.YES));
 		doc.add(new LongField(SearchFields.SIZE.name(), size, Field.Store.YES));
 		doc.add(new LongField(SearchFields.RECEIVED.name(), received, Field.Store.YES));
-		getIndexWriter().addDocument(doc);
-		getIndexWriter().commit();
+		IndexWriter iw = getIndexWriter();
+		try {
+			iw.addDocument(doc);
+			iw.commit();
+		}
+		catch (AlreadyClosedException ace) {
+			log.error("IndexWriter was closed, ensuring new one is generated");
+			closeIndexWriter();;
+		}
+		closeDirectoryReader();
+		closeSearcher();
 	}
 
 	/*

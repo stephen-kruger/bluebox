@@ -5,13 +5,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -113,59 +113,59 @@ public class Utils {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	public static String[] getStringArray(Object obj) {
-		if (obj instanceof String[]) {
-			return (String[])obj;
-		}
-		if (obj instanceof Collection) {
-			String[] res = new String[((Collection<String>)obj).size()];
-			return ((Collection<String>)obj).toArray(res);
-		}		
-		if (obj instanceof JSONArray) {
-			JSONArray ja = (JSONArray)obj;
-			String[] res = new String[ja.length()];
-			for (int i = 0; i < res.length; i++) {
-				try {
-					res[i] = ja.getString(i);
-				} 
-				catch (JSONException e) {
-					e.printStackTrace();
-				}
-			}
-			return res;
-		}
-		return new String[]{obj.toString()};
-	}
+//	@SuppressWarnings("unchecked")
+//	public static String[] getStringArray(Object obj) {
+//		if (obj instanceof String[]) {
+//			return (String[])obj;
+//		}
+//		if (obj instanceof Collection) {
+//			String[] res = new String[((Collection<String>)obj).size()];
+//			return ((Collection<String>)obj).toArray(res);
+//		}		
+//		if (obj instanceof JSONArray) {
+//			JSONArray ja = (JSONArray)obj;
+//			String[] res = new String[ja.length()];
+//			for (int i = 0; i < res.length; i++) {
+//				try {
+//					res[i] = ja.getString(i);
+//				} 
+//				catch (JSONException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//			return res;
+//		}
+//		return new String[]{obj.toString()};
+//	}
 
-	public static JSONArray getJSONArray(String[] arr) throws JSONException {
-		JSONArray res = new JSONArray();
-		if (arr!=null) {
-			for (int i = 0; i < arr.length;i++) {
-				res.put(i,arr[i]);
-			}
-		}
-		return res;
-	}
+//	public static JSONArray getJSONArray(String[] arr) throws JSONException {
+//		JSONArray res = new JSONArray();
+//		if (arr!=null) {
+//			for (int i = 0; i < arr.length;i++) {
+//				res.put(i,arr[i]);
+//			}
+//		}
+//		return res;
+//	}
 
-	public static JSONArray getJSONArray(Collection<String> coll) throws JSONException {
-		return getJSONArray(coll,false);
-	}
-
-	public static JSONArray getJSONArray(Collection<String> coll, boolean escapeHTML) throws JSONException {
-		JSONArray res = new JSONArray();
-		int i = 0;
-		for (String s : coll) {
-			//			if (escapeHTML) {
-			//				res.put(i,escapeHTML(s));
-			//			}
-			//			else {
-			res.put(i,s);
-			//			}
-			i++;
-		}
-		return res;
-	}
+//	public static JSONArray getJSONArray(Collection<String> coll) throws JSONException {
+//		return getJSONArray(coll,false);
+//	}
+//
+//	public static JSONArray getJSONArray(Collection<String> coll, boolean escapeHTML) throws JSONException {
+//		JSONArray res = new JSONArray();
+//		int i = 0;
+//		for (String s : coll) {
+//			//			if (escapeHTML) {
+//			//				res.put(i,escapeHTML(s));
+//			//			}
+//			//			else {
+//			res.put(i,s);
+//			//			}
+//			i++;
+//		}
+//		return res;
+//	}
 
 	public static JSONArray getJSONArray(Address[] addr) throws JSONException {
 		JSONArray res = new JSONArray();
@@ -199,14 +199,45 @@ public class Utils {
 			return e.toString()+":"+e.getMessage();
 		}
 	}
-	
-	public static MimeMessage loadEML(InputStream fileStream) throws MessagingException, IOException {
+
+	//	public static MimeMessage loadEMLSpooled(InputStream inputStream) throws MessagingException, IOException {
+	//		// first spool to disk
+	//		File f = Utils.getTempFile();
+	//		OutputStream outputStream = new FileOutputStream(f);
+	//		IOUtils.copy(inputStream, outputStream);
+	//		outputStream.close();
+	//		return loadEMLNonSpooled(new FileInputStream(f));
+	//	}
+
+//	/*
+//	 * Spool the inputStream to a disk file, and return an input stream to this file.
+//	 */
+//	public static InputStream getSpooledStream(InputStream inputStream) throws MessagingException, IOException {
+//		// first spool to disk
+//		File f = Utils.getTempFile();
+//		OutputStream outputStream = new FileOutputStream(f);
+//		IOUtils.copy(inputStream, outputStream);
+//		outputStream.close();
+//		inputStream.close();
+//		return new FileInputStream(f);
+//	}
+
+	public static File getSpooledStreamFile(InputStream inputStream) throws IOException {
 		// first spool to disk
-		MimeMessage message = new MimeMessage(null,fileStream);
-		fileStream.close();
+		File f = Utils.getTempFile();
+		OutputStream outputStream = new FileOutputStream(f);
+		IOUtils.copy(inputStream, outputStream);
+		outputStream.close();
+		inputStream.close();
+		return f;
+	}
+
+	public static MimeMessage loadEML(InputStream inputStream) throws MessagingException, IOException {
+		MimeMessage message = new MimeMessage(null,inputStream);
+		inputStream.close();
 		return message;
 	}
-	
+
 	public static InternetAddress[] getRandomAddresses(int count) throws AddressException {
 		InternetAddress[] result = new InternetAddress[count];
 		for (int i = 0; i < count ;i++) {
@@ -305,24 +336,26 @@ public class Utils {
 					int toC,ccC, bccC;
 					int totalCount = 0;
 					Random r = new Random();
-					do {
-						if (isStopped()) break;
-						toC = r.nextInt(count-totalCount+1);
-						ccC = r.nextInt(count-toC-totalCount+1);
-						bccC = r.nextInt(count-ccC-toC-totalCount+1);
-						MimeMessage msg = createMessage(session,
-								getRandomAddress(),  
-								getRandomAddresses(toC),//to
-								getRandomAddresses(ccC),//cc
-								getRandomAddresses(bccC),//bcc
-								(counter++)+" "+randomLine(35), 
-								randomText(14),
-								true);
+					if(count>0) {
+						do {
+							if (isStopped()) break;
+							toC = r.nextInt(count-totalCount+1);
+							ccC = r.nextInt(count-toC-totalCount+1);
+							bccC = r.nextInt(count-ccC-toC-totalCount+1);
+							MimeMessage msg = createMessage(session,
+									getRandomAddress(),  
+									getRandomAddresses(toC),//to
+									getRandomAddresses(ccC),//cc
+									getRandomAddresses(bccC),//bcc
+									(counter++)+" "+randomLine(35), 
+									randomText(14),
+									true);
 
-						sendMessageDirect(inbox,msg);
-						totalCount += toC+ccC+bccC;
-						setProgress((totalCount*100)/count);
-					} while (totalCount<count);
+							sendMessageDirect(inbox,msg);
+							totalCount += toC+ccC+bccC;
+							setProgress((totalCount*100)/count);
+						} while (totalCount<count);
+					}
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
@@ -409,6 +442,15 @@ public class Utils {
 	}
 
 	private static void sendMessageDirect(Inbox inbox,MimeMessage msg) throws Exception {
+		File f = Utils.getTempFile();
+		OutputStream os = new FileOutputStream(f);
+		msg.writeTo(os);
+		os.close();
+		sendMessageDirect(inbox,msg,f);
+		f.delete();
+	}
+	
+	private static void sendMessageDirect(Inbox inbox,MimeMessage msg,File spooledFile) throws Exception {
 		Address[] to = msg.getRecipients(RecipientType.TO);
 		Address[] cc = msg.getRecipients(RecipientType.CC);
 		Address[] bcc = msg.getRecipients(RecipientType.BCC);
@@ -428,7 +470,7 @@ public class Utils {
 			recipients.add("anonymous@bluebox.com");
 		for (String recipient : recipients) {
 			if (inbox.accept(msg.getFrom()[0].toString(), recipient)) {
-				inbox.deliver(msg.getFrom()[0].toString(), recipient, msg);
+				inbox.deliver(msg.getFrom()[0].toString(), recipient, msg, spooledFile);
 			}
 		}
 	}
@@ -451,11 +493,18 @@ public class Utils {
 		// if we load emails from file, there might not be a recipient (bcc)
 		if (recipients.size()==0)
 			recipients.add("anonymous@bluebox.com");
+		
+		File f = Utils.getTempFile();
+		OutputStream os = new FileOutputStream(f);
+		msg.writeTo(os);
+		os.close();
+		
 		for (String recipient : recipients) {
 			log.debug("Sending message to {}",recipient);
-			BlueboxMessage bbm = storage.store(msg.getFrom()[0].toString(), new InboxAddress(recipient), new Date(), msg);
+			BlueboxMessage bbm = storage.store(msg.getFrom()[0].toString(), new InboxAddress(recipient), new Date(), msg, f);
 			SearchIndexer.getInstance().indexMail(bbm);
 		}
+		f.delete();
 	}
 
 	public static MimeMessage createMessage(ServletContext session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
@@ -631,26 +680,23 @@ public class Utils {
 		return res.toString();
 	}
 
-	public static InputStream streamMimeMessage(MimeMessage msg) throws IOException, MessagingException {
-		// spool to disk to prevent out of memory errors
-		File f = getTempFile();
-		FileOutputStream fos = new FileOutputStream(f);
-		msg.writeTo(fos);
-		fos.close();
-		return new FileInputStream(f);
-	}
-	
+	//	public static InputStream streamMimeMessage(MimeMessage msg) throws IOException, MessagingException {
+	//		// spool to disk to prevent out of memory errors
+	//		File f = getTempFile();
+	//		FileOutputStream fos = new FileOutputStream(f);
+	//		msg.writeTo(fos);
+	//		fos.close();
+	//		return new FileInputStream(f);
+	//	}
+
 	public static File getTempFile() throws IOException {
-		File f = File.createTempFile("bluebox", "spool");
+		File f = File.createTempFile("bluebox", ".spool");
 		f.deleteOnExit();	
-		if (tempFiles.size()>20) {
+		if (tempFiles.size()>50) {
 			File old = tempFiles.remove(0);
 			if (!old.delete()) {
 				log.error("Could not delete temporary file :{}",old.getCanonicalPath());
 			}
-//			else {
-//				log.info("Deleted temporary file :{}",old.getCanonicalPath());
-//			}
 		}
 		tempFiles.add(f);
 		return f;
@@ -751,6 +797,10 @@ public class Utils {
 		if (listS.length()>0)
 			return listS.substring(0, listS.length()-1).toString();
 		return listS.toString();
+	}
+
+	public static String toCSVString(JSONArray list) {
+		return list.toString();
 	}
 
 	public static long getSize(MimeMessage bbmm) {

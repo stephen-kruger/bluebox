@@ -64,7 +64,7 @@ public class StorageTest extends BaseTestCase {
 				"bodyStr",
 				false);
 		InboxAddress ia = new InboxAddress(email);
-		BlueboxMessage m1 = getBlueBoxStorageIf().store(from, ia, new Date(), message);
+		BlueboxMessage m1 = getBlueBoxStorageIf().store(from, ia, new Date(), message, TestUtils.getSpooledMessage(message));
 		SearchIndexer.getInstance().indexMail(m1);
 
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("First Name*", 0, 10).length());
@@ -114,7 +114,7 @@ public class StorageTest extends BaseTestCase {
 				"subjStr",
 				"bodyStr",
 				false);
-		BlueboxMessage bbm = getBlueBoxStorageIf().store(from, inbox, new Date(), message);
+		BlueboxMessage bbm = getBlueBoxStorageIf().store(from, inbox, new Date(), message, TestUtils.getSpooledMessage(message));
 		BlueboxMessage stored = getBlueBoxStorageIf().retrieve(bbm.getIdentifier());
 		assertEquals("Identifiers did not match",bbm.getIdentifier(),stored.getIdentifier());
 		MimeMessage storedMM = stored.getBlueBoxMimeMessage();
@@ -138,7 +138,7 @@ public class StorageTest extends BaseTestCase {
 				"subjStr",
 				"bodyStr",
 				false);
-		BlueboxMessage bbm = getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message);
+		BlueboxMessage bbm = getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message));
 		BlueboxMessage stored = getBlueBoxStorageIf().retrieve(bbm.getIdentifier());
 		//		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
 		assertEquals("Stored recipient did not match original",inbox.getAddress(),stored.getInbox().getAddress());
@@ -326,9 +326,9 @@ public class StorageTest extends BaseTestCase {
 				"subjStr",
 				"bodyStr",
 				false);
-		BlueboxMessage m1 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message);
-		BlueboxMessage m2 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message);
-		BlueboxMessage m3 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message);
+		BlueboxMessage m1 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, TestUtils.getSpooledMessage(message));
+		BlueboxMessage m2 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, TestUtils.getSpooledMessage(message));
+		BlueboxMessage m3 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, TestUtils.getSpooledMessage(message));
 		SearchIndexer.getInstance().indexMail(m1);
 		SearchIndexer.getInstance().indexMail(m2);
 		SearchIndexer.getInstance().indexMail(m3);
@@ -383,9 +383,9 @@ public class StorageTest extends BaseTestCase {
 				"subjStr",
 				"bodyStr",
 				false);
-		SearchIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message));
-		SearchIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message));
-		SearchIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message));
+		SearchIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)));
+		SearchIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)));
+		SearchIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)));
 
 		// check for empty string
 		JSONArray ja = getInbox().autoComplete("", 0, 10);

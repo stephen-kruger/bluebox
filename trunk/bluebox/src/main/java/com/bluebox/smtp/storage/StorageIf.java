@@ -1,5 +1,6 @@
 package com.bluebox.smtp.storage;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.Date;
@@ -22,7 +23,7 @@ public interface StorageIf {
 
 	public void stop() throws Exception;
 	
-	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception;
+	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm, File spooledFile) throws Exception;
 	
 	public enum Props {Uid,Inbox,Recipient,Sender,Subject,Received,State,Size};
 	
