@@ -41,6 +41,19 @@
 						<li style="list-style-type:none;">Please see the <a href="help.jsp">help and FAQ document</a></li>
 					</ol>
 					<h2>Installation</h2>
+					<h3>Using Yum for RPM based installation</h3>
+					Simply add the following to your /etc/yum.repos.d/bluebox.repo :<br/>
+					<br/>
+					<code style="width:200px">
+					[bluebox]<br/>
+					name=Bluebox Repository<br/>
+					baseurl=https://stephen-kruger.github.io/bluebox/yum/noarch<br/>
+					enabled=1<br/>
+					gpgcheck=0
+					</code>
+					<br/><br/>
+					You can then install using command <i>sudo yum install bluebox</i>
+					<h3>Manually installing via war file</h3>
 					<ol>
 						<li style="list-style-type:none;">Download the web application archive from <a href="https://drive.google.com/folderview?id=0B_idaoMmuNnyYW9FS1paTEhuSXc&usp=sharing=sharing">here</a> and drop into your application container</li>
 						<li style="list-style-type:none;">Optionally, install and start <a href="http://www.mongodb.org/">MongoDB</a>. Leaving out this step defaults to instanciating a <a href="http://db.apache.org/derby/">Derby</a> embedded instance.</li>
