@@ -36,7 +36,6 @@ import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldCollector;
-import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.util.Bits;
@@ -336,8 +335,8 @@ public class SearchIndexer {
 	public synchronized void deleteDoc(String uid) throws IOException, ParseException {
 		getIndexWriter().deleteDocuments(new Term(SearchFields.UID.name(),uid));
 		getIndexWriter().commit();
-//		closeDirectoryReader();
-//		closeSearcher();
+		closeDirectoryReader();
+		closeSearcher();
 	}
 
 	public void deleteDoc(String value, SearchFields field) throws ParseException, IOException {
@@ -351,8 +350,8 @@ public class SearchIndexer {
 		Query query = queryParser.parse(value);
 		getIndexWriter().deleteDocuments(query);
 		getIndexWriter().commit();
-//		closeDirectoryReader();
-//		closeSearcher();
+		closeDirectoryReader();
+		closeSearcher();
 	}
 
 	protected synchronized void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
@@ -369,16 +368,10 @@ public class SearchIndexer {
 		doc.add(new LongField(SearchFields.SIZE.name(), size, Field.Store.YES));
 		doc.add(new LongField(SearchFields.RECEIVED.name(), received, Field.Store.YES));
 		IndexWriter iw = getIndexWriter();
-		try {
-			iw.addDocument(doc);
-			iw.commit();
-		}
-		catch (AlreadyClosedException ace) {
-			log.error("IndexWriter was closed, ensuring new one is generated");
-			closeIndexWriter();;
-		}
-//		closeDirectoryReader();
-//		closeSearcher();
+		iw.addDocument(doc);
+		iw.commit();
+		closeDirectoryReader();
+		closeSearcher();
 	}
 
 	/*
@@ -455,6 +448,7 @@ public class SearchIndexer {
 	}
 
 	public WorkerThread validate() {
+		final SearchIndexer search = this;
 		WorkerThread wt = new WorkerThread("validatesearch") {
 
 			@Override
@@ -463,10 +457,10 @@ public class SearchIndexer {
 				int issueCount = 0;
 				try {
 					StorageIf si = StorageFactory.getInstance();
-					SearchIndexer search = SearchIndexer.getInstance();
 					DirectoryReader reader=search.getDirectoryReader();
 
 					Bits liveDocs = MultiFields.getLiveDocs(reader);
+					log.info("Validating {} search records",reader.maxDoc());
 					for (int i=0; i<reader.maxDoc(); i++) {
 						if (isStopped()) break;
 						try {
@@ -493,6 +487,7 @@ public class SearchIndexer {
 				finally {
 					setProgress(100);
 					setStatus(issueCount+" invalid docs found and cleaned");
+					log.info("{} invalid docs found and cleaned",issueCount);
 				}
 			}
 		};
