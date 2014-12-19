@@ -336,8 +336,8 @@ public class SearchIndexer {
 	public synchronized void deleteDoc(String uid) throws IOException, ParseException {
 		getIndexWriter().deleteDocuments(new Term(SearchFields.UID.name(),uid));
 		getIndexWriter().commit();
-		closeDirectoryReader();
-		closeSearcher();
+//		closeDirectoryReader();
+//		closeSearcher();
 	}
 
 	public void deleteDoc(String value, SearchFields field) throws ParseException, IOException {
@@ -351,8 +351,8 @@ public class SearchIndexer {
 		Query query = queryParser.parse(value);
 		getIndexWriter().deleteDocuments(query);
 		getIndexWriter().commit();
-		closeDirectoryReader();
-		closeSearcher();
+//		closeDirectoryReader();
+//		closeSearcher();
 	}
 
 	protected synchronized void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
@@ -377,8 +377,8 @@ public class SearchIndexer {
 			log.error("IndexWriter was closed, ensuring new one is generated");
 			closeIndexWriter();;
 		}
-		closeDirectoryReader();
-		closeSearcher();
+//		closeDirectoryReader();
+//		closeSearcher();
 	}
 
 	/*
