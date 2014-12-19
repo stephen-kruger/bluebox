@@ -695,7 +695,7 @@ public class Utils {
 		if (tempFiles.size()>50) {
 			File old = tempFiles.remove(0);
 			if (!old.delete()) {
-				log.error("Could not delete temporary file :{}",old.getCanonicalPath());
+				log.debug("Could not delete temporary file :{}",old.getCanonicalPath());
 			}
 		}
 		tempFiles.add(f);
