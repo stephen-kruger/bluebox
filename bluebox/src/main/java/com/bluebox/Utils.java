@@ -450,7 +450,7 @@ public class Utils {
 		f.delete();
 	}
 	
-	private static void sendMessageDirect(Inbox inbox,MimeMessage msg,File spooledFile) throws Exception {
+	private static void sendMessageDirect(Inbox inbox,MimeMessage msg, File spooledFile) throws Exception {
 		Address[] to = msg.getRecipients(RecipientType.TO);
 		Address[] cc = msg.getRecipients(RecipientType.CC);
 		Address[] bcc = msg.getRecipients(RecipientType.BCC);
@@ -470,7 +470,7 @@ public class Utils {
 			recipients.add("anonymous@bluebox.com");
 		for (String recipient : recipients) {
 			if (inbox.accept(msg.getFrom()[0].toString(), recipient)) {
-				inbox.deliver(msg.getFrom()[0].toString(), recipient, msg, spooledFile);
+				inbox.deliver(msg.getFrom()[0].toString(), recipient, spooledFile);
 			}
 		}
 	}

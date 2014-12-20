@@ -18,6 +18,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
 import com.bluebox.smtp.Inbox;
@@ -70,6 +71,25 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				started=false;
 			}
 		}
+	}
+	
+	public String getBlobSize() {
+		long max_mail_size = Config.getInstance().getLong(Config.BLUEBOX_MAIL_LIMIT)/1000000;
+		if (max_mail_size<=32) {
+			return "32M";
+		}
+		if (max_mail_size<=64) {
+			return "64M";
+		}
+		if (max_mail_size<=128) {
+			return "128M";
+		}
+		if (max_mail_size<=256) {
+			return "256M";
+		}
+		
+		// default
+		return "64M";
 	}
 
 	@Override
@@ -161,7 +181,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					//					DOW+" INTEGER, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
 					StorageIf.Props.Size.name()+" BIGINT, "+
-					BlueboxMessage.RAW+" blob(64M))");
+					BlueboxMessage.RAW+" blob("+getBlobSize()+"))");
 		}
 		catch (Throwable t) {
 			log.debug(t.getMessage());

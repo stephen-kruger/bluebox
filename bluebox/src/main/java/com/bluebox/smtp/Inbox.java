@@ -21,7 +21,6 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import javax.mail.Address;
-import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -61,6 +60,7 @@ public class Inbox implements SimpleMessageListener {
 	public static final String COUNT = "Count";
 	public static final String ORDERBY = "OrderBy";
 	private static final Logger log = LoggerFactory.getLogger(Inbox.class);
+	public static final long MAX_MAIL_BYTES = Config.getInstance().getLong(Config.BLUEBOX_MAIL_LIMIT);
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
 	private BlueboxMessageHandlerFactory blueboxMessageHandlerFactory;
 
@@ -500,17 +500,33 @@ public class Inbox implements SimpleMessageListener {
 		// if no From is specified, treat as a bounce message and send to bounce@<hostname> inbox
 		from = checkBounce(from);
 
-		//		MimeMessage mimeMessage = null;
-		//		try {
-		//			mimeMessage = Utils.loadEML(data);
-		//		} 
-		//		catch (MessagingException e1) {
-		//			log.error("Problem loading message",e1);
-		//			throw new IOException(e1);
-		//		}
-		File spooledMessage = Utils.getSpooledStreamFile(data);
 		// when reading from .eml files, we might get multiple recipients, not sure why they are delivered like this.
 		// when called via SubEtha, they are normally single recipient addresses
+		List<String> recipients = getRecipients(recipient);
+
+		// spool the message to disk
+		File spooledMessage = Utils.getSpooledStreamFile(data);
+
+		if (spooledMessage.length()<MAX_MAIL_BYTES) {
+			// now send the message to each recipient
+			for (String nrec : recipients) {
+				try {
+					deliver(from, nrec, spooledMessage);
+				} 
+				catch (Throwable e) {
+					log.error(e.getMessage());
+					errorLog("Error accepting raw message from="+from+" for recipient="+nrec+" data bytes="+spooledMessage.length(), e.getMessage());
+				}
+			}
+		}
+		else {
+			log.error("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB From={}  Recipient={} Size={}",from,recipient,spooledMessage.length());
+			errorLog("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB","From="+from+" Recipient="+recipient+" Size="+spooledMessage.length());
+		}
+		spooledMessage.delete();
+	}
+
+	private List<String> getRecipients(String recipient) {
 		List<String> recipients = new ArrayList<String>();
 		if (recipient.indexOf(',')>=0) {
 			StringTokenizer tok = new StringTokenizer(recipient,",");
@@ -529,56 +545,28 @@ public class Inbox implements SimpleMessageListener {
 		else {
 			recipients.add(recipient);
 		}
-		// now send the message to each recipient
-		MimeMessage message;
-		try {
-			message = Utils.loadEML(new FileInputStream(spooledMessage));
-			for (String nrec : recipients) {
-				try {
-					deliver(from,nrec,message, spooledMessage);
-				} 
-				catch (Throwable e) {
-					log.error(e.getMessage());
-					try {
-						errorLog("("+e.getMessage()+") Error accepting raw message for recipient="+nrec, new FileInputStream(spooledMessage));
-					} 
-					catch (Throwable e1) {
-						errorLog("("+e1.getMessage()+") error logging message recipient="+nrec,"Unable to show data");
-					}
-				}
-			}
-		}
-		catch (MessagingException me) {
-			throw new IOException(me);
-		}
-		finally {
-			spooledMessage.delete();
-		}
+		return recipients;
 	}
 
-	public void deliver(String from, String recipient, MimeMessage mmessage, File spooledMessage) {
+	public void deliver(String from, String recipient, File spooledMessage) throws Exception {
+		MimeMessage mmessage = Utils.loadEML(new FileInputStream(spooledMessage));
+		from = getFullAddress(from, mmessage.getFrom());
+		recipient = getFullAddress(recipient, mmessage.getAllRecipients());
+		log.info("Delivering mail for {} from {} size={}",recipient,from,spooledMessage.length());
+		BlueboxMessage message = StorageFactory.getInstance().store( 
+				from,
+				new InboxAddress(recipient),
+				new Date(),
+				mmessage,
+				spooledMessage);
+		updateStats(message, recipient, false);
+		// ensure the content is indexed
 		try {
-			from = getFullAddress(from, mmessage.getFrom());
-			recipient = getFullAddress(recipient, mmessage.getAllRecipients());
-			log.info("Delivering mail for {} from {}",recipient,from);
-			BlueboxMessage message = StorageFactory.getInstance().store( 
-					from,
-					new InboxAddress(recipient),
-					new Date(),
-					mmessage,
-					spooledMessage);
-			updateStats(message, recipient, false);
-			// ensure the content is indexed
-			try {
-				SearchIndexer.getInstance().indexMail(message);
-			}
-			catch (Throwable t) {
-				log.error(t.getMessage());
-				t.printStackTrace();
-			}
+			SearchIndexer.getInstance().indexMail(message);
 		}
 		catch (Throwable t) {
-			log.error("Problem delivering message",t);
+			log.error(t.getMessage());
+			t.printStackTrace();
 		}
 	}
 
