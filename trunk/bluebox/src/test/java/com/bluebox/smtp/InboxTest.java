@@ -521,8 +521,13 @@ public class InboxTest extends BaseTestCase {
 		String subject = "My country is dying";
 		String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
 		List<File> attachments = new ArrayList<File>();
-		for (int i = 0; i < 4; i++)
-			attachments.add(new File("./target/bluebox/WEB-INF/lib/derby-10.11.1.1.jar"));
+		File attachment = new File("./target/bluebox/WEB-INF/lib/derby-10.11.1.1.jar");
+		// figure out how many attachments to add taking into account encoding etc
+		// without hitting maximum mail size
+		int count = (int)(Inbox.MAX_MAIL_BYTES/attachment.length()*7/10);
+		log.info("Sending mail with size="+(count*attachment.length()));
+		for (int i = 0; i < count; i++)
+			attachments.add(attachment);
 		TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", null, null, subject, bodyWithCR, attachments);
 
 		TestUtils.waitFor(getInbox(),1);

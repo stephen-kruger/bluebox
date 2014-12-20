@@ -103,6 +103,17 @@
 						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_MAX) %>
 					</td>
 				</tr>
+				
+				<tr>
+					<td><br/></td>
+				</tr>
+				<tr>
+					<td class="infoLabel"><label><%=infoResource.getString("messagemaxsize")%></label></td>
+					<td class="infoValue">
+						<%= bbconfig.getLong(Config.BLUEBOX_MAIL_LIMIT)/1000000 %>
+					</td>
+				</tr>
+				
 				<tr>
 					<td><br/></td>
 				</tr>

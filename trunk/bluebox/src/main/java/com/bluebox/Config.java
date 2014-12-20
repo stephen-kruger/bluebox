@@ -19,6 +19,7 @@ public class Config extends CompositeConfiguration {
 	private static Config configInstance;
 	public static final String BLUEBOX_VERSION 			= "bluebox_version";
 	public static final String BLUEBOX_PORT 			= "bluebox_port";
+	public static final String BLUEBOX_MAIL_LIMIT		= "bluebox_mail_limit";
 	public static final String BLUEBOX_SMTPBLACKLIST	= "bluebox_smtp_blacklist";
 	public static final String BLUEBOX_FROMBLACKLIST	= "bluebox_from_blacklist";
 	public static final String BLUEBOX_TOBLACKLIST		= "bluebox_to_blacklist";

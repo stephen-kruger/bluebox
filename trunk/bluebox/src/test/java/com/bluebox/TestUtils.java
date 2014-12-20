@@ -60,7 +60,7 @@ public class TestUtils extends TestCase {
 		log.debug("Delivering mail to "+to);
 		MimeMessage message = Utils.createMessage(null,from, to, null,null, Utils.randomLine(25), Utils.randomLine(25));
 		
-		inbox.deliver(from, to, message, getSpooledMessage(message));
+		inbox.deliver(from, to, getSpooledMessage(message));
 	}
 
 	public static File getSpooledMessage(MimeMessage message) throws IOException, MessagingException {
