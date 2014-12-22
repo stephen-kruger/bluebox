@@ -1,7 +1,6 @@
 package com.bluebox.rest.json;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -32,11 +31,6 @@ public class JSONSPAMHandler extends AbstractHandler {
 			}
 			log.debug("Marking {} mails as SPAM",uids.size());
 			WorkerThread wt = inbox.toggleSpam(uids);
-
-			JSONObject result = new JSONObject();
-			result.put("message", "ok");
-			Writer out = resp.getWriter();
-			out.write(result.toString(3));
 			return wt;
 		}
 		catch (Throwable t) {
