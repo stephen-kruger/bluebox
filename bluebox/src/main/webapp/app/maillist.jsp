@@ -191,10 +191,6 @@
 										}
 									});
 									spamMail(itemList);
-									if (items.length>1) {
-										inbox.selection.clear();
-									}
-									loadInboxAndFolder(currentEmail, currentState);
 								}
 								else {
 									console.log("<%=inboxDetailsResource.getString("error.noselection")%>");
@@ -219,7 +215,7 @@
 					var delUrl = "<%=request.getContextPath()%>/<%=JSONSPAMHandler.JSON_ROOT%>/"+uidList;
 					var xhrArgs = {
 							url: delUrl,
-							handleAs: "json",
+							handleAs: "text",
 							preventCache: true,
 							load: function(data) {
 								loadInboxAndFolder(currentEmail, currentState);
@@ -229,7 +225,6 @@
 								console.log("<%=inboxDetailsResource.getString("error.unknown")%>"+error);
 							}
 					};
-		
 					dojo.xhrDelete(xhrArgs);		
 				}
 				else {
