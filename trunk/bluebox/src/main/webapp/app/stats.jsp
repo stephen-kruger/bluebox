@@ -37,7 +37,7 @@
 				var queryResults = jStore.fetch({
 					  onComplete : 
 						  	function(queryResults, request) {
-								document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML = '<a href="inbox.jsp?Email='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
+								document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML = '<a href="<%=request.getContextPath()%>/app/inbox.jsp?Email='+queryResults.recent.<%=BlueboxMessage.INBOX%>+'">'+queryResults.recent.<%=BlueboxMessage.SUBJECT%>+'</a>';
 							}
 				});
 			});
@@ -68,13 +68,13 @@
 									document.getElementById("<%=JSONStatsHandler.RECENT_STAT %>").innerHTML="<%= statsResource.getString("no_update") %>";						  			
 						  		}
 						  		if (queryResults.active.<%=Inbox.EMAIL%>) {
-									document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+escape(queryResults.active.<%=Inbox.EMAIL%>)+'">'+trim(queryResults.active.<%=BlueboxMessage.RECIPIENT%>,25)+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
+									document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = '<a href="<%=request.getContextPath()%>/app/inbox.jsp?<%=Inbox.EMAIL%>='+escape(queryResults.active.<%=Inbox.EMAIL%>)+'">'+trim(queryResults.active.<%=BlueboxMessage.RECIPIENT%>,25)+'</a><span class="badge">'+queryResults.active.<%=BlueboxMessage.COUNT%>+'</span>';
 						  		}
 						  		else {
 						  			document.getElementById("<%=JSONStatsHandler.ACTIVE_STAT %>").innerHTML = "<%= statsResource.getString("no_update") %>";
 						  		}
 								if (queryResults.sender.<%=BlueboxMessage.FROM%>) {
-									document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = '<a href="inbox.jsp?<%=Inbox.EMAIL%>='+escape(queryResults.sender.<%=BlueboxMessage.FROM%>)+'">'+trim(queryResults.sender.<%=BlueboxMessage.FROM%>,25)+'</a><span class="badge">'+queryResults.sender.<%=BlueboxMessage.COUNT%>+'</span>';
+									document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = '<a href="<%=request.getContextPath()%>/app/inbox.jsp?<%=Inbox.EMAIL%>='+escape(queryResults.sender.<%=BlueboxMessage.FROM%>)+'">'+trim(queryResults.sender.<%=BlueboxMessage.FROM%>,25)+'</a><span class="badge">'+queryResults.sender.<%=BlueboxMessage.COUNT%>+'</span>';
 								}
 								else {
 									document.getElementById("<%=JSONStatsHandler.SENDER_STAT %>").innerHTML = "<%= statsResource.getString("no_update") %>";

@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.smtp.Inbox;
@@ -37,6 +40,7 @@ import com.rometools.rome.io.SyndFeedOutput;
  */
 public class FeedServlet extends HttpServlet {
 
+	private static final Logger log = LoggerFactory.getLogger(FeedServlet.class);
 	private static final long serialVersionUID = 596015600474539028L;
 	private static final String DEFAULT_FEED_TYPE = "default.feed.type";
 	private static final String FEED_TYPE = "type";
@@ -57,14 +61,13 @@ public class FeedServlet extends HttpServlet {
 			String feedType = req.getParameter(FEED_TYPE);
 			feedType = (feedType!=null) ? feedType : _defaultFeedType;
 			feed.setFeedType(feedType);
-
 			res.setContentType(MIME_TYPE);
 			SyndFeedOutput output = new SyndFeedOutput();
 			output.output(feed,res.getWriter());
 		}
 		catch (FeedException ex) {
 			String msg = COULD_NOT_GENERATE_FEED_ERROR;
-			log(msg,ex);
+			log.error(msg,ex);
 			res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,msg);
 		}
 	}
