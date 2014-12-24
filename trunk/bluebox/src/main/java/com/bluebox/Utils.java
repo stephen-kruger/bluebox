@@ -200,28 +200,6 @@ public class Utils {
 		}
 	}
 
-	//	public static MimeMessage loadEMLSpooled(InputStream inputStream) throws MessagingException, IOException {
-	//		// first spool to disk
-	//		File f = Utils.getTempFile();
-	//		OutputStream outputStream = new FileOutputStream(f);
-	//		IOUtils.copy(inputStream, outputStream);
-	//		outputStream.close();
-	//		return loadEMLNonSpooled(new FileInputStream(f));
-	//	}
-
-//	/*
-//	 * Spool the inputStream to a disk file, and return an input stream to this file.
-//	 */
-//	public static InputStream getSpooledStream(InputStream inputStream) throws MessagingException, IOException {
-//		// first spool to disk
-//		File f = Utils.getTempFile();
-//		OutputStream outputStream = new FileOutputStream(f);
-//		IOUtils.copy(inputStream, outputStream);
-//		outputStream.close();
-//		inputStream.close();
-//		return new FileInputStream(f);
-//	}
-
 	public static File getSpooledStreamFile(InputStream inputStream) throws IOException {
 		// first spool to disk
 		File f = Utils.getTempFile();
@@ -450,11 +428,11 @@ public class Utils {
 		f.delete();
 	}
 	
-	private static void sendMessageDirect(Inbox inbox,MimeMessage msg, File spooledFile) throws Exception {
+	private static List<String> getRecipients(MimeMessage msg) throws MessagingException {
+		List<String> recipients = new ArrayList<String>();
 		Address[] to = msg.getRecipients(RecipientType.TO);
 		Address[] cc = msg.getRecipients(RecipientType.CC);
 		Address[] bcc = msg.getRecipients(RecipientType.BCC);
-		List<String> recipients = new ArrayList<String>();
 		if (to!=null)
 			for (int i = 0; i < to.length;i++)
 				recipients.add(to[i].toString());
@@ -467,32 +445,27 @@ public class Utils {
 
 		// if we load emails from file, there might not be a recipient (bcc)
 		if (recipients.size()==0)
-			recipients.add("anonymous@bluebox.com");
+			recipients.add("anonymous@localhost");
+		return recipients;
+	}
+	
+	private static String getFrom(MimeMessage msg) throws MessagingException {
+		if (msg.getFrom().length>0)
+			return msg.getFrom()[0].toString();
+		return "nullsender@localhost";
+	}
+	
+	private static void sendMessageDirect(Inbox inbox, MimeMessage msg, File spooledFile) throws Exception {
+		List<String> recipients = getRecipients(msg);
 		for (String recipient : recipients) {
-			if (inbox.accept(msg.getFrom()[0].toString(), recipient)) {
-				inbox.deliver(msg.getFrom()[0].toString(), recipient, spooledFile);
+			if (inbox.accept(getFrom(msg), recipient)) {
+				inbox.deliver(getFrom(msg), recipient, spooledFile);
 			}
 		}
 	}
 
 	public static void sendMessageDirect(StorageIf storage,MimeMessage msg) throws Exception {
-		Address[] to = msg.getRecipients(RecipientType.TO);
-		Address[] cc = msg.getRecipients(RecipientType.CC);
-		Address[] bcc = msg.getRecipients(RecipientType.BCC);
-		List<String> recipients = new ArrayList<String>();
-		if (to!=null)
-			for (int i = 0; i < to.length;i++)
-				recipients.add(to[i].toString());
-		if (cc!=null)
-			for (int i = 0; i < cc.length;i++)
-				recipients.add(cc[i].toString());
-		if (bcc!=null)
-			for (int i = 0; i < bcc.length;i++)
-				recipients.add(bcc[i].toString());
-
-		// if we load emails from file, there might not be a recipient (bcc)
-		if (recipients.size()==0)
-			recipients.add("anonymous@bluebox.com");
+		List<String> recipients = getRecipients(msg);
 		
 		File f = Utils.getTempFile();
 		OutputStream os = new FileOutputStream(f);
@@ -501,7 +474,7 @@ public class Utils {
 		
 		for (String recipient : recipients) {
 			log.debug("Sending message to {}",recipient);
-			BlueboxMessage bbm = storage.store(msg.getFrom()[0].toString(), new InboxAddress(recipient), new Date(), msg, f);
+			BlueboxMessage bbm = storage.store(getFrom(msg), new InboxAddress(recipient), new Date(), msg, f);
 			SearchIndexer.getInstance().indexMail(bbm);
 		}
 		f.delete();

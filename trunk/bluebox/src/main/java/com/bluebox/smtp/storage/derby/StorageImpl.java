@@ -72,7 +72,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			}
 		}
 	}
-	
+
 	public String getBlobSize() {
 		long max_mail_size = Config.getInstance().getLong(Config.BLUEBOX_MAIL_LIMIT)/1000000;
 		if (max_mail_size<=32) {
@@ -87,7 +87,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if (max_mail_size<=256) {
 			return "256M";
 		}
-		
+
 		// default
 		return "64M";
 	}
@@ -227,20 +227,27 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void store(JSONObject props, InputStream blob) throws Exception {
 		Connection connection = getConnection();
-		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
-		ps.setString(2, props.getString(StorageIf.Props.Inbox.name()));// INBOX
-		ps.setString(3, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
-		ps.setString(4, props.getString(StorageIf.Props.Sender.name())); // FROM
-		ps.setString(5, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
-		ps.setTimestamp(6, new java.sql.Timestamp(props.getLong(StorageIf.Props.Received.name()))); // RECEIVED
-		ps.setInt(7, props.getInt(StorageIf.Props.State.name())); // STATE
-		ps.setLong(8, props.getLong(StorageIf.Props.Size.name())); // SIZE
-		ps.setBinaryStream(9, blob); // MIMEMESSAGE
-		ps.execute();
-		connection.commit();
-		connection.close();
-		blob.close();
+		try {
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
+			ps.setString(2, props.getString(StorageIf.Props.Inbox.name()));// INBOX
+			ps.setString(3, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
+			ps.setString(4, props.getString(StorageIf.Props.Sender.name())); // FROM
+			ps.setString(5, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
+			ps.setTimestamp(6, new java.sql.Timestamp(props.getLong(StorageIf.Props.Received.name()))); // RECEIVED
+			ps.setInt(7, props.getInt(StorageIf.Props.State.name())); // STATE
+			ps.setLong(8, props.getLong(StorageIf.Props.Size.name())); // SIZE
+			ps.setBinaryStream(9, blob); // MIMEMESSAGE
+			ps.execute();
+			connection.commit();
+		}
+		catch (Throwable t) {
+			log.error("Error storing message :{}",t.getMessage());
+		}
+		finally {
+			connection.close();
+			blob.close();
+		}
 	}
 
 	//	public String add(String id, String from, InboxAddress recipient, String subject, Date date, State state, long size, InputStream blob) throws Exception {
