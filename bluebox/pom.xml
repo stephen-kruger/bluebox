@@ -4,12 +4,12 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.2.20</version>
+	<version>4.2.21</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
 		<slf4j_version>1.7.7</slf4j_version>
-		<lucene_version>4.10.2</lucene_version>
+		<lucene_version>4.10.3</lucene_version>
 		<derby_version>10.11.1.1</derby_version>
 		<mongo_version>2.12.4</mongo_version>
 		<tomcat.webapp.dir>/var/lib/tomcat6/webapps</tomcat.webapp.dir>

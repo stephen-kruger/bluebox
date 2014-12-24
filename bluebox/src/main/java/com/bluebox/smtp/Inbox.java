@@ -518,12 +518,36 @@ public class Inbox implements SimpleMessageListener {
 					errorLog("Error accepting raw message from="+from+" for recipient="+nrec+" data bytes="+spooledMessage.length(), e.getMessage());
 				}
 			}
+			spooledMessage.delete();
 		}
 		else {
+			spooledMessage.delete();
 			log.error("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB From={}  Recipient={} Size={}",from,recipient,spooledMessage.length());
 			errorLog("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB","From="+from+" Recipient="+recipient+" Size="+spooledMessage.length());
+			throw new TooMuchDataException("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB");
 		}
-		spooledMessage.delete();
+	}
+	
+	public void deliver(String from, String recipient, File spooledMessage) throws Exception {
+		MimeMessage mimeMessage = Utils.loadEML(new FileInputStream(spooledMessage));
+		from = getFullAddress(from, mimeMessage.getFrom());
+		recipient = getFullAddress(recipient, mimeMessage.getAllRecipients());
+		log.info("Delivering mail for {} from {} size={}",recipient,from,spooledMessage.length());
+		BlueboxMessage blueboxMessage = StorageFactory.getInstance().store( 
+				from,
+				new InboxAddress(recipient),
+				new Date(),
+				mimeMessage,
+				spooledMessage);
+		updateStats(blueboxMessage, recipient, false);
+		// ensure the content is indexed
+		try {
+			SearchIndexer.getInstance().indexMail(blueboxMessage);
+		}
+		catch (Throwable t) {
+			log.error(t.getMessage());
+			t.printStackTrace();
+		}
 	}
 
 	private List<String> getRecipients(String recipient) {
@@ -546,28 +570,6 @@ public class Inbox implements SimpleMessageListener {
 			recipients.add(recipient);
 		}
 		return recipients;
-	}
-
-	public void deliver(String from, String recipient, File spooledMessage) throws Exception {
-		MimeMessage mmessage = Utils.loadEML(new FileInputStream(spooledMessage));
-		from = getFullAddress(from, mmessage.getFrom());
-		recipient = getFullAddress(recipient, mmessage.getAllRecipients());
-		log.info("Delivering mail for {} from {} size={}",recipient,from,spooledMessage.length());
-		BlueboxMessage message = StorageFactory.getInstance().store( 
-				from,
-				new InboxAddress(recipient),
-				new Date(),
-				mmessage,
-				spooledMessage);
-		updateStats(message, recipient, false);
-		// ensure the content is indexed
-		try {
-			SearchIndexer.getInstance().indexMail(message);
-		}
-		catch (Throwable t) {
-			log.error(t.getMessage());
-			t.printStackTrace();
-		}
 	}
 
 	/*

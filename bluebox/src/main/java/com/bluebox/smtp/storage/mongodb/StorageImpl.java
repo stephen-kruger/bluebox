@@ -109,16 +109,23 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void store(JSONObject props, InputStream blob) throws Exception {
-		DBCollection coll = db.getCollection(TABLE_NAME);
-		DBObject bson = ( DBObject ) JSON.parse( props.toString() );
-		Date d = new Date(props.getLong(StorageIf.Props.Received.name()));
-		bson.put(StorageIf.Props.Received.name(), d);
-		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
-		GridFSInputFile gfsFile = gfsRaw.createFile(blob);
-		gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
-		gfsFile.save();
-		coll.insert(bson);
-		blob.close();
+		try {
+			DBCollection coll = db.getCollection(TABLE_NAME);
+			DBObject bson = ( DBObject ) JSON.parse( props.toString() );
+			Date d = new Date(props.getLong(StorageIf.Props.Received.name()));
+			bson.put(StorageIf.Props.Received.name(), d);
+			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
+			GridFSInputFile gfsFile = gfsRaw.createFile(blob);
+			gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
+			gfsFile.save();
+			coll.insert(bson);
+		}
+		catch (Throwable t) {
+			log.error("Error storing message :{}",t.getMessage());
+		}
+		finally {
+			blob.close();
+		}
 	}
 
 	//	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
