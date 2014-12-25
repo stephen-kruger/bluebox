@@ -102,17 +102,18 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 		@Override
 		public void from(String from) throws RejectException {
 			this.from = from;
-			throw new RejectException("From not allowed");			
+			throw new RejectException("From not allowed ("+from+")");			
 		}
 
 		@Override
 		public void recipient(String recipient) throws RejectException {
 			this.recipient = recipient;
-			throw new RejectException("Recipient not allowed");						
+			throw new RejectException("Recipient not allowed ("+recipient+")");						
 		}
 
 		@Override
 		public void data(InputStream data) throws RejectException, TooMuchDataException, IOException {
+			data.close();
 			throw new RejectException("Data not allowed");						
 		}
 

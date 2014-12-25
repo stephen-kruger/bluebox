@@ -74,6 +74,7 @@
 		}
 		
 		require(["dojo/domReady!"], function() {
+			updateMph(folderEmail);
 			console.log("starting gauge timer");
 			// will not be called until DOM is ready
 			startGaugeTimer();

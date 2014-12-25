@@ -56,9 +56,7 @@ public class Inbox implements SimpleMessageListener {
 	private JSONObject recentStats = new JSONObject();
 
 	public static final String EMAIL = "Email";
-	public static final String START = "Start";
-	public static final String COUNT = "Count";
-	public static final String ORDERBY = "OrderBy";
+
 	private static final Logger log = LoggerFactory.getLogger(Inbox.class);
 	public static final long MAX_MAIL_BYTES = Config.getInstance().getLong(Config.BLUEBOX_MAIL_LIMIT);
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
@@ -308,7 +306,6 @@ public class Inbox implements SimpleMessageListener {
 					else
 						break;
 				}
-				log.info("Trimmed {} messages",list.size());
 			}
 		}
 		catch (Throwable t) {
