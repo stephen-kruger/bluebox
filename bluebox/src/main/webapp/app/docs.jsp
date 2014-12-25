@@ -147,7 +147,7 @@
 					<ol>
 						<li style="list-style-type:none;">Feeds can be passed a "type" parameter to specify the feed protocol</li>
 						<li style="list-style-type:none;">Can be one of : rss_0.91N,rss_0.93,rss_0.92,rss_1.0,rss_0.94,rss_2.0,rss_0.91U,rss_0.9,atom_1.0 or atom_0.3</li>
-						<li style="list-style-type:none;">e.g. http://<bluebox-server>/bluebox/feed/inbox?type=atom_1.0&amp;email=steve@test.com</li>						
+						<li style="list-style-type:none;">e.g. http://&lt;bluebox-server&gt;/bluebox/feed/inbox?type=atom_1.0&amp;email=steve@test.com</li>						
 					</ol>
 			</div>
 		</div>
