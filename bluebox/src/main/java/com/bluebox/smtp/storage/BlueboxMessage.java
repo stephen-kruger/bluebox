@@ -89,13 +89,6 @@ public class BlueboxMessage {
 		setLongProperty(SIZE, Utils.getSize(bbmm));
 	}
 
-	public InboxAddress getRecipient() throws AddressException {
-		if (this.hasProperty(RECIPIENT))
-			return new InboxAddress(getPropertyString(RECIPIENT));
-		else
-			return new InboxAddress(getPropertyString(INBOX));
-	}
-
 	public State getState() {
 		return State.values()[getIntProperty(STATE)];
 	}
@@ -104,58 +97,9 @@ public class BlueboxMessage {
 		setIntProperty(STATE,state.ordinal());
 	}
 
-	public void loadBlueBoxMimeMessage(MimeMessage bbmm) {
-		mmw = bbmm;
-	}
-
-	//	/*
-	//	 * Figure out who this mail was addressed to so we can set the "To" field for use in type-ahead matching.
-	//	 * It could be a bcc, cc or a to
-	//	 */
-	//	public static InternetAddress getRecipient(InboxAddress inbox, MimeMessage bbmm) throws AddressException {
-	//		//		InternetAddress inA=new InternetAddress(inbox);
-	//		//		inbox = inA.getAddress();
-	//		try {
-	//			Address[] addr = bbmm.getRecipients(RecipientType.TO);
-	//			if (addr!=null) {
-	//				for (int i = 0; i < addr.length; i++) {
-	//					InternetAddress ia = (InternetAddress) addr[i];
-	//					if (ia.getAddress().equals(inbox.getAddress())) {
-	//						log.debug("Found TO recipient");
-	//						return ia;
-	//					}
-	//				}
-	//			}
-	//			addr = bbmm.getRecipients(RecipientType.CC);
-	//			if (addr!=null) {
-	//				for (int i = 0; i < addr.length; i++) {
-	//					InternetAddress ia = (InternetAddress) addr[i];
-	//					if (ia.getAddress().equals(inbox.getAddress())) {
-	//						log.debug("Found CC recipient");
-	//						return ia;
-	//					}
-	//				}
-	//			}
-	//			addr = bbmm.getRecipients(RecipientType.BCC);
-	//			if (addr!=null) {
-	//				for (int i = 0; i < addr.length; i++) {
-	//					InternetAddress ia = (InternetAddress) addr[i];
-	//					if (ia.getAddress().equals(inbox.getAddress())) {
-	//						log.debug("Found BCC recipient");
-	//						return ia;
-	//					}
-	//				}
-	//			}
-	//		}
-	//		catch (Throwable t) {
-	//			t.printStackTrace();
-	//		}
-	//		if (inbox.getAddress()!=null)
-	//			if (inbox.getAddress().length()>0)
-	//				return new InternetAddress(inbox.getFullAddress());
-	//		log.severe("Found no recipient for inbox "+inbox+" maybe "+inbox.getFullAddress());
-	//		return new InternetAddress(inbox.getFullAddress());
-	//	}
+//	public void loadBlueBoxMimeMessage(MimeMessage bbmm) {
+//		mmw = bbmm;
+//	}
 
 	public static JSONArray toJSONArray(Address[] r) {
 		JSONArray ja = new JSONArray();
@@ -176,18 +120,6 @@ public class BlueboxMessage {
 		}
 		return ja;
 	}
-
-	//	private JSONArray toJSONArrayDisplay(Address[] r) {
-	//		JSONArray ja = new JSONArray();
-	//		try {
-	//			if (r!=null)
-	//				for (int i = 0; i < r.length;i++)
-	//					ja.put(new InboxAddress(r[i].toString()).getDisplayName());
-	//		} catch (Throwable e) {
-	//			e.printStackTrace();
-	//		}
-	//		return ja;
-	//	}
 
 	private String getPropertyString(String name) {
 		try {

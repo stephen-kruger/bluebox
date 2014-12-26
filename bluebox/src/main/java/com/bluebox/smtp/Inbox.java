@@ -21,6 +21,7 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 import javax.mail.Address;
+import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
@@ -505,15 +506,21 @@ public class Inbox implements SimpleMessageListener {
 		File spooledMessage = Utils.getSpooledStreamFile(data);
 
 		if (spooledMessage.length()<MAX_MAIL_BYTES) {
-			// now send the message to each recipient
-			for (String nrec : recipients) {
-				try {
-					deliver(from, nrec, spooledMessage);
-				} 
-				catch (Throwable e) {
-					log.error(e.getMessage());
-					errorLog("Error accepting raw message from="+from+" for recipient="+nrec+" data bytes="+spooledMessage.length(), e.getMessage());
+			try {
+				MimeMessage mimeMessage = Utils.loadEML(new FileInputStream(spooledMessage));
+				// now send the message to each recipient
+				for (String nrec : recipients) {
+					try {
+						deliver(from, nrec, mimeMessage, spooledMessage);
+					} 
+					catch (Throwable e) {
+						log.error(e.getMessage());
+						errorLog("Error accepting raw message from="+from+" for recipient="+nrec+" data bytes="+spooledMessage.length(), e.getMessage());
+					}
 				}
+			}
+			catch (MessagingException me) {
+				log.error("Problem loading message from stream",me);
 			}
 			spooledMessage.delete();
 		}
@@ -524,9 +531,8 @@ public class Inbox implements SimpleMessageListener {
 			throw new TooMuchDataException("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB");
 		}
 	}
-	
-	public void deliver(String from, String recipient, File spooledMessage) throws Exception {
-		MimeMessage mimeMessage = Utils.loadEML(new FileInputStream(spooledMessage));
+
+	public void deliver(String from, String recipient, MimeMessage mimeMessage, File spooledMessage) throws Exception {
 		from = getFullAddress(from, mimeMessage.getFrom());
 		recipient = getFullAddress(recipient, mimeMessage.getAllRecipients());
 		log.info("Delivering mail for {} from {} size={}",recipient,from,spooledMessage.length());

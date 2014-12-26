@@ -459,7 +459,7 @@ public class Utils {
 		List<String> recipients = getRecipients(msg);
 		for (String recipient : recipients) {
 			if (inbox.accept(getFrom(msg), recipient)) {
-				inbox.deliver(getFrom(msg), recipient, spooledFile);
+				inbox.deliver(getFrom(msg), recipient, msg, spooledFile);
 			}
 		}
 	}
