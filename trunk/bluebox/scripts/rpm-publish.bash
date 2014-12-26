@@ -21,4 +21,4 @@ git add yum
 git commit -m "Updating yum repo with new build"
 git push git@github.com:stephen-kruger/bluebox.git gh-pages
 
-sudo yum clean all
+sudo yum clean expire-cache

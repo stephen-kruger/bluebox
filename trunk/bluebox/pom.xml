@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.2.23</version>
+	<version>4.2.24</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
@@ -133,8 +133,7 @@
 								echo "4/4: Cleaning Lucence lock file"
 								rm -rf /usr/share/tomcat6/temp/bluebox4.lucene/write.lock
 								fi
-								echo
-								"Installing bluebox war file"
+								echo "Installing bluebox war file"
 							</script>
 						</preinstallScriptlet>
 						<postinstallScriptlet>
