@@ -138,8 +138,7 @@
 						</preinstallScriptlet>
 						<postinstallScriptlet>
 							<script>
-								echo "Completed war file installation, restarting
-								services"
+								echo "Completed war file installation, restarting services"
 								if [ "$1" = "1" ]; then
 								echo "Please start the application server : service tomcat6 start"
 								elif [ "$1" = "2" ]; then
