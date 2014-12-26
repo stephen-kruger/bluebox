@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.2.22</version>
+	<version>4.2.23</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
@@ -118,8 +118,7 @@
 								echo "Set tomcat6 to start on boot"
 								/sbin/chkconfig tomcat6 on
 								echo "Mapping SMTP port 25 to 2500"
-								/sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j
-								REDIRECT --to-ports 2500
+								/sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500
 								echo "Persist across reboots"
 								/sbin/chkconfig iptables on
 								/sbin/service iptables save
@@ -129,8 +128,7 @@
 								/sbin/service tomcat6 stop
 								echo "2/4: Shutting down MongoDB"
 								/sbin/service mongod stop
-								echo "3/4: Cleaning previous installation in
-								${tomcat.webapp.dir}/bluebox"
+								echo "3/4: Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
 								rm -rf ${tomcat.webapp.dir}/bluebox
 								echo "4/4: Cleaning Lucence lock file"
 								rm -rf /usr/share/tomcat6/temp/bluebox4.lucene/write.lock
