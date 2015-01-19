@@ -5,6 +5,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.httpclient.HttpStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -25,9 +26,13 @@ public class JSONMessageUtilHandler extends AbstractHandler {
 	public static final String LINKS = "links";
 
 	public void doGet(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String method = extractFragment(req.getRequestURI(), JSON_ROOT, 0);
+		String method = extractFragment(req.getRequestURI(), JSON_ROOT, 1);
 		if (LINKS.equals(method)) {
 			doGetLinks(inbox, req, resp);
+		}
+		else {
+			log.error("Unknown operation:"+method);
+			resp.sendError(HttpStatus.SC_BAD_REQUEST, "Unknown operation:"+method);
 		}
 	}
 
