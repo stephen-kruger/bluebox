@@ -131,7 +131,8 @@ public class TestUtils extends TestCase {
 		email.setHostName("localhost");
 		email.setSmtpPort(Config.getInstance().getInt(Config.BLUEBOX_PORT));
 		//email.setAuthenticator(new DefaultAuthenticator("username", "password"));
-		email.setSSLOnConnect(false);
+		email.setSSLCheckServerIdentity(false);
+		email.setStartTLSRequired(false);
 		email.setFrom(from);
 		email.setSubject(subject);
 		email.setMsg(body);
