@@ -70,7 +70,6 @@ public class BlueBoxSMTPServer extends SMTPServer {
 
 	@Override
 	public SSLSocket createSSLSocket(Socket socket) throws IOException {
-		System.out.println("<<<<<<<<<<createSSLSocket>>>>>>>>>>>>>>>>>");
 		InetSocketAddress remoteAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
 
 		SSLSocketFactory sf = sslContext.getSocketFactory();
