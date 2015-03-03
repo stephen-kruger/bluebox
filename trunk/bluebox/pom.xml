@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.2.26</version>
+	<version>4.2.27</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
@@ -114,33 +114,23 @@
 						<preinstallScriptlet>
 							<script>
 								if [ "$1" = "1" ]; then
-								echo "Performing bluebox initial
-								install..."
+								echo "Performing bluebox initial install..."
 								echo "Set tomcat6 to start on boot"
-								/sbin/chkconfig
-								tomcat6 on
+								/sbin/chkconfig tomcat6 on
 								echo "Mapping SMTP port 25 to 2500"
-								/sbin/iptables -t
-								nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT
-								--to-ports 2500
+								/sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500
 								echo "Persist across reboots"
-								/sbin/chkconfig
-								iptables on
+								/sbin/chkconfig iptables on
 								/sbin/service iptables save
 								elif [ "$1" = "2" ]; then
 								echo "Performing bluebox upgrade..."
-								echo "1/4: Shutting down
-								tomcat"
+								echo "1/4: Shutting down tomcat"
 								/sbin/service tomcat6 stop
-								echo "2/4: Shutting down
-								MongoDB"
+								echo "2/4: Shutting down MongoDB"
 								/sbin/service mongod stop
-								echo "3/4: Cleaning previous
-								installation in ${tomcat.webapp.dir}/bluebox"
-								rm -rf
-								${tomcat.webapp.dir}/bluebox
-								echo "4/4: Cleaning Lucence lock
-								file"
+								echo "3/4: Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
+								rm -rf ${tomcat.webapp.dir}/bluebox
+								echo "4/4: Cleaning Lucence lock file"
 								rm -rf /usr/share/tomcat6/temp/bluebox4.lucene/write.lock
 								fi
 								echo "Installing bluebox war file"
@@ -148,19 +138,15 @@
 						</preinstallScriptlet>
 						<postinstallScriptlet>
 							<script>
-								echo "Completed war file installation, restarting
-								services"
+								echo "Completed war file installation, restarting services"
 								if [ "$1" = "1" ]; then
-								echo "Please start the
-								application server : service tomcat6 start"
+								echo "Please start the application server : service tomcat6 start"
 								elif [ "$1" = "2" ];
 								then
 								echo "Restarting tomcat to complete installation..."
-								echo
-								"1/2: Starting MongoDB"
+								echo "1/2: Starting MongoDB"
 								/sbin/service mongod start
-								echo "2/2:
-								Starting tomcat"
+								echo "2/2: Starting tomcat"
 								/sbin/service tomcat6 start
 								fi
 							</script>
@@ -206,6 +192,11 @@
 			<artifactId>lucene-queries</artifactId>
 			<version>${lucene_version}</version>
 			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-facet</artifactId>
+			<version>${lucene_version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>
@@ -331,6 +322,7 @@
 			<artifactId>bcprov-jdk16</artifactId>
 			<version>140</version>
 		</dependency>
+
 	</dependencies>
 
 	<scm>
