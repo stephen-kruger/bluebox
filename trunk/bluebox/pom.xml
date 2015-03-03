@@ -8,7 +8,7 @@
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
-		<slf4j_version>1.7.9</slf4j_version>
+		<slf4j_version>1.7.10</slf4j_version>
 		<lucene_version>4.10.3</lucene_version>
 		<derby_version>10.11.1.1</derby_version>
 		<mongo_version>2.12.4</mongo_version>
@@ -94,8 +94,7 @@
 						</requires>
 						<sourceEncoding>UTF-8</sourceEncoding>
 						<group>bluebox</group>
-						<summary>Promiscuous, non-forwarding SMTP server and webmail
-							interface for dynamic email receiving and testing</summary>
+						<summary>Promiscuous, non-forwarding SMTP server and webmail interface for dynamic email receiving and testing</summary>
 						<username>tomcat</username>
 						<groupname>tomcat</groupname>
 						<mappings>
@@ -181,6 +180,12 @@
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-memory</artifactId>
+			<version>${lucene_version}</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
 			<version>${lucene_version}</version>
 			<scope>compile</scope>
 		</dependency>

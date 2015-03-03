@@ -72,6 +72,7 @@ public class SearchIndexer {
 	private SearchIndexer() throws IOException {
 		//				this(new SimpleFSDirectory(createTempDirectory()));
 		this(new NIOFSDirectory(createTempDirectory()));
+//		this(new NIOFSDirectory(Paths.get(createTempDirectory().toURI())));
 	}
 
 	private SearchIndexer(Directory index) throws IOException {
