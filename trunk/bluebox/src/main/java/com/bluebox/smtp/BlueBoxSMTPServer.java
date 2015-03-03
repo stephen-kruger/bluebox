@@ -38,21 +38,21 @@ public class BlueBoxSMTPServer extends SMTPServer {
 	public BlueBoxSMTPServer(BlueboxMessageHandlerFactory mhf) {
 		super(mhf);
 		// set up TLS
-		try {
-			createSSLContext();
-		} 
-		catch (Throwable e) {
-			e.printStackTrace();
-		}
+//		try {
+//			createSSLContext();
+//		} 
+//		catch (Throwable e) {
+//			e.printStackTrace();
+//		}
 		
 		Config bbconfig = Config.getInstance();
 		setHostName(Utils.getHostName());
 		setPort(bbconfig.getInt(Config.BLUEBOX_PORT));
 		log.debug("Starting SMTP server on {} and port {}",Utils.getHostName(),bbconfig.getInt(Config.BLUEBOX_PORT));
 		setMaxConnections(bbconfig.getInt(Config.BLUEBOX_MAXCONNECTIONS));
-		setHideTLS(false);
+		setHideTLS(true);
 		setRequireTLS(false);
-		setEnableTLS(true);
+		setEnableTLS(false);
 		setSoftwareName("BlueBox V"+bbconfig.getString(Config.BLUEBOX_VERSION));
 		setConnectionTimeout(30000); // wait 10sec before abandoning connection
 		
@@ -67,25 +67,25 @@ public class BlueBoxSMTPServer extends SMTPServer {
 		super.stop();
 	}
 
-	@Override
-	public SSLSocket createSSLSocket(Socket socket) throws IOException {
-		InetSocketAddress remoteAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
-
-		SSLSocketFactory sf = sslContext.getSocketFactory();
-		SSLSocket s = (SSLSocket) (sf.createSocket(socket, remoteAddress.getHostName(), socket.getPort(), true));
-
-		// we are a server
-		s.setUseClientMode(false);
-
-		// select strong protocols and cipher suites
-		s.setEnabledProtocols(StrongTls.intersection(s.getSupportedProtocols(), StrongTls.ENABLED_PROTOCOLS));
-		s.setEnabledCipherSuites(StrongTls.intersection(s.getSupportedCipherSuites(), StrongTls.ENABLED_CIPHER_SUITES));
-
-		//// Client must authenticate
-		// s.setNeedClientAuth(true);
-
-		return s;
-	}
+//	@Override
+//	public SSLSocket createSSLSocket(Socket socket) throws IOException {
+//		InetSocketAddress remoteAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
+//
+//		SSLSocketFactory sf = sslContext.getSocketFactory();
+//		SSLSocket s = (SSLSocket) (sf.createSocket(socket, remoteAddress.getHostName(), socket.getPort(), true));
+//
+//		// we are a server
+//		s.setUseClientMode(false);
+//
+//		// select strong protocols and cipher suites
+//		s.setEnabledProtocols(StrongTls.intersection(s.getSupportedProtocols(), StrongTls.ENABLED_PROTOCOLS));
+//		s.setEnabledCipherSuites(StrongTls.intersection(s.getSupportedCipherSuites(), StrongTls.ENABLED_CIPHER_SUITES));
+//
+//		//// Client must authenticate
+//		// s.setNeedClientAuth(true);
+//
+//		return s;
+//	}
 
 	private void createSSLContext() throws KeyManagementException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, CertificateException, IOException, InvalidKeyException, NoSuchProviderException, IllegalStateException, SignatureException {
 		// begin: create a default keystore
