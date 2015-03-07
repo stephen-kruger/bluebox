@@ -120,11 +120,11 @@
 							</mapping>
 						</mappings>
 						<preinstallScriptlet>
-							<scriptFile>/scripts/rpm_preinstall.sh</scriptFile>
+							<scriptFile>${project.build.directory}/../scripts/rpm_preinstall.sh</scriptFile>
 							<fileEncoding>utf-8</fileEncoding>
 						</preinstallScriptlet>
 						<postinstallScriptlet>
-							<scriptFile>/scripts/rpm_postinstall.sh</scriptFile>
+							<scriptFile>${project.build.directory}/../scripts/rpm_postinstall.sh</scriptFile>
 							<fileEncoding>utf-8</fileEncoding>
 						</postinstallScriptlet>
 					</configuration>
