@@ -51,7 +51,7 @@ public class SearchIndexer {
 	private IndexSearcher searcher;
 	private DirectoryReader diectoryReader;
 
-	public static SearchIndexer getInstance() throws IOException {
+	private static SearchIndexer getInstance() throws IOException {
 		if (si==null) {
 			si = new SearchIndexer();
 		}
