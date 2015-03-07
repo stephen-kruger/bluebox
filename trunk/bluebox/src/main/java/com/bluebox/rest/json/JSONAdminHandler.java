@@ -15,7 +15,6 @@ import com.bluebox.BlueBoxServlet;
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
-import com.bluebox.search.SearchIndexer;
 import com.bluebox.smtp.Inbox;
 
 public class JSONAdminHandler extends AbstractHandler {
@@ -177,18 +176,6 @@ public class JSONAdminHandler extends AbstractHandler {
 			}
 			return;
 		}		
-		if (req.getRequestURI().indexOf(JSON_ROOT+"/validatesearch")>=0){
-			try {
-				WorkerThread wt = SearchIndexer.getInstance().validate();
-				bbservlet.startWorker(wt, req, resp);
-				resp.flushBuffer();
-			} 
-			catch (Exception e) {
-				e.printStackTrace();
-				resp.getWriter().print(e.getMessage());
-			}
-			return;
-		}	
 		if (req.getRequestURI().indexOf(JSON_ROOT+"/setsmtpblacklist")>=0){
 			log.info("Setting smtp blacklist :"+req.getParameter("value"));
 			inbox.setSMTPBlacklist(req.getParameter("value"));

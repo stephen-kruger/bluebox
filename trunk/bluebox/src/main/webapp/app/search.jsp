@@ -11,6 +11,7 @@
 <%@ page language="java" import="com.bluebox.Utils"%>
 <%@ page import="com.bluebox.rest.json.JSONAutoCompleteHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONSearchHandler"%>
+<%@ page import="com.bluebox.search.SearchUtils"%>
 <%@ page import="com.bluebox.search.SearchIndexer"%>
 <%
 	Config bbconfig = Config.getInstance();
@@ -34,7 +35,7 @@
 		
 			var currentUid;
 			var currentEmail, currentState;
-			var searchScope = "<%=SearchIndexer.SearchFields.ANY%>";
+			var searchScope = "<%=SearchUtils.SearchFields.ANY%>";
 			
 			function searchInbox(searchString) {
 				try {
@@ -85,35 +86,35 @@
 			    var menuItem1 = new MenuItem({
 			        label: "<%= inboxResource.getString("searchScopeAll") %>",
 			        iconClass:"dijitIcon dijitIconConfigure",
-			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeAll") %>','<%=SearchIndexer.SearchFields.ANY%>') }
+			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeAll") %>','<%=SearchUtils.SearchFields.ANY%>') }
 			    });
 			    menu.addChild(menuItem1);
 
 			    var menuItem2 = new MenuItem({
 			        label: "<%= inboxResource.getString("searchScopeSubject") %>",
 			        iconClass:"dijitEditorIcon dijitEditorIconPaste",
-			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeSubject") %>','<%=SearchIndexer.SearchFields.SUBJECT%>') }
+			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeSubject") %>','<%=SearchUtils.SearchFields.SUBJECT%>') }
 			    });
 			    menu.addChild(menuItem2);
 			    
 			    var menuItem3 = new MenuItem({
 			        label: "<%= inboxResource.getString("searchScopeBody") %>",
 			        iconClass:"dijitEditorIcon dijitEditorIconNewPage",
-			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeBody") %>','<%=SearchIndexer.SearchFields.BODY%>') }
+			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeBody") %>','<%=SearchUtils.SearchFields.BODY%>') }
 			    });
 			    menu.addChild(menuItem3);
 			    
 			    var menuItem4 = new MenuItem({
 			        label: "<%= inboxResource.getString("searchScopeRecipients") %>",
 			        iconClass:"dijitIcon dijitIconUsers",
-			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeRecipients") %>','<%=SearchIndexer.SearchFields.RECIPIENTS%>') }
+			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeRecipients") %>','<%=SearchUtils.SearchFields.RECIPIENTS%>') }
 			    });
 			    menu.addChild(menuItem4);
 			    
 			    var menuItem5 = new MenuItem({
 			        label: "<%= inboxResource.getString("searchScopeFrom") %>",
 			        iconClass:"dijitIcon dijitIconMail",
-			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeFrom") %>','<%=SearchIndexer.SearchFields.FROM%>') }
+			        onClick: function(){ setSearchScope('<%= inboxResource.getString("searchScopeFrom") %>','<%=SearchUtils.SearchFields.FROM%>') }
 			    });
 			    menu.addChild(menuItem5);
 

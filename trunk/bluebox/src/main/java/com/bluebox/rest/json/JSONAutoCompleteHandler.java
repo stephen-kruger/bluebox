@@ -24,6 +24,7 @@ public class JSONAutoCompleteHandler extends AbstractHandler {
 		setDefaultHeaders(resp);
 		
 		String hint = ""+req.getParameter(NAME); // Stev*
+		hint = hint.replace('*', ' ').trim();
 		String start = req.getParameter(START);
 		String count = req.getParameter(COUNT);
 		

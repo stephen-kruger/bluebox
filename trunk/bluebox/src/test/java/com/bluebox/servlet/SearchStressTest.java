@@ -25,7 +25,7 @@ public class SearchStressTest extends BaseServletTest {
 	}
 
 	public void testStressSearchHandler() throws IOException, Exception {
-		String url = "/"+JSONAutoCompleteHandler.JSON_ROOT+"?"+JSONAutoCompleteHandler.NAME+"=*&start=0&count="+COUNT;
+		String url = "/"+JSONAutoCompleteHandler.JSON_ROOT+"?"+JSONAutoCompleteHandler.NAME+"=&start=0&count="+COUNT;
 		log.info("Stressing to "+STRESS_LEVEL);
 		for (int i = 0; i < STRESS_LEVEL;i++) {
 			JSONObject js = getRestJSON(url);

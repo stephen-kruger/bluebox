@@ -1,26 +1,26 @@
 package com.bluebox;
 
-import com.bluebox.search.SearchIndexer;
+import junit.framework.TestCase;
+
+import com.bluebox.search.SolrIndexer;
 import com.bluebox.smtp.BlueBoxSMTPServer;
 import com.bluebox.smtp.BlueboxMessageHandlerFactory;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
-import junit.framework.TestCase;
-
 public abstract class BaseTestCase extends TestCase {
 	private StorageIf jr;
 	private Inbox inbox;
 	private BlueBoxSMTPServer smtpServer;
 	private BlueboxMessageHandlerFactory bbmhf;
-	private SearchIndexer si;
+	private SolrIndexer si;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		jr = StorageFactory.getInstance();
-		si = SearchIndexer.getInstance();
+		si = SolrIndexer.getInstance();
 		inbox = new Inbox();
 		inbox.start();
 		smtpServer = new BlueBoxSMTPServer(bbmhf = new BlueboxMessageHandlerFactory(inbox));
@@ -34,6 +34,7 @@ public abstract class BaseTestCase extends TestCase {
 		smtpServer.stop();
 		inbox.deleteAll();
 		inbox.stop();
+		si.stop();
 	}
 
 	public Inbox getInbox() {
@@ -52,7 +53,7 @@ public abstract class BaseTestCase extends TestCase {
 		return bbmhf;	
 	}
 	
-	public SearchIndexer getSearchIndexer() {
+	public SolrIndexer getSearchIndexer() {
 		return si;
 	}
 }

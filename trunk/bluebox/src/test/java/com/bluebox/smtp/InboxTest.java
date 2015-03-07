@@ -34,7 +34,8 @@ import com.bluebox.Config;
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
-import com.bluebox.search.SearchIndexer;
+import com.bluebox.search.SolrIndexer;
+import com.bluebox.search.SearchUtils;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
@@ -141,13 +142,13 @@ public class InboxTest extends BaseTestCase {
 		assertEquals("Missing mail",2,inbox.getMailCount(BlueboxMessage.State.NORMAL));
 		List<BlueboxMessage> mail = inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true);
 		assertEquals("Missing mail",2,mail.size());
-		SearchIndexer si = SearchIndexer.getInstance();
-		assertEquals("Missing search data",2,si.search("from@from.com", SearchIndexer.SearchFields.FROM, 0, 10, SearchIndexer.SearchFields.FROM, true).length);
+		SolrIndexer si = SolrIndexer.getInstance();
+		assertEquals("Missing search data",2,si.search("from@from.com", SearchUtils.SearchFields.FROM, 0, 10, SearchUtils.SearchFields.FROM, true).length);
 		inbox.softDelete(mail.get(0).getIdentifier());
 
 		assertEquals("Missing deleted mail",1,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.DELETED, 0, 100, BlueboxMessage.SIZE, true).size());
 		assertEquals("Did not find deleted mail",1,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true).size());
-		assertEquals("Unexpected search data",1,si.search(from, SearchIndexer.SearchFields.FROM, 0, 10, SearchIndexer.SearchFields.FROM, true).length);		
+		assertEquals("Unexpected search data",1,si.search(from, SearchUtils.SearchFields.FROM, 0, 10, SearchUtils.SearchFields.FROM, true).length);		
 	}
 	
 	@Test

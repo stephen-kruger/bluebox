@@ -60,7 +60,7 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 
 		// check we recieve 10 non-identical results
 		assertEquals("Did not receive expected number of results", 1, handler.doAutoComplete(getInbox(), "bob", "0", Integer.toString(count)).length());
-		assertEquals("Did not recieve expected number of results", 1, handler.doAutoComplete(getInbox(), "*", "0", Integer.toString(count)).length());
+		assertEquals("Did not recieve expected number of results", 1, handler.doAutoComplete(getInbox(), "", "0", Integer.toString(count)).length());
 	}
 	
 	@Test
@@ -74,9 +74,9 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 		}
 
 		// check we recieve 10 non-identical results
-		assertEquals("Did not receive expected number of results", count, handler.doAutoComplete(getInbox(), "*", "0", "Infinity").length());
-		assertEquals("Did not receive expected number of results", count/2, handler.doAutoComplete(getInbox(), "*", "0", ""+count/2).length());
-		assertEquals("Did not receive expected number of results", count, handler.doAutoComplete(getInbox(), "*", "0", Integer.toString(count)).length());
+		assertEquals("Did not receive expected number of results", count, handler.doAutoComplete(getInbox(), "", "0", "Infinity").length());
+		assertEquals("Did not receive expected number of results", count/2, handler.doAutoComplete(getInbox(), "", "0", ""+count/2).length());
+		assertEquals("Did not receive expected number of results", count, handler.doAutoComplete(getInbox(), "", "0", Integer.toString(count)).length());
 	}
 
 }

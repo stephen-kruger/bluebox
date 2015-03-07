@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -19,8 +17,6 @@ import java.security.cert.CertificateException;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.slf4j.Logger;
@@ -87,7 +83,7 @@ public class BlueBoxSMTPServer extends SMTPServer {
 //		return s;
 //	}
 
-	private void createSSLContext() throws KeyManagementException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, CertificateException, IOException, InvalidKeyException, NoSuchProviderException, IllegalStateException, SignatureException {
+	public void createSSLContext() throws KeyManagementException, KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException, CertificateException, IOException, InvalidKeyException, NoSuchProviderException, IllegalStateException, SignatureException {
 		// begin: create a default keystore
 		//		KeyStore ks = KeyStore.getInstance("PKCS12");
 		//		char[] password = "blueboxtls".toCharArray();

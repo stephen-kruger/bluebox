@@ -53,7 +53,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.rest.json.AbstractHandler;
-import com.bluebox.search.SearchIndexer;
+import com.bluebox.search.SolrIndexer;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -317,9 +317,9 @@ public class Utils {
 					if(count>0) {
 						do {
 							if (isStopped()) break;
-							toC = r.nextInt(count-totalCount+1);
-							ccC = r.nextInt(count-toC-totalCount+1);
-							bccC = r.nextInt(count-ccC-toC-totalCount+1);
+							toC = r.nextInt(5);
+							ccC = r.nextInt(5);
+							bccC = r.nextInt(2);
 							MimeMessage msg = createMessage(session,
 									getRandomAddress(),  
 									getRandomAddresses(toC),//to
@@ -475,7 +475,7 @@ public class Utils {
 		for (String recipient : recipients) {
 			log.debug("Sending message to {}",recipient);
 			BlueboxMessage bbm = storage.store(getFrom(msg), new InboxAddress(recipient), new Date(), msg, f);
-			SearchIndexer.getInstance().indexMail(bbm);
+			SolrIndexer.getInstance().indexMail(bbm);
 		}
 		f.delete();
 	}

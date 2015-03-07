@@ -19,7 +19,7 @@ import org.junit.Test;
 import com.bluebox.BaseTestCase;
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
-import com.bluebox.search.SearchIndexer;
+import com.bluebox.search.SolrIndexer;
 import com.bluebox.smtp.InboxAddress;
 
 public class StorageTest extends BaseTestCase {
@@ -65,15 +65,15 @@ public class StorageTest extends BaseTestCase {
 				false);
 		InboxAddress ia = new InboxAddress(email);
 		BlueboxMessage m1 = getBlueBoxStorageIf().store(from, ia, new Date(), message, TestUtils.getSpooledMessage(message));
-		SearchIndexer.getInstance().indexMail(m1);
+		SolrIndexer.getInstance().indexMail(m1);
 
-		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("First Name*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("ste*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("ste*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("Ste*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("joh*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("Nam*", 0, 10).length());
-		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("stephen.johnson*", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("First Name", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("ste", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("ste", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("Ste", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("joh", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("Nam", 0, 10).length());
+		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("stephen.johnson", 0, 10).length());
 		// Lucene cannot search this for some reason
 		//		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete(ia.getAddress(), 0, 10).length());
 	}
@@ -329,23 +329,23 @@ public class StorageTest extends BaseTestCase {
 		BlueboxMessage m1 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, TestUtils.getSpooledMessage(message));
 		BlueboxMessage m2 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, TestUtils.getSpooledMessage(message));
 		BlueboxMessage m3 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, TestUtils.getSpooledMessage(message));
-		SearchIndexer.getInstance().indexMail(m1);
-		SearchIndexer.getInstance().indexMail(m2);
-		SearchIndexer.getInstance().indexMail(m3);
+		SolrIndexer.getInstance().indexMail(m1);
+		SolrIndexer.getInstance().indexMail(m2);
+		SolrIndexer.getInstance().indexMail(m3);
 
-		assertEquals("Message not found",1,getInbox().autoComplete("mon*", 0, 10).length());
-		assertEquals("Message not found",1,getInbox().autoComplete("monica*", 0, 10).length());
-		assertEquals("Message not found",1,getInbox().autoComplete("monica.smith*", 0, 10).length());
-		assertEquals("Message not found",1,getInbox().autoComplete("Mon*", 0, 10).length());
-		assertEquals("Message not found",1,getInbox().autoComplete("smi*", 0, 10).length());
-		assertEquals("Message not found",1,getInbox().autoComplete("Smi*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("mon", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("monica", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("monica.smith", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("Mon", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("smi", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("Smi", 0, 10).length());
 		//		assertEquals("Message not found",1,getInbox().autoComplete(inbox, 0, 10).length());
-		assertEquals("Message not found",1,getInbox().autoComplete("ith*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete("ith", 0, 10).length());
 		log.info(getInbox().autoComplete(name+"*", 0, 10).toString(3));
-		assertEquals("Message not found",1,getInbox().autoComplete(name+"*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete(name, 0, 10).length());
 
 		// test for search of name
-		assertEquals("Message not found",1,getInbox().autoComplete(name+"*", 0, 10).length());
+		assertEquals("Message not found",1,getInbox().autoComplete(name, 0, 10).length());
 
 		// check we get the full name in the result
 		JSONArray ja = getInbox().autoComplete(name+"*", 0, 10);
@@ -364,7 +364,7 @@ public class StorageTest extends BaseTestCase {
 		assertTrue("Did not return search on last name",ja.toString().toLowerCase().indexOf(name.toLowerCase())>0);
 
 		// check for empty string
-		ja = getInbox().autoComplete("*", 0, 10);
+		ja = getInbox().autoComplete("", 0, 10);
 		log.info(ja.toString(3));
 		assertEquals("Did not return results",1,ja.length());
 	}
@@ -383,9 +383,9 @@ public class StorageTest extends BaseTestCase {
 				"subjStr",
 				"bodyStr",
 				false);
-		SearchIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)));
-		SearchIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)));
-		SearchIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)));
+		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)));
+		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)));
+		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)));
 
 		// check for empty string
 		JSONArray ja = getInbox().autoComplete("", 0, 10);
