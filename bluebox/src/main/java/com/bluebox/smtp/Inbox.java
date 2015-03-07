@@ -1,6 +1,5 @@
 package com.bluebox.smtp;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,7 +26,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.lucene.index.IndexNotFoundException;
@@ -43,9 +41,9 @@ import org.subethamail.smtp.helper.SimpleMessageListener;
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
-import com.bluebox.search.SolrIndexer;
 import com.bluebox.search.SearchUtils;
 import com.bluebox.search.SearchUtils.SearchFields;
+import com.bluebox.search.SolrIndexer;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.LiteMessageIterator;
@@ -546,7 +544,7 @@ public class Inbox implements SimpleMessageListener {
 		updateStats(blueboxMessage, recipient, false);
 		// ensure the content is indexed
 		try {
-			SolrIndexer.getInstance().indexMail(blueboxMessage);
+			SolrIndexer.getInstance().indexMail(blueboxMessage,true);
 		}
 		catch (Throwable t) {
 			log.error(t.getMessage());
@@ -631,7 +629,7 @@ public class Inbox implements SimpleMessageListener {
 
 	public void softUndelete(String uid, BlueboxMessage message) throws Exception {
 		setState(uid, BlueboxMessage.State.NORMAL);
-		SolrIndexer.getInstance().indexMail(message);
+		SolrIndexer.getInstance().indexMail(message,true);
 	}
 
 	private void setState(String uid, BlueboxMessage.State state) throws Exception {
@@ -739,14 +737,18 @@ public class Inbox implements SimpleMessageListener {
 			@Override
 			public void run() {
 				try {
-					SolrIndexer search5Indexer = SolrIndexer.getInstance();
-					search5Indexer.deleteIndexes();
+					SolrIndexer solrIndexer = SolrIndexer.getInstance();
+					solrIndexer.deleteIndexes();
 					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.NORMAL);
+					int count = 0;
 					while (mi.hasNext()) {
 						if (isStopped()) break;
-						search5Indexer.indexMail(mi.next());						
+						solrIndexer.indexMail(mi.next(),false);						
 						setProgress(mi.getProgress());
+						count++;
+						if (count % 100==0)solrIndexer.commit();
 					}
+					solrIndexer.commit();
 				} 
 				catch (Throwable e) {
 					e.printStackTrace();
@@ -944,8 +946,9 @@ public class Inbox implements SimpleMessageListener {
 										si.store(jo, archive.getInputStream(zipEntry));
 										// index the message
 										MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));
-										SolrIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
+										SolrIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm),false);
 										restoreCount++;
+										if (restoreCount % 100==0) SolrIndexer.getInstance().commit();
 									}
 									else {
 										log.info("Ignoring restore of {}",uid);
@@ -959,81 +962,15 @@ public class Inbox implements SimpleMessageListener {
 							}
 							progress++;
 						}
+						SolrIndexer.getInstance().commit();
 						archive.close();
 					} 
-					catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-				else {
-					log.error("Could not access zip archive, checking for old style backup");
-					try {
-						restoreOld(dir);
-					} catch (Exception e) {
+					catch (Throwable e) {
 						e.printStackTrace();
 					}
 				}
 				setProgress(100);
 				setStatus("Restored "+restoreCount+" mails");
-			}
-
-		};
-		return wt;
-
-	}
-
-	public WorkerThread restoreOld(final File dir) throws Exception {
-		log.info("Restoring mail from {}",dir.getCanonicalPath());
-		WorkerThread wt = new WorkerThread("restore") {
-
-			@Override
-			public void run() {
-				if (dir.exists()) {
-					File[] files = dir.listFiles();
-					for (int i = 0; i < files.length;i++) {
-						if (isStopped()) break;
-						setProgress(i*100/files.length);
-						log.debug("Progress : {}",(i*100/files.length));
-						if (files[i].getName().endsWith("eml")) {
-							try {
-								JSONObject jo = new JSONObject(FileUtils.readFileToString(new File(files[i].getCanonicalPath().substring(0, files[i].getCanonicalPath().length()-4)+".json")));
-								// backwards compat workaround for backups prior to introduction of RECIPIENT field
-								if (!jo.has(BlueboxMessage.RECIPIENT)) {
-									jo.put(BlueboxMessage.RECIPIENT,jo.get(BlueboxMessage.INBOX));
-								}
-								else {
-									// if it's there, but is a JSONarray, use value of inbox instead
-									if (jo.get(BlueboxMessage.RECIPIENT) instanceof JSONArray) {
-										// try get actual full name version from this array
-										JSONArray ja = jo.getJSONArray(BlueboxMessage.RECIPIENT);
-										jo.put(BlueboxMessage.RECIPIENT,jo.get(BlueboxMessage.INBOX));
-										for (int j = 0; j < ja.length(); j++) {
-											if (ja.getString(j).indexOf(jo.getString(BlueboxMessage.INBOX))>=0) {
-												jo.put(BlueboxMessage.RECIPIENT,ja.getString(j));
-												break;
-											}
-										}
-									}
-								}
-
-								InputStream ms = new BufferedInputStream(new FileInputStream(files[i]));
-								ms.mark(Integer.MAX_VALUE);
-								StorageFactory.getInstance().store(jo, ms);
-								ms.reset();
-								MimeMessage mm = Utils.loadEML(ms);
-								SolrIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
-							}
-							catch (Throwable t) {
-								t.printStackTrace();
-								log.warn(t.getMessage());
-							}
-						}
-					}
-				}
-				else {
-					log.error("Could not access");
-				}
-				setProgress(100);
 			}
 
 		};

@@ -51,12 +51,12 @@ public class SearchIndexer {
 	private IndexSearcher searcher;
 	private DirectoryReader diectoryReader;
 
-	private static SearchIndexer getInstance() throws IOException {
-		if (si==null) {
-			si = new SearchIndexer();
-		}
-		return si;
-	}
+//	private static SearchIndexer getInstance() throws IOException {
+//		if (si==null) {
+//			si = new SearchIndexer();
+//		}
+//		return si;
+//	}
 
 	private SearchIndexer() throws IOException {
 		//				this(new SimpleFSDirectory(createTempDirectory()));

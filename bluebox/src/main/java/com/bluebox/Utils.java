@@ -475,8 +475,9 @@ public class Utils {
 		for (String recipient : recipients) {
 			log.debug("Sending message to {}",recipient);
 			BlueboxMessage bbm = storage.store(getFrom(msg), new InboxAddress(recipient), new Date(), msg, f);
-			SolrIndexer.getInstance().indexMail(bbm);
+			SolrIndexer.getInstance().indexMail(bbm,false);
 		}
+		SolrIndexer.getInstance().commit();
 		f.delete();
 	}
 

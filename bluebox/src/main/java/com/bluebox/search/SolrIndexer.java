@@ -222,7 +222,7 @@ public class SolrIndexer {
 	}
 
 
-	public void indexMail(BlueboxMessage message) throws IOException, JSONException, Exception {
+	public void indexMail(BlueboxMessage message, boolean commit) throws IOException, JSONException, Exception {
 		addDoc(message.getIdentifier(),
 				message.getInbox().getFullAddress(),
 				Utils.decodeQuotedPrintable(Utils.toCSVString(message.getFrom())),
@@ -231,12 +231,17 @@ public class SolrIndexer {
 				message.getText(),
 				getRecipients(message),
 				message.getSize(),
-				message.getReceived().getTime());
+				message.getReceived().getTime(),
+				commit);
+	}
+	
+	public void commit() throws SolrServerException, IOException {
+		server.commit();
 	}
 
-	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws Exception {
-		addDoc(uid,inbox,from,subject,text,html,recipients,size,received);
-	}
+//	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws Exception {
+//		addDoc(uid,inbox,from,subject,text,html,recipients,size,received);
+//	}
 
 	/* Find which one of the potential recipeints of this mail matches the specified inbox
 	 * 
@@ -277,7 +282,11 @@ public class SolrIndexer {
 		server.commit();
 	}
 
-	protected synchronized void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException, SolrServerException {
+	protected void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException, SolrServerException {
+		addDoc(uid, inbox, from, subject, text, html, recipients, size, received, true);
+	}
+	
+	protected void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException, SolrServerException {
 		SolrInputDocument doc = new SolrInputDocument();
 		String htmlStr = SearchUtils.htmlToString(html);
 		doc.addField( SearchUtils.SearchFields.UID.name(), uid);
@@ -292,7 +301,8 @@ public class SolrIndexer {
 		doc.addField( SearchUtils.SearchFields.SIZE.name(), size);
 		doc.addField( SearchUtils.SearchFields.RECEIVED.name(), received);
 		server.add(doc);
-		server.commit();
+		if (commit)
+			server.commit();
 	}
 
 	public static File createTempDirectory(String name)  throws IOException {
