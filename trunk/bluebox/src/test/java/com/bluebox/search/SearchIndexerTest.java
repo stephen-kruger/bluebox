@@ -20,10 +20,11 @@ public class SearchIndexerTest extends BaseTestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		getSearchIndexer().deleteIndexes();
-		getSearchIndexer().addDoc("193398817","receiever1@here.com","sender1@there.com","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543);
-		getSearchIndexer().addDoc("55320055Z","receiever2@here.com","sender2@there.com","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543);
-		getSearchIndexer().addDoc("55063554A","receiever3@here.com","sender3@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543);
-		getSearchIndexer().addDoc("9900333X","receiever4@here.com","sender4@there.com","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543);
+		getSearchIndexer().addDoc("193398817","receiever1@here.com","sender1@there.com","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543,false);
+		getSearchIndexer().addDoc("55320055Z","receiever2@here.com","sender2@there.com","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543,false);
+		getSearchIndexer().addDoc("55063554A","receiever3@here.com","sender3@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543,false);
+		getSearchIndexer().addDoc("9900333X","receiever4@here.com","sender4@there.com","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543,false);
+		getSearchIndexer().commit();
 	}
 
 	@Test
@@ -64,7 +65,7 @@ public class SearchIndexerTest extends BaseTestCase {
 	@Test
 	public void testMailIndexing() throws Exception {
 		BlueboxMessage msg = TestUtils.addRandomDirect(StorageFactory.getInstance());
-		getSearchIndexer().indexMail(msg);
+		getSearchIndexer().indexMail(msg,true);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search(msg.getSubject(),SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("steve",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
 	}
