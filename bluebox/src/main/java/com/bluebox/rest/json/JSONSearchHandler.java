@@ -10,8 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.bluebox.search.SearchIndexer;
-import com.bluebox.search.SearchIndexer.SearchFields;
+import com.bluebox.search.SearchUtils;
+import com.bluebox.search.SearchUtils.SearchFields;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
@@ -26,7 +26,7 @@ public class JSONSearchHandler extends AbstractHandler {
 		String search = extractFragment(req.getRequestURI(), JSON_ROOT, 1);
 		String searchScopeStr = extractFragment(req.getRequestURI(), JSON_ROOT, 0);
 		// check sort order, which comes in a strange format "sort(-Subject)=null"
-		SearchIndexer.SearchFields orderBy = SearchIndexer.SearchFields.RECEIVED;
+		SearchUtils.SearchFields orderBy = SearchUtils.SearchFields.RECEIVED;
 		boolean ascending = true;
 		String n;
 		for (
@@ -37,19 +37,19 @@ public class JSONSearchHandler extends AbstractHandler {
 				ascending = false;
 			}
 			if (n.contains(BlueboxMessage.RECEIVED)) {
-				orderBy = SearchIndexer.SearchFields.RECEIVED;
+				orderBy = SearchUtils.SearchFields.RECEIVED;
 				break;
 			}
 			if (n.contains(BlueboxMessage.FROM)) {
-				orderBy = SearchIndexer.SearchFields.FROM;
+				orderBy = SearchUtils.SearchFields.FROM;
 				break;
 			}
 			if (n.contains(BlueboxMessage.SUBJECT)) {
-				orderBy = SearchIndexer.SearchFields.SUBJECT;
+				orderBy = SearchUtils.SearchFields.SUBJECT;
 				break;
 			}
 			if (n.contains(BlueboxMessage.SIZE)) {
-				orderBy = SearchIndexer.SearchFields.SIZE;
+				orderBy = SearchUtils.SearchFields.SIZE;
 				break;
 			}			
 		}
@@ -65,11 +65,11 @@ public class JSONSearchHandler extends AbstractHandler {
 			Writer writer = resp.getWriter();
 			SearchFields searchScope;
 			try {
-				searchScope = SearchIndexer.SearchFields.valueOf(searchScopeStr);
+				searchScope = SearchUtils.SearchFields.valueOf(searchScopeStr);
 			}
 			catch (Throwable t) {
 				log.error("Invalid search scope :{}",searchScopeStr);
-				searchScope = SearchIndexer.SearchFields.ANY;
+				searchScope = SearchUtils.SearchFields.ANY;
 			}
 			long totalCount = inbox.searchInbox(search, writer, first, last-first, searchScope , orderBy, ascending);
 			log.debug("Total result set was length {}",totalCount);

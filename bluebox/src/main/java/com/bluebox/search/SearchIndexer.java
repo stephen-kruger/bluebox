@@ -2,17 +2,13 @@ package com.bluebox.search;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.io.Writer;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.StringTokenizer;
 
 import javax.mail.Address;
 import javax.mail.internet.MimeMessage;
-import javax.swing.text.MutableAttributeSet;
-import javax.swing.text.html.HTML;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.parser.ParserDelegator;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -25,7 +21,6 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.MultiFields;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -38,19 +33,14 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
-import org.apache.lucene.util.Bits;
-import org.apache.lucene.util.Version;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
-import com.bluebox.WorkerThread;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
-import com.bluebox.smtp.storage.StorageFactory;
-import com.bluebox.smtp.storage.StorageIf;
 
 public class SearchIndexer {
 	private static final Logger log = LoggerFactory.getLogger(SearchIndexer.class);
@@ -60,7 +50,6 @@ public class SearchIndexer {
 	private IndexWriter indexWriter;
 	private IndexSearcher searcher;
 	private DirectoryReader diectoryReader;
-	public enum SearchFields {UID, INBOX, FROM, SUBJECT, RECEIVED, TEXT_BODY, HTML_BODY, SIZE, RECIPIENT, RECIPIENTS, ANY, BODY};
 
 	public static SearchIndexer getInstance() throws IOException {
 		if (si==null) {
@@ -71,8 +60,8 @@ public class SearchIndexer {
 
 	private SearchIndexer() throws IOException {
 		//				this(new SimpleFSDirectory(createTempDirectory()));
-		this(new NIOFSDirectory(createTempDirectory()));
-//		this(new NIOFSDirectory(Paths.get(createTempDirectory().toURI())));
+//		this(new NIOFSDirectory(createTempDirectory()));
+		this(new NIOFSDirectory(Paths.get(createTempDirectory().toURI())));
 	}
 
 	private SearchIndexer(Directory index) throws IOException {
@@ -83,7 +72,8 @@ public class SearchIndexer {
 	public IndexWriter getIndexWriter() throws IOException {
 		if (indexWriter==null) {
 			Analyzer analyzer = new StandardAnalyzer();		
-			config = new IndexWriterConfig(Version.LATEST, analyzer);
+//			config = new IndexWriterConfig(Version.LATEST, analyzer);
+			config = new IndexWriterConfig(analyzer);
 			config.setUseCompoundFile(true);
 			indexWriter = new IndexWriter(getDirectory(), config);
 		}
@@ -147,7 +137,7 @@ public class SearchIndexer {
 		searcher=null;
 	}
 
-	public Document[] search(String querystr, SearchFields fields, int start, int count, SearchFields orderBy, boolean ascending) throws ParseException, IOException {
+	public Document[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SearchFields orderBy, boolean ascending) throws ParseException, IOException {
 		//              querystr = QueryParser.escape(querystr);
 		//              querystr = "*"+QueryParser.escape(querystr)+"*";
 		//              querystr = "*"+querystr+"*";
@@ -174,49 +164,49 @@ public class SearchIndexer {
 		case SUBJECT :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-							SearchFields.SUBJECT.name()},
+							SearchUtils.SearchFields.SUBJECT.name()},
 							analyzer);
 			break;
 		case BODY :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-							SearchFields.TEXT_BODY.name(),
-							SearchFields.HTML_BODY.name()},
+							SearchUtils.SearchFields.TEXT_BODY.name(),
+							SearchUtils.SearchFields.HTML_BODY.name()},
 							analyzer);
 			break;
 		case RECEIVED :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-							SearchFields.RECEIVED.name()},
+							SearchUtils.SearchFields.RECEIVED.name()},
 							analyzer);
 			break;
 		case FROM :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-							SearchFields.FROM.name()},
+							SearchUtils.SearchFields.FROM.name()},
 							analyzer);
 			break;
 		case RECIPIENT :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-							SearchFields.RECIPIENT.name()},
+							SearchUtils.SearchFields.RECIPIENT.name()},
 							analyzer);
 			break;
 		case RECIPIENTS :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-							SearchFields.RECIPIENTS.name()},
+							SearchUtils.SearchFields.RECIPIENTS.name()},
 							analyzer);
 			break;
 		case ANY :
 		default :
 			queryParser = new MultiFieldQueryParser(
 					new String[] {
-							SearchFields.FROM.name(),
-							SearchFields.SUBJECT.name(),
-							SearchFields.TEXT_BODY.name(),
-							SearchFields.HTML_BODY.name(),
-							SearchFields.RECIPIENTS.name()},
+							SearchUtils.SearchFields.FROM.name(),
+							SearchUtils.SearchFields.SUBJECT.name(),
+							SearchUtils.SearchFields.TEXT_BODY.name(),
+							SearchUtils.SearchFields.HTML_BODY.name(),
+							SearchUtils.SearchFields.RECIPIENTS.name()},
 							analyzer);
 		}
 		queryParser.setAllowLeadingWildcard(true);
@@ -228,7 +218,7 @@ public class SearchIndexer {
 			Sort sort;
 			try {
 				SortField.Type type;
-				if ((orderBy==SearchFields.RECEIVED)||(orderBy==SearchFields.SIZE))
+				if ((orderBy==SearchUtils.SearchFields.RECEIVED)||(orderBy==SearchUtils.SearchFields.SIZE))
 					type = SortField.Type.LONG;
 				else
 					type = SortField.Type.STRING;
@@ -237,12 +227,12 @@ public class SearchIndexer {
 			catch (Throwable t) {
 				t.printStackTrace();
 				log.warn("Unsupported orderBy value :"+orderBy);
-				sort = new Sort(new SortField(SearchFields.RECEIVED.name(),SortField.Type.LONG,ascending));
+				sort = new Sort(new SortField(SearchUtils.SearchFields.RECEIVED.name(),SortField.Type.LONG,ascending));
 			}
 			// if count is 0, then return only total number of hits, without sending all the data.
 			// used to calculate number of search results
 
-			TopFieldCollector collector = TopFieldCollector.create(sort, start+count, true, true, true, true);
+			TopFieldCollector collector = TopFieldCollector.create(sort, start+count, true, true, true);
 			getSearcher().search(queryParser.parse(querystr),collector);
 			ScoreDoc[] hits = collector.topDocs(start,count).scoreDocs;
 			Document[] docs = new Document[hits.length];
@@ -260,18 +250,18 @@ public class SearchIndexer {
 
 	}
 
-	public long searchInboxes(String search, Writer writer, int start,	int count, SearchFields fields, SearchFields orderBy, boolean ascending) throws ParseException, IOException {
+	public long searchInboxes(String search, Writer writer, int start,	int count, SearchUtils.SearchFields fields, SearchUtils.SearchFields orderBy, boolean ascending) throws ParseException, IOException {
 		Document[] hits = search(search, fields, start, count, orderBy, ascending);
 		JSONObject curr;
 		writer.write("[");
 		for (int i = 0; i < hits.length; i++) {
-			String uid = hits[i].get(SearchFields.UID.name());
+			String uid = hits[i].get(SearchUtils.SearchFields.UID.name());
 			try {
 				curr = new JSONObject();
-				curr.put(BlueboxMessage.FROM, hits[i].get(SearchFields.FROM.name()));
-				curr.put(BlueboxMessage.SUBJECT, hits[i].get(SearchFields.SUBJECT.name()));
-				curr.put(BlueboxMessage.RECEIVED, new Date(Long.parseLong(hits[i].get(SearchFields.RECEIVED.name()))));
-				curr.put(BlueboxMessage.SIZE, (Long.parseLong(hits[i].get(SearchFields.SIZE.name()))/1000)+"K");
+				curr.put(BlueboxMessage.FROM, hits[i].get(SearchUtils.SearchFields.FROM.name()));
+				curr.put(BlueboxMessage.SUBJECT, hits[i].get(SearchUtils.SearchFields.SUBJECT.name()));
+				curr.put(BlueboxMessage.RECEIVED, new Date(Long.parseLong(hits[i].get(SearchUtils.SearchFields.RECEIVED.name()))));
+				curr.put(BlueboxMessage.SIZE, (Long.parseLong(hits[i].get(SearchUtils.SearchFields.SIZE.name()))/1000)+"K");
 				curr.put(BlueboxMessage.UID, uid);
 				writer.write(curr.toString(3));
 				if (i < hits.length-1) {
@@ -334,13 +324,13 @@ public class SearchIndexer {
 	}
 
 	public synchronized void deleteDoc(String uid) throws IOException, ParseException {
-		getIndexWriter().deleteDocuments(new Term(SearchFields.UID.name(),uid));
+		getIndexWriter().deleteDocuments(new Term(SearchUtils.SearchFields.UID.name(),uid));
 		getIndexWriter().commit();
 		closeDirectoryReader();
 		closeSearcher();
 	}
 
-	public void deleteDoc(String value, SearchFields field) throws ParseException, IOException {
+	public void deleteDoc(String value, SearchUtils.SearchFields field) throws ParseException, IOException {
 		Analyzer analyzer = new StandardAnalyzer();
 		QueryParser queryParser = new MultiFieldQueryParser(
 				new String[] {
@@ -358,76 +348,23 @@ public class SearchIndexer {
 	protected synchronized void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
 		log.debug("Indexing mail [] []",uid,from);
 		Document doc = new Document();
-		doc.add(new StringField(SearchFields.UID.name(), uid, Field.Store.YES));
-		doc.add(new TextField(SearchFields.FROM.name(), from, Field.Store.YES));
-		doc.add(new TextField(SearchFields.RECIPIENT.name(), getRecipient(recipients,inbox), Field.Store.YES));
-		doc.add(new TextField(SearchFields.INBOX.name(), inbox, Field.Store.YES));
-		doc.add(new TextField(SearchFields.SUBJECT.name(), subject, Field.Store.YES));
-		doc.add(new TextField(SearchFields.TEXT_BODY.name(), text, Field.Store.YES));
-		doc.add(new TextField(SearchFields.HTML_BODY.name(), htmlToString(html), Field.Store.YES));
-		doc.add(new TextField(SearchFields.RECIPIENTS.name(), recipients, Field.Store.YES));
-		doc.add(new LongField(SearchFields.SIZE.name(), size, Field.Store.YES));
-		doc.add(new LongField(SearchFields.RECEIVED.name(), received, Field.Store.YES));
+		doc.add(new StringField(SearchUtils.SearchFields.UID.name(), uid, Field.Store.YES));
+		doc.add(new TextField(SearchUtils.SearchFields.FROM.name(), from, Field.Store.YES));
+		doc.add(new TextField(SearchUtils.SearchFields.RECIPIENT.name(), SearchUtils.getRecipient(recipients,inbox), Field.Store.YES));
+		doc.add(new TextField(SearchUtils.SearchFields.INBOX.name(), inbox, Field.Store.YES));
+		doc.add(new TextField(SearchUtils.SearchFields.SUBJECT.name(), subject, Field.Store.YES));
+		doc.add(new TextField(SearchUtils.SearchFields.TEXT_BODY.name(), text, Field.Store.YES));
+		doc.add(new TextField(SearchUtils.SearchFields.HTML_BODY.name(), SearchUtils.htmlToString(html), Field.Store.YES));
+		doc.add(new TextField(SearchUtils.SearchFields.RECIPIENTS.name(), recipients, Field.Store.YES));
+		doc.add(new LongField(SearchUtils.SearchFields.SIZE.name(), size, Field.Store.YES));
+		doc.add(new LongField(SearchUtils.SearchFields.RECEIVED.name(), received, Field.Store.YES));
 		IndexWriter iw = getIndexWriter();
 		iw.addDocument(doc);
 		iw.commit();
 		closeDirectoryReader();
 		closeSearcher();
 	}
-
-	/*
-	 * Figure out which of the recipients this mail is actually being delivered to. If none match, use the Inbox as default;
-	 */
-	private String getRecipient(String recipients, String inbox) {
-		StringTokenizer tok = new StringTokenizer(recipients,",");
-		String linbox = inbox.toLowerCase();
-		while (tok.hasMoreElements()) {
-			String curr = tok.nextToken();
-			if (curr.toLowerCase().contains(linbox)) {
-				return curr;
-			}
-		}
-		return inbox;
-	}
-
-	public static String htmlToString(String html) throws IOException {
-		final StringBuilder sb = new StringBuilder();
-		HTMLEditorKit.ParserCallback parserCallback = new HTMLEditorKit.ParserCallback() {
-			public boolean readyForNewline;
-
-			@Override
-			public void handleText(final char[] data, final int pos) {
-				String s = new String(data);
-				sb.append(s.trim()).append(' ');
-				readyForNewline = true;
-			}
-
-			@Override
-			public void handleStartTag(final HTML.Tag t, final MutableAttributeSet a, final int pos) {
-				if (readyForNewline && (t == HTML.Tag.DIV || t == HTML.Tag.BR || t == HTML.Tag.P)) {
-					sb.append("\n");
-					readyForNewline = false;
-				}
-			}
-
-			@Override
-			public void handleSimpleTag(final HTML.Tag t, final MutableAttributeSet a, final int pos) {
-				handleStartTag(t, a, pos);
-			}
-		};
-		if (html!=null) {
-			if (html.length()>0) {
-				try {
-					new ParserDelegator().parse(new StringReader(html), parserCallback, false);
-				}
-				catch (Throwable t) {
-					log.warn("Could not parse html content - indexing all ({})",t.getMessage());
-					sb.append(html);
-				}
-			}
-		}
-		return sb.toString().trim();
-	}
+	
 
 	public static File createTempDirectory()  throws IOException {
 		//File tmpDir = (File)getServletContext().getAttribute(ServletContext.TEMPDIR);
@@ -446,53 +383,6 @@ public class SearchIndexer {
 		closeIndexWriter();
 		closeDirectoryReader();
 		closeSearcher();
-	}
-
-	public WorkerThread validate() {
-		final SearchIndexer search = this;
-		WorkerThread wt = new WorkerThread("validatesearch") {
-
-			@Override
-			public void run() {
-				//DirectoryReader reader=null;
-				int issueCount = 0;
-				try {
-					StorageIf si = StorageFactory.getInstance();
-					DirectoryReader reader=search.getDirectoryReader();
-
-					Bits liveDocs = MultiFields.getLiveDocs(reader);
-					log.info("Validating {} search records",reader.maxDoc());
-					for (int i=0; i<reader.maxDoc(); i++) {
-						if (isStopped()) break;
-						try {
-							if (liveDocs != null && !liveDocs.get(i))
-								continue;
-
-							Document doc = reader.document(i);
-							String uid = doc.get(SearchFields.UID.name());
-							if (!si.contains(uid)) {
-								log.warn("Search index out of sync for {}",uid);
-								issueCount++;
-								search.deleteDoc(uid);
-							}
-						}
-						catch (Throwable t) {
-							log.error("Could not delete search record {} ({})",i,t.getMessage());
-						}
-						setProgress(i*100/reader.maxDoc());
-					}
-				}
-				catch (Throwable t) {
-					log.error("Problem vaidating search indexes",t);
-				}
-				finally {
-					setProgress(100);
-					setStatus(issueCount+" invalid docs found and cleaned");
-					log.info("{} invalid docs found and cleaned",issueCount);
-				}
-			}
-		};
-		return wt;
 	}
 
 }

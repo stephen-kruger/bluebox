@@ -30,8 +30,8 @@ import javax.mail.internet.MimeUtility;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
+import org.apache.solr.common.SolrDocument;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -43,8 +43,9 @@ import org.subethamail.smtp.helper.SimpleMessageListener;
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
-import com.bluebox.search.SearchIndexer;
-import com.bluebox.search.SearchIndexer.SearchFields;
+import com.bluebox.search.SolrIndexer;
+import com.bluebox.search.SearchUtils;
+import com.bluebox.search.SearchUtils.SearchFields;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.LiteMessageIterator;
@@ -121,9 +122,9 @@ public class Inbox implements SimpleMessageListener {
 
 		log.debug("Stopping search engine");
 		try {
-			SearchIndexer.getInstance().stop();
+			SolrIndexer.getInstance().stop();
 		} 
-		catch (IOException e) {
+		catch (Exception e) {
 			e.printStackTrace();
 			log.error("Error stopping search engine",e);
 		}
@@ -169,10 +170,10 @@ public class Inbox implements SimpleMessageListener {
 		return StorageFactory.getInstance().listMailLite(inbox, state, start, count, orderBy, ascending);
 	}
 
-	public long searchInbox(String search, Writer writer, int start, int count, SearchIndexer.SearchFields searchScope, SearchIndexer.SearchFields orderBy, boolean ascending) throws Exception {
+	public long searchInbox(String search, Writer writer, int start, int count, SearchUtils.SearchFields searchScope, SearchUtils.SearchFields orderBy, boolean ascending) throws Exception {
 		log.debug("Searching for {} ordered by {}",search,orderBy);
 		try {
-			return SearchIndexer.getInstance().searchInboxes(search, writer, start, count, searchScope, orderBy, ascending);
+			return SolrIndexer.getInstance().searchInboxes(search, writer, start, count, searchScope, orderBy, ascending);
 		}
 		catch (IndexNotFoundException inf) {
 			log.info("Detected index problems ({})",inf.getMessage());
@@ -182,7 +183,7 @@ public class Inbox implements SimpleMessageListener {
 
 	public void delete(String uid) throws Exception {
 		StorageFactory.getInstance().delete(uid);
-		SearchIndexer.getInstance().deleteDoc(uid);
+		SolrIndexer.getInstance().deleteDoc(uid);
 	}
 
 	/*
@@ -258,7 +259,7 @@ public class Inbox implements SimpleMessageListener {
 	public void deleteAll() {
 		try {
 			StorageFactory.getInstance().deleteAll();
-			SearchIndexer.getInstance().deleteIndexes();
+			SolrIndexer.getInstance().deleteIndexes();
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();
@@ -545,7 +546,7 @@ public class Inbox implements SimpleMessageListener {
 		updateStats(blueboxMessage, recipient, false);
 		// ensure the content is indexed
 		try {
-			SearchIndexer.getInstance().indexMail(blueboxMessage);
+			SolrIndexer.getInstance().indexMail(blueboxMessage);
 		}
 		catch (Throwable t) {
 			log.error(t.getMessage());
@@ -625,12 +626,12 @@ public class Inbox implements SimpleMessageListener {
 
 	public void softDelete(String uid) throws Exception {
 		setState(uid, BlueboxMessage.State.DELETED);
-		SearchIndexer.getInstance().deleteDoc(uid);
+		SolrIndexer.getInstance().deleteDoc(uid);
 	}
 
 	public void softUndelete(String uid, BlueboxMessage message) throws Exception {
 		setState(uid, BlueboxMessage.State.NORMAL);
-		SearchIndexer.getInstance().indexMail(message);
+		SolrIndexer.getInstance().indexMail(message);
 	}
 
 	private void setState(String uid, BlueboxMessage.State state) throws Exception {
@@ -646,25 +647,25 @@ public class Inbox implements SimpleMessageListener {
 		//			hint=hint.substring(0,hint.indexOf('*'));
 		//		}
 		if (hint.length()==0)
-			hint = "*";
+			hint = "";
 		// ensure we check for all substrings
-		if (!hint.startsWith("*"))
-			hint = "*"+hint;
-		if (hint.length()==2) {
+//		if (!hint.startsWith("*"))
+//			hint = "*"+hint;
+		if (hint.length()==1) {
 			return children;
 		}
 		//			hint = QueryParser.escape(hint);
-		SearchIndexer search = SearchIndexer.getInstance();
-		Document[] results = search.search(hint, SearchIndexer.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchIndexer.SearchFields.RECEIVED,false);
+		SolrIndexer search = SolrIndexer.getInstance();
+		SolrDocument[] results = search.search(hint, SearchUtils.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchUtils.SearchFields.RECEIVED,false);
 		for (int i = 0; i < results.length;i++) {
-			String uid = results[i].get(SearchFields.UID.name());
+			String uid = results[i].getFieldValue(SearchFields.UID.name()).toString();
 			InboxAddress inbox;
-			inbox = new InboxAddress(results[i].get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
+			inbox = new InboxAddress(results[i].getFieldValue(Utils.decodeRFC2407(SearchFields.INBOX.name())).toString());
 
 			if (!contains(children,inbox.getAddress())) {
 				curr = new JSONObject();
 				curr.put("name", inbox.getAddress());
-				curr.put("label",search.getRecipient(inbox,results[i].get(SearchFields.RECIPIENT.name())).getFullAddress());
+				curr.put("label",search.getRecipient(inbox,results[i].getFieldValue(SearchFields.RECIPIENT.name()).toString()).getFullAddress());
 				curr.put("identifier", uid);
 				children.put(curr);
 			}
@@ -738,12 +739,12 @@ public class Inbox implements SimpleMessageListener {
 			@Override
 			public void run() {
 				try {
-					SearchIndexer searchIndexer = SearchIndexer.getInstance();
-					searchIndexer.deleteIndexes();
+					SolrIndexer search5Indexer = SolrIndexer.getInstance();
+					search5Indexer.deleteIndexes();
 					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.NORMAL);
 					while (mi.hasNext()) {
 						if (isStopped()) break;
-						searchIndexer.indexMail(mi.next());						
+						search5Indexer.indexMail(mi.next());						
 						setProgress(mi.getProgress());
 					}
 				} 
@@ -943,7 +944,7 @@ public class Inbox implements SimpleMessageListener {
 										si.store(jo, archive.getInputStream(zipEntry));
 										// index the message
 										MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));
-										SearchIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
+										SolrIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
 										restoreCount++;
 									}
 									else {
@@ -1020,7 +1021,7 @@ public class Inbox implements SimpleMessageListener {
 								StorageFactory.getInstance().store(jo, ms);
 								ms.reset();
 								MimeMessage mm = Utils.loadEML(ms);
-								SearchIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
+								SolrIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm));
 							}
 							catch (Throwable t) {
 								t.printStackTrace();

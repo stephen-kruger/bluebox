@@ -4,12 +4,13 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.2.28</version>
+	<version>4.3.0</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
 		<slf4j_version>1.7.10</slf4j_version>
-		<lucene_version>4.10.3</lucene_version>
+		<lucene_version>5.0.0</lucene_version>
+		<solr_version>5.0.0</solr_version>
 		<derby_version>10.11.1.1</derby_version>
 		<mongo_version>2.12.4</mongo_version>
 		<tomcat.webapp.dir>/var/lib/tomcat6/webapps</tomcat.webapp.dir>
@@ -20,6 +21,11 @@
 	</properties>
 
 	<repositories>
+		<repository>
+			<id>maven-restlet</id>
+			<name>Public online Restlet repository</name>
+			<url>http://maven.restlet.com</url>
+		</repository>
 		<repository>
 			<id>maven-java-net</id>
 			<name>Maven Java Net</name>
@@ -34,15 +40,16 @@
 			<name>Maven Repo</name>
 			<url>http://repo1.maven.org/maven2/</url>
 		</repository>
-		<repository>
-			<id>maven-central</id>
-			<name>Maven Central</name>
-			<url>http://central.maven.org/maven2/</url>
-		</repository>
+
 		<repository>
 			<id>maven2-javanet</id>
 			<name>Java.net</name>
 			<url>http://download.java.net/maven/2/</url>
+		</repository>
+		<repository>
+			<id>maven-central</id>
+			<name>Maven Central</name>
+			<url>http://central.maven.org/maven2/</url>
 		</repository>
 	</repositories>
 
@@ -86,7 +93,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>rpm-maven-plugin</artifactId>
-					<version>2.1</version>
+					<version>2.1.2</version>
 					<configuration>
 						<targetVendor>redhat</targetVendor>
 						<requires>
@@ -94,7 +101,8 @@
 						</requires>
 						<sourceEncoding>UTF-8</sourceEncoding>
 						<group>bluebox</group>
-						<summary>Promiscuous, non-forwarding SMTP server and webmail interface for dynamic email receiving and testing</summary>
+						<summary>Promiscuous, non-forwarding SMTP server and webmail
+							interface for dynamic email receiving and testing</summary>
 						<username>tomcat</username>
 						<groupname>tomcat</groupname>
 						<mappings>
@@ -112,44 +120,12 @@
 							</mapping>
 						</mappings>
 						<preinstallScriptlet>
-							<script>
-								if [ "$1" = "1" ]; then
-								echo "Performing bluebox initial install..."
-								echo "Set tomcat6 to start on boot"
-								/sbin/chkconfig tomcat6 on
-								echo "Mapping SMTP port 25 to 2500"
-								/sbin/iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500
-								echo "Persist across reboots"
-								/sbin/chkconfig iptables on
-								/sbin/service iptables save
-								elif [ "$1" = "2" ]; then
-								echo "Performing bluebox upgrade..."
-								echo "1/4: Shutting down tomcat"
-								/sbin/service tomcat6 stop
-								echo "2/4: Shutting down MongoDB"
-								/sbin/service mongod stop
-								echo "3/4: Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
-								rm -rf ${tomcat.webapp.dir}/bluebox
-								echo "4/4: Cleaning Lucence lock file"
-								rm -rf /usr/share/tomcat6/temp/bluebox4.lucene/write.lock
-								fi
-								echo "Installing bluebox war file"
-							</script>
+							<scriptFile>/scripts/rpm_preinstall.sh</scriptFile>
+							<fileEncoding>utf-8</fileEncoding>
 						</preinstallScriptlet>
 						<postinstallScriptlet>
-							<script>
-								echo "Completed war file installation, restarting services"
-								if [ "$1" = "1" ]; then
-								echo "Please start the application server : service tomcat6 start"
-								elif [ "$1" = "2" ];
-								then
-								echo "Restarting tomcat to complete installation..."
-								echo "1/2: Starting MongoDB"
-								/sbin/service mongod start
-								echo "2/2: Starting tomcat"
-								/sbin/service tomcat6 start
-								fi
-							</script>
+							<scriptFile>/scripts/rpm_postinstall.sh</scriptFile>
+							<fileEncoding>utf-8</fileEncoding>
 						</postinstallScriptlet>
 					</configuration>
 				</plugin>
@@ -164,10 +140,58 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-memory</artifactId>
-			<version>${lucene_version}</version>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet</artifactId>
+			<version>3.0-M1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.restlet.jse</groupId>
+			<artifactId>org.restlet.ext.simple</artifactId>
+			<version>3.0-M1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.solr</groupId>
+			<artifactId>solr-solrj</artifactId>
+			<version>${solr_version}</version>
 			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.restlet.jee</groupId>
+					<artifactId>org.restlet</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.restlet.jee</groupId>
+					<artifactId>org.restlet.ext.servlet</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>jdk.tools</groupId>
+					<artifactId>jdk.tools</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<artifactId>solr-core</artifactId>
+			<groupId>org.apache.solr</groupId>
+			<version>${solr_version}</version>
+			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>org.restlet.jee</groupId>
+					<artifactId>org.restlet</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.restlet.jee</groupId>
+					<artifactId>org.restlet.ext.servlet</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>jdk.tools</groupId>
+					<artifactId>jdk.tools</artifactId>
+				</exclusion>
+				<exclusion>
+					<artifactId>javax.servlet</artifactId>
+					<groupId>org.eclipse.jetty.orbit</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
@@ -192,11 +216,6 @@
 			<artifactId>lucene-queries</artifactId>
 			<version>${lucene_version}</version>
 			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-facet</artifactId>
-			<version>${lucene_version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>

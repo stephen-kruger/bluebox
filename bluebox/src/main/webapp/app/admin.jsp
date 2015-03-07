@@ -61,10 +61,6 @@
 									  generate.set({value: queryResults.generate});
 									  document.getElementById("generateLabel").innerHTML = queryResults.generate_status;
 								  }
-								  if (queryResults.validatesearch) {
-									  validatesearch.set({value: queryResults.validatesearch});
-									  document.getElementById("validatesearchLabel").innerHTML = queryResults.validatesearch_status;
-								  }
 								},
 							onError :
 								function(error) {
@@ -139,11 +135,6 @@
 		function dbClean() {
 			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/clean",
 					"<%=adminResource.getString("clear_backup_action")%>");
-		}
-		
-		function validateSearch() {
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/validatesearch",
-					"<%=adminResource.getString("validate_search_action")%>");
 		}
 		
 		function genericConfirmGet(url,title) {
@@ -334,18 +325,7 @@
 				</tr>
 				<tr>
 				<td><br/></td>
-				</tr>
-				<tr>
-					<td><label><%=adminResource.getString("validate_search_action")%></label></td>
-					<td></td>
-					<td><button onclick="validateSearch()" data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
-					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="validatesearch" id="validatesearchProgress" data-dojo-props="maximum:100"></div></td>
-					<td></td>
-					<td align="right"><label data-dojo-id="validatesearchlabel" id="validatesearchLabel"></label></td>
-				</tr>
-				<tr>
-				<td><br/></td>
-				</tr>								
+				</tr>					
 				<tr>
 					<td><label><%=adminResource.getString("set_smtpblacklist_action")%></label></td>
 					<td>
