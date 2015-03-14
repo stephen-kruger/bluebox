@@ -1,5 +1,7 @@
 package com.bluebox.load;
 
+import java.util.logging.Logger;
+
 import org.databene.contiperf.PerfTest;
 import org.databene.contiperf.junit.ContiPerfRule;
 import org.databene.contiperf.junit.ParallelRunner;
@@ -18,6 +20,7 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 
 @RunWith(ParallelRunner.class)
 public class LoadTest extends BaseTestCase {
+	private static final Logger log = Logger.getAnonymousLogger();
 
 	@Rule
 	public ContiPerfRule i = new ContiPerfRule();
@@ -35,6 +38,7 @@ public class LoadTest extends BaseTestCase {
 	@Test
 	@PerfTest(invocations = 10, threads = 2)
 	public void testLoad() throws Exception {
+		log.info("Starting load test");
 		// send some mail
 		TestUtils.addRandomNoThread(getInbox(), 10);
 		// get some stats

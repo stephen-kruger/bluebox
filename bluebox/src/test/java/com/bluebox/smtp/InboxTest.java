@@ -150,7 +150,7 @@ public class InboxTest extends BaseTestCase {
 		assertEquals("Did not find deleted mail",1,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true).size());
 		assertEquals("Unexpected search data",1,si.search(from, SearchUtils.SearchFields.FROM, 0, 10, SearchUtils.SearchFields.FROM, true).length);		
 	}
-	
+
 	@Test
 	public void testCrash() throws Exception {
 		assertEquals("Mailbox was not cleared",0,getInbox().getMailCount(State.ANY));
@@ -202,20 +202,20 @@ public class InboxTest extends BaseTestCase {
 		safeWrite(output,"Your friend,");
 		safeWrite(output,"Bob");
 		safeWrite(output,"\r\n.\r\n");
-		
+
 		safeRead(input);
 		// S: 250 Ok: queued as 12345
 		safeWrite(output,"QUIT");
-		
+
 		safeRead(input);
 		// S: 221 Bye
-		
+
 		log.info("Closing smtp relay");
 		output.close();
 		s.close();
-		
+
 		TestUtils.waitFor(getInbox(), 1);
-		
+
 		// check the mail was received
 		assertEquals(2,getInbox().getMailCount(BlueboxMessage.State.ANY));
 	}
@@ -233,7 +233,7 @@ public class InboxTest extends BaseTestCase {
 			log.severe("No data!");
 		}
 	}
-	
+
 	private void safeWrite(BufferedWriter output,String s) {
 		try {
 			output.write(s+"\r\n");
@@ -269,7 +269,7 @@ public class InboxTest extends BaseTestCase {
 		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertTrue(mimeMessage.getSubject().equals(testSubject));
 	}
-	
+
 	/*
 	 * Not really a test, but verify the logs contain message indicating temp file was deleted.
 	 */
@@ -513,8 +513,8 @@ public class InboxTest extends BaseTestCase {
 		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertEquals("Subject did not match",subject,mimeMessage.getSubject().toString());
 		// TODO - figure out why this does not work
-//		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
-//		assertEquals("Body did not match",bodyWithCR,email.getText());
+		//		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
+		//		assertEquals("Body did not match",bodyWithCR,email.getText());
 	}
 
 	@Test
@@ -522,7 +522,7 @@ public class InboxTest extends BaseTestCase {
 		String subject = "My country is dying";
 		String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
 		List<File> attachments = new ArrayList<File>();
-		File attachment = new File("./target/bluebox/WEB-INF/lib/derby-10.11.1.1.jar");
+		File attachment = new File("./src/test/resources/test-data/inlineattachments.eml");
 		// figure out how many attachments to add taking into account encoding etc
 		// without hitting maximum mail size
 		int count = (int)(Inbox.MAX_MAIL_BYTES/attachment.length()*7/10);
@@ -530,19 +530,19 @@ public class InboxTest extends BaseTestCase {
 		for (int i = 0; i < count; i++)
 			attachments.add(attachment);
 		TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", null, null, subject, bodyWithCR, attachments);
-
+		log.info("Waiting for delivery");
 		TestUtils.waitFor(getInbox(),1);
 
 
 		Inbox inbox = getInbox();
 		assertEquals("Sent message was not correctly recieved (Got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+")",1,inbox.getMailCount(BlueboxMessage.State.NORMAL));
-		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
+		List<BlueboxMessage> list = inbox.listInbox(new InboxAddress("bob@zim.com"), BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		Iterator<BlueboxMessage> emailIter = list.iterator();
 		BlueboxMessage email = (BlueboxMessage) emailIter.next();
 		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertEquals("Subject did not match",subject,mimeMessage.getSubject().toString());
 		// TODO - figure out why this does not work
-//		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
-//		assertEquals("Body did not match",bodyWithCR,email.getText());
+		//		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
+		//		assertEquals("Body did not match",bodyWithCR,email.getText());
 	}
 }
