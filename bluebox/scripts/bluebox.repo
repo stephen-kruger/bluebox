@@ -1,5 +1,5 @@
 [bluebox]
 name=Bluebox Repository
-baseurl=https://stephen-kruger.github.io/bluebox/yum/noarch
+baseurl=https://stephen-kruger.github.io/bluebox-repo/yum/noarch
 enabled=1
 gpgcheck=0

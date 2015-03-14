@@ -22,12 +22,12 @@ function checkMaven() {
         fi
 }
 
-function checkSvn() {
-        if command_exists `which svn`; then
-        echo "Please install subversion"
+function checkGit() {
+        if command_exists `which git`; then
+        echo "Please install git"
         exit
         else
-                echo "Subversion detected"
+                echo "Git detected"
         fi
 }
 
@@ -41,14 +41,14 @@ function checkCreaterepo() {
 }
 
 checkMaven
-checkSvn
+checkGit
 checkCreaterepo
 
 cd $BLUEBOX_SRC
 export BLUEBOX_SRC=`pwd`
 
 echo "Updating sources"
-svn update
+git pull
 rm -rf $BLUEBOX_SRC/target/rpm/*
 
 echo "Building sources"
