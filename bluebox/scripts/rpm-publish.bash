@@ -19,6 +19,6 @@ createrepo $BLUEBOX_GIT/yum/noarch
 
 git add yum
 git commit -m "Updating yum repo with new build"
-git push git@github.com:stephen-kruger/bluebox-rpm.git gh-pages
+git push git@github.com:stephen-kruger/bluebox-repo.git gh-pages
 
 sudo yum clean expire-cache
