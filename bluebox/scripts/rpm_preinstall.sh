@@ -10,13 +10,11 @@ if [ "$1" = "1" ]; then
 	/sbin/service iptables save
 elif [ "$1" = "2" ]; then
 	echo "Performing bluebox upgrade..."
-	echo "1/4: Shutting down tomcat"
+	echo "1/3: Shutting down tomcat"
 	/sbin/service tomcat6 stop
-	echo "2/4: Shutting down MongoDB"
+	echo "2/3: Shutting down MongoDB"
 	/sbin/service mongod stop
-	echo "3/4: Cleaning previous installation in ${tomcat.webapp.dir}/bluebox"
-	rm -rf ${tomcat.webapp.dir}/bluebox
-	echo "4/4: Cleaning Lucence lock file"
-	rm -rf /usr/share/tomcat6/temp/bluebox4.lucene/write.lock
+	echo "3/3: Cleaning previous installation in /usr/share/tomcat6/webapps/bluebox"
+	rm -rf /usr/share/tomcat6/webapps/bluebox.*
 fi
 echo "Installing bluebox war file"

@@ -36,11 +36,6 @@
 			overflow-x:hidden;
 		}
 		
-		.dojoxGridHeader div {
-			font-style: bold !important;
-			background:#CCD6EB;
-		}
-		
 		.dojoxGrid, .gridDiv {
 			width:100%;
 			height:200px;

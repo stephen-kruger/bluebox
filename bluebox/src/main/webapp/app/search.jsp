@@ -24,10 +24,7 @@
 %>
 
 <style type="text/css">
-.searchBox {
-	background: #CCD6EB;
-	border-radius: 15px;
-}
+
 </style>
 
 <!--  search Javascript -->

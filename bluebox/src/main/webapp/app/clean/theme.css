@@ -38,3 +38,22 @@
 .claro .dijitDialogTitleBar {
 	background-color: #CCD6EB;
 }
+
+.dojoxGridHeader div {
+	font-style: bold !important;
+	background:#CCD6EB;
+}
+		
+.claro .dojoxGridPaginator {
+	background:#CCD6EB;
+}
+
+.dojoxGridHeader div {
+	font-style: bold !important;
+	background:#CCD6EB;
+}
+
+.searchBox {
+	background: #CCD6EB;
+	border-radius: 15px;
+}
