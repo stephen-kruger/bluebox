@@ -15,6 +15,6 @@ elif [ "$1" = "2" ]; then
 	echo "2/3: Shutting down MongoDB"
 	/sbin/service mongod stop
 	echo "3/3: Cleaning previous installation in /usr/share/tomcat6/webapps/bluebox"
-	rm -rf /usr/share/tomcat6/webapps/bluebox.*
+	rm -rf /usr/share/tomcat6/webapps/bluebox*
 fi
 echo "Installing bluebox war file"
