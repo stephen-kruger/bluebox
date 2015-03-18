@@ -46,8 +46,12 @@ public abstract class BaseServletTest extends TestCase {
 		tester.start();
 
 		// clear mailboxes
-		getURL("/"+JSONAdminHandler.JSON_ROOT+"/clear");
+		clearMail();
 
+	}
+	
+	public void clearMail() throws IOException, Exception {
+		getURL("/"+JSONAdminHandler.JSON_ROOT+"/clear");
 	}
 
 	@Override

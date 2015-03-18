@@ -67,6 +67,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public static boolean mongoDetected() {
 		try {
+			log.info("Checking for MongoDB instance");
 			Socket socket = new Socket(); // Unconnected socket, with the  system-default type of SocketImpl.
 			InetSocketAddress endPoint = new InetSocketAddress( Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST),27017);
 			socket.connect(  endPoint , 100);
@@ -74,7 +75,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return true;
 		}
 		catch (Throwable t) {
-
+			log.debug("Mongo not detected");
 		}
 		return false;
 	}
@@ -785,10 +786,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		BasicDBObject dbObject = new BasicDBObject();
 		dbObject.put("name", key); 
 		// your update condition
-		DBCursor cursor = coll.find(dbObject);
+		DBObject dbo = coll.findOne(dbObject);
 		try {
-			if (cursor.count()>0) {
-				DBObject dbo = cursor.next();
+			if (dbo!=null) {
 				DBObject newObject =  dbo;
 				newObject.put(key,value);			
 				//add field, either a new field or any existing field
@@ -800,9 +800,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
-		}
-		finally {
-			cursor.close();
+			log.error("Error setting property :");
 		}
 	}
 

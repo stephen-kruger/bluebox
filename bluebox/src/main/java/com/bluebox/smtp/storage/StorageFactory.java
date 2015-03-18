@@ -30,11 +30,9 @@ public class StorageFactory {
 			else {
 				// try mongodb, if it fails use derby
 				if (com.bluebox.smtp.storage.mongodb.StorageImpl.mongoDetected()) {
-					log.info("Checking for MongoDB");
 					storageInstance = new com.bluebox.smtp.storage.mongodb.StorageImpl();
 				} 
 				else {
-					log.info("Fallback to Derby storage");
 					storageInstance = new com.bluebox.smtp.storage.derby.StorageImpl();
 				}
 			}

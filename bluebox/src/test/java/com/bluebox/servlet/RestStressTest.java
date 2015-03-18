@@ -23,13 +23,14 @@ public class RestStressTest extends BaseServletTest {
 	}
 
 	public void testStressStatsHandler() throws IOException, Exception {
-		TestUtils.sendMailDirect(getInbox(), "bob@bob.com", "joe@joe.com");
 		String url = "/"+JSONStatsHandler.JSON_ROOT+"/"+JSONStatsHandler.GLOBAL_STAT+"/";
+		clearMail();
+		TestUtils.sendMailDirect(getInbox(), "bob@bob.com", "joe@joe.com");
 		log.info("Stressing to "+STRESS_LEVEl);
 		for (int i = 0; i < STRESS_LEVEl;i++) {
 			JSONObject js = getRestJSON(url);
-			assertNotNull(js.get("Count"));
-			assertTrue(js.getInt("Count")==1);
+			assertNotNull(js.get("countAll"));
+			assertEquals("Missing emails",1,js.getInt("countAll"));
 			if ((i % 1000)==0)
 				log.info("Processed "+i);
 		}
