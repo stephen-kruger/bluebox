@@ -83,7 +83,7 @@ public class SolrIndexer {
 			fw.write("<fieldType name=\"string\" class=\"solr.TextField\" positionIncrementGap=\"100\">");
 			fw.write("<analyzer type=\"query\">");
 			fw.write("<tokenizer class=\"solr.WhitespaceTokenizerFactory\"/>");
-//			fw.write("<filter class=\"solr.WordDelimiterFilterFactory\" generateWordParts=\"1\" generateNumberParts=\"0\" catenateWords=\"1\" catenateNumbers=\"1\" catenateAll=\"0\" splitOnCaseChange=\"0\"/>");
+			//			fw.write("<filter class=\"solr.WordDelimiterFilterFactory\" generateWordParts=\"1\" generateNumberParts=\"0\" catenateWords=\"1\" catenateNumbers=\"1\" catenateAll=\"0\" splitOnCaseChange=\"0\"/>");
 			fw.write("<filter class=\"solr.LowerCaseFilterFactory\"/>");
 			fw.write(" </analyzer>");
 			fw.write("</fieldType>");
@@ -92,17 +92,18 @@ public class SolrIndexer {
 
 			fw.write("<fields>");
 			fw.write("<field name=\""+SearchUtils.SearchFields.UID.name()+"\" type=\"string\" indexed=\"true\" stored=\"true\" multiValued=\"false\" required=\"true\"/>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.INBOX.name()+"\" type=\"string\" indexed=\"true\" stored=\"true\"/>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.FROM.name()+"\" type=\"string\" indexed=\"true\" stored=\"true\"/>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.RECIPIENT.name()+"\" type=\"string\" indexed=\"true\" stored=\"true\"/>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.BODY.name()+"\" type=\"string\" indexed=\"true\" stored=\"false\"/>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.SUBJECT.name()+"\" type=\"string\" indexed=\"true\" stored=\"true\"/>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.RECIPIENTS.name()+"\" type=\"string\" indexed=\"true\" stored=\"false\"/>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.HTML_BODY.name()+"\" type=\"string\" indexed=\"true\" stored=\"false\"/>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.TEXT_BODY.name()+"\" type=\"string\" indexed=\"true\" stored=\"false\"/>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.SIZE.name()+"\" type=\"long\" indexed=\"true\" stored=\"true\"/>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.RECEIVED.name()+"\" type=\"long\" indexed=\"true\" stored=\"true\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.INBOX.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"true\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.FROM.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"true\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.RECIPIENT.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"true\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.BODY.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"false\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.SUBJECT.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"true\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.RECIPIENTS.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"false\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.HTML_BODY.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"false\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.TEXT_BODY.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"false\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.SIZE.name()+"\" type=\"long\" indexed=\"true\"  multiValued=\"false\" stored=\"true\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.RECEIVED.name()+"\" type=\"long\" indexed=\"true\"  multiValued=\"false\" stored=\"true\"/>");
 			fw.write("</fields>");
+			fw.write("<uniqueKey>"+SearchUtils.SearchFields.UID.name()+"</uniqueKey>");
 			fw.write("</schema>\n");
 			fw.close();
 		} 
@@ -115,6 +116,11 @@ public class SolrIndexer {
 			fw.write("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
 			fw.write("<config>");
 			fw.write("<luceneMatchVersion>5.0.0</luceneMatchVersion>");
+			fw.write("<unlockOnStartup>true</unlockOnStartup>");
+			fw.write("<maxFieldLength>10000</maxFieldLength>");
+			fw.write("<writeLockTimeout>60000</writeLockTimeout>");
+			fw.write("<commitLockTimeout>60000</commitLockTimeout>");
+			fw.write("<lockType>simple</lockType>");
 			fw.write("<requestHandler name=\"standard\" class=\"solr.StandardRequestHandler\" default=\"true\"/>");
 			fw.write("</config>\n");
 			fw.close();
@@ -234,14 +240,14 @@ public class SolrIndexer {
 				message.getReceived().getTime(),
 				commit);
 	}
-	
+
 	public void commit() throws SolrServerException, IOException {
 		server.commit();
 	}
 
-//	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws Exception {
-//		addDoc(uid,inbox,from,subject,text,html,recipients,size,received);
-//	}
+	//	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws Exception {
+	//		addDoc(uid,inbox,from,subject,text,html,recipients,size,received);
+	//	}
 
 	/* Find which one of the potential recipeints of this mail matches the specified inbox
 	 * 
@@ -285,7 +291,7 @@ public class SolrIndexer {
 	protected void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException, SolrServerException {
 		addDoc(uid, inbox, from, subject, text, html, recipients, size, received, true);
 	}
-	
+
 	protected void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException, SolrServerException {
 		SolrInputDocument doc = new SolrInputDocument();
 		String htmlStr = SearchUtils.htmlToString(html);
