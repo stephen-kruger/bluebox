@@ -14,13 +14,17 @@ import javax.mail.internet.MimeMessage;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
+import com.bluebox.WorkerThread;
+import com.bluebox.search.SolrIndexer;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public abstract class AbstractStorage implements StorageIf {
-//	private static final Logger log = LoggerFactory.getLogger(AbstractStorage.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractStorage.class);
 	public static final String DB_NAME = "bluebox401";
 	
 	@Override
@@ -104,5 +108,39 @@ public abstract class AbstractStorage implements StorageIf {
 	public boolean hasProperty(String key) {
 		String r = Long.toString(new Random().nextLong());
 		return !getProperty(key,r).equals(r);		
+	}
+	
+	@Override
+	public WorkerThread runMaintenance() throws Exception {
+		WorkerThread wt = new WorkerThread(StorageIf.WT_NAME) {
+
+			@Override
+			public void run() {
+				int issues = 0;
+				setProgress(0);
+				try {
+					SolrIndexer indexer = SolrIndexer.getInstance();
+					LiteMessageIterator messages = new LiteMessageIterator(null,BlueboxMessage.State.NORMAL);
+					while(messages.hasNext()) {
+						LiteMessage msg = messages.next();
+						if (!indexer.containsUid(msg.getIdentifier())) {
+							log.warn("Message not indexed "+msg.getIdentifier());
+							indexer.indexMail(retrieve(msg.getIdentifier()), true);
+							issues++;
+							setProgress(messages.getProgress());
+						}
+					}
+				} 
+				catch (Exception e) {
+					e.printStackTrace();
+				}	
+				finally {
+					setProgress(100);
+					setStatus("Completed, with "+issues+" unindexed messages fixed");
+				}
+			}
+
+		};
+		return wt;
 	}
 }

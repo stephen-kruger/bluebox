@@ -18,6 +18,7 @@ import com.bluebox.smtp.InboxAddress;
 public interface StorageIf {
 
 	public static final String WT_NAME = "dbmaintenance";
+	public static final String RAWCLEAN = "rawclean";
 
 	public void start() throws Exception;
 
@@ -103,6 +104,11 @@ public interface StorageIf {
 	 */
 	public WorkerThread runMaintenance() throws Exception;
 	
+	/*
+	 * Clean up all blobs not associated with a valid mail entry.
+	 */
+	public WorkerThread cleanRaw();
+
 	/*
 	 * Return a JSON view of the count of email received per day of month
 	 * {

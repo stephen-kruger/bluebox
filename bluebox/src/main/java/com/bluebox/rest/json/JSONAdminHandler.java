@@ -95,6 +95,18 @@ public class JSONAdminHandler extends AbstractHandler {
 			}
 			return;
 		}	
+		if (req.getRequestURI().indexOf(JSON_ROOT+"/rawclean")>=0){
+			try {
+				WorkerThread wt = inbox.cleanRaw();
+				bbservlet.startWorker(wt, req, resp);
+				resp.flushBuffer();
+			} 
+			catch (Exception e) {
+				e.printStackTrace();
+				resp.getWriter().print(e.getMessage());	
+			}
+			return;
+		}	
 		if (req.getRequestURI().indexOf(JSON_ROOT+"/backup")>=0){
 			try {
 				File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");

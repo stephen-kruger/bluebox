@@ -116,7 +116,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			Date d = new Date(props.getLong(StorageIf.Props.Received.name()));
 			bson.put(StorageIf.Props.Received.name(), d);
 			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
-			GridFSInputFile gfsFile = gfsRaw.createFile(blob);
+			GridFSInputFile gfsFile = gfsRaw.createFile(blob,true);
 			gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
 			gfsFile.save();
 			coll.insert(bson);
@@ -184,26 +184,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public int getDBOInt(Object dbo, String key, int def) {
-		DBObject mo = (DBObject)dbo;
-		if (mo.containsField(key)) {
-			return Integer.parseInt(mo.get(key).toString());
-		}
-		else {
-			log.warn("Missing field {}",key);
-			return def;
-		}
+		return Integer.parseInt(getDBOString(dbo, key, Integer.toString(def)));
 	}
 
 	@Override
 	public long getDBOLong(Object dbo, String key, long def) {
-		DBObject mo = (DBObject)dbo;
-		if (mo.containsField(key)) {
-			return Long.parseLong(mo.get(key).toString());
-		}
-		else {
-			log.warn("Missing field {}",key);
-			return def;
-		}
+		return Long.parseLong(getDBOString(dbo, key, Long.toString(def)));
 	}
 
 	@Override
@@ -247,8 +233,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		new Thread(cleanRaw()).start();
 	}
 
-	private WorkerThread cleanRaw() {
-		WorkerThread wt = new WorkerThread(StorageIf.WT_NAME) {
+	public WorkerThread cleanRaw() {
+		WorkerThread wt = new WorkerThread(StorageIf.RAWCLEAN) {
 
 			@Override
 			public void run() {
@@ -261,6 +247,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					DBCursor cursor = gfsRaw.getFileList();
 					DBObject dbo;
 					int count = 0;
+					setStatus("Running");
+					setProgress(0);
 					while(cursor.hasNext()) {
 						if (isStopped()) break;
 						dbo = cursor.next();
@@ -273,6 +261,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 						count++;
 						setProgress(count*100/cursor.count());
 					}
+					setStatus("Found and clean "+issues+" orphaned blobs");
+					setProgress(0);
 					cursor.close();
 					log.info("Finished looking for orphaned blobs");
 				}
@@ -624,11 +614,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	//		List<String> inboxes = db.getCollection(TABLE_NAME).distinct(StorageIf.Props.Inbox.name());
 	//		return inboxes;
 	//	}
-
-	@Override
-	public WorkerThread runMaintenance() throws Exception {
-		return cleanRaw();
-	}
 
 	@Override
 	public JSONObject getCountByDay() {

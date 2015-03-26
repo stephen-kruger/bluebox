@@ -982,6 +982,10 @@ public class Inbox implements SimpleMessageListener {
 		this.blueboxMessageHandlerFactory = blueboxMessageHandlerFactory;		
 	}
 
+	public WorkerThread cleanRaw() {
+		return StorageFactory.getInstance().cleanRaw();
+	}
+
 	//	/**
 	//	 * This method parses the Received header to see if the sending SMTP server is on our from blacklist.
 	//	 * @param message

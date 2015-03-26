@@ -45,13 +45,17 @@
 										restore.set({value: queryResults.restore});
 										document.getElementById("restoreLabel").innerHTML = queryResults.restore_status;
 								  }
+								  if (queryResults.rawclean) {
+										restore.set({value: queryResults.rawclean});
+										document.getElementById("rawcleanLabel").innerHTML = queryResults.rawclean_status;
+								  }
 								  if (queryResults.reindex) {
 										reindex.set({value: queryResults.reindex});
 										document.getElementById("reindexLabel").innerHTML = queryResults.reindex_status;
 								  }
-								  if (queryResults.<%=StorageIf.WT_NAME %>) {
-									  <%=StorageIf.WT_NAME %>.set({value: queryResults.<%=StorageIf.WT_NAME %>});
-									  document.getElementById("<%=StorageIf.WT_NAME %>Label").innerHTML = queryResults.<%=StorageIf.WT_NAME %>_status;
+								  if (queryResults.dbmaintenance) {
+									  dbmaintenance.set({value: queryResults.dbmaintenance});
+									  document.getElementById("dbmaintenanceLabel").innerHTML = queryResults.dbmaintenance_status;
 								  }
 								  if (queryResults.cleanup) {
 									  cleanup.set({value: queryResults.cleanup});
@@ -132,6 +136,12 @@
 					"Server responded");
 		}
 		
+		function dbRawClean() {
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/rawclean",
+					"<%=adminResource.getString("rawclean_action")%>",
+					"Server responded");
+		}
+		
 		function dbClean() {
 			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/clean",
 					"<%=adminResource.getString("clear_backup_action")%>");
@@ -161,7 +171,8 @@
 				    url: url,
 				    handleAs: "text",
 				    load: function(data){
-				    	dialog(title,data);
+				    	// TODO - implement status message overlay animation
+				    	console.log(title+":"+data);
 				    },
 				    error: function(error){
 				      console.log("An unexpected error occurred: " + error);
@@ -289,9 +300,9 @@
 					<td><label><%=adminResource.getString("db_maintenance_action")%></label></td>
 					<td></td>
 					<td><button onclick="dbMaintenance()" data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
-					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="<%=StorageIf.WT_NAME %>" id="<%=StorageIf.WT_NAME %>Progress" data-dojo-props="maximum:100"></div></td>
+					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="dbmaintenance" id="dbmaintenanceProgress" data-dojo-props="maximum:100"></div></td>
 					<td></td>
-					<td align="right"><label data-dojo-id="<%=StorageIf.WT_NAME %>label" id="<%=StorageIf.WT_NAME %>Label"></label></td>
+					<td align="right"><label data-dojo-id="dbmaintenancelabel" id="dbmaintenanceLabel"></label></td>
 				</tr>
 				<tr>
 				<td><br/></td>
@@ -314,6 +325,17 @@
 					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="restore" id="restoreProgress" data-dojo-props="maximum:100"></div></td>
 					<td></td>
 					<td align="right"><label data-dojo-id="restorelabel" id="restoreLabel"></label></td>
+				</tr>
+				<tr>
+				<td><br/></td>
+				</tr>
+				<tr>
+					<td><label><%=adminResource.getString("rawclean_action")%></label></td>
+					<td></td>
+					<td><button onclick="dbRawClean()" data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
+					<td><div data-dojo-type="dijit/ProgressBar" style="width:100%" data-dojo-id="restore" id="rawcleanProgress" data-dojo-props="maximum:100"></div></td>
+					<td></td>
+					<td align="right"><label data-dojo-id="rawcleanlabel" id="rawcleanLabel"></label></td>
 				</tr>
 				<tr>
 				<td><br/></td>

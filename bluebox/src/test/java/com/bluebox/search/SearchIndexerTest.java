@@ -2,6 +2,7 @@ package com.bluebox.search;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import org.apache.solr.client.solrj.SolrServerException;
@@ -15,15 +16,18 @@ import com.bluebox.smtp.storage.StorageFactory;
 
 public class SearchIndexerTest extends BaseTestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
-
+	private String uid1 = UUID.randomUUID().toString();
+	private String uid2 = UUID.randomUUID().toString();
+	private String uid3 = UUID.randomUUID().toString();
+	private String uid4 = UUID.randomUUID().toString();
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
 		getSearchIndexer().deleteIndexes();
-		getSearchIndexer().addDoc("193398817","receiever1@here.com","sender1@there.com","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543,false);
-		getSearchIndexer().addDoc("55320055Z","receiever2@here.com","sender2@there.com","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543,false);
-		getSearchIndexer().addDoc("55063554A","receiever3@here.com","sender3@there.com","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543,false);
-		getSearchIndexer().addDoc("9900333X","receiever4@here.com","sender4@there.com","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543,false);
+		getSearchIndexer().addDoc(uid1,"receiever1@here.com","[sender1@there.com]","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543,false);
+		getSearchIndexer().addDoc(uid2,"receiever2@here.com","[sender2@there.com]","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543,false);
+		getSearchIndexer().addDoc(uid3,"receiever3@here.com","[sender3@there.com]","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543,false);
+		getSearchIndexer().addDoc(uid4,"receiever4@here.com","[sender4@there.com]","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543,false);
 		getSearchIndexer().commit();
 	}
 
@@ -72,13 +76,13 @@ public class SearchIndexerTest extends BaseTestCase {
 
 	@Test
 	public void testDelete() throws IOException, Exception, InterruptedException, SolrServerException {
-		getSearchIndexer().deleteDoc("193398817");
+		getSearchIndexer().deleteDoc(uid1);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("johnson",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("stephen",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
 		assertEquals("Missing expected search results",0,getSearchIndexer().search("Lucene in Action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
 		assertEquals("Missing expected search results",0,getSearchIndexer().search("sender1@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("sender2@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		getSearchIndexer().deleteDoc("55320055Z");
+		getSearchIndexer().deleteDoc(uid2);
 		assertEquals("Missing expected search results",0,getSearchIndexer().search("sender2@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
 	}
 
@@ -163,5 +167,16 @@ public class SearchIndexerTest extends BaseTestCase {
 		//		assertTrue("No substring search results",ja.length()>0);
 		//		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),original.getSubject());
 		//		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.FROM),original.getProperty(BlueboxMessage.FROM));
+	}
+	
+	@Test
+	public void testContains() throws IOException, Exception, InterruptedException, SolrServerException {
+		assertTrue("Did not find document by UID",getSearchIndexer().containsUid(uid1));
+		assertTrue("Did not find document by UID",getSearchIndexer().containsUid(uid2));
+		assertTrue("Did not find document by UID",getSearchIndexer().containsUid(uid3));
+		assertTrue("Did not find document by UID",getSearchIndexer().containsUid(uid4));
+		assertFalse("Unexpected UID found",getSearchIndexer().containsUid(UUID.randomUUID().toString()));
+		getSearchIndexer().deleteDoc(uid1);
+		assertFalse("Should not find deleted document by UID",getSearchIndexer().containsUid(uid1));
 	}
 }

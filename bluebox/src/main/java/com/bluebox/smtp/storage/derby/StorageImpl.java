@@ -36,7 +36,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	private static final String PROPS_TABLE = "PROPERTIES";
 	private static final String KEY = "keyname";
 	private static final String VALUE = "value";
-	//	private static final String DOW = "DayOfWeek";
 	public static final String ERROR_COUNT = "error_count";
 	public static final String ERROR_TITLE = "error_title";
 	public static final String ERROR_DATE = "error_date";
@@ -813,29 +812,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public WorkerThread runMaintenance() throws Exception {
-		WorkerThread wt = new WorkerThread(StorageIf.WT_NAME) {
-
-			@Override
-			public void run() {
-				setProgress(0);
-				try {
-					setupTables();
-				} 
-				catch (Exception e) {
-					e.printStackTrace();
-				}	
-				finally {
-					setProgress(100);
-					setStatus("Completed");
-				}
-			}
-
-		};
-		return wt;
-	}
-
-	@Override
 	public JSONObject getCountByDay() {
 
 		JSONObject resultJ = new JSONObject();
@@ -1065,6 +1041,20 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		//		}
 		log.debug("Got mph stats in {}ms",new Date().getTime()-started.getTime());
 		return resultJ;
+	}
+
+	@Override
+	public WorkerThread cleanRaw() {
+		WorkerThread wt = new WorkerThread(StorageIf.RAWCLEAN) {
+
+			@Override
+			public void run() {
+				setProgress(100);
+				setStatus("Completed");
+			}
+
+		};
+		return wt;
 	}
 
 }

@@ -88,10 +88,10 @@ public class SolrIndexer {
 			fw.write(" </analyzer>");
 			fw.write("</fieldType>");
 			fw.write("<fieldType name=\"long\" class=\"solr.TrieLongField\" positionIncrementGap=\"100\"/>");
+			fw.write("<fieldType name=\"uuid\" class=\"solr.UUIDField\"/>");
 			fw.write("</types>");
-
 			fw.write("<fields>");
-			fw.write("<field name=\""+SearchUtils.SearchFields.UID.name()+"\" type=\"string\" indexed=\"true\" stored=\"true\" multiValued=\"false\" required=\"true\"/>");
+			fw.write("<field name=\""+SearchUtils.SearchFields.UID.name()+"\" type=\"uuid\" indexed=\"true\" stored=\"true\" multiValued=\"false\" required=\"true\"/>");
 			fw.write("<field name=\""+SearchUtils.SearchFields.INBOX.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"true\"/>");
 			fw.write("<field name=\""+SearchUtils.SearchFields.FROM.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"true\"/>");
 			fw.write("<field name=\""+SearchUtils.SearchFields.RECIPIENT.name()+"\" type=\"string\" indexed=\"true\"  multiValued=\"false\" stored=\"true\"/>");
@@ -121,6 +121,14 @@ public class SolrIndexer {
 			fw.write("<writeLockTimeout>60000</writeLockTimeout>");
 			fw.write("<commitLockTimeout>60000</commitLockTimeout>");
 			fw.write("<lockType>simple</lockType>");
+
+			//			fw.write("<updateRequestProcessorChain name=\"uuid\">");
+			//			fw.write("<processor class=\"solr.UUIDUpdateProcessorFactory\">");
+			//			fw.write("<str name=\"fieldName\">"+SearchUtils.SearchFields.UID.name()+"</str>");
+			//			fw.write("</processor>");
+			//			fw.write("<processor class=\"solr.RunUpdateProcessorFactory\" />");
+			//			fw.write("</updateRequestProcessorChain>");
+
 			fw.write("<requestHandler name=\"standard\" class=\"solr.StandardRequestHandler\" default=\"true\"/>");
 			fw.write("</config>\n");
 			fw.close();
@@ -327,6 +335,16 @@ public class SolrIndexer {
 			server.deleteByQuery("*:*");
 		} catch (SolrServerException e) {
 			e.printStackTrace();
+		}
+	}
+
+	public boolean containsUid(String uid) {
+		try {
+			return server.query(new SolrQuery(SearchUtils.SearchFields.UID.name()+":"+uid)).getResults().size()==1;
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+			return false;
 		}
 	}
 
