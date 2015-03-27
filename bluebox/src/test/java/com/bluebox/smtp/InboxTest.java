@@ -143,6 +143,7 @@ public class InboxTest extends BaseTestCase {
 		List<BlueboxMessage> mail = inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true);
 		assertEquals("Missing mail",2,mail.size());
 		SolrIndexer si = SolrIndexer.getInstance();
+		si.commit(true);
 		assertEquals("Missing search data",2,si.search("from@from.com", SearchUtils.SearchFields.FROM, 0, 10, SearchUtils.SearchFields.FROM, true).length);
 		inbox.softDelete(mail.get(0).getIdentifier());
 
@@ -513,7 +514,7 @@ public class InboxTest extends BaseTestCase {
 		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertEquals("Subject did not match",subject,mimeMessage.getSubject().toString());
 		// TODO - figure out why this does not work
-		//		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
+//				assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
 		//		assertEquals("Body did not match",bodyWithCR,email.getText());
 	}
 

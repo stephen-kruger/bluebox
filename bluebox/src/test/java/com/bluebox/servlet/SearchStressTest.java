@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.TestUtils;
 import com.bluebox.rest.json.JSONAutoCompleteHandler;
+import com.bluebox.search.SolrIndexer;
 
 public class SearchStressTest extends BaseServletTest {
 	private static final Logger log = LoggerFactory.getLogger(SearchStressTest.class);
@@ -17,6 +18,7 @@ public class SearchStressTest extends BaseServletTest {
 		super.setUp();
 		TestUtils.addRandomNoThread(getInbox(), COUNT);
 		TestUtils.waitFor(getInbox(), COUNT);
+		SolrIndexer.getInstance().commit(true);
 	}
 
 	@Override

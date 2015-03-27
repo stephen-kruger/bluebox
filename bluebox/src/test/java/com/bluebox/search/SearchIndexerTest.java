@@ -28,7 +28,7 @@ public class SearchIndexerTest extends BaseTestCase {
 		getSearchIndexer().addDoc(uid2,"receiever2@here.com","[sender2@there.com]","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543,false);
 		getSearchIndexer().addDoc(uid3,"receiever3@here.com","[sender3@there.com]","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543,false);
 		getSearchIndexer().addDoc(uid4,"receiever4@here.com","[sender4@there.com]","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543,false);
-		getSearchIndexer().commit();
+		getSearchIndexer().commit(true);
 	}
 
 	@Test

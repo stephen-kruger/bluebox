@@ -28,7 +28,6 @@ public class TestJSONMessageUtilHandler extends BaseServletTest {
 
 	@Override
 	protected void tearDown() throws Exception {
-		// TODO Auto-generated method stub
 		super.tearDown();
 	}
 
@@ -36,7 +35,6 @@ public class TestJSONMessageUtilHandler extends BaseServletTest {
 	public void testGetLinks() throws IOException, Exception {
 		List<LiteMessage> list = getInbox().listInboxLite(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true, Locale.getDefault());
 		assertEquals("Missing mail",COUNT,list.size());
-		log.info("<<<<<>>>>>"+list.size());
 		for (LiteMessage jo : list) {
 			String url = "/"+JSONMessageUtilHandler.JSON_ROOT+"/"+jo.getIdentifier()+"/"+JSONMessageUtilHandler.LINKS;
 			JSONObject js = getRestJSON(url);
@@ -45,9 +43,7 @@ public class TestJSONMessageUtilHandler extends BaseServletTest {
 				assertNotNull("Link text not found",ja.getJSONObject(i).getString("text"));
 				assertNotNull("Link href not found",ja.getJSONObject(i).getString("href"));
 			}
-			log.info("<<<<<>>>>>");
 			log.info(js.toString(3));
-			log.info("<<<<<>>>>>");
 		}
 	}
 

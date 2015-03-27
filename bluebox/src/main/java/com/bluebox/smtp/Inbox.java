@@ -87,6 +87,8 @@ public class Inbox implements SimpleMessageListener {
 					log.info("Cleanup timer activated");
 					try {
 						new Thread(cleanUp()).start();
+						// commit any pending search indexing
+						SolrIndexer.getInstance().commit(true);
 					} 
 					catch (Exception e) {
 						log.error("Error running message cleanup",e);
@@ -503,31 +505,35 @@ public class Inbox implements SimpleMessageListener {
 
 		// spool the message to disk
 		File spooledMessage = Utils.getSpooledStreamFile(data);
-
-		if (spooledMessage.length()<MAX_MAIL_BYTES) {
-			try {
-				MimeMessage mimeMessage = Utils.loadEML(new FileInputStream(spooledMessage));
-				// now send the message to each recipient
-				for (String nrec : recipients) {
-					try {
-						deliver(from, nrec, mimeMessage, spooledMessage);
-					} 
-					catch (Throwable e) {
-						log.error(e.getMessage());
-						errorLog("Error accepting raw message from="+from+" for recipient="+nrec+" data bytes="+spooledMessage.length(), e.getMessage());
+		if (spooledMessage.exists()) {
+			if (spooledMessage.length()<MAX_MAIL_BYTES) {
+				try {
+					MimeMessage mimeMessage = Utils.loadEML(new FileInputStream(spooledMessage));
+					// now send the message to each recipient
+					for (String nrec : recipients) {
+						try {
+							deliver(from, nrec, mimeMessage, spooledMessage);
+						} 
+						catch (Throwable e) {
+							log.error(e.getMessage());
+							errorLog("Error accepting raw message from="+from+" for recipient="+nrec+" data bytes="+spooledMessage.length(), e.getMessage());
+						}
 					}
 				}
+				catch (MessagingException me) {
+					log.error("Problem loading message from stream",me);
+				}
 			}
-			catch (MessagingException me) {
-				log.error("Problem loading message from stream",me);
+			else {
+				log.error("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB From={}  Recipient={} Size={}",from,recipient,spooledMessage.length());
+				errorLog("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB","From="+from+" Recipient="+recipient+" Size="+spooledMessage.length());
+				spooledMessage.delete();
+				throw new TooMuchDataException("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB");
 			}
 			spooledMessage.delete();
 		}
 		else {
-			spooledMessage.delete();
-			log.error("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB From={}  Recipient={} Size={}",from,recipient,spooledMessage.length());
-			errorLog("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB","From="+from+" Recipient="+recipient+" Size="+spooledMessage.length());
-			throw new TooMuchDataException("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB");
+			errorLog("Problem spooling mail to disk","File="+spooledMessage.getCanonicalPath()+" From="+from+" Recipient="+recipient);
 		}
 	}
 
@@ -544,7 +550,7 @@ public class Inbox implements SimpleMessageListener {
 		updateStats(blueboxMessage, recipient, false);
 		// ensure the content is indexed
 		try {
-			SolrIndexer.getInstance().indexMail(blueboxMessage,true);
+			SolrIndexer.getInstance().indexMail(blueboxMessage,false);
 		}
 		catch (Throwable t) {
 			log.error(t.getMessage());
@@ -629,7 +635,7 @@ public class Inbox implements SimpleMessageListener {
 
 	public void softUndelete(String uid, BlueboxMessage message) throws Exception {
 		setState(uid, BlueboxMessage.State.NORMAL);
-		SolrIndexer.getInstance().indexMail(message,true);
+		SolrIndexer.getInstance().indexMail(message,false);
 	}
 
 	private void setState(String uid, BlueboxMessage.State state) throws Exception {
@@ -647,8 +653,8 @@ public class Inbox implements SimpleMessageListener {
 		if (hint.length()==0)
 			hint = "";
 		// ensure we check for all substrings
-//		if (!hint.startsWith("*"))
-//			hint = "*"+hint;
+		//		if (!hint.startsWith("*"))
+		//			hint = "*"+hint;
 		if (hint.length()==1) {
 			return children;
 		}
@@ -740,15 +746,12 @@ public class Inbox implements SimpleMessageListener {
 					SolrIndexer solrIndexer = SolrIndexer.getInstance();
 					solrIndexer.deleteIndexes();
 					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.NORMAL);
-					int count = 0;
 					while (mi.hasNext()) {
 						if (isStopped()) break;
 						solrIndexer.indexMail(mi.next(),false);						
 						setProgress(mi.getProgress());
-						count++;
-						if (count % 100==0)solrIndexer.commit();
 					}
-					solrIndexer.commit();
+					solrIndexer.commit(true);
 				} 
 				catch (Throwable e) {
 					e.printStackTrace();
@@ -948,12 +951,11 @@ public class Inbox implements SimpleMessageListener {
 										MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));
 										SolrIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm),false);
 										restoreCount++;
-										if (restoreCount % 100==0) SolrIndexer.getInstance().commit();
 									}
 									else {
 										log.info("Ignoring restore of {}",uid);
 									}
-
+									SolrIndexer.getInstance().commit(true);
 								}
 								catch (Throwable t) {
 									t.printStackTrace();
@@ -962,7 +964,7 @@ public class Inbox implements SimpleMessageListener {
 							}
 							progress++;
 						}
-						SolrIndexer.getInstance().commit();
+						SolrIndexer.getInstance().commit(true);
 						archive.close();
 					} 
 					catch (Throwable e) {

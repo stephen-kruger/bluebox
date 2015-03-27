@@ -14,6 +14,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.PriorityQueue;
 import java.util.Properties;
 import java.util.Random;
 import java.util.StringTokenizer;
@@ -63,7 +64,7 @@ public class Utils {
 	public static final String UTF8 = "UTF-8";
 	private static final Logger log = LoggerFactory.getLogger(Utils.class);
 	private static int counter=0;
-	private static List<File>tempFiles = new ArrayList<File>(20);
+	private static PriorityQueue<File>tempFiles = new PriorityQueue<File>(20);
 	private static MimetypesFileTypeMap ftm;
 
 	static {
@@ -477,7 +478,7 @@ public class Utils {
 			BlueboxMessage bbm = storage.store(getFrom(msg), new InboxAddress(recipient), new Date(), msg, f);
 			SolrIndexer.getInstance().indexMail(bbm,false);
 		}
-		SolrIndexer.getInstance().commit();
+		SolrIndexer.getInstance().commit(true);
 		f.delete();
 	}
 
@@ -667,9 +668,9 @@ public class Utils {
 		File f = File.createTempFile("bluebox", ".spool");
 		f.deleteOnExit();	
 		if (tempFiles.size()>50) {
-			File old = tempFiles.remove(0);
+			File old = tempFiles.remove();
 			if (!old.delete()) {
-				log.debug("Could not delete temporary file :{}",old.getCanonicalPath());
+				log.error("Could not delete temporary file :{}",old.getCanonicalPath());
 			}
 		}
 		tempFiles.add(f);

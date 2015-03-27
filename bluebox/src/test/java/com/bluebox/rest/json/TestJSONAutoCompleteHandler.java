@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.BaseTestCase;
 import com.bluebox.TestUtils;
+import com.bluebox.search.SolrIndexer;
 
 public class TestJSONAutoCompleteHandler extends BaseTestCase {
 	private static final Logger log = LoggerFactory.getLogger(TestJSONAutoCompleteHandler.class);
@@ -21,6 +22,7 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 	@Test
 	public void testFullname() throws Exception {
 		TestUtils.sendMailDirect(getInbox(),"\"Joe Blow\" <jblow@example.com>", "WinEdt Mailing List <winedt+list@wsg.net>");
+		SolrIndexer.getInstance().commit(true);
 		JSONArray result = handler.doAutoComplete(getInbox(), "Joe", "0", "10");
 		assertEquals("Missing results",1,result.length());
 		assertEquals("Incorrect name set","Joe Blow <jblow@example.com>",result.getJSONObject(0).getString("label"));
@@ -32,7 +34,7 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 		for (int i = 0; i < 20; i++) {
 			TestUtils.sendMailDirect(getInbox(),"\"Joe Blow\" <jblow@example.com>", "WinEdt Mailing List <winedt+list@wsg.net>");
 		}
-
+		SolrIndexer.getInstance().commit(true);
 		assertEquals("Should not trigger for one character", 0, handler.doAutoComplete(getInbox(), "j", "0", "10").length());
 		assertTrue("No results found", handler.doAutoComplete(getInbox(), "Joe", "0", "10").length()>0);
 		log.debug(handler.doAutoComplete(getInbox(), "Joe", "0", "10").toString(3));
@@ -57,7 +59,7 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 				TestUtils.sendMailDirect(getInbox(),to, i+from+j);
 			}
 		}
-
+		SolrIndexer.getInstance().commit(true);
 		// check we recieve 10 non-identical results
 		assertEquals("Did not receive expected number of results", 1, handler.doAutoComplete(getInbox(), "bob", "0", Integer.toString(count)).length());
 		assertEquals("Did not recieve expected number of results", 1, handler.doAutoComplete(getInbox(), "", "0", Integer.toString(count)).length());
@@ -72,7 +74,7 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 		for (int i = 0; i < count; i++) {
 			TestUtils.sendMailDirect(getInbox(),i+to, from);
 		}
-
+		SolrIndexer.getInstance().commit(true);
 		// check we recieve 10 non-identical results
 		assertEquals("Did not receive expected number of results", count, handler.doAutoComplete(getInbox(), "", "0", "Infinity").length());
 		assertEquals("Did not receive expected number of results", count/2, handler.doAutoComplete(getInbox(), "", "0", ""+count/2).length());

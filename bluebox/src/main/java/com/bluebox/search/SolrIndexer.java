@@ -34,7 +34,9 @@ public class SolrIndexer {
 	private static SolrIndexer si;
 
 	private EmbeddedSolrServer server;
+	private long lastCommit=new Date().getTime();// last time a commit was performed
 	private static final String CORE_NAME="blueboxcore";
+	private static final int MAX_COMMIT_INTERVAL = 2000; // ensure at least some time between unforced commits
 
 	public static SolrIndexer getInstance() throws Exception {
 		if (si==null) {
@@ -249,8 +251,21 @@ public class SolrIndexer {
 				commit);
 	}
 
-	public void commit() throws SolrServerException, IOException {
-		server.commit();
+	/* 
+	 * Basically stall the commit unless a certain timeout has been reached, 
+	 * to prevent multiple, consecutive commits 
+	 */
+	public void commit(boolean force) throws SolrServerException, IOException {
+		if (force)
+			lastCommit = 0;
+		long currentTime = new Date().getTime();
+		if ((currentTime-lastCommit)>MAX_COMMIT_INTERVAL) {
+			server.commit();
+			lastCommit = currentTime;
+			log.info("Performing commit");
+		}
+		else
+			log.debug("Skipping commit "+(currentTime-lastCommit));
 	}
 
 	//	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws Exception {
@@ -293,11 +308,11 @@ public class SolrIndexer {
 
 	public void deleteDoc(String value, SearchUtils.SearchFields field) throws SolrServerException, IOException {
 		server.deleteByQuery(field.name()+":"+value);
-		server.commit();
+		commit(true);
 	}
 
 	protected void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException, SolrServerException {
-		addDoc(uid, inbox, from, subject, text, html, recipients, size, received, true);
+		addDoc(uid, inbox, from, subject, text, html, recipients, size, received, false);
 	}
 
 	protected void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException, SolrServerException {
@@ -315,8 +330,7 @@ public class SolrIndexer {
 		doc.addField( SearchUtils.SearchFields.SIZE.name(), size);
 		doc.addField( SearchUtils.SearchFields.RECEIVED.name(), received);
 		server.add(doc);
-		if (commit)
-			server.commit();
+		commit(commit);
 	}
 
 	public static File createTempDirectory(String name)  throws IOException {
