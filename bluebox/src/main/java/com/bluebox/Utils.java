@@ -667,10 +667,11 @@ public class Utils {
 	public static File getTempFile() throws IOException {
 		File f = File.createTempFile("bluebox", ".spool");
 		f.deleteOnExit();	
-		if (tempFiles.size()>50) {
+		if (tempFiles.size()>100) {
 			File old = tempFiles.remove();
 			if (!old.delete()) {
-				log.error("Could not delete temporary file :{}",old.getCanonicalPath());
+				// not serious, was probably deleted by proper cleanup
+				log.debug("Could not delete temporary file :{}",old.getCanonicalPath());
 			}
 		}
 		tempFiles.add(f);
