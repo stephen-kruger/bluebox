@@ -36,7 +36,7 @@ public class SolrIndexer {
 	private EmbeddedSolrServer server;
 	private long lastCommit=new Date().getTime();// last time a commit was performed
 	private static final String CORE_NAME="blueboxcore";
-	private static final int MAX_COMMIT_INTERVAL = 2000; // ensure at least some time between unforced commits
+	private static final int MAX_COMMIT_INTERVAL = 20000; // ensure at least some time between unforced commits
 
 	public static SolrIndexer getInstance() throws Exception {
 		if (si==null) {
@@ -190,6 +190,7 @@ public class SolrIndexer {
 		else
 			query.setQuery(fields.name()+":"+querystr);
 		query.setStart(start); 
+		query.setRows(count);
 		query.addSort(orderBy.name(), SolrQuery.ORDER.desc);
 		query.setRequestHandler("standard");
 
@@ -256,16 +257,17 @@ public class SolrIndexer {
 	 * to prevent multiple, consecutive commits 
 	 */
 	public void commit(boolean force) throws SolrServerException, IOException {
-		if (force)
+		if (force) {
+			log.info("Commit being forced");
 			lastCommit = 0;
+		}
 		long currentTime = new Date().getTime();
 		if ((currentTime-lastCommit)>MAX_COMMIT_INTERVAL) {
 			server.commit();
 			lastCommit = currentTime;
-			log.info("Performing commit");
 		}
 		else
-			log.debug("Skipping commit "+(currentTime-lastCommit));
+			log.debug("Skipping commit {},",(currentTime-lastCommit));
 	}
 
 	//	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws Exception {
@@ -336,11 +338,11 @@ public class SolrIndexer {
 	public static File createTempDirectory(String name)  throws IOException {
 		//File tmpDir = (File)getServletContext().getAttribute(ServletContext.TEMPDIR);
 		File temp = new File(System.getProperty("java.io.tmpdir")+File.separator+name);
-		log.debug("Preparing search indexes in "+temp.getCanonicalPath());
+		log.debug("Preparing search indexes in {}", temp.getCanonicalPath());
 		if(!(temp.mkdir())) {
-			log.debug("Re-using index directory: " + temp.getAbsolutePath());
+			log.debug("Re-using index directory {}", temp.getAbsolutePath());
 		}
-		log.debug("Configured search indexes in "+temp.getCanonicalPath());
+		log.debug("Configured search indexes in {}", temp.getCanonicalPath());
 		return (temp);
 	}
 

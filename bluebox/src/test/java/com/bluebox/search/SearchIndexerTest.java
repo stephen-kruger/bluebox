@@ -20,6 +20,7 @@ public class SearchIndexerTest extends BaseTestCase {
 	private String uid2 = UUID.randomUUID().toString();
 	private String uid3 = UUID.randomUUID().toString();
 	private String uid4 = UUID.randomUUID().toString();
+	
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -28,6 +29,9 @@ public class SearchIndexerTest extends BaseTestCase {
 		getSearchIndexer().addDoc(uid2,"receiever2@here.com","[sender2@there.com]","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543,false);
 		getSearchIndexer().addDoc(uid3,"receiever3@here.com","[sender3@there.com]","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543,false);
 		getSearchIndexer().addDoc(uid4,"receiever4@here.com","[sender4@there.com]","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543,false);
+		for (int i = 0; i < 50; i++) {
+			getSearchIndexer().addDoc(UUID.randomUUID().toString(),"xxx@xxx.com","[xxx@xxx.com]","ttttttttttttttttttttttttttt","tttttttttttttttttttttttttt","tttttttttttttttttttttttttttt",  "xxx@xxx.com",543,6346543,false);			
+		}
 		getSearchIndexer().commit(true);
 	}
 
@@ -178,5 +182,12 @@ public class SearchIndexerTest extends BaseTestCase {
 		assertFalse("Unexpected UID found",getSearchIndexer().containsUid(UUID.randomUUID().toString()));
 		getSearchIndexer().deleteDoc(uid1);
 		assertFalse("Should not find deleted document by UID",getSearchIndexer().containsUid(uid1));
+	}
+	
+	@Test
+	public void testSeachPaging() throws IOException, Exception, InterruptedException, SolrServerException {
+		assertEquals("Search did not limit results",10,getSearchIndexer().search("",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.RECEIVED,false).length);
+		assertEquals("Search did not limit results",10,getSearchIndexer().search("",SearchUtils.SearchFields.ANY,10,10,SearchUtils.SearchFields.RECEIVED,false).length);
+		assertEquals("Should not return results here",0,getSearchIndexer().search("",SearchUtils.SearchFields.ANY,1000,10,SearchUtils.SearchFields.RECEIVED,false).length);
 	}
 }

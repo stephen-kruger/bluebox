@@ -61,7 +61,7 @@ public class UploadServlet extends HttpServlet {
 						try {
 
 							if (item.getSize()>0) {
-								log.info("Loading file "+item.getName()+" with size "+item.getSize());
+								log.info("Loading file {} with size {}",item.getName(),item.getSize());
 								MimeMessage message = Utils.loadEML(item.getInputStream());
 								Utils.sendMessageDirect(StorageFactory.getInstance(),message);
 							}

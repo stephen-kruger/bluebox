@@ -45,7 +45,7 @@ public class InboxAddress extends Object {
 			email = Utils.decodeRFC2407(email);
 			// check if it's a Notes address
 			if (Utils.isNotesAddress(email)) {
-				log.info("Converting Notes style address :"+email);
+				log.info("Converting Notes style address :{}",email);
 				email = Utils.convertNotesAddress(email);
 			}
 			else {

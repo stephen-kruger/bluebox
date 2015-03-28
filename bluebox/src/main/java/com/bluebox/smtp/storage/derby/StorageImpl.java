@@ -210,13 +210,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				s.executeUpdate("CREATE INDEX "+indexes[i]+"_INDEX_ASC ON "+table+"("+indexes[i]+" ASC)");
 			}
 			catch (Throwable t) {
-				log.debug("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
+				log.debug("Problem creating asc index {} ({})",indexes[i],t.getMessage());
 			}
 			try {
 				s.executeUpdate("CREATE INDEX "+indexes[i]+"_INDEX_DESC ON "+table+"("+indexes[i]+" DESC)");
 			}
 			catch (Throwable t) {
-				log.debug("Problem creating asc index "+indexes[i]+" ("+t.getMessage()+")");
+				log.debug("Problem creating desc index {} ({})",indexes[i],t.getMessage());
 			}
 		}
 		s.close();
@@ -293,7 +293,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.execute();
 		connection.commit();
 		connection.close();
-		log.debug("Removed mail entry "+id);
+		log.debug("Removed mail entry {}",id);
 	}
 
 	@Override
@@ -449,7 +449,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.close();
 		connection.close();
 
-		log.debug("Calculated mail count ("+count+") in "+(new Date().getTime()-start)+"ms");
+		log.debug("Calculated mail count ({}) in {}ms", count, (new Date().getTime()-start));
 		return count;
 	}
 
@@ -482,7 +482,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 		connection.close();
 
-		log.debug("Calculated mail count for "+inbox+" ("+count+") in "+(new Date().getTime()-start)+"ms");
+		log.debug("Calculated mail count for {} ({}) in {}ms",inbox,count,(new Date().getTime()-start));
 		return count;
 	}
 
@@ -759,7 +759,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (JSONException je) {
 			je.printStackTrace();
 		}
-		log.debug("Calculated active inbox count in "+(new Date().getTime()-start)+"ms");
+		log.debug("Calculated active inbox count in {}ms",(new Date().getTime()-start));
 		return jo;
 	}
 

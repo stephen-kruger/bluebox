@@ -34,7 +34,6 @@ public abstract class BaseTestCase extends TestCase {
 		smtpServer.stop();
 		inbox.deleteAll();
 		inbox.stop();
-		si.stop();
 	}
 
 	public Inbox getInbox() {

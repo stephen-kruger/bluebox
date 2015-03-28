@@ -15,10 +15,10 @@ public class StorageFactory {
 		if (storageInstance==null) {
 			Config config = Config.getInstance();
 			if (config.containsKey(Config.BLUEBOX_STORAGE)) {
-				log.info("Using config specified storage :"+config.getString(Config.BLUEBOX_STORAGE));
+				log.info("Using config specified storage :{}",config.getString(Config.BLUEBOX_STORAGE));
 				// use whatever config specifies
 				String storageClassName = config.getString(Config.BLUEBOX_STORAGE);
-				log.info("Allocating storage instance for class "+storageClassName);
+				log.info("Allocating storage instance for class {}",storageClassName);
 				try {
 					storageInstance = (StorageIf) Class.forName(storageClassName).newInstance();
 				} 

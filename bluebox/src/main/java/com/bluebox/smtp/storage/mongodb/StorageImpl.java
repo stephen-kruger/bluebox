@@ -298,7 +298,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		DBObject dbo;
 		while(cursor.hasNext()) {
 			dbo = cursor.next();
-			log.debug("Deleting raw $s",dbo.get("filename"));
+			log.debug("Deleting raw {}",dbo.get("filename"));
 			gfsRaw.remove(dbo);
 		}
 		cursor.close();
@@ -323,7 +323,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
 		long start = new Date().getTime();
 		long count = db.getCollection(TABLE_NAME).count(query);
-		log.debug("Calculated mail count in {}",(new Date().getTime()-start)+"ms");
+		log.debug("Calculated mail count in {}ms",(new Date().getTime()-start));
 		return count;
 	}
 

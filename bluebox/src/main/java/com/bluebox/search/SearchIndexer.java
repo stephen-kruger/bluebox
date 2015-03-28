@@ -369,11 +369,11 @@ public class SearchIndexer {
 	public static File createTempDirectory()  throws IOException {
 		//File tmpDir = (File)getServletContext().getAttribute(ServletContext.TEMPDIR);
 		File temp = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox4.lucene");
-		log.debug("Preparing search indexes in "+temp.getCanonicalPath());
+		log.debug("Preparing search indexes in {}", temp.getCanonicalPath());
 		if(!(temp.mkdir())) {
-			log.debug("Re-using index directory: " + temp.getAbsolutePath());
+			log.debug("Re-using index directory: {}", temp.getAbsolutePath());
 		}
-		log.debug("Configured search indexes in "+temp.getCanonicalPath());
+		log.debug("Configured search indexes in {}",temp.getCanonicalPath());
 		return (temp);
 	}
 

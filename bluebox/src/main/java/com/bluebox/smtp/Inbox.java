@@ -223,7 +223,7 @@ public class Inbox implements SimpleMessageListener {
 								try {
 									if (smtpDomain.indexOf(msg.getSMTPSender())>=0) {
 										if (spamAction) {
-											log.info("Spam detected - soft deleting "+msg.getIdentifier());
+											log.info("Spam detected - soft deleting {}",msg.getIdentifier());
 											softDelete(msg.getIdentifier());
 										}
 										else {
@@ -844,7 +844,7 @@ public class Inbox implements SimpleMessageListener {
 			public void run() {
 				try {
 					zipFile = new File(dir.getCanonicalPath()+File.separator+"bluebox.zip");
-					log.info("Backing up mail to "+zipFile.getCanonicalPath());
+					log.info("Backing up mail to {}",zipFile.getCanonicalPath());
 					BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(zipFile));
 					ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
 					BlueboxMessage msg;

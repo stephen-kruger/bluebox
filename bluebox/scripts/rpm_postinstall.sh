@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 echo "Completed war file installation"
 if [ "$1" = "1" ]; then
 	echo "Please start the application server : service tomcat6 start"

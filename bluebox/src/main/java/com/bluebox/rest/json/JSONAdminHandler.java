@@ -189,7 +189,7 @@ public class JSONAdminHandler extends AbstractHandler {
 			return;
 		}		
 		if (req.getRequestURI().indexOf(JSON_ROOT+"/setsmtpblacklist")>=0){
-			log.info("Setting smtp blacklist :"+req.getParameter("value"));
+			log.info("Setting smtp blacklist :{}",req.getParameter("value"));
 			inbox.setSMTPBlacklist(req.getParameter("value"));
 			return;
 		}	

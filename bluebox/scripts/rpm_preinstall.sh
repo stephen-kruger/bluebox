@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/sh
 if [ "$1" = "1" ]; then
 	echo "Performing bluebox initial install..."
 	echo "Set tomcat6 to start on boot"

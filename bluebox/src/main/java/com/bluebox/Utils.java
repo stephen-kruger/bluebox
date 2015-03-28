@@ -296,7 +296,7 @@ public class Utils {
 	//			catch (Throwable e) {
 	//				// server overloaded, try again later
 	//				try {
-	//					log.info("Waiting to deliver ("+e.getMessage()+")");
+	//					log.info("Waiting to deliver ({})",e.getMessage());
 	//					Thread.sleep(5000);
 	//				} 
 	//				catch (InterruptedException e1) {
@@ -649,7 +649,7 @@ public class Utils {
 			catch (Throwable e) {
 				res.append(s);
 				//e.printStackTrace();
-				log.debug("Error decoding quoted-printable :"+e.getMessage());
+				log.debug("Error decoding quoted-printable :{}",e.getMessage());
 			}				
 		}
 		return res.toString();
