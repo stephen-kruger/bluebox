@@ -505,7 +505,7 @@ public class Inbox implements SimpleMessageListener {
 
 		// spool the message to disk
 		File spooledMessage = Utils.getSpooledStreamFile(data);
-		if (spooledMessage.exists()) {
+		if ((spooledMessage!=null)&&(spooledMessage.exists())) {
 			if (spooledMessage.length()<MAX_MAIL_BYTES) {
 				try {
 					MimeMessage mimeMessage = Utils.loadEML(new FileInputStream(spooledMessage));

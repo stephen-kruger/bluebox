@@ -125,7 +125,7 @@ public abstract class AbstractStorage implements StorageIf {
 						LiteMessage msg = messages.next();
 						if (!indexer.containsUid(msg.getIdentifier())) {
 							log.warn("Message not indexed "+msg.getIdentifier());
-							indexer.indexMail(retrieve(msg.getIdentifier()), true);
+							indexer.indexMail(retrieve(msg.getIdentifier()), false);
 							issues++;
 							setProgress(messages.getProgress());
 						}

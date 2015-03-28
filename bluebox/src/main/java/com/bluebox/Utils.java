@@ -59,12 +59,13 @@ import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageIf;
+import com.bluebox.utils.FileDateComparator;
 
 public class Utils {
 	public static final String UTF8 = "UTF-8";
 	private static final Logger log = LoggerFactory.getLogger(Utils.class);
 	private static int counter=0;
-	private static PriorityQueue<File>tempFiles = new PriorityQueue<File>(20);
+	private static PriorityQueue<File>tempFiles = new PriorityQueue<File>(20,new FileDateComparator());
 	private static MimetypesFileTypeMap ftm;
 
 	static {
@@ -114,59 +115,59 @@ public class Utils {
 		}
 	}
 
-//	@SuppressWarnings("unchecked")
-//	public static String[] getStringArray(Object obj) {
-//		if (obj instanceof String[]) {
-//			return (String[])obj;
-//		}
-//		if (obj instanceof Collection) {
-//			String[] res = new String[((Collection<String>)obj).size()];
-//			return ((Collection<String>)obj).toArray(res);
-//		}		
-//		if (obj instanceof JSONArray) {
-//			JSONArray ja = (JSONArray)obj;
-//			String[] res = new String[ja.length()];
-//			for (int i = 0; i < res.length; i++) {
-//				try {
-//					res[i] = ja.getString(i);
-//				} 
-//				catch (JSONException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//			return res;
-//		}
-//		return new String[]{obj.toString()};
-//	}
+	//	@SuppressWarnings("unchecked")
+	//	public static String[] getStringArray(Object obj) {
+	//		if (obj instanceof String[]) {
+	//			return (String[])obj;
+	//		}
+	//		if (obj instanceof Collection) {
+	//			String[] res = new String[((Collection<String>)obj).size()];
+	//			return ((Collection<String>)obj).toArray(res);
+	//		}		
+	//		if (obj instanceof JSONArray) {
+	//			JSONArray ja = (JSONArray)obj;
+	//			String[] res = new String[ja.length()];
+	//			for (int i = 0; i < res.length; i++) {
+	//				try {
+	//					res[i] = ja.getString(i);
+	//				} 
+	//				catch (JSONException e) {
+	//					e.printStackTrace();
+	//				}
+	//			}
+	//			return res;
+	//		}
+	//		return new String[]{obj.toString()};
+	//	}
 
-//	public static JSONArray getJSONArray(String[] arr) throws JSONException {
-//		JSONArray res = new JSONArray();
-//		if (arr!=null) {
-//			for (int i = 0; i < arr.length;i++) {
-//				res.put(i,arr[i]);
-//			}
-//		}
-//		return res;
-//	}
+	//	public static JSONArray getJSONArray(String[] arr) throws JSONException {
+	//		JSONArray res = new JSONArray();
+	//		if (arr!=null) {
+	//			for (int i = 0; i < arr.length;i++) {
+	//				res.put(i,arr[i]);
+	//			}
+	//		}
+	//		return res;
+	//	}
 
-//	public static JSONArray getJSONArray(Collection<String> coll) throws JSONException {
-//		return getJSONArray(coll,false);
-//	}
-//
-//	public static JSONArray getJSONArray(Collection<String> coll, boolean escapeHTML) throws JSONException {
-//		JSONArray res = new JSONArray();
-//		int i = 0;
-//		for (String s : coll) {
-//			//			if (escapeHTML) {
-//			//				res.put(i,escapeHTML(s));
-//			//			}
-//			//			else {
-//			res.put(i,s);
-//			//			}
-//			i++;
-//		}
-//		return res;
-//	}
+	//	public static JSONArray getJSONArray(Collection<String> coll) throws JSONException {
+	//		return getJSONArray(coll,false);
+	//	}
+	//
+	//	public static JSONArray getJSONArray(Collection<String> coll, boolean escapeHTML) throws JSONException {
+	//		JSONArray res = new JSONArray();
+	//		int i = 0;
+	//		for (String s : coll) {
+	//			//			if (escapeHTML) {
+	//			//				res.put(i,escapeHTML(s));
+	//			//			}
+	//			//			else {
+	//			res.put(i,s);
+	//			//			}
+	//			i++;
+	//		}
+	//		return res;
+	//	}
 
 	public static JSONArray getJSONArray(Address[] addr) throws JSONException {
 		JSONArray res = new JSONArray();
@@ -201,14 +202,19 @@ public class Utils {
 		}
 	}
 
-	public static File getSpooledStreamFile(InputStream inputStream) throws IOException {
-		// first spool to disk
-		File f = Utils.getTempFile();
-		OutputStream outputStream = new FileOutputStream(f);
-		IOUtils.copy(inputStream, outputStream);
-		outputStream.close();
-		inputStream.close();
-		return f;
+	public static File getSpooledStreamFile(InputStream inputStream) {
+		try {
+			File f = Utils.getTempFile();
+			OutputStream outputStream = new FileOutputStream(f);
+			IOUtils.copy(inputStream, outputStream);
+			outputStream.close();
+			inputStream.close();
+			return f;
+		}
+		catch (IOException ioe) {
+			log.error("Problem spooling stream to file :{}",ioe.getMessage());
+			return null;
+		}
 	}
 
 	public static MimeMessage loadEML(InputStream inputStream) throws MessagingException, IOException {
@@ -428,7 +434,7 @@ public class Utils {
 		sendMessageDirect(inbox,msg,f);
 		f.delete();
 	}
-	
+
 	private static List<String> getRecipients(MimeMessage msg) throws MessagingException {
 		List<String> recipients = new ArrayList<String>();
 		Address[] to = msg.getRecipients(RecipientType.TO);
@@ -449,13 +455,13 @@ public class Utils {
 			recipients.add("anonymous@localhost");
 		return recipients;
 	}
-	
+
 	private static String getFrom(MimeMessage msg) throws MessagingException {
 		if (msg.getFrom().length>0)
 			return msg.getFrom()[0].toString();
 		return "nullsender@localhost";
 	}
-	
+
 	private static void sendMessageDirect(Inbox inbox, MimeMessage msg, File spooledFile) throws Exception {
 		List<String> recipients = getRecipients(msg);
 		for (String recipient : recipients) {
@@ -467,12 +473,12 @@ public class Utils {
 
 	public static void sendMessageDirect(StorageIf storage,MimeMessage msg) throws Exception {
 		List<String> recipients = getRecipients(msg);
-		
+
 		File f = Utils.getTempFile();
 		OutputStream os = new FileOutputStream(f);
 		msg.writeTo(os);
 		os.close();
-		
+
 		for (String recipient : recipients) {
 			log.debug("Sending message to {}",recipient);
 			BlueboxMessage bbm = storage.store(getFrom(msg), new InboxAddress(recipient), new Date(), msg, f);
@@ -669,6 +675,7 @@ public class Utils {
 		f.deleteOnExit();	
 		if (tempFiles.size()>100) {
 			File old = tempFiles.remove();
+			log.info("Removing {} total count = {}",old.lastModified(),tempFiles.size());
 			if (!old.delete()) {
 				// not serious, was probably deleted by proper cleanup
 				log.debug("Could not delete temporary file :{}",old.getCanonicalPath());
