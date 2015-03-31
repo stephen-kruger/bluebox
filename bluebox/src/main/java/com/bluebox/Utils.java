@@ -11,11 +11,13 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.StringTokenizer;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -79,6 +81,12 @@ public class Utils {
 		FileTypeMap.setDefaultFileTypeMap(ftm);
 	}
 
+	public static Date getUTCTime() {
+		TimeZone timeZone = TimeZone.getTimeZone("UTC");
+		Calendar cal = Calendar.getInstance(timeZone);
+		return cal.getTime();
+	}
+	
 	public static String getHostName() {
 		try {
 			InetAddress addr = InetAddress.getLocalHost();

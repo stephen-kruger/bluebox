@@ -96,7 +96,7 @@ public class TestUtils extends TestCase {
 		BlueboxMessage message = storage.store(
 				"steve@there.com",
 				new InboxAddress("steve@here.com"),
-				new Date(),
+				Utils.getUTCTime(),
 				mm,
 				uid);
 		removeSpooledMessage(storage,uid);
