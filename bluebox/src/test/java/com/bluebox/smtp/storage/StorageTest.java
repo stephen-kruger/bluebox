@@ -1,5 +1,6 @@
 package com.bluebox.smtp.storage;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -64,7 +65,10 @@ public class StorageTest extends BaseTestCase {
 				"bodyStr",
 				false);
 		InboxAddress ia = new InboxAddress(email);
-		BlueboxMessage m1 = getBlueBoxStorageIf().store(from, ia, new Date(), message, TestUtils.getSpooledMessage(message));
+		
+		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
+		BlueboxMessage m1 = getBlueBoxStorageIf().store(from, ia, new Date(), message, uid);
+		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		SolrIndexer.getInstance().indexMail(m1,true);
 
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("First Name", 0, 10).length());
@@ -114,7 +118,9 @@ public class StorageTest extends BaseTestCase {
 				"subjStr",
 				"bodyStr",
 				false);
-		BlueboxMessage bbm = getBlueBoxStorageIf().store(from, inbox, new Date(), message, TestUtils.getSpooledMessage(message));
+		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
+		BlueboxMessage bbm = getBlueBoxStorageIf().store(from, inbox, new Date(), message, uid);
+		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		BlueboxMessage stored = getBlueBoxStorageIf().retrieve(bbm.getIdentifier());
 		assertEquals("Identifiers did not match",bbm.getIdentifier(),stored.getIdentifier());
 		MimeMessage storedMM = stored.getBlueBoxMimeMessage();
@@ -138,7 +144,10 @@ public class StorageTest extends BaseTestCase {
 				"subjStr",
 				"bodyStr",
 				false);
-		BlueboxMessage bbm = getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message));
+		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
+
+		BlueboxMessage bbm = getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, uid);
+		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		BlueboxMessage stored = getBlueBoxStorageIf().retrieve(bbm.getIdentifier());
 		//		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
 		assertEquals("Stored recipient did not match original",inbox.getAddress(),stored.getInbox().getAddress());
@@ -326,9 +335,12 @@ public class StorageTest extends BaseTestCase {
 				"subjStr",
 				"bodyStr",
 				false);
-		BlueboxMessage m1 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, TestUtils.getSpooledMessage(message));
-		BlueboxMessage m2 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, TestUtils.getSpooledMessage(message));
-		BlueboxMessage m3 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, TestUtils.getSpooledMessage(message));
+		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
+
+		BlueboxMessage m1 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, uid);
+		BlueboxMessage m2 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, uid);
+		BlueboxMessage m3 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, uid);
+		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		SolrIndexer.getInstance().indexMail(m1,true);
 		SolrIndexer.getInstance().indexMail(m2,true);
 		SolrIndexer.getInstance().indexMail(m3,true);
@@ -383,9 +395,12 @@ public class StorageTest extends BaseTestCase {
 				"subjStr",
 				"bodyStr",
 				false);
-		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)),true);
-		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)),true);
-		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, TestUtils.getSpooledMessage(message)),true);
+		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
+
+		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, uid),true);
+		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, uid),true);
+		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, uid),true);
+		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 
 		// check for empty string
 		JSONArray ja = getInbox().autoComplete("", 0, 10);
@@ -459,5 +474,15 @@ public class StorageTest extends BaseTestCase {
 		assertEquals("Default value not correctly returned","qwerty",si.getProperty("somthingrandom","qwerty"));		
 		si.setLongProperty(key, 143);
 		assertEquals("Property not correctly set",(long)143,si.getLongProperty(key));
+	}
+	
+	@Test
+	public void testSpool() throws Exception {
+		String data = "abcdefghijklmnopqrstuvwxyz";
+		StorageIf si = StorageFactory.getInstance();
+		String uid = si.spoolStream(new ByteArrayInputStream(data.getBytes("UTF-8")));
+		assertNotNull("UID not allocated correctly",uid);
+		assertEquals("Incorrect blob size reported",26,si.getSpooledStreamSize(uid));
+		si.removeSpooledStream(uid);
 	}
 }

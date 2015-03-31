@@ -1,6 +1,5 @@
 package com.bluebox.smtp.storage;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.Date;
@@ -24,14 +23,19 @@ public interface StorageIf {
 
 	public void stop() throws Exception;
 	
-	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm, File spooledFile) throws Exception;
+	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm, String spooledUid) throws Exception;
 	
 	public enum Props {Uid,Inbox,Recipient,Sender,Subject,Received,State,Size};
 	
 	/*
 	 * Implementations must ensure all the fields in the Props object are persisted.
 	 */
-	public void store(JSONObject props, InputStream blob) throws Exception;
+	public void store(JSONObject props, String spooledUid) throws Exception;
+	
+	/*
+	 * This method is only ever used when loading out of a zip file from backup restore.
+	 */
+	public void store(JSONObject props, InputStream content) throws Exception;
 
 	public BlueboxMessage retrieve(String uid) throws Exception;
 	
@@ -141,4 +145,12 @@ public interface StorageIf {
 	public long getLongProperty(String key, long defaultValue);
 
 	public boolean hasProperty(String key);
+	
+	public String spoolStream(InputStream is) throws Exception;
+	
+	public MimeMessage getSpooledStream(String spooledUid) throws Exception;
+	
+	public void removeSpooledStream(String spooledUid) throws Exception;
+
+	public long getSpooledStreamSize(String spooledUid) throws Exception;
 }

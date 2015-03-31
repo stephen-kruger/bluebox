@@ -379,9 +379,7 @@ public class MimeMessageParser
 	 * @return the content of the input stream
 	 * @throws IOException reading the input stream failed
 	 */
-	private byte[] getContent(final InputStream is)
-			throws IOException
-			{
+	private byte[] getContent(final InputStream is) throws IOException {
 		int ch;
 		byte[] result;
 
@@ -389,8 +387,7 @@ public class MimeMessageParser
 		final BufferedInputStream isReader = new BufferedInputStream(is);
 		final BufferedOutputStream osWriter = new BufferedOutputStream(os);
 
-		while ((ch = isReader.read()) != -1)
-		{
+		while ((ch = isReader.read()) != -1) {
 			osWriter.write(ch);
 		}
 

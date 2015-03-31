@@ -1,11 +1,10 @@
 package com.bluebox;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URL;
@@ -14,7 +13,6 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.Properties;
 import java.util.Random;
 import java.util.StringTokenizer;
@@ -58,14 +56,14 @@ import com.bluebox.search.SolrIndexer;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
-import com.bluebox.utils.FileDateComparator;
 
 public class Utils {
 	public static final String UTF8 = "UTF-8";
 	private static final Logger log = LoggerFactory.getLogger(Utils.class);
 	private static int counter=0;
-	private static PriorityQueue<File>tempFiles = new PriorityQueue<File>(20,new FileDateComparator());
+//	private static PriorityQueue<File>tempFiles = new PriorityQueue<File>(20,new FileDateComparator());
 	private static MimetypesFileTypeMap ftm;
 
 	static {
@@ -202,20 +200,20 @@ public class Utils {
 		}
 	}
 
-	public static File getSpooledStreamFile(InputStream inputStream) {
-		try {
-			File f = Utils.getTempFile();
-			OutputStream outputStream = new FileOutputStream(f);
-			IOUtils.copy(inputStream, outputStream);
-			outputStream.close();
-			inputStream.close();
-			return f;
-		}
-		catch (IOException ioe) {
-			log.error("Problem spooling stream to file :{}",ioe.getMessage());
-			return null;
-		}
-	}
+	//	public static File getSpooledStreamFile(InputStream inputStream) {
+	//		try {
+	//			File f = Utils.getTempFile();
+	//			OutputStream outputStream = new FileOutputStream(f);
+	//			IOUtils.copy(inputStream, outputStream);
+	//			outputStream.close();
+	//			inputStream.close();
+	//			return f;
+	//		}
+	//		catch (IOException ioe) {
+	//			log.error("Problem spooling stream to file :{}",ioe.getMessage());
+	//			return null;
+	//		}
+	//	}
 
 	public static MimeMessage loadEML(InputStream inputStream) throws MessagingException, IOException {
 		MimeMessage message = new MimeMessage(null,inputStream);
@@ -426,13 +424,14 @@ public class Utils {
 		}		
 	}
 
-	private static void sendMessageDirect(Inbox inbox,MimeMessage msg) throws Exception {
-		File f = Utils.getTempFile();
-		OutputStream os = new FileOutputStream(f);
-		msg.writeTo(os);
-		os.close();
-		sendMessageDirect(inbox,msg,f);
-		f.delete();
+	
+
+	public static String spoolStream(StorageIf si, MimeMessage message) throws Exception {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		message.writeTo(baos);
+		String spooledUid = si.spoolStream(new ByteArrayInputStream(baos.toByteArray()));
+		baos.close();
+		return spooledUid;
 	}
 
 	private static List<String> getRecipients(MimeMessage msg) throws MessagingException {
@@ -462,30 +461,33 @@ public class Utils {
 		return "nullsender@localhost";
 	}
 
-	private static void sendMessageDirect(Inbox inbox, MimeMessage msg, File spooledFile) throws Exception {
+	private static void sendMessageDirect(Inbox inbox, MimeMessage msg, String spooledUid) throws Exception {
+		// TODO - remove the method using File type, use sb spool instead
 		List<String> recipients = getRecipients(msg);
 		for (String recipient : recipients) {
 			if (inbox.accept(getFrom(msg), recipient)) {
-				inbox.deliver(getFrom(msg), recipient, msg, spooledFile);
+				inbox.deliver(getFrom(msg), recipient, msg, spooledUid);
 			}
 		}
 	}
+	
+	private static void sendMessageDirect(Inbox inbox,MimeMessage msg) throws Exception {
+		StorageIf si = StorageFactory.getInstance();
+		String spooledUid = spoolStream(si,msg);
+		sendMessageDirect(inbox,msg,spooledUid);
+		si.removeSpooledStream(spooledUid);
+	}
 
-	public static void sendMessageDirect(StorageIf storage,MimeMessage msg) throws Exception {
+	public static void sendMessageDirect(StorageIf storage, MimeMessage msg) throws Exception {
 		List<String> recipients = getRecipients(msg);
-
-		File f = Utils.getTempFile();
-		OutputStream os = new FileOutputStream(f);
-		msg.writeTo(os);
-		os.close();
-
+		String spooledUid = Utils.spoolStream(storage,msg);
 		for (String recipient : recipients) {
 			log.debug("Sending message to {}",recipient);
-			BlueboxMessage bbm = storage.store(getFrom(msg), new InboxAddress(recipient), new Date(), msg, f);
+			BlueboxMessage bbm = storage.store(getFrom(msg), new InboxAddress(recipient), new Date(), msg, spooledUid);
 			SolrIndexer.getInstance().indexMail(bbm,false);
 		}
 		SolrIndexer.getInstance().commit(true);
-		f.delete();
+		storage.removeSpooledStream(spooledUid);
 	}
 
 	public static MimeMessage createMessage(ServletContext session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
@@ -670,20 +672,20 @@ public class Utils {
 	//		return new FileInputStream(f);
 	//	}
 
-	public static File getTempFile() throws IOException {
-		File f = File.createTempFile("bluebox", ".spool");
-		f.deleteOnExit();	
-		if (tempFiles.size()>100) {
-			File old = tempFiles.remove();
-			log.info("Removing {} total count = {}",old.lastModified(),tempFiles.size());
-			if (!old.delete()) {
-				// not serious, was probably deleted by proper cleanup
-				log.debug("Could not delete temporary file :{}",old.getCanonicalPath());
-			}
-		}
-		tempFiles.add(f);
-		return f;
-	}
+	//	public static File getTempFile() throws IOException {
+	//		File f = File.createTempFile("bluebox", ".spool");
+	//		f.deleteOnExit();	
+	//		if (tempFiles.size()>100) {
+	//			File old = tempFiles.remove();
+	//			log.debug("Removing {} total count = {}",old.lastModified(),tempFiles.size());
+	//			if (!old.delete()) {
+	//				// not serious, was probably deleted by proper cleanup
+	//				log.debug("Could not delete temporary file :{}",old.getCanonicalPath());
+	//			}
+	//		}
+	//		tempFiles.add(f);
+	//		return f;
+	//	}
 
 	public static String getServletBase(HttpServletRequest request) {
 		if (request==null) {

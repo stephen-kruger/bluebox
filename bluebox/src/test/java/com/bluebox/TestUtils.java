@@ -2,10 +2,7 @@ package com.bluebox;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
 public class TestUtils extends TestCase {
@@ -59,17 +57,22 @@ public class TestUtils extends TestCase {
 	public static void sendMailDirect(Inbox inbox, String to, String from) throws Exception {
 		log.debug("Delivering mail to "+to);
 		MimeMessage message = Utils.createMessage(null,from, to, null,null, Utils.randomLine(25), Utils.randomLine(25));
-		
-		inbox.deliver(from, to, message, getSpooledMessage(message));
+		String uid = spoolMessage(StorageFactory.getInstance(),message);
+		inbox.deliver(from, to, message, uid);
+		removeSpooledMessage(StorageFactory.getInstance(),uid);
 	}
 
-	public static File getSpooledMessage(MimeMessage message) throws IOException, MessagingException {
-		File f = Utils.getTempFile();
-		OutputStream os = new FileOutputStream(f);
-		message.writeTo(os);
-		os.close();
-		return f;
-	}
+		public static String spoolMessage(StorageIf si, MimeMessage message) throws Exception {
+			return Utils.spoolStream(si,message);
+		}
+		
+//		public static InputStream getSpooledMessage(String uid) throws Exception {
+//			return StorageFactory.getInstance().getSpooledStream(uid);
+//		}
+		
+		public static void removeSpooledMessage(StorageIf si, String uid) throws Exception {
+			si.removeSpooledStream(uid);
+		}
 
 	public static void addRandomDirect(StorageIf storage, int count) throws Exception {
 		for (int i = 0; i < count; i++) {
@@ -79,27 +82,24 @@ public class TestUtils extends TestCase {
 	}
 
 	@Test
-	public void testMimeMessageCreation() throws MessagingException, IOException {
+	public void testMimeMessageCreation() throws Exception {
 		MimeMessage original = Utils.createMessage(null, "test@here.com", "test@here.com", "test@here.com", "test@here.com", "subject", "body");
-		File f = Utils.getTempFile();
-		OutputStream os = new FileOutputStream(f);
-		original.writeTo(os);
-		os.close();
-		InputStream is = new FileInputStream(f);
-		MimeMessage copy = Utils.loadEML(is);
-		is.close();
-		f.delete();
+		String spooledUid = Utils.spoolStream(StorageFactory.getInstance(),original);
+		MimeMessage copy = StorageFactory.getInstance().getSpooledStream(spooledUid);
+		StorageFactory.getInstance().removeSpooledStream(spooledUid);
 		assertEquals("Mismatched subject",copy.getSubject(),original.getSubject());
 	}
 	
 	public static BlueboxMessage addRandomDirect(StorageIf storage) throws Exception {
 		MimeMessage mm = Utils.createMessage(null,"steve@there.com", "steve@here.com", "steve@here.com", "steve@here.com", Utils.randomLine(25), Utils.randomLine(25));
+		String uid = spoolMessage(storage,mm);
 		BlueboxMessage message = storage.store(
 				"steve@there.com",
 				new InboxAddress("steve@here.com"),
 				new Date(),
 				mm,
-				getSpooledMessage(mm));
+				uid);
+		removeSpooledMessage(storage,uid);
 		return message;
 	}
 	

@@ -1,6 +1,7 @@
 package com.bluebox.chart;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -15,7 +16,7 @@ import com.bluebox.smtp.storage.StorageFactory;
 
 public class ChartTest extends BaseTestCase {
 	private static final Logger log = LoggerFactory.getLogger(ChartTest.class);
-	private static int COUNT = 10;
+	private static int COUNT = 11;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -46,13 +47,15 @@ public class ChartTest extends BaseTestCase {
 	public void testCountByHour() throws JSONException {
 		JSONObject jo = StorageFactory.getInstance().getCountByHour();
 		log.info(jo.toString());
-		Calendar cal = Calendar.getInstance();
+		// TODO Derby uses local timezone, Mongo uses UTC
+		TimeZone timeZone = TimeZone.getTimeZone("UTC");
+		Calendar cal = Calendar.getInstance(timeZone);
 		int hourOfDay = cal.get(Calendar.HOUR_OF_DAY);
 		log.info("Current hour is "+hourOfDay);
 		for (int i = 0; i < 24;i++) {
 			assertNotNull(jo.get(""+i));
 			if (i==hourOfDay) {
-				assertEquals("Incorrect status reported for hour "+i,COUNT,jo.getInt(""+i));
+				assertEquals("Incorrect status reported for current hour "+i,COUNT,jo.getInt(""+i));
 			}
 			else {
 				assertEquals("Incorrect status reported for hour "+i,0,jo.getInt(""+i));				

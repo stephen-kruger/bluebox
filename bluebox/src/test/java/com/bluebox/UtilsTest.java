@@ -1,10 +1,6 @@
 package com.bluebox;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.PriorityQueue;
 import java.util.logging.Logger;
 
 import javax.mail.internet.AddressException;
@@ -18,7 +14,6 @@ import org.junit.Test;
 import org.subethamail.smtp.util.Base64;
 
 import com.bluebox.smtp.InboxAddress;
-import com.bluebox.utils.FileDateComparator;
 
 public class UtilsTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -103,24 +98,24 @@ public class UtilsTest extends TestCase {
 		assertNotNull(jo.getString("update_available"));
 	}
 
-	@Test
-	public void testTempFile() throws IOException {
-		PriorityQueue<File>stack = new PriorityQueue<File>(20,new FileDateComparator());
-		for (int i = 0; i < 500; i++) {
-			File f = File.createTempFile("bluebox", ".spool");
-			f.deleteOnExit();	
-			assertTrue(f.exists());
-			FileWriter fw = new FileWriter(f);
-			fw.write("x");
-			fw.close();
-			stack.add(f);
-		}
-
-		File older = stack.remove();
-		while (stack.size()>0) {
-			File old = stack.remove();
-			assertTrue("File were not removed in oldest first order",older.lastModified()<old.lastModified());
-		}
-	}
+//	@Test
+//	public void testTempFile() throws IOException {
+//		PriorityQueue<File>stack = new PriorityQueue<File>(20,new FileDateComparator());
+//		for (int i = 0; i < 500; i++) {
+//			File f = File.createTempFile("bluebox", ".spool");
+//			f.deleteOnExit();	
+//			assertTrue(f.exists());
+//			FileWriter fw = new FileWriter(f);
+//			fw.write("x");
+//			fw.close();
+//			stack.add(f);
+//		}
+//
+//		File older = stack.remove();
+//		while (stack.size()>0) {
+//			File old = stack.remove();
+//			assertTrue("File were not removed in oldest first order",older.lastModified()<old.lastModified());
+//		}
+//	}
 
 }

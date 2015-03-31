@@ -2,7 +2,6 @@ package com.bluebox.smtp;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -504,19 +503,21 @@ public class Inbox implements SimpleMessageListener {
 		List<String> recipients = getRecipients(recipient);
 
 		// spool the message to disk
-		File spooledMessage = Utils.getSpooledStreamFile(data);
-		if ((spooledMessage!=null)&&(spooledMessage.exists())) {
-			if (spooledMessage.length()<MAX_MAIL_BYTES) {
+		StorageIf si = StorageFactory.getInstance();
+		String spooledUid="";
+		try {
+			spooledUid = si.spoolStream(data);
+			if (si.getSpooledStreamSize(spooledUid)<MAX_MAIL_BYTES) {
 				try {
-					MimeMessage mimeMessage = Utils.loadEML(new FileInputStream(spooledMessage));
+					MimeMessage mimeMessage = si.getSpooledStream(spooledUid);
 					// now send the message to each recipient
 					for (String nrec : recipients) {
 						try {
-							deliver(from, nrec, mimeMessage, spooledMessage);
+							deliver(from, nrec, mimeMessage, spooledUid);
 						} 
 						catch (Throwable e) {
 							log.error(e.getMessage());
-							errorLog("Error accepting raw message from="+from+" for recipient="+nrec+" data bytes="+spooledMessage.length(), e.getMessage());
+							errorLog("Error accepting raw message from="+from+" for recipient="+nrec+" data bytes="+si.getSpooledStreamSize(spooledUid), e.getMessage());
 						}
 					}
 				}
@@ -525,28 +526,34 @@ public class Inbox implements SimpleMessageListener {
 				}
 			}
 			else {
-				log.error("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB From={}  Recipient={} Size={}",from,recipient,spooledMessage.length());
-				errorLog("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB","From="+from+" Recipient="+recipient+" Size="+spooledMessage.length());
-				spooledMessage.delete();
+				log.error("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB From={}  Recipient={} Size={}",from,recipient,si.getSpooledStreamSize(spooledUid));
+				errorLog("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB","From="+from+" Recipient="+recipient+" Size="+si.getSpooledStreamSize(spooledUid));
 				throw new TooMuchDataException("Mail exceeded maximum allowed size of "+(MAX_MAIL_BYTES/1000000)+"MB");
 			}
-			spooledMessage.delete();
+
 		}
-		else {
-			errorLog("Problem spooling mail to disk","File="+spooledMessage.getCanonicalPath()+" From="+from+" Recipient="+recipient);
+		catch (Exception ioe) {
+			ioe.printStackTrace();
+		}
+		finally {
+			try {
+				si.removeSpooledStream(spooledUid);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
-	public void deliver(String from, String recipient, MimeMessage mimeMessage, File spooledMessage) throws Exception {
+	public void deliver(String from, String recipient, MimeMessage mimeMessage, String spooledUid) throws Exception {
 		from = getFullAddress(from, mimeMessage.getFrom());
 		recipient = getFullAddress(recipient, mimeMessage.getAllRecipients());
-		log.info("Delivering mail for {} from {} size={}",recipient,from,spooledMessage.length());
+		log.info("Delivering mail for {} from {}",recipient,from);
 		BlueboxMessage blueboxMessage = StorageFactory.getInstance().store( 
 				from,
 				new InboxAddress(recipient),
 				new Date(),
 				mimeMessage,
-				spooledMessage);
+				spooledUid);
 		updateStats(blueboxMessage, recipient, false);
 		// ensure the content is indexed
 		try {

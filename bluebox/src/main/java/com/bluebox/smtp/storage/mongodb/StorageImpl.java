@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javax.mail.internet.MimeMessage;
+
 import org.apache.commons.io.IOUtils;
 import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
@@ -44,10 +46,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	private static final Logger log = LoggerFactory.getLogger(StorageImpl.class);
 	private static final String DB_ERR_NAME = "bluebox_errors";
 	private static final String TABLE_NAME = "inbox";
+	private static final String BLOB_NAME = "blob";
 	private static final String PROPS_TABLE_NAME = "properties";
 	private MongoClient mongoClient;
 	private DB db;
-	private GridFS errorFS;
+	private GridFS errorFS, blobFS;
 
 	@Override
 	public void start() throws Exception {
@@ -60,6 +63,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		mongoClient = new MongoClient(Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST));
 		db = mongoClient.getDB(DB_NAME);
 		errorFS = new GridFS(mongoClient.getDB(DB_ERR_NAME),DB_ERR_NAME);
+		blobFS = new GridFS(mongoClient.getDB(BLOB_NAME),BLOB_NAME);
 		createIndexes();
 
 		log.debug("Started MongoDB connection");
@@ -109,6 +113,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
+	public void store(JSONObject props, String spooledUid) throws Exception {
+		store(props,getSpooledInputStream(spooledUid));
+	}
+
 	public void store(JSONObject props, InputStream blob) throws Exception {
 		try {
 			DBCollection coll = db.getCollection(TABLE_NAME);
@@ -124,27 +132,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (Throwable t) {
 			log.error("Error storing message :{}",t.getMessage());
 		}
-		finally {
-			blob.close();
-		}
 	}
-
-	//	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
-	//		BlueboxMessage message = new BlueboxMessage(UUID.randomUUID().toString());
-	//		message.setInbox(recipient);
-	//		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
-	//		DBCollection coll = db.getCollection(TABLE_NAME);
-	//		DBObject bson = ( DBObject ) JSON.parse( message.toJSON().toString() );
-	//
-	//		//		bson.put(BlueboxMessage.RAW, Utils.convertStreamToString(Utils.streamMimeMessage(bbmm)));
-	//		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
-	//		GridFSInputFile gfsFile = gfsRaw.createFile(Utils.streamMimeMessage(bbmm));
-	//		gfsFile.setFilename(message.getIdentifier());
-	//		gfsFile.save();
-	//		//		bson.put(BlueboxMessage.RAW, new BasicBSONDecoder().readObject(Utils.streamMimeMessage(bbmm)));
-	//		coll.insert(bson);
-	//		return message;
-	//	}
 
 	@Override
 	public synchronized BlueboxMessage retrieve(String uid) throws Exception {
@@ -205,6 +193,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public InputStream getDBORaw(Object dbo, String uid) {
+		log.info("<<<<<<<<<<<<<<ooops>>>>>>>>>>>>>>>>>>");
 		try {
 			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
 			GridFSDBFile imageForOutput = gfsRaw.findOne(uid);
@@ -261,7 +250,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 						count++;
 						setProgress(count*100/cursor.count());
 					}
-					setStatus("Found and clean "+issues+" orphaned blobs");
+					setStatus("Found and cleaned "+issues+" orphaned blobs");
 					setProgress(0);
 					cursor.close();
 					log.info("Finished looking for orphaned blobs");
@@ -799,6 +788,46 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return keys.get(0);
 		else		
 			return defaultValue;
+	}
+
+	@Override
+	public String spoolStream(InputStream blob) throws Exception {
+		try {
+			GridFSInputFile gfs = blobFS.createFile(blob);
+			gfs.save();
+			log.debug("Saved blob with uid {}",gfs.getId());
+			return gfs.getId().toString();
+		}
+		catch (Throwable t) {
+			log.error("Error storing blob :{}",t.getMessage());
+		}
+		finally {
+			blob.close();
+		}
+		return null;
+	}
+
+	@Override
+	public MimeMessage getSpooledStream(String spooledUid) throws Exception {
+		GridFSDBFile blob = blobFS.findOne(new ObjectId(spooledUid));
+		MimeMessage msg = Utils.loadEML(blob.getInputStream());
+		return msg;
+	}
+
+	public InputStream getSpooledInputStream(String spooledUid) throws Exception {
+		GridFSDBFile blob = blobFS.findOne(new ObjectId(spooledUid));
+		return blob.getInputStream();
+	}
+
+	@Override
+	public void removeSpooledStream(String spooledUid) throws Exception {
+		blobFS.remove(new ObjectId(spooledUid));		
+	}
+
+	@Override
+	public long getSpooledStreamSize(String spooledUid) {
+		GridFSDBFile blob = blobFS.findOne(new ObjectId(spooledUid));
+		return blob.getLength();
 	}
 
 

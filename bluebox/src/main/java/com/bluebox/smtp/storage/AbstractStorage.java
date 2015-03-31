@@ -1,7 +1,5 @@
 package com.bluebox.smtp.storage;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.Date;
@@ -52,8 +50,7 @@ public abstract class AbstractStorage implements StorageIf {
 	public abstract InputStream getDBORaw(Object dbo, String key);
 	
 	public BlueboxMessage loadMessage(Object dbo) throws Exception {
-		return new BlueboxMessage(loadMessageJSON(dbo),
-				Utils.loadEML(getDBORaw(dbo,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()))));
+		return new BlueboxMessage(loadMessageJSON(dbo), Utils.loadEML(getDBORaw(dbo,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()))));
 	}
 	
 	/*
@@ -74,13 +71,12 @@ public abstract class AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm, File spooledFile) throws Exception {
+	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm, String spooledUid) throws Exception {
 		String uid = UUID.randomUUID().toString();
 		BlueboxMessage message = new BlueboxMessage(uid,recipient);
 		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
 		// now store in underlying db
-		InputStream is = new FileInputStream(spooledFile);
-		store(message.toJSON(),is);
+		store(message.toJSON(),spooledUid); // TODO - fix inherent close
 		return message;
 	}
 	
@@ -127,8 +123,8 @@ public abstract class AbstractStorage implements StorageIf {
 							log.warn("Message not indexed "+msg.getIdentifier());
 							indexer.indexMail(retrieve(msg.getIdentifier()), false);
 							issues++;
-							setProgress(messages.getProgress());
 						}
+						setProgress(messages.getProgress());
 					}
 				} 
 				catch (Exception e) {
