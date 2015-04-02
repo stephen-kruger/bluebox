@@ -27,6 +27,7 @@ import javax.mail.internet.MimeUtility;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.solr.common.SolrDocument;
 import org.codehaus.jettison.json.JSONArray;
@@ -40,9 +41,10 @@ import org.subethamail.smtp.helper.SimpleMessageListener;
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
+import com.bluebox.search.SearchIf;
 import com.bluebox.search.SearchUtils;
 import com.bluebox.search.SearchUtils.SearchFields;
-import com.bluebox.search.SolrIndexer;
+import com.bluebox.search.SearchFactory;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.LiteMessageIterator;
@@ -87,7 +89,7 @@ public class Inbox implements SimpleMessageListener {
 					try {
 						new Thread(cleanUp()).start();
 						// commit any pending search indexing
-						SolrIndexer.getInstance().commit(true);
+						SearchFactory.getInstance().commit(true);
 					} 
 					catch (Exception e) {
 						log.error("Error running message cleanup",e);
@@ -121,7 +123,7 @@ public class Inbox implements SimpleMessageListener {
 
 		log.debug("Stopping search engine");
 		try {
-			SolrIndexer.getInstance().stop();
+			SearchFactory.getInstance().stop();
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
@@ -172,7 +174,7 @@ public class Inbox implements SimpleMessageListener {
 	public long searchInbox(String search, Writer writer, int start, int count, SearchUtils.SearchFields searchScope, SearchUtils.SearchFields orderBy, boolean ascending) throws Exception {
 		log.debug("Searching for {} ordered by {}",search,orderBy);
 		try {
-			return SolrIndexer.getInstance().searchInboxes(search, writer, start, count, searchScope, orderBy, ascending);
+			return SearchFactory.getInstance().searchInboxes(search, writer, start, count, searchScope, orderBy, ascending);
 		}
 		catch (IndexNotFoundException inf) {
 			log.info("Detected index problems ({})",inf.getMessage());
@@ -182,7 +184,7 @@ public class Inbox implements SimpleMessageListener {
 
 	public void delete(String uid) throws Exception {
 		StorageFactory.getInstance().delete(uid);
-		SolrIndexer.getInstance().deleteDoc(uid);
+		SearchFactory.getInstance().deleteDoc(uid);
 	}
 
 	/*
@@ -258,7 +260,7 @@ public class Inbox implements SimpleMessageListener {
 	public void deleteAll() {
 		try {
 			StorageFactory.getInstance().deleteAll();
-			SolrIndexer.getInstance().deleteIndexes();
+			SearchFactory.getInstance().deleteIndexes();
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();
@@ -558,7 +560,7 @@ public class Inbox implements SimpleMessageListener {
 		updateStats(blueboxMessage, recipient, false);
 		// ensure the content is indexed
 		try {
-			SolrIndexer.getInstance().indexMail(blueboxMessage,false);
+			SearchFactory.getInstance().indexMail(blueboxMessage,false);
 		}
 		catch (Throwable t) {
 			log.error(t.getMessage());
@@ -638,12 +640,12 @@ public class Inbox implements SimpleMessageListener {
 
 	public void softDelete(String uid) throws Exception {
 		setState(uid, BlueboxMessage.State.DELETED);
-		SolrIndexer.getInstance().deleteDoc(uid);
+		SearchFactory.getInstance().deleteDoc(uid);
 	}
 
 	public void softUndelete(String uid, BlueboxMessage message) throws Exception {
 		setState(uid, BlueboxMessage.State.NORMAL);
-		SolrIndexer.getInstance().indexMail(message,false);
+		SearchFactory.getInstance().indexMail(message,false);
 	}
 
 	private void setState(String uid, BlueboxMessage.State state) throws Exception {
@@ -667,22 +669,43 @@ public class Inbox implements SimpleMessageListener {
 			return children;
 		}
 		//			hint = QueryParser.escape(hint);
-		SolrIndexer search = SolrIndexer.getInstance();
-		SolrDocument[] results = search.search(hint, SearchUtils.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchUtils.SearchFields.RECEIVED,false);
+		SearchIf search = SearchFactory.getInstance();
+		Object[] results = search.search(hint, SearchUtils.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchUtils.SearchFields.RECEIVED,false);
 		for (int i = 0; i < results.length;i++) {
-			String uid = results[i].getFieldValue(SearchFields.UID.name()).toString();
-			InboxAddress inbox;
-			inbox = new InboxAddress(results[i].getFieldValue(Utils.decodeRFC2407(SearchFields.INBOX.name())).toString());
+			if (results[i] instanceof SolrDocument) {
+				SolrDocument result = (SolrDocument) results[i];
+				String uid = result.getFieldValue(SearchFields.UID.name()).toString();
+				InboxAddress inbox;
+				inbox = new InboxAddress(result.getFieldValue(Utils.decodeRFC2407(SearchFields.INBOX.name())).toString());
 
-			if (!contains(children,inbox.getAddress())) {
-				curr = new JSONObject();
-				curr.put("name", inbox.getAddress());
-				curr.put("label",search.getRecipient(inbox,results[i].getFieldValue(SearchFields.RECIPIENT.name()).toString()).getFullAddress());
-				curr.put("identifier", uid);
-				children.put(curr);
+				if (!contains(children,inbox.getAddress())) {
+					curr = new JSONObject();
+					curr.put("name", inbox.getAddress());
+					curr.put("label",search.getRecipient(inbox,result.getFieldValue(SearchFields.RECIPIENT.name()).toString()).getFullAddress());
+					curr.put("identifier", uid);
+					children.put(curr);
+				}
+				if (children.length()>=count)
+					break;
 			}
-			if (children.length()>=count)
-				break;
+			else {
+				// Plain old Lucene
+				Document result = (Document)results[i];
+                String uid = result.get(SearchFields.UID.name());
+                InboxAddress inbox;
+                inbox = new InboxAddress(result.get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
+
+                if (!contains(children,inbox.getAddress())) {
+                        curr = new JSONObject();
+                        curr.put("name", inbox.getAddress());
+                        curr.put("label",search.getRecipient(inbox,result.get(SearchFields.RECIPIENT.name())).getFullAddress());
+                        curr.put("identifier", uid);
+                        children.put(curr);
+                }
+                if (children.length()>=count)
+                        break;
+				
+			}
 		}
 
 		return children;
@@ -751,15 +774,15 @@ public class Inbox implements SimpleMessageListener {
 			@Override
 			public void run() {
 				try {
-					SolrIndexer solrIndexer = SolrIndexer.getInstance();
-					solrIndexer.deleteIndexes();
+					SearchIf searcher = SearchFactory.getInstance();
+					searcher.deleteIndexes();
 					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.NORMAL);
 					while (mi.hasNext()) {
 						if (isStopped()) break;
-						solrIndexer.indexMail(mi.next(),false);						
+						searcher.indexMail(mi.next(),false);						
 						setProgress(mi.getProgress());
 					}
-					solrIndexer.commit(true);
+					searcher.commit(true);
 				} 
 				catch (Throwable e) {
 					e.printStackTrace();
@@ -957,13 +980,13 @@ public class Inbox implements SimpleMessageListener {
 										si.store(jo, archive.getInputStream(zipEntry));
 										// index the message
 										MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));
-										SolrIndexer.getInstance().indexMail(new BlueboxMessage(jo,mm),false);
+										SearchFactory.getInstance().indexMail(new BlueboxMessage(jo,mm),false);
 										restoreCount++;
 									}
 									else {
 										log.info("Ignoring restore of {}",uid);
 									}
-									SolrIndexer.getInstance().commit(true);
+									SearchFactory.getInstance().commit(true);
 								}
 								catch (Throwable t) {
 									t.printStackTrace();
@@ -972,7 +995,7 @@ public class Inbox implements SimpleMessageListener {
 							}
 							progress++;
 						}
-						SolrIndexer.getInstance().commit(true);
+						SearchFactory.getInstance().commit(true);
 						archive.close();
 					} 
 					catch (Throwable e) {

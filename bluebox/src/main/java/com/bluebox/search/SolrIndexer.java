@@ -29,23 +29,15 @@ import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
-public class SolrIndexer {
+public class SolrIndexer implements SearchIf {
 	private static final Logger log = LoggerFactory.getLogger(SolrIndexer.class);
-	private static SolrIndexer si;
 
 	private EmbeddedSolrServer server;
 	private long lastCommit=new Date().getTime();// last time a commit was performed
 	private static final String CORE_NAME="blueboxcore";
 	private static final int MAX_COMMIT_INTERVAL = 20000; // ensure at least some time between unforced commits
 
-	public static SolrIndexer getInstance() throws Exception {
-		if (si==null) {
-			si = new SolrIndexer();
-		}
-		return si;
-	}
-
-	private SolrIndexer() throws Exception {
+	protected SolrIndexer() throws Exception {
 		File solrDir = createTempDirectory("bluebox.solr");
 		System.setProperty("solr.solr.home", solrDir.getCanonicalPath());
 		writeSolrXml(solrDir);
@@ -156,13 +148,9 @@ public class SolrIndexer {
 	}
 
 	public void stop() {
-		if (si!=null) {
-			server.shutdown();
-			si = null;
-		}
-		else {
-			log.warn("Trying to stop an already stopped SearchIndexer instance");
-		}
+		server.shutdown();
+		SearchFactory.stopInstance();
+
 		log.info("Stopped SearchIndexer");
 	}
 
@@ -313,11 +301,11 @@ public class SolrIndexer {
 		commit(true);
 	}
 
-	protected void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException, SolrServerException {
+	public void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException, SolrServerException {
 		addDoc(uid, inbox, from, subject, text, html, recipients, size, received, false);
 	}
 
-	protected void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException, SolrServerException {
+	public void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException, SolrServerException {
 		SolrInputDocument doc = new SolrInputDocument();
 		String htmlStr = SearchUtils.htmlToString(html);
 		doc.addField( SearchUtils.SearchFields.UID.name(), uid);

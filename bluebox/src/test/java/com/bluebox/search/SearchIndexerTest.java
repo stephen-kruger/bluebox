@@ -5,25 +5,26 @@ import java.io.StringWriter;
 import java.util.UUID;
 import java.util.logging.Logger;
 
+import junit.framework.TestCase;
+
 import org.apache.solr.client.solrj.SolrServerException;
 import org.codehaus.jettison.json.JSONArray;
 import org.junit.Test;
 
-import com.bluebox.BaseTestCase;
 import com.bluebox.TestUtils;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageFactory;
 
-public class SearchIndexerTest extends BaseTestCase {
+public class SearchIndexerTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
 	private String uid1 = UUID.randomUUID().toString();
 	private String uid2 = UUID.randomUUID().toString();
 	private String uid3 = UUID.randomUUID().toString();
 	private String uid4 = UUID.randomUUID().toString();
 	
+	
 	@Override
 	protected void setUp() throws Exception {
-		super.setUp();
 		getSearchIndexer().deleteIndexes();
 		getSearchIndexer().addDoc(uid1,"receiever1@here.com","[sender1@there.com]","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543,false);
 		getSearchIndexer().addDoc(uid2,"receiever2@here.com","[sender2@there.com]","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543,false);
@@ -33,6 +34,16 @@ public class SearchIndexerTest extends BaseTestCase {
 			getSearchIndexer().addDoc(UUID.randomUUID().toString(),"xxx@xxx.com","[xxx@xxx.com]","ttttttttttttttttttttttttttt","tttttttttttttttttttttttttt","tttttttttttttttttttttttttttt",  "xxx@xxx.com",543,6346543,false);			
 		}
 		getSearchIndexer().commit(true);
+	}
+	
+	@Override
+	protected void tearDown() throws Exception {
+		getSearchIndexer().deleteIndexes();
+		getSearchIndexer().stop();
+	}
+	
+	public SearchIf getSearchIndexer() throws Exception {
+		return SearchFactory.getInstance();
 	}
 
 	@Test
@@ -92,7 +103,7 @@ public class SearchIndexerTest extends BaseTestCase {
 
 	@Test
 	public void testTextSearch() throws IOException, Exception {
-		Object[] hits = getSearchIndexer().search("lucene",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false);
+		Object[] hits = getSearchIndexer().search("lucene",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.RECEIVED,false);
 		assertEquals("Missing expected search results",3,hits.length);
 //		for(int i=0;i<hits.length;++i) {
 //			log.info((i + 1) + ". " + hits[i].get(SearchUtils.SearchFields.UID.name()));

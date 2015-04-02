@@ -20,7 +20,7 @@ import org.junit.Test;
 import com.bluebox.BaseTestCase;
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
-import com.bluebox.search.SolrIndexer;
+import com.bluebox.search.SearchFactory;
 import com.bluebox.smtp.InboxAddress;
 
 public class StorageTest extends BaseTestCase {
@@ -69,7 +69,7 @@ public class StorageTest extends BaseTestCase {
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 		BlueboxMessage m1 = getBlueBoxStorageIf().store(from, ia, getBlueBoxStorageIf().getUTCTime(), message, uid);
 		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
-		SolrIndexer.getInstance().indexMail(m1,true);
+		SearchFactory.getInstance().indexMail(m1,true);
 
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("First Name", 0, 10).length());
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("ste", 0, 10).length());
@@ -341,9 +341,9 @@ public class StorageTest extends BaseTestCase {
 		BlueboxMessage m2 = getBlueBoxStorageIf().store(email.getAddress(), email, getBlueBoxStorageIf().getUTCTime(), message, uid);
 		BlueboxMessage m3 = getBlueBoxStorageIf().store(email.getAddress(), email, getBlueBoxStorageIf().getUTCTime(), message, uid);
 		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
-		SolrIndexer.getInstance().indexMail(m1,true);
-		SolrIndexer.getInstance().indexMail(m2,true);
-		SolrIndexer.getInstance().indexMail(m3,true);
+		SearchFactory.getInstance().indexMail(m1,true);
+		SearchFactory.getInstance().indexMail(m2,true);
+		SearchFactory.getInstance().indexMail(m3,true);
 
 		assertEquals("Message not found",1,getInbox().autoComplete("mon", 0, 10).length());
 		assertEquals("Message not found",1,getInbox().autoComplete("monica", 0, 10).length());
@@ -397,9 +397,9 @@ public class StorageTest extends BaseTestCase {
 				false);
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 
-		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
-		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
-		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
+		SearchFactory.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
+		SearchFactory.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
+		SearchFactory.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
 		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 
 		// check for empty string

@@ -17,7 +17,8 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
-import com.bluebox.search.SolrIndexer;
+import com.bluebox.search.SearchFactory;
+import com.bluebox.search.SearchIf;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
@@ -115,7 +116,7 @@ public abstract class AbstractStorage implements StorageIf {
 				int issues = 0;
 				setProgress(0);
 				try {
-					SolrIndexer indexer = SolrIndexer.getInstance();
+					SearchIf indexer = SearchFactory.getInstance();
 					LiteMessageIterator messages = new LiteMessageIterator(null,BlueboxMessage.State.NORMAL);
 					while(messages.hasNext()) {
 						LiteMessage msg = messages.next();

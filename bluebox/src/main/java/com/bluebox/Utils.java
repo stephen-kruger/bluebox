@@ -54,7 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.rest.json.AbstractHandler;
-import com.bluebox.search.SolrIndexer;
+import com.bluebox.search.SearchFactory;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -486,9 +486,9 @@ public class Utils {
 		for (String recipient : recipients) {
 			log.debug("Sending message to {}",recipient);
 			BlueboxMessage bbm = storage.store(getFrom(msg), new InboxAddress(recipient), new Date(), msg, spooledUid);
-			SolrIndexer.getInstance().indexMail(bbm,false);
+			SearchFactory.getInstance().indexMail(bbm,false);
 		}
-		SolrIndexer.getInstance().commit(true);
+		SearchFactory.getInstance().commit(true);
 		storage.removeSpooledStream(spooledUid);
 	}
 

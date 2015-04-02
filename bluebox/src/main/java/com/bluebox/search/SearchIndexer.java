@@ -15,6 +15,7 @@ import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.LongField;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
@@ -30,6 +31,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
@@ -42,25 +44,24 @@ import com.bluebox.Utils;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
-public class SearchIndexer {
+public class SearchIndexer implements SearchIf {
 	private static final Logger log = LoggerFactory.getLogger(SearchIndexer.class);
 	private Directory directory;
 	private IndexWriterConfig config;
-	private static SearchIndexer si;
 	private IndexWriter indexWriter;
 	private IndexSearcher searcher;
 	private DirectoryReader diectoryReader;
 
-//	private static SearchIndexer getInstance() throws IOException {
-//		if (si==null) {
-//			si = new SearchIndexer();
-//		}
-//		return si;
-//	}
+	//	private static SearchIndexer getInstance() throws IOException {
+	//		if (si==null) {
+	//			si = new SearchIndexer();
+	//		}
+	//		return si;
+	//	}
 
-	private SearchIndexer() throws IOException {
-		//				this(new SimpleFSDirectory(createTempDirectory()));
-//		this(new NIOFSDirectory(createTempDirectory()));
+	public SearchIndexer() throws IOException {
+		//						this(new SimpleFSDirectory(createTempDirectory()));
+		//				this(new NIOFSDirectory(createTempDirectory()));
 		this(new NIOFSDirectory(Paths.get(createTempDirectory().toURI())));
 	}
 
@@ -72,7 +73,7 @@ public class SearchIndexer {
 	public IndexWriter getIndexWriter() throws IOException {
 		if (indexWriter==null) {
 			Analyzer analyzer = new StandardAnalyzer();		
-//			config = new IndexWriterConfig(Version.LATEST, analyzer);
+			//			config = new IndexWriterConfig(Version.LATEST, analyzer);
 			config = new IndexWriterConfig(analyzer);
 			config.setUseCompoundFile(true);
 			indexWriter = new IndexWriter(getDirectory(), config);
@@ -86,19 +87,16 @@ public class SearchIndexer {
 	}
 
 	public void stop() {
-		if (si!=null) {
-			try {
-				closeIndexWriter();
-				closeDirectoryReader();
-				closeDirectory();
-				si = null;
-			} 
-			catch (IOException e) {
-				e.printStackTrace();
-			}
+		try {
+			closeIndexWriter();
+			closeDirectoryReader();
+			closeDirectory();
+		} 
+		catch (IOException e) {
+			e.printStackTrace();
 		}
-		else {
-			log.warn("Trying to stop an already stopped SearchIndexer instance");
+		finally {
+			SearchFactory.stopInstance();
 		}
 		log.info("Stopped SearchIndexer");
 	}
@@ -141,21 +139,26 @@ public class SearchIndexer {
 		//              querystr = QueryParser.escape(querystr);
 		//              querystr = "*"+QueryParser.escape(querystr)+"*";
 		//              querystr = "*"+querystr+"*";
-		boolean leadingWC=false, trailingWC=false;
-		if (querystr.endsWith("*")) {
-			querystr = querystr.substring(0,querystr.length()-1);
-			trailingWC=true;
+		if ((querystr==null)||(querystr.length()==0)) {
+			querystr = "*";
 		}
-		if (querystr.startsWith("*")) {
-			querystr = querystr.substring(1,querystr.length());
-			leadingWC = true;
-		}
-		querystr = QueryParser.escape(querystr);
+		else {
+			boolean leadingWC=false, trailingWC=false;
+			if (querystr.endsWith("*")) {
+				querystr = querystr.substring(0,querystr.length()-1);
+				trailingWC=true;
+			}
+			if (querystr.startsWith("*")) {
+				querystr = querystr.substring(1,querystr.length());
+				leadingWC = true;
+			}
+			querystr = QueryParser.escape(querystr);
 
-		if (leadingWC)
-			querystr = "*"+querystr;
-		if (trailingWC) {
-			querystr = querystr+"*";
+			if (leadingWC)
+				querystr = "*"+querystr;
+			if (trailingWC) {
+				querystr = querystr+"*";
+			}
 		}
 		QueryParser queryParser;
 
@@ -218,10 +221,17 @@ public class SearchIndexer {
 			Sort sort;
 			try {
 				SortField.Type type;
-				if ((orderBy==SearchUtils.SearchFields.RECEIVED)||(orderBy==SearchUtils.SearchFields.SIZE))
+				if ((orderBy==SearchUtils.SearchFields.RECEIVED)||(orderBy==SearchUtils.SearchFields.SIZE)) {
 					type = SortField.Type.LONG;
-				else
+				}
+				else {
 					type = SortField.Type.STRING;
+					// hack for the silly docvalue change in solr5
+					// remove when we figure out how to use docvaues
+					type = SortField.Type.LONG;
+					orderBy = SearchUtils.SearchFields.RECEIVED;
+					// end hack
+				}
 				sort = new Sort(new SortField(orderBy.name(),type,ascending));
 			}
 			catch (Throwable t) {
@@ -260,8 +270,8 @@ public class SearchIndexer {
 				curr = new JSONObject();
 				curr.put(BlueboxMessage.FROM, hits[i].get(SearchUtils.SearchFields.FROM.name()));
 				curr.put(BlueboxMessage.SUBJECT, hits[i].get(SearchUtils.SearchFields.SUBJECT.name()));
-				curr.put(BlueboxMessage.RECEIVED, new Date(Long.parseLong(hits[i].get(SearchUtils.SearchFields.RECEIVED.name()))));
-				curr.put(BlueboxMessage.SIZE, (Long.parseLong(hits[i].get(SearchUtils.SearchFields.SIZE.name()))/1000)+"K");
+				curr.put(BlueboxMessage.RECEIVED, new Date(Long.parseLong(hits[i].get(SearchUtils.SearchFields.RECEIVED.name()+'v'))));
+				curr.put(BlueboxMessage.SIZE, (Long.parseLong(hits[i].get(SearchUtils.SearchFields.SIZE.name()+'v'))/1000)+"K");
 				curr.put(BlueboxMessage.UID, uid);
 				writer.write(curr.toString(3));
 				if (i < hits.length-1) {
@@ -277,7 +287,7 @@ public class SearchIndexer {
 	}
 
 
-	public void indexMail(BlueboxMessage message) throws IOException, JSONException, Exception {
+	public void indexMail(BlueboxMessage message, boolean commit) throws IOException, JSONException, Exception {
 		addDoc(message.getIdentifier(),
 				message.getInbox().getFullAddress(),
 				Utils.decodeQuotedPrintable(Utils.toCSVString(message.getFrom())),
@@ -286,11 +296,12 @@ public class SearchIndexer {
 				message.getText(),
 				getRecipients(message),
 				message.getSize(),
-				message.getReceived().getTime());
+				message.getReceived().getTime(),
+				true);
 	}
 
-	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
-		addDoc(uid,inbox,from,subject,text,html,recipients,size,received);
+	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException {
+		addDoc(uid,inbox,from,subject,text,html,recipients,size,received, commit);
 	}
 
 	/* Find which one of the potential recipeints of this mail matches the specified inbox
@@ -330,7 +341,20 @@ public class SearchIndexer {
 		closeSearcher();
 	}
 
-	public void deleteDoc(String value, SearchUtils.SearchFields field) throws ParseException, IOException {
+	public void commit(boolean commit) {
+		// todo no delayed commit implemented	
+		try {
+			IndexWriter iw = getIndexWriter();
+			iw.commit();
+			closeDirectoryReader();
+			closeSearcher();
+		}
+		catch (Throwable t) {
+			log.error("Problem commiting",t);
+		}
+	}
+
+	public void deleteDoc(String value, SearchUtils.SearchFields field) throws Exception {
 		Analyzer analyzer = new StandardAnalyzer();
 		QueryParser queryParser = new MultiFieldQueryParser(
 				new String[] {
@@ -345,9 +369,14 @@ public class SearchIndexer {
 		closeSearcher();
 	}
 
-	protected synchronized void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
+	public void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
+		this.addDoc(uid, inbox, from, subject, text, html, recipients, size, received,true);
+	}
+
+	public void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException {
 		log.debug("Indexing mail [] []",uid,from);
 		Document doc = new Document();
+
 		doc.add(new StringField(SearchUtils.SearchFields.UID.name(), uid, Field.Store.YES));
 		doc.add(new TextField(SearchUtils.SearchFields.FROM.name(), from, Field.Store.YES));
 		doc.add(new TextField(SearchUtils.SearchFields.RECIPIENT.name(), SearchUtils.getRecipient(recipients,inbox), Field.Store.YES));
@@ -356,15 +385,17 @@ public class SearchIndexer {
 		doc.add(new TextField(SearchUtils.SearchFields.TEXT_BODY.name(), text, Field.Store.YES));
 		doc.add(new TextField(SearchUtils.SearchFields.HTML_BODY.name(), SearchUtils.htmlToString(html), Field.Store.YES));
 		doc.add(new TextField(SearchUtils.SearchFields.RECIPIENTS.name(), recipients, Field.Store.YES));
-		doc.add(new LongField(SearchUtils.SearchFields.SIZE.name(), size, Field.Store.YES));
-		doc.add(new LongField(SearchUtils.SearchFields.RECEIVED.name(), received, Field.Store.YES));
+		doc.add(new NumericDocValuesField(SearchUtils.SearchFields.SIZE.name(), size));
+		doc.add(new LongField(SearchUtils.SearchFields.SIZE.name()+'v', size, Field.Store.YES));
+		doc.add(new NumericDocValuesField(SearchUtils.SearchFields.RECEIVED.name(), received));
+		doc.add(new LongField(SearchUtils.SearchFields.RECEIVED.name()+'v', size, Field.Store.YES));
 		IndexWriter iw = getIndexWriter();
 		iw.addDocument(doc);
-		iw.commit();
-		closeDirectoryReader();
-		closeSearcher();
+		//		iw.commit();
+		//		closeDirectoryReader();
+		//		closeSearcher();
 	}
-	
+
 
 	public static File createTempDirectory()  throws IOException {
 		//File tmpDir = (File)getServletContext().getAttribute(ServletContext.TEMPDIR);
@@ -383,6 +414,18 @@ public class SearchIndexer {
 		closeIndexWriter();
 		closeDirectoryReader();
 		closeSearcher();
+	}
+
+	@Override
+	public boolean containsUid(String uid) {
+		try {
+			Query q = new TermQuery(new Term(SearchUtils.SearchFields.UID.name(), uid));
+			return (getSearcher().search(q, 10).totalHits>0);
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+			return false;
+		}
 	}
 
 }
