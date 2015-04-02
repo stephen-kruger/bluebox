@@ -65,7 +65,7 @@ public class Utils {
 	public static final String UTF8 = "UTF-8";
 	private static final Logger log = LoggerFactory.getLogger(Utils.class);
 	private static int counter=0;
-//	private static PriorityQueue<File>tempFiles = new PriorityQueue<File>(20,new FileDateComparator());
+	//	private static PriorityQueue<File>tempFiles = new PriorityQueue<File>(20,new FileDateComparator());
 	private static MimetypesFileTypeMap ftm;
 
 	static {
@@ -81,11 +81,6 @@ public class Utils {
 		FileTypeMap.setDefaultFileTypeMap(ftm);
 	}
 
-	public static Date getUTCTime() {
-		TimeZone timeZone = TimeZone.getTimeZone("UTC");
-		Calendar cal = Calendar.getInstance(timeZone);
-		return cal.getTime();
-	}
 	
 	public static String getHostName() {
 		try {
@@ -432,7 +427,7 @@ public class Utils {
 		}		
 	}
 
-	
+
 
 	public static String spoolStream(StorageIf si, MimeMessage message) throws Exception {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -470,7 +465,6 @@ public class Utils {
 	}
 
 	private static void sendMessageDirect(Inbox inbox, MimeMessage msg, String spooledUid) throws Exception {
-		// TODO - remove the method using File type, use sb spool instead
 		List<String> recipients = getRecipients(msg);
 		for (String recipient : recipients) {
 			if (inbox.accept(getFrom(msg), recipient)) {
@@ -478,7 +472,7 @@ public class Utils {
 			}
 		}
 	}
-	
+
 	private static void sendMessageDirect(Inbox inbox,MimeMessage msg) throws Exception {
 		StorageIf si = StorageFactory.getInstance();
 		String spooledUid = spoolStream(si,msg);
@@ -522,7 +516,7 @@ public class Utils {
 		MimeMessage msg = new MimeMessage(s);
 		msg.setFrom(from);
 		msg.setSubject(subject,UTF8);
-		msg.setSentDate(new Date());
+		msg.setSentDate(StorageFactory.getInstance().getUTCTime());
 		if (to.length>0)
 			msg.addRecipients(Message.RecipientType.TO, to);
 		if (cc.length>0)
@@ -740,7 +734,8 @@ public class Utils {
 	private static Properties props;
 
 	public static Properties getOnlinePropsCached() {
-		String propsUrl = "http://bluebox.googlecode.com/svn/trunk/bluebox/src/main/resources/bluebox.properties";
+//		String propsUrl = "http://bluebox.googlecode.com/svn/trunk/bluebox/src/main/resources/bluebox.properties";
+		String propsUrl = "https://raw.githubusercontent.com/stephen-kruger/bluebox/master/bluebox/src/main/resources/bluebox.properties";
 		// cache this value for 24 hours
 		if ((new Date().getTime()-lastChecked.getTime())>86400000) {
 			try {
@@ -759,7 +754,7 @@ public class Utils {
 			}
 		}
 		else {
-			log.debug("Using cached value for online update, expiring in {}ms",(new Date().getTime()-lastChecked.getTime()));
+			log.info("Using cached value for online update, expiring in {}ms",(new Date().getTime()-lastChecked.getTime()));
 		}
 		return props;
 	}
@@ -813,5 +808,19 @@ public class Utils {
 			e.printStackTrace();
 		}
 		return count;
+	}
+	
+	public static Calendar getUTCCalendar() {
+		return Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+	}
+
+	public static int getUTCHour() {
+		return getUTCCalendar().get(Calendar.HOUR_OF_DAY);
+	}
+
+	public static Date getUTCDate(Date utct, long time) {
+//		Date utct =  getUTCTime();
+		utct.setTime(time);
+		return utct;
 	}
 }

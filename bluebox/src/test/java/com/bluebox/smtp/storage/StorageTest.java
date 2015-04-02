@@ -67,7 +67,7 @@ public class StorageTest extends BaseTestCase {
 		InboxAddress ia = new InboxAddress(email);
 		
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
-		BlueboxMessage m1 = getBlueBoxStorageIf().store(from, ia, new Date(), message, uid);
+		BlueboxMessage m1 = getBlueBoxStorageIf().store(from, ia, getBlueBoxStorageIf().getUTCTime(), message, uid);
 		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		SolrIndexer.getInstance().indexMail(m1,true);
 
@@ -119,7 +119,7 @@ public class StorageTest extends BaseTestCase {
 				"bodyStr",
 				false);
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
-		BlueboxMessage bbm = getBlueBoxStorageIf().store(from, inbox, new Date(), message, uid);
+		BlueboxMessage bbm = getBlueBoxStorageIf().store(from, inbox, getBlueBoxStorageIf().getUTCTime(), message, uid);
 		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		BlueboxMessage stored = getBlueBoxStorageIf().retrieve(bbm.getIdentifier());
 		assertEquals("Identifiers did not match",bbm.getIdentifier(),stored.getIdentifier());
@@ -146,7 +146,7 @@ public class StorageTest extends BaseTestCase {
 				false);
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 
-		BlueboxMessage bbm = getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, uid);
+		BlueboxMessage bbm = getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid);
 		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		BlueboxMessage stored = getBlueBoxStorageIf().retrieve(bbm.getIdentifier());
 		//		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
@@ -337,9 +337,9 @@ public class StorageTest extends BaseTestCase {
 				false);
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 
-		BlueboxMessage m1 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, uid);
-		BlueboxMessage m2 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, uid);
-		BlueboxMessage m3 = getBlueBoxStorageIf().store(email.getAddress(), email, new Date(), message, uid);
+		BlueboxMessage m1 = getBlueBoxStorageIf().store(email.getAddress(), email, getBlueBoxStorageIf().getUTCTime(), message, uid);
+		BlueboxMessage m2 = getBlueBoxStorageIf().store(email.getAddress(), email, getBlueBoxStorageIf().getUTCTime(), message, uid);
+		BlueboxMessage m3 = getBlueBoxStorageIf().store(email.getAddress(), email, getBlueBoxStorageIf().getUTCTime(), message, uid);
 		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		SolrIndexer.getInstance().indexMail(m1,true);
 		SolrIndexer.getInstance().indexMail(m2,true);
@@ -397,9 +397,9 @@ public class StorageTest extends BaseTestCase {
 				false);
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 
-		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, uid),true);
-		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, uid),true);
-		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, new Date(), message, uid),true);
+		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
+		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
+		SolrIndexer.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
 		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 
 		// check for empty string
@@ -414,7 +414,7 @@ public class StorageTest extends BaseTestCase {
 		int STEP = 5;
 		Date now;
 		InboxAddress email = new InboxAddress("steve@there.com");
-		String prefix="";//new Date().getTime()+"-";
+		String prefix="";//Utils.getUTCTime().getTime()+"-";
 		Writer writer = new FileWriter(prefix+"list-perf.csv");
 		Writer writer2 = new FileWriter(prefix+"listEmail-perf.csv");
 		writer.write("Count,Time\r\n");
@@ -424,21 +424,21 @@ public class StorageTest extends BaseTestCase {
 			log.info("Perf at "+count+" of "+(MAX*STEP));
 			TestUtils.addRandomDirect(getBlueBoxStorageIf(),STEP);
 			count += STEP;
-			now = new Date();
+			now = getBlueBoxStorageIf().getUTCTime();
 			getBlueBoxStorageIf().getMailCount(email,BlueboxMessage.State.NORMAL);
-			time=(new Date().getTime()-now.getTime());
+			time=(getBlueBoxStorageIf().getUTCTime().getTime()-now.getTime());
 			log.fine("NORMAL Count="+count+"Query took "+time);
 			getBlueBoxStorageIf().getMailCount(email,BlueboxMessage.State.ANY);
-			time=(new Date().getTime()-now.getTime());
+			time=(getBlueBoxStorageIf().getUTCTime().getTime()-now.getTime());
 			log.fine("ANY Count="+count+"Query took "+time);
 			getBlueBoxStorageIf().getMailCount(email,BlueboxMessage.State.DELETED);
-			time=(new Date().getTime()-now.getTime());
+			time=(getBlueBoxStorageIf().getUTCTime().getTime()-now.getTime());
 			log.fine("DELETED Count="+count+"Query took "+time);
 			writer.write(count+","+time+"\r\n");
 
-			now = new Date();
+			now = getBlueBoxStorageIf().getUTCTime();
 			getBlueBoxStorageIf().listMail(email, BlueboxMessage.State.NORMAL, 0, STEP,BlueboxMessage.RECEIVED, true);
-			time=(new Date().getTime()-now.getTime());
+			time=(getBlueBoxStorageIf().getUTCTime().getTime()-now.getTime());
 			log.fine("List="+count+"Query took "+time);
 			writer2.write(count+","+time+"\r\n");
 		}

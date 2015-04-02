@@ -10,7 +10,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -34,9 +33,10 @@ import com.bluebox.Config;
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
-import com.bluebox.search.SolrIndexer;
 import com.bluebox.search.SearchUtils;
+import com.bluebox.search.SolrIndexer;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public class InboxTest extends BaseTestCase {
@@ -407,7 +407,7 @@ public class InboxTest extends BaseTestCase {
 
 			msg.setText(body);
 			msg.setHeader("X-Mailer", "musala");
-			msg.setSentDate(new Date());
+			msg.setSentDate(StorageFactory.getInstance().getUTCTime());
 			msg.saveChanges();
 
 			Transport transport = null;

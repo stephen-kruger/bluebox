@@ -153,4 +153,12 @@ public interface StorageIf {
 	public void removeSpooledStream(String spooledUid) throws Exception;
 
 	public long getSpooledStreamSize(String spooledUid) throws Exception;
+	
+	// time functions are db specific, so expose these mthods here
+	
+	/*
+	 * Return the current time
+	 */
+	public Date getUTCTime();
+
 }

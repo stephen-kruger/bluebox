@@ -7,13 +7,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
-import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.zip.ZipEntry;
@@ -554,7 +552,7 @@ public class Inbox implements SimpleMessageListener {
 		BlueboxMessage blueboxMessage = StorageFactory.getInstance().store( 
 				from,
 				new InboxAddress(recipient),
-				Utils.getUTCTime(),
+				StorageFactory.getInstance().getUTCTime(),
 				mimeMessage,
 				spooledUid);
 		updateStats(blueboxMessage, recipient, false);

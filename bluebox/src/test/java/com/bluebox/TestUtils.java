@@ -93,10 +93,12 @@ public class TestUtils extends TestCase {
 	public static BlueboxMessage addRandomDirect(StorageIf storage) throws Exception {
 		MimeMessage mm = Utils.createMessage(null,"steve@there.com", "steve@here.com", "steve@here.com", "steve@here.com", Utils.randomLine(25), Utils.randomLine(25));
 		String uid = spoolMessage(storage,mm);
+		Date received = storage.getUTCTime();
+		log.info("-----<><><><>{}",received);
 		BlueboxMessage message = storage.store(
 				"steve@there.com",
 				new InboxAddress("steve@here.com"),
-				Utils.getUTCTime(),
+				received,
 				mm,
 				uid);
 		removeSpooledMessage(storage,uid);

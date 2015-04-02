@@ -1,7 +1,6 @@
 package com.bluebox.chart;
 
 import java.util.Calendar;
-import java.util.TimeZone;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -11,9 +10,9 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.BaseTestCase;
 import com.bluebox.TestUtils;
+import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONChartHandler;
 import com.bluebox.smtp.storage.StorageFactory;
-import com.bluebox.smtp.storage.derby.StorageImpl;
 
 public class ChartTest extends BaseTestCase {
 	private static final Logger log = LoggerFactory.getLogger(ChartTest.class);
@@ -45,15 +44,19 @@ public class ChartTest extends BaseTestCase {
 	}
 
 	@Test
-	public void testCountByHour() throws JSONException {
+	public void testUTCTimes() throws JSONException {
 		JSONObject jo = StorageFactory.getInstance().getCountByHour();
 		log.info(jo.toString());
-		TimeZone timeZone = TimeZone.getTimeZone("UTC");
-		Calendar cal = Calendar.getInstance(timeZone);
-		int hourOfDay = cal.get(Calendar.HOUR_OF_DAY);
-		// TODO fix this, fails on derby but works on mongodb
-		if (StorageFactory.getInstance() instanceof StorageImpl)
-			hourOfDay++;
+		log.info("current time {}",StorageFactory.getInstance().getUTCTime());
+		log.info("current hour {}",Utils.getUTCHour());
+		log.info("current time {}",Utils.getUTCDate(StorageFactory.getInstance().getUTCTime(),StorageFactory.getInstance().getUTCTime().getTime()));
+	}
+	
+	@Test
+	public void testCountByHour() throws JSONException {
+		JSONObject jo = StorageFactory.getInstance().getCountByHour();
+		int hourOfDay = Utils.getUTCHour();
+		log.info(jo.toString());
 		log.info("Current hour is "+hourOfDay);
 		for (int i = 0; i < 24;i++) {
 			assertNotNull(jo.get(""+i));

@@ -9,9 +9,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.UUID;
 
 import javax.mail.internet.MimeMessage;
@@ -262,7 +265,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			ps.setString(3, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
 			ps.setString(4, props.getString(StorageIf.Props.Sender.name())); // FROM
 			ps.setString(5, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
-			ps.setTimestamp(6, new java.sql.Timestamp(props.getLong(StorageIf.Props.Received.name()))); // RECEIVED
+			Timestamp timestamp = new Timestamp(props.getLong(StorageIf.Props.Received.name()));
+			ps.setTimestamp(6, timestamp); // RECEIVED
 			ps.setInt(7, props.getInt(StorageIf.Props.State.name())); // STATE
 			ps.setLong(8, props.getLong(StorageIf.Props.Size.name())); // SIZE
 			ps.setBinaryStream(9, blob); // MIMEMESSAGE
@@ -405,7 +409,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public Date getDBODate(Object dbo, String key, Date def) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
-			return mo.getTimestamp(key);
+			return Utils.getUTCDate(getUTCTime(),mo.getTimestamp(key).getTime());
 		} 
 		catch (SQLException e) {
 			e.printStackTrace();
@@ -457,7 +461,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public long getMailCount(BlueboxMessage.State state) throws Exception {
-		long start = new Date().getTime();
+		long start = getUTCTime().getTime();
 		long count = 0;
 		Connection connection = getConnection();
 		PreparedStatement ps;
@@ -477,7 +481,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.close();
 		connection.close();
 
-		log.debug("Calculated mail count ({}) in {}ms", count, (new Date().getTime()-start));
+		log.debug("Calculated mail count ({}) in {}ms", count, (getUTCTime().getTime()-start));
 		return count;
 	}
 
@@ -486,7 +490,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if ((inbox==null)||(inbox.getAddress().length()==0))
 			return getMailCount(state);
 		//		String inbox = Utils.getEmail(email);
-		long start = new Date().getTime();
+		long start = getUTCTime().getTime();
 		long count = 0;
 		Connection connection = getConnection();
 		Statement s = connection.createStatement();
@@ -510,7 +514,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 		connection.close();
 
-		log.debug("Calculated mail count for {} ({}) in {}ms",inbox,count,(new Date().getTime()-start));
+		log.debug("Calculated mail count for {} ({}) in {}ms",inbox,count,(getUTCTime().getTime()-start));
 		return count;
 	}
 
@@ -676,7 +680,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		int count = logErrorCount();
 		count++;
 		setProperty(ERROR_TITLE+count,title);
-		setProperty(ERROR_DATE+count,new Date().toString());
+		setProperty(ERROR_DATE+count,getUTCTime().toString());
 		setProperty(ERROR_CONTENT+count,content);
 		setProperty(ERROR_COUNT,Integer.toString(count));
 	}
@@ -700,7 +704,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			log.error(e.getMessage());
 		}
 		setProperty(ERROR_COUNT,"0");
-		//		logError("Error db cleared",Utils.convertStringToStream("Requested "+new Date().toString()));
+		//		logError("Error db cleared",Utils.convertStringToStream("Requested "+getUTCTime().toString()));
 	}
 
 	@Override
@@ -740,7 +744,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public JSONObject getMostActiveInbox() {
-		long start = new Date().getTime();
+		long start = getUTCTime().getTime();
 
 		JSONObject jo = new JSONObject();
 		try {
@@ -787,7 +791,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		catch (JSONException je) {
 			je.printStackTrace();
 		}
-		log.debug("Calculated active inbox count in {}ms",(new Date().getTime()-start));
+		log.debug("Calculated active inbox count in {}ms",(getUTCTime().getTime()-start));
 		return jo;
 	}
 
@@ -1011,7 +1015,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public JSONObject getMPH(InboxAddress inbox) {
-		Date started = new Date();
+		Date started = getUTCTime();
 		JSONObject resultJ = new JSONObject();
 
 		// get mail count for last hour
@@ -1021,7 +1025,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				emailBit = " AND "+StorageIf.Props.Inbox.name()+"=? ";
 			}
 			Connection connection = getConnection();
-			Date lastHour = new Date(new Date().getTime()-60*60*1000);// one hour ago
+			Date lastHour = Utils.getUTCDate(getUTCTime(),getUTCTime().getTime()-60*60*1000);// one hour ago
 			String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received.name()+") > TIMESTAMP('" + new Timestamp(lastHour.getTime()) + "')"+emailBit;
 			PreparedStatement ps;
 			ps = connection.prepareStatement(sql);
@@ -1050,7 +1054,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		// get mail count average for last 24 hour
 		//		try {
 		//			Connection connection = getConnection();
-		//			Date last24Hour = new Date(new Date().getTime()-24*60*60*1000);// 24 hours ago
+		//			Date last24Hour = getUTCDate(getUTCTime().getTime()-24*60*60*1000);// 24 hours ago
 		//			String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received+") > TIMESTAMP('" + new Timestamp(last24Hour.getTime()) + "')";
 		//			PreparedStatement ps;
 		//			ps = connection.prepareStatement(sql);
@@ -1067,7 +1071,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		//			t.printStackTrace();
 		//			log.warn("Seems no hourly stats are available");
 		//		}
-		log.debug("Got mph stats in {}ms",new Date().getTime()-started.getTime());
+		log.debug("Got mph stats in {}ms",getUTCTime().getTime()-started.getTime());
 		return resultJ;
 	}
 
@@ -1191,5 +1195,30 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		log.debug("Size "+size);
 		return size;
 	}
+
+	@Override
+	public Date getUTCTime() {
+		//		return new Date(getUTCCalendar().getTimeInMillis());
+
+		final String DATEFORMAT = "yyyy-MM-dd HH:mm:ss";
+		final SimpleDateFormat sdf = new SimpleDateFormat(DATEFORMAT);
+		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+		final String utcTime = sdf.format(new Date());
+
+		Date dateToReturn = null;
+		SimpleDateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
+
+		try {
+			dateToReturn = (Date)dateFormat.parse(utcTime);
+		}
+		catch (ParseException e) {
+			e.printStackTrace();
+		}
+
+		return dateToReturn;
+	}
+
+
+
 
 }

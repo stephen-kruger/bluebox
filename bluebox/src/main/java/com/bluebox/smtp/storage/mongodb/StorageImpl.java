@@ -86,18 +86,18 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	private void createIndexes() {
 		// create indexes
-		String[] indexes = new String[]{
-				StorageIf.Props.Uid.name(),StorageIf.Props.Inbox.name(),StorageIf.Props.Subject.name(), 
-				StorageIf.Props.Sender.name(),StorageIf.Props.Received.name(),StorageIf.Props.Size.name(),StorageIf.Props.State.name()};
-		for (int i = 0; i < indexes.length;i++) {
+//		String[] indexes = new String[]{
+//				StorageIf.Props.Uid.name(),StorageIf.Props.Inbox.name(),StorageIf.Props.Subject.name(), 
+//				StorageIf.Props.Sender.name(),StorageIf.Props.Received.name(),StorageIf.Props.Size.name(),StorageIf.Props.State.name()};
+		for (StorageIf.Props index : StorageIf.Props.values()) {
 			try {
-				db.getCollection(TABLE_NAME).createIndex(new BasicDBObject(indexes[i], 1));
+				db.getCollection(TABLE_NAME).createIndex(new BasicDBObject(index.name(), 1));
 			}
 			catch (Throwable t) {
 				log.error(t.getMessage());
 			}
 			try {
-				db.getCollection(TABLE_NAME).createIndex(new BasicDBObject(indexes[i], -1));
+				db.getCollection(TABLE_NAME).createIndex(new BasicDBObject(index.name(), -1));
 			}
 			catch (Throwable t) {
 				log.error(t.getMessage());
@@ -121,7 +121,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			DBCollection coll = db.getCollection(TABLE_NAME);
 			DBObject bson = ( DBObject ) JSON.parse( props.toString() );
-			Date d = new Date(props.getLong(StorageIf.Props.Received.name()));
+			Date d = Utils.getUTCDate(getUTCTime(),props.getLong(StorageIf.Props.Received.name()));
 			bson.put(StorageIf.Props.Received.name(), d);
 			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
 			GridFSInputFile gfsFile = gfsRaw.createFile(blob,true);
@@ -183,6 +183,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public Date getDBODate(Object dbo, String key, Date def) {
 		DBObject mo = (DBObject)dbo;
+
 		if (mo.containsField(key))
 			return (Date)mo.get(key);
 		else {
@@ -193,7 +194,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public InputStream getDBORaw(Object dbo, String uid) {
-		log.info("<<<<<<<<<<<<<<ooops>>>>>>>>>>>>>>>>>>");
 		try {
 			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAW);
 			GridFSDBFile imageForOutput = gfsRaw.findOne(uid);
@@ -310,9 +310,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			query.append(StorageIf.Props.State.name(), state.ordinal());
 		if (inbox!=null)
 			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
-		long start = new Date().getTime();
+		long start = getUTCTime().getTime();
 		long count = db.getCollection(TABLE_NAME).count(query);
-		log.debug("Calculated mail count in {}ms",(new Date().getTime()-start));
+		log.debug("Calculated mail count in {}ms",(getUTCTime().getTime()-start));
 		return count;
 	}
 
@@ -398,7 +398,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public void logError(String title, InputStream content) {
 		GridFSInputFile gfs = errorFS.createFile(content);
 		gfs.put("title", title);
-		gfs.put("date", new Date());
+		gfs.put("date", getUTCTime());
 		gfs.save();
 		log.debug("Saved with id {}",gfs.getId());
 	}
@@ -430,7 +430,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		try {
 			log.info("Clearing error db");
 			errorFS.getDB().dropDatabase();
-			//			logError("Error db cleared",Utils.convertStringToStream("Requested "+new Date().toString()));
+			//			logError("Error db cleared",Utils.convertStringToStream("Requested "+Utils.getUTCTime()().toString()));
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
@@ -448,7 +448,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				DBObject dbo = cursor.next();
 				logError = new JSONObject();
 				logError.put("title", getDBOString(dbo,"title",""));
-				logError.put("date", getDBODate(dbo,"date",new Date()));
+				logError.put("date", getDBODate(dbo,"date",getUTCTime()));
 				logError.put("id", dbo.get("_id"));
 				result.put(logError);
 			}
@@ -719,7 +719,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		// now fill in query results
 		// db.posts.find({created_on: {$gte: start, $lt: end}});
 		// db.gpsdatas.find({"createdAt" : { $gte : new ISODate("2012-01-12T20:15:31Z") }});
-		Date lastHour = new Date(new Date().getTime()-60*60*1000);// one hour ago
+		Date lastHour = Utils.getUTCDate(getUTCTime(),getUTCTime().getTime()-60*60*1000);// one hour ago
 		BasicDBObject query = new BasicDBObject();
 
 		// calculate mph for last hour
@@ -739,7 +739,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 
 		// calculate mph for last 24 hours
-		//		Date last24Hour = new Date(new Date().getTime()-24*60*60*1000);// 24 hours ago
+		//		Date last24Hour = Utils.getUTCDate(Utils.getUTCTime().getTime()-24*60*60*1000);// 24 hours ago
 		//		query.put(StorageIf.Props.Received.name(), new BasicDBObject("$gte", last24Hour));
 		//		output = db.getCollection(TABLE_NAME).find(query);
 		//		mph24 = output.count()/24;
@@ -830,5 +830,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return blob.getLength();
 	}
 
+	@Override
+	public Date getUTCTime() {
+		return Utils.getUTCCalendar().getTime();
+	}
 
 }
