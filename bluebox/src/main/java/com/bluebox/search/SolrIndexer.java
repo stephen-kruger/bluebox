@@ -35,7 +35,6 @@ public class SolrIndexer implements SearchIf {
 	private EmbeddedSolrServer server;
 	private long lastCommit=new Date().getTime();// last time a commit was performed
 	private static final String CORE_NAME="blueboxcore";
-	private static final int MAX_COMMIT_INTERVAL = 20000; // ensure at least some time between unforced commits
 
 	protected SolrIndexer() throws Exception {
 		File solrDir = createTempDirectory("bluebox.solr");
@@ -154,7 +153,7 @@ public class SolrIndexer implements SearchIf {
 		log.info("Stopped SearchIndexer");
 	}
 
-	public SolrDocument[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SearchFields orderBy, boolean ascending) throws IOException, SolrServerException {
+	public SolrDocument[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SortFields orderBy, boolean ascending) throws IOException, SolrServerException {
 		//		System.out.println("before>>>>>"+querystr+"<<<<<<<<<<");
 		SolrQuery query = new SolrQuery();
 		if (!querystr.endsWith("*")) {
@@ -191,7 +190,7 @@ public class SolrIndexer implements SearchIf {
 		return results.toArray(new SolrDocument[results.size()]);
 	}
 
-	public long searchInboxes(String search, Writer writer, int start,	int count, SearchUtils.SearchFields fields, SearchUtils.SearchFields orderBy, boolean ascending) throws IOException, SolrServerException {
+	public long searchInboxes(String search, Writer writer, int start,	int count, SearchUtils.SearchFields fields, SearchUtils.SortFields orderBy, boolean ascending) throws IOException, SolrServerException {
 		SolrDocument[] hits = search(search, fields, start, count, orderBy, ascending);
 		JSONObject curr;
 		writer.write("[");
@@ -250,7 +249,7 @@ public class SolrIndexer implements SearchIf {
 			lastCommit = 0;
 		}
 		long currentTime = new Date().getTime();
-		if ((currentTime-lastCommit)>MAX_COMMIT_INTERVAL) {
+		if ((currentTime-lastCommit)>SearchUtils.MAX_COMMIT_INTERVAL) {
 			server.commit();
 			lastCommit = currentTime;
 		}
@@ -319,6 +318,8 @@ public class SolrIndexer implements SearchIf {
 		doc.addField( SearchUtils.SearchFields.RECIPIENTS.name(), recipients);
 		doc.addField( SearchUtils.SearchFields.SIZE.name(), size);
 		doc.addField( SearchUtils.SearchFields.RECEIVED.name(), received);
+		doc.addField( SearchUtils.SortFields.SORT_SIZE.name(), size);
+		doc.addField( SearchUtils.SortFields.SORT_RECEIVED.name(), received);
 		server.add(doc);
 		commit(commit);
 	}

@@ -171,10 +171,10 @@ public class Inbox implements SimpleMessageListener {
 		return StorageFactory.getInstance().listMailLite(inbox, state, start, count, orderBy, ascending);
 	}
 
-	public long searchInbox(String search, Writer writer, int start, int count, SearchUtils.SearchFields searchScope, SearchUtils.SearchFields orderBy, boolean ascending) throws Exception {
+	public long searchInbox(String search, Writer writer, int start, int count, SearchUtils.SearchFields searchScope, SearchUtils.SortFields orderBy, boolean ascending) throws Exception {
 		log.debug("Searching for {} ordered by {}",search,orderBy);
 		try {
-			return SearchFactory.getInstance().searchInboxes(search, writer, start, count, searchScope, orderBy, ascending);
+			return SearchFactory.getInstance().searchInboxes(SearchUtils.substringQuery(search), writer, start, count, searchScope, orderBy, ascending);
 		}
 		catch (IndexNotFoundException inf) {
 			log.info("Detected index problems ({})",inf.getMessage());
@@ -656,21 +656,12 @@ public class Inbox implements SimpleMessageListener {
 
 		JSONObject curr;
 		JSONArray children = new JSONArray();
-		// no need to include wildcard
-		//		if (hint.contains("*")) {
-		//			hint=hint.substring(0,hint.indexOf('*'));
-		//		}
-		if (hint.length()==0)
-			hint = "";
-		// ensure we check for all substrings
-		//		if (!hint.startsWith("*"))
-		//			hint = "*"+hint;
+
 		if (hint.length()==1) {
 			return children;
 		}
-		//			hint = QueryParser.escape(hint);
 		SearchIf search = SearchFactory.getInstance();
-		Object[] results = search.search(hint, SearchUtils.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchUtils.SearchFields.RECEIVED,false);
+		Object[] results = search.search(SearchUtils.autocompleteQuery(hint), SearchUtils.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchUtils.SortFields.SORT_RECEIVED,false);
 		for (int i = 0; i < results.length;i++) {
 			if (results[i] instanceof SolrDocument) {
 				SolrDocument result = (SolrDocument) results[i];

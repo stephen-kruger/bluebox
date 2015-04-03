@@ -9,9 +9,9 @@ public interface SearchIf {
 
 	public void stop();
 
-	public Object[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SearchFields orderBy, boolean ascending) throws Exception;
+	public Object[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SortFields orderBy, boolean ascending) throws Exception;
 
-	public long searchInboxes(String search, Writer writer, int start,	int count, SearchUtils.SearchFields fields, SearchUtils.SearchFields orderBy, boolean ascending) throws Exception;
+	public long searchInboxes(String search, Writer writer, int start,	int count, SearchUtils.SearchFields fields, SearchUtils.SortFields orderBy, boolean ascending) throws Exception;
 
 	public void indexMail(BlueboxMessage message, boolean commit) throws Exception;
 	/* 

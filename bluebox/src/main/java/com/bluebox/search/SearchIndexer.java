@@ -10,7 +10,6 @@ import java.util.StringTokenizer;
 import javax.mail.Address;
 import javax.mail.internet.MimeMessage;
 
-import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -51,6 +50,8 @@ public class SearchIndexer implements SearchIf {
 	private IndexWriter indexWriter;
 	private IndexSearcher searcher;
 	private DirectoryReader diectoryReader;
+	private StandardAnalyzer analyzer;
+	private long lastCommit=new Date().getTime();// last time a commit was performed
 
 	//	private static SearchIndexer getInstance() throws IOException {
 	//		if (si==null) {
@@ -72,7 +73,7 @@ public class SearchIndexer implements SearchIf {
 
 	public IndexWriter getIndexWriter() throws IOException {
 		if (indexWriter==null) {
-			Analyzer analyzer = new StandardAnalyzer();		
+			analyzer = new StandardAnalyzer();		
 			//			config = new IndexWriterConfig(Version.LATEST, analyzer);
 			config = new IndexWriterConfig(analyzer);
 			config.setUseCompoundFile(true);
@@ -135,40 +136,13 @@ public class SearchIndexer implements SearchIf {
 		searcher=null;
 	}
 
-	public Document[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SearchFields orderBy, boolean ascending) throws ParseException, IOException {
-		//              querystr = QueryParser.escape(querystr);
-		//              querystr = "*"+QueryParser.escape(querystr)+"*";
-		//              querystr = "*"+querystr+"*";
-		if ((querystr==null)||(querystr.length()==0)) {
-			querystr = "*";
-		}
-		else {
-			boolean leadingWC=false, trailingWC=false;
-			if (querystr.endsWith("*")) {
-				querystr = querystr.substring(0,querystr.length()-1);
-				trailingWC=true;
-			}
-			if (querystr.startsWith("*")) {
-				querystr = querystr.substring(1,querystr.length());
-				leadingWC = true;
-			}
-			querystr = QueryParser.escape(querystr);
+	public Document[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SortFields orderBy, boolean ascending) throws ParseException, IOException {
 
-			if (leadingWC)
-				querystr = "*"+querystr;
-			if (trailingWC) {
-				querystr = querystr+"*";
-			}
-		}
 		QueryParser queryParser;
-
-		Analyzer analyzer = new StandardAnalyzer();
+//		log.info("field={}>>>>>>>>>>>>>>query={} sort={}",fields.name(),querystr,orderBy);
 		switch (fields) {
 		case SUBJECT :
-			queryParser = new MultiFieldQueryParser(
-					new String[] {
-							SearchUtils.SearchFields.SUBJECT.name()},
-							analyzer);
+			queryParser = new QueryParser(SearchUtils.SearchFields.SUBJECT.name(),analyzer);
 			break;
 		case BODY :
 			queryParser = new MultiFieldQueryParser(
@@ -178,28 +152,16 @@ public class SearchIndexer implements SearchIf {
 							analyzer);
 			break;
 		case RECEIVED :
-			queryParser = new MultiFieldQueryParser(
-					new String[] {
-							SearchUtils.SearchFields.RECEIVED.name()},
-							analyzer);
+			queryParser = new QueryParser(SearchUtils.SearchFields.RECEIVED.name(),analyzer);
 			break;
 		case FROM :
-			queryParser = new MultiFieldQueryParser(
-					new String[] {
-							SearchUtils.SearchFields.FROM.name()},
-							analyzer);
+			queryParser = new QueryParser(SearchUtils.SearchFields.FROM.name(),analyzer);
 			break;
 		case RECIPIENT :
-			queryParser = new MultiFieldQueryParser(
-					new String[] {
-							SearchUtils.SearchFields.RECIPIENT.name()},
-							analyzer);
+			queryParser = new QueryParser(SearchUtils.SearchFields.RECIPIENT.name(),analyzer);
 			break;
 		case RECIPIENTS :
-			queryParser = new MultiFieldQueryParser(
-					new String[] {
-							SearchUtils.SearchFields.RECIPIENTS.name()},
-							analyzer);
+			queryParser = new QueryParser(SearchUtils.SearchFields.RECIPIENTS.name(),analyzer);
 			break;
 		case ANY :
 		default :
@@ -221,7 +183,7 @@ public class SearchIndexer implements SearchIf {
 			Sort sort;
 			try {
 				SortField.Type type;
-				if ((orderBy==SearchUtils.SearchFields.RECEIVED)||(orderBy==SearchUtils.SearchFields.SIZE)) {
+				if ((orderBy==SearchUtils.SortFields.SORT_RECEIVED)||(orderBy==SearchUtils.SortFields.SORT_SIZE)) {
 					type = SortField.Type.LONG;
 				}
 				else {
@@ -229,7 +191,7 @@ public class SearchIndexer implements SearchIf {
 					// hack for the silly docvalue change in solr5
 					// remove when we figure out how to use docvaues
 					type = SortField.Type.LONG;
-					orderBy = SearchUtils.SearchFields.RECEIVED;
+					orderBy = SearchUtils.SortFields.SORT_RECEIVED;
 					// end hack
 				}
 				sort = new Sort(new SortField(orderBy.name(),type,ascending));
@@ -260,7 +222,7 @@ public class SearchIndexer implements SearchIf {
 
 	}
 
-	public long searchInboxes(String search, Writer writer, int start,	int count, SearchUtils.SearchFields fields, SearchUtils.SearchFields orderBy, boolean ascending) throws ParseException, IOException {
+	public long searchInboxes(String search, Writer writer, int start,	int count, SearchUtils.SearchFields fields, SearchUtils.SortFields orderBy, boolean ascending) throws ParseException, IOException {
 		Document[] hits = search(search, fields, start, count, orderBy, ascending);
 		JSONObject curr;
 		writer.write("[");
@@ -270,8 +232,8 @@ public class SearchIndexer implements SearchIf {
 				curr = new JSONObject();
 				curr.put(BlueboxMessage.FROM, hits[i].get(SearchUtils.SearchFields.FROM.name()));
 				curr.put(BlueboxMessage.SUBJECT, hits[i].get(SearchUtils.SearchFields.SUBJECT.name()));
-				curr.put(BlueboxMessage.RECEIVED, new Date(Long.parseLong(hits[i].get(SearchUtils.SearchFields.RECEIVED.name()+'v'))));
-				curr.put(BlueboxMessage.SIZE, (Long.parseLong(hits[i].get(SearchUtils.SearchFields.SIZE.name()+'v'))/1000)+"K");
+				curr.put(BlueboxMessage.RECEIVED, new Date(Long.parseLong(hits[i].get(SearchUtils.SearchFields.RECEIVED.name()))));
+				curr.put(BlueboxMessage.SIZE, (Long.parseLong(hits[i].get(SearchUtils.SearchFields.SIZE.name()))/1000)+"K");
 				curr.put(BlueboxMessage.UID, uid);
 				writer.write(curr.toString(3));
 				if (i < hits.length-1) {
@@ -297,7 +259,7 @@ public class SearchIndexer implements SearchIf {
 				getRecipients(message),
 				message.getSize(),
 				message.getReceived().getTime(),
-				true);
+				commit);
 	}
 
 	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException {
@@ -336,26 +298,36 @@ public class SearchIndexer implements SearchIf {
 
 	public synchronized void deleteDoc(String uid) throws IOException, ParseException {
 		getIndexWriter().deleteDocuments(new Term(SearchUtils.SearchFields.UID.name(),uid));
-		getIndexWriter().commit();
-		closeDirectoryReader();
-		closeSearcher();
+		commit(true);
 	}
 
-	public void commit(boolean commit) {
-		// todo no delayed commit implemented	
-		try {
-			IndexWriter iw = getIndexWriter();
-			iw.commit();
-			closeDirectoryReader();
-			closeSearcher();
+	public void commit(boolean force) {
+		if (force) {
+			log.info("Commit being forced");
+			lastCommit = 0;
+		}	
+		long currentTime = new Date().getTime();
+		if ((currentTime-lastCommit)>SearchUtils.MAX_COMMIT_INTERVAL) {
+			log.info("Performing delayed commit {}ms",(currentTime-lastCommit));
+			try {
+				IndexWriter iw = getIndexWriter();
+				iw.commit();
+				closeDirectoryReader();
+				closeSearcher();
+			}
+			catch (Throwable t) {
+				log.error("Problem commiting",t);
+			}
+			finally {
+				lastCommit = currentTime;
+			}
 		}
-		catch (Throwable t) {
-			log.error("Problem commiting",t);
+		else {
+			log.info("Skipping commit {},",(currentTime-lastCommit));
 		}
 	}
 
 	public void deleteDoc(String value, SearchUtils.SearchFields field) throws Exception {
-		Analyzer analyzer = new StandardAnalyzer();
 		QueryParser queryParser = new MultiFieldQueryParser(
 				new String[] {
 						field.name()},
@@ -364,16 +336,14 @@ public class SearchIndexer implements SearchIf {
 		queryParser.setDefaultOperator(QueryParser.Operator.AND);
 		Query query = queryParser.parse(value);
 		getIndexWriter().deleteDocuments(query);
-		getIndexWriter().commit();
-		closeDirectoryReader();
-		closeSearcher();
+		commit(true);
 	}
 
 	public void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws IOException {
 		this.addDoc(uid, inbox, from, subject, text, html, recipients, size, received,true);
 	}
 
-	public void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException {
+	public void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean force) throws IOException {
 		log.debug("Indexing mail [] []",uid,from);
 		Document doc = new Document();
 
@@ -385,15 +355,13 @@ public class SearchIndexer implements SearchIf {
 		doc.add(new TextField(SearchUtils.SearchFields.TEXT_BODY.name(), text, Field.Store.YES));
 		doc.add(new TextField(SearchUtils.SearchFields.HTML_BODY.name(), SearchUtils.htmlToString(html), Field.Store.YES));
 		doc.add(new TextField(SearchUtils.SearchFields.RECIPIENTS.name(), recipients, Field.Store.YES));
-		doc.add(new NumericDocValuesField(SearchUtils.SearchFields.SIZE.name(), size));
-		doc.add(new LongField(SearchUtils.SearchFields.SIZE.name()+'v', size, Field.Store.YES));
-		doc.add(new NumericDocValuesField(SearchUtils.SearchFields.RECEIVED.name(), received));
-		doc.add(new LongField(SearchUtils.SearchFields.RECEIVED.name()+'v', size, Field.Store.YES));
+		doc.add(new NumericDocValuesField(SearchUtils.SortFields.SORT_SIZE.name(), size));
+		doc.add(new LongField(SearchUtils.SearchFields.SIZE.name(), size, Field.Store.YES));
+		doc.add(new NumericDocValuesField(SearchUtils.SortFields.SORT_RECEIVED.name(), received));
+		doc.add(new LongField(SearchUtils.SearchFields.RECEIVED.name(), size, Field.Store.YES));
 		IndexWriter iw = getIndexWriter();
 		iw.addDocument(doc);
-		//		iw.commit();
-		//		closeDirectoryReader();
-		//		closeSearcher();
+		commit(force);
 	}
 
 
@@ -410,10 +378,7 @@ public class SearchIndexer implements SearchIf {
 
 	public synchronized void deleteIndexes() throws IOException {
 		getIndexWriter().deleteAll();
-		getIndexWriter().commit();
-		closeIndexWriter();
-		closeDirectoryReader();
-		closeSearcher();
+		commit(true);
 	}
 
 	@Override

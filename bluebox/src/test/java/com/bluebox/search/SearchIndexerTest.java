@@ -7,7 +7,6 @@ import java.util.logging.Logger;
 
 import junit.framework.TestCase;
 
-import org.apache.solr.client.solrj.SolrServerException;
 import org.codehaus.jettison.json.JSONArray;
 import org.junit.Test;
 
@@ -21,8 +20,8 @@ public class SearchIndexerTest extends TestCase {
 	private String uid2 = UUID.randomUUID().toString();
 	private String uid3 = UUID.randomUUID().toString();
 	private String uid4 = UUID.randomUUID().toString();
-	
-	
+
+
 	@Override
 	protected void setUp() throws Exception {
 		getSearchIndexer().deleteIndexes();
@@ -35,79 +34,80 @@ public class SearchIndexerTest extends TestCase {
 		}
 		getSearchIndexer().commit(true);
 	}
-	
+
 	@Override
 	protected void tearDown() throws Exception {
 		getSearchIndexer().deleteIndexes();
 		getSearchIndexer().stop();
 	}
-	
+
 	public SearchIf getSearchIndexer() throws Exception {
 		return SearchFactory.getInstance();
 	}
 
 	@Test
 	public void testHtmlSearch() throws IOException, Exception {
-		assertEquals("Missing expected search results",4,getSearchIndexer().search("sender",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.RECEIVED,false).length);
+		assertEquals("Missing expected search results",4,getSearchIndexer().search(SearchUtils.substringQuery("sender"),SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
 	@Test
 	public void testMultiWord() throws IOException, Exception {
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("Art of Computer",SearchUtils.SearchFields.BODY,0,10,SearchUtils.SearchFields.BODY,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("for dummies",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("in action",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("Subject in action",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",0,getSearchIndexer().search("Subject in action",SearchUtils.SearchFields.BODY,0,10,SearchUtils.SearchFields.BODY,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("Art of Computer",SearchUtils.SearchFields.BODY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("for dummies",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("in action",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("Subject in action",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",0,getSearchIndexer().search("Subject in action",SearchUtils.SearchFields.BODY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
 	@Test
 	public void testSubjectSearch() throws IOException, Exception {
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("action",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("action",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
 	@Test
 	public void testFromSearch() throws IOException, Exception {
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("johnson",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("stephen",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("Lucene in Action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("johnson",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("stephen",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("Lucene in Action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
 	@Test
 	public void testRecipientSearch() throws IOException, Exception {
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("receiever1",SearchUtils.SearchFields.RECIPIENTS,0,10,SearchUtils.SearchFields.RECEIVED,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("receiever1@here.com",SearchUtils.SearchFields.RECIPIENTS,0,10,SearchUtils.SearchFields.RECEIVED,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("receiever2",SearchUtils.SearchFields.RECIPIENTS,0,10,SearchUtils.SearchFields.RECEIVED,false).length);
-		//		assertEquals("Missing expected search results",4,getSearchIndexer().search("receiever",SearchUtils.SearchFields.RECIPIENTS,0,10,SearchUtils.SearchFields.RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("receiever1",SearchUtils.SearchFields.RECIPIENTS,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("receiever1@here.com",SearchUtils.SearchFields.RECIPIENTS,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("receiever2",SearchUtils.SearchFields.RECIPIENTS,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		//		assertEquals("Missing expected search results",4,getSearchIndexer().search("receiever",SearchUtils.SearchFields.RECIPIENTS,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
 	@Test
 	public void testMailIndexing() throws Exception {
 		BlueboxMessage msg = TestUtils.addRandomDirect(StorageFactory.getInstance());
 		getSearchIndexer().indexMail(msg,true);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search(msg.getSubject(),SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("steve",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
+//		assertEquals("Missing expected search results",1,getSearchIndexer().search(SearchUtils.substringQuery(msg.getSubject()),SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("steve",SearchUtils.SearchFields.INBOX,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search(SearchUtils.plainQuery(msg.getInbox().toString()),SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
 	@Test
-	public void testDelete() throws IOException, Exception, InterruptedException, SolrServerException {
+	public void testDelete() throws Exception {
 		getSearchIndexer().deleteDoc(uid1);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("johnson",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("stephen",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",0,getSearchIndexer().search("Lucene in Action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",0,getSearchIndexer().search("sender1@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("sender2@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("johnson",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("stephen",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",0,getSearchIndexer().search("Lucene in Action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",0,getSearchIndexer().search("sender1@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("sender2@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		getSearchIndexer().deleteDoc(uid2);
-		assertEquals("Missing expected search results",0,getSearchIndexer().search("sender2@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SearchFields.SUBJECT,false).length);
+		assertEquals("Missing expected search results",0,getSearchIndexer().search("sender2@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
 	@Test
 	public void testTextSearch() throws IOException, Exception {
-		Object[] hits = getSearchIndexer().search("lucene",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.RECEIVED,false);
+		Object[] hits = getSearchIndexer().search("lucene",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false);
 		assertEquals("Missing expected search results",3,hits.length);
-//		for(int i=0;i<hits.length;++i) {
-//			log.info((i + 1) + ". " + hits[i].get(SearchUtils.SearchFields.UID.name()));
-//		}
+		//		for(int i=0;i<hits.length;++i) {
+		//			log.info((i + 1) + ". " + hits[i].get(SearchUtils.SearchFields.UID.name()));
+		//		}
 	}
 
 	@Test
@@ -119,9 +119,9 @@ public class SearchIndexerTest extends TestCase {
 
 	@Test
 	public void testTypeAhead() throws Exception, IOException {
-		Object[] results = getSearchIndexer().search("receiever", SearchUtils.SearchFields.RECIPIENTS, 0, 199, SearchUtils.SearchFields.RECEIVED,false);
+		Object[] results = getSearchIndexer().search(SearchUtils.autocompleteQuery("receiever"), SearchUtils.SearchFields.RECIPIENTS, 0, 199, SearchUtils.SortFields.SORT_RECEIVED,false);
 		assertTrue("Missing autocomplete results",results.length==4);
-		results = getSearchIndexer().search("receiever1", SearchUtils.SearchFields.RECIPIENTS, 0, 199, SearchUtils.SearchFields.RECEIVED,false);
+		results = getSearchIndexer().search(SearchUtils.autocompleteQuery("receiever1"), SearchUtils.SearchFields.RECIPIENTS, 0, 199, SearchUtils.SortFields.SORT_RECEIVED,false);
 		assertTrue("Missing autocomplete results",results.length>0);
 	}
 
@@ -134,7 +134,7 @@ public class SearchIndexerTest extends TestCase {
 		sw = new StringWriter();
 		String searchString = "sender";
 		log.info("Looking for sender "+searchString);
-		getSearchIndexer().searchInboxes(searchString, sw, 0, 50, SearchUtils.SearchFields.FROM, SearchUtils.SearchFields.RECEIVED, true);
+		getSearchIndexer().searchInboxes(SearchUtils.substringQuery(searchString), sw, 0, 50, SearchUtils.SearchFields.FROM, SearchUtils.SortFields.SORT_RECEIVED, true);
 		ja = new JSONArray(sw.toString());
 		log.info(ja.toString(3));
 		assertTrue("No 'Subject' found in search results",ja.length()>0);
@@ -142,7 +142,7 @@ public class SearchIndexerTest extends TestCase {
 		// test search in subject
 		sw = new StringWriter();
 		searchString = "Subject for gigabytes";
-		getSearchIndexer().searchInboxes(searchString, sw, 0, 50, SearchUtils.SearchFields.SUBJECT, SearchUtils.SearchFields.RECEIVED, true);
+		getSearchIndexer().searchInboxes(searchString, sw, 0, 50, SearchUtils.SearchFields.SUBJECT, SearchUtils.SortFields.SORT_RECEIVED, true);
 		ja = new JSONArray(sw.toString());
 		assertTrue("Missing search results",ja.length()>0);
 		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),"Subject for gigabytes");
@@ -150,7 +150,7 @@ public class SearchIndexerTest extends TestCase {
 		// search for last few chars of subject
 		sw = new StringWriter();
 		searchString = "gigabytes";
-		getSearchIndexer().searchInboxes(searchString, sw, 0, 50, SearchUtils.SearchFields.SUBJECT, SearchUtils.SearchFields.RECEIVED, true);
+		getSearchIndexer().searchInboxes(searchString, sw, 0, 50, SearchUtils.SearchFields.SUBJECT, SearchUtils.SortFields.SORT_RECEIVED, true);
 		ja = new JSONArray(sw.toString());
 		log.info(searchString+"="+ja.toString(3));
 		assertTrue("Missing search results",ja.length()>0);
@@ -159,11 +159,13 @@ public class SearchIndexerTest extends TestCase {
 		// search for first few chars of subject
 		sw = new StringWriter();
 		searchString = "Subject in";
-		getSearchIndexer().searchInboxes(searchString, sw, 0, 50, SearchUtils.SearchFields.SUBJECT, SearchUtils.SearchFields.RECEIVED, true);
+		getSearchIndexer().searchInboxes(searchString, sw, 0, 50, SearchUtils.SearchFields.SUBJECT, SearchUtils.SortFields.SORT_RECEIVED, true);
 		ja = new JSONArray(sw.toString());
 		log.info(searchString+"="+ja.toString(3));
 		assertTrue("Missing search results",ja.length()>0);
-		assertEquals("Subject in action",ja.getJSONObject(0).get(BlueboxMessage.SUBJECT));
+		for (int i = 0; i < ja.length(); i++) {
+			assertTrue("Inaccurate search result found",ja.getJSONObject(i).get(BlueboxMessage.SUBJECT).toString().contains("Subject"));
+		}
 
 		// test search To:
 		//		sw = new StringWriter();
@@ -183,9 +185,9 @@ public class SearchIndexerTest extends TestCase {
 		//		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),original.getSubject());
 		//		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.FROM),original.getProperty(BlueboxMessage.FROM));
 	}
-	
+
 	@Test
-	public void testContains() throws IOException, Exception, InterruptedException, SolrServerException {
+	public void testContains() throws Exception {
 		assertTrue("Did not find document by UID",getSearchIndexer().containsUid(uid1));
 		assertTrue("Did not find document by UID",getSearchIndexer().containsUid(uid2));
 		assertTrue("Did not find document by UID",getSearchIndexer().containsUid(uid3));
@@ -194,11 +196,11 @@ public class SearchIndexerTest extends TestCase {
 		getSearchIndexer().deleteDoc(uid1);
 		assertFalse("Should not find deleted document by UID",getSearchIndexer().containsUid(uid1));
 	}
-	
+
 	@Test
-	public void testSeachPaging() throws IOException, Exception, InterruptedException, SolrServerException {
-		assertEquals("Search did not limit results",10,getSearchIndexer().search("",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SearchFields.RECEIVED,false).length);
-		assertEquals("Search did not limit results",10,getSearchIndexer().search("",SearchUtils.SearchFields.ANY,10,10,SearchUtils.SearchFields.RECEIVED,false).length);
-		assertEquals("Should not return results here",0,getSearchIndexer().search("",SearchUtils.SearchFields.ANY,1000,10,SearchUtils.SearchFields.RECEIVED,false).length);
+	public void testSearchPaging() throws Exception {
+		assertEquals("Search did not limit results",10,getSearchIndexer().search(SearchUtils.substringQuery(""),SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Search did not limit results",10,getSearchIndexer().search(SearchUtils.substringQuery(""),SearchUtils.SearchFields.ANY,10,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Should not return results here",0,getSearchIndexer().search(SearchUtils.substringQuery(""),SearchUtils.SearchFields.ANY,1000,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 }

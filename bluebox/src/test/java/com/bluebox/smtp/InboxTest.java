@@ -145,12 +145,12 @@ public class InboxTest extends BaseTestCase {
 		assertEquals("Missing mail",2,mail.size());
 		SearchIf si = SearchFactory.getInstance();
 		si.commit(true);
-		assertEquals("Missing search data",2,si.search("from@from.com", SearchUtils.SearchFields.FROM, 0, 10, SearchUtils.SearchFields.FROM, true).length);
+		assertEquals("Missing search data",2,si.search("from@from.com", SearchUtils.SearchFields.FROM, 0, 10, SearchUtils.SortFields.SORT_RECEIVED, true).length);
 		inbox.softDelete(mail.get(0).getIdentifier());
 
 		assertEquals("Missing deleted mail",1,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.DELETED, 0, 100, BlueboxMessage.SIZE, true).size());
 		assertEquals("Did not find deleted mail",1,inbox.listInbox(new InboxAddress(email1), BlueboxMessage.State.NORMAL, 0, 100, BlueboxMessage.SIZE, true).size());
-		assertEquals("Unexpected search data",1,si.search(from, SearchUtils.SearchFields.FROM, 0, 10, SearchUtils.SearchFields.FROM, true).length);		
+		assertEquals("Unexpected search data",1,si.search(from, SearchUtils.SearchFields.FROM, 0, 10, SearchUtils.SortFields.SORT_RECEIVED, true).length);		
 	}
 
 	@Test

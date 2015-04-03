@@ -9,12 +9,65 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
 
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SearchUtils {
 	private static final Logger log = LoggerFactory.getLogger(SearchUtils.class);
 	public enum SearchFields {UID, INBOX, FROM, SUBJECT, RECEIVED, TEXT_BODY, HTML_BODY, SIZE, RECIPIENT, RECIPIENTS, ANY, BODY};
+	public enum SortFields {SORT_RECEIVED, SORT_SIZE};
+	public static final int MAX_COMMIT_INTERVAL = 20000; // ensure at least some time between unforced commits
+
+	public static String substringQuery(String querystr) {
+		//              querystr = QueryParser.escape(querystr);
+		//              querystr = "*"+QueryParser.escape(querystr)+"*";
+		//              querystr = "*"+querystr+"*";
+		if ((querystr==null)||(querystr.length()==0)) {
+			return "*";
+		}
+		else {
+			@SuppressWarnings("unused")
+			boolean leadingWC=false, trailingWC=false;
+			if (querystr.endsWith("*")) {
+				querystr = querystr.substring(0,querystr.length()-1);
+				trailingWC=true;
+			}
+			if (querystr.startsWith("*")) {
+				querystr = querystr.substring(1,querystr.length());
+				leadingWC = true;
+			}
+			querystr = QueryParser.escape(querystr);
+
+			if (leadingWC)
+				querystr = "*"+querystr;
+//			if (trailingWC) 
+				querystr = querystr+"*";
+		}
+		return querystr;
+	}
+
+	public static String plainQuery(String querystr) {
+		return querystr;
+	}
+
+	public static String autocompleteQuery(String querystr) {
+		if ((querystr==null)||(querystr.length()==0)) {
+			return "*";
+		}
+		else {
+			if (querystr.endsWith("*")) {
+				querystr = querystr.substring(0,querystr.length()-1);
+			}
+			if (querystr.startsWith("*")) {
+				querystr = querystr.substring(1,querystr.length());
+			}
+			querystr = QueryParser.escape(querystr);
+			querystr = querystr+"*";
+			//			querystr = querystr;
+		}
+		return querystr;
+	}
 
 	/*
 	 * Figure out which of the recipients this mail is actually being delivered to. If none match, use the Inbox as default;
