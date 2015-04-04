@@ -116,60 +116,6 @@ public class Utils {
 		}
 	}
 
-	//	@SuppressWarnings("unchecked")
-	//	public static String[] getStringArray(Object obj) {
-	//		if (obj instanceof String[]) {
-	//			return (String[])obj;
-	//		}
-	//		if (obj instanceof Collection) {
-	//			String[] res = new String[((Collection<String>)obj).size()];
-	//			return ((Collection<String>)obj).toArray(res);
-	//		}		
-	//		if (obj instanceof JSONArray) {
-	//			JSONArray ja = (JSONArray)obj;
-	//			String[] res = new String[ja.length()];
-	//			for (int i = 0; i < res.length; i++) {
-	//				try {
-	//					res[i] = ja.getString(i);
-	//				} 
-	//				catch (JSONException e) {
-	//					e.printStackTrace();
-	//				}
-	//			}
-	//			return res;
-	//		}
-	//		return new String[]{obj.toString()};
-	//	}
-
-	//	public static JSONArray getJSONArray(String[] arr) throws JSONException {
-	//		JSONArray res = new JSONArray();
-	//		if (arr!=null) {
-	//			for (int i = 0; i < arr.length;i++) {
-	//				res.put(i,arr[i]);
-	//			}
-	//		}
-	//		return res;
-	//	}
-
-	//	public static JSONArray getJSONArray(Collection<String> coll) throws JSONException {
-	//		return getJSONArray(coll,false);
-	//	}
-	//
-	//	public static JSONArray getJSONArray(Collection<String> coll, boolean escapeHTML) throws JSONException {
-	//		JSONArray res = new JSONArray();
-	//		int i = 0;
-	//		for (String s : coll) {
-	//			//			if (escapeHTML) {
-	//			//				res.put(i,escapeHTML(s));
-	//			//			}
-	//			//			else {
-	//			res.put(i,s);
-	//			//			}
-	//			i++;
-	//		}
-	//		return res;
-	//	}
-
 	public static JSONArray getJSONArray(Address[] addr) throws JSONException {
 		JSONArray res = new JSONArray();
 		if (addr!=null) {
@@ -202,21 +148,6 @@ public class Utils {
 			return e.toString()+":"+e.getMessage();
 		}
 	}
-
-	//	public static File getSpooledStreamFile(InputStream inputStream) {
-	//		try {
-	//			File f = Utils.getTempFile();
-	//			OutputStream outputStream = new FileOutputStream(f);
-	//			IOUtils.copy(inputStream, outputStream);
-	//			outputStream.close();
-	//			inputStream.close();
-	//			return f;
-	//		}
-	//		catch (IOException ioe) {
-	//			log.error("Problem spooling stream to file :{}",ioe.getMessage());
-	//			return null;
-	//		}
-	//	}
 
 	public static MimeMessage loadEML(InputStream inputStream) throws MessagingException, IOException {
 		MimeMessage message = new MimeMessage(null,inputStream);
@@ -268,51 +199,7 @@ public class Utils {
 		}
 		return text;
 	}
-
-	//		private static Properties getMailProperties() {
-	//			Properties mailProps = new Properties();
-	//			// http://java.sun.com/products/javamail/javadocs/com/sun/mail/smtp/package-summary.html
-	//			mailProps.setProperty("mail.smtp.host", Utils.getHostName());
-	//			mailProps.setProperty("mail.smtp.port", "" + Config.getInstance().getString(Config.BLUEBOX_PORT));
-	//			mailProps.setProperty("mail.smtp.sendpartial", "true");
-	//			//		mailProps.setProperty("mail.smtp.auth", "true");
-	//			mailProps.setProperty("mail.smtp.starttls.enable","false");
-	//			//		mailProps.setProperty("mail.smtp.ssl.trust","*");
-	//			return mailProps;
-	//		}
-
-	//	public static void sendSingleMessage(int count) {
-	//		boolean sent = false;
-	//		int retryCount = 5;
-	//		while ((!sent)&&(retryCount-->0)) {
-	//			log.info("Sending message");
-	//			try {
-	//				MimeMessage msg = createMessage(getSession(),
-	//						getRandomAddress(),  
-	//						getRandomAddresses(1),//to
-	//						getRandomAddresses(0),//cc
-	//						getRandomAddresses(0),//bcc
-	//						(counter++)+" "+randomLine(35), 
-	//						randomText(14),
-	//						true);
-	//				if (Inbox.getInstance().accept(msg.getFrom()[0].toString(), msg.getRecipients(RecipientType.TO)[0].toString())) {
-	//					Inbox.getInstance().deliver(msg.getFrom()[0].toString(), msg.getRecipients(RecipientType.TO)[0].toString(), msg.getInputStream());
-	//					sent = true;
-	//				}
-	//			} 
-	//			catch (Throwable e) {
-	//				// server overloaded, try again later
-	//				try {
-	//					log.info("Waiting to deliver ({})",e.getMessage());
-	//					Thread.sleep(5000);
-	//				} 
-	//				catch (InterruptedException e1) {
-	//					e1.printStackTrace();
-	//				}
-	//			}
-	//		}
-	//	}
-
+	
 	public static WorkerThread generate(final ServletContext session, final Inbox inbox, final int count) {
 		WorkerThread wt = new WorkerThread("generate") {
 

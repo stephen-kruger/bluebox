@@ -97,10 +97,6 @@ public class BlueboxMessage {
 		setIntProperty(STATE,state.ordinal());
 	}
 
-//	public void loadBlueBoxMimeMessage(MimeMessage bbmm) {
-//		mmw = bbmm;
-//	}
-
 	public static JSONArray toJSONArray(Address[] r) {
 		JSONArray ja = new JSONArray();
 		try {

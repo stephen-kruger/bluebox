@@ -1091,6 +1091,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
+		log.info("Spool count is {}",getSpoolCount());
 		Connection connection = getConnection();
 		try {
 			String uid;
@@ -1111,6 +1112,24 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			connection.close();
 			blob.close();
 		}
+	}
+	
+	@Override
+	public long getSpoolCount() throws Exception {
+		long count = 0;
+		Connection connection = getConnection();
+		PreparedStatement ps;
+			ps = connection.prepareStatement("SELECT COUNT(*) from "+BLOB_TABLE);
+		ps.execute();
+		ResultSet result = ps.getResultSet();
+		if (result.next()) {
+			count = result.getLong(1);
+		}
+		result.close();
+		ps.close();
+		connection.close();
+
+		return count;
 	}
 
 	@Override

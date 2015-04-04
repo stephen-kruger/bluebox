@@ -792,6 +792,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
+		log.info("Spool count is {}",getSpoolCount());
 		try {
 			GridFSInputFile gfs = blobFS.createFile(blob);
 			gfs.save();
@@ -830,6 +831,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return blob.getLength();
 	}
 
+	@Override
+	public long getSpoolCount() throws Exception {
+		return blobFS.getFileList().count();
+	}
+	
 	@Override
 	public Date getUTCTime() {
 		return Utils.getUTCCalendar().getTime();

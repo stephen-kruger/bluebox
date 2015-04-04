@@ -95,7 +95,6 @@ public class InboxTest extends BaseTestCase {
 			TestUtils.sendMailSMTP(new InternetAddress(email5), new InternetAddress(email5), null, null, "subject", "body");
 		}
 		Inbox inbox = getInbox();
-		inbox.updateStats(null, "", true);
 		JSONObject jo = inbox.getStatsActiveInbox();
 		assertEquals("Incorrectly reported most active inbox",new InboxAddress(email1).getFullAddress(),jo.getString(Inbox.EMAIL));
 

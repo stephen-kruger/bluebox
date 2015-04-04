@@ -20,7 +20,6 @@ import java.util.zip.ZipOutputStream;
 
 import javax.mail.Address;
 import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeUtility;
@@ -41,10 +40,10 @@ import org.subethamail.smtp.helper.SimpleMessageListener;
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
+import com.bluebox.search.SearchFactory;
 import com.bluebox.search.SearchIf;
 import com.bluebox.search.SearchUtils;
 import com.bluebox.search.SearchUtils.SearchFields;
-import com.bluebox.search.SearchFactory;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.LiteMessageIterator;
@@ -557,7 +556,9 @@ public class Inbox implements SimpleMessageListener {
 				StorageFactory.getInstance().getUTCTime(),
 				mimeMessage,
 				spooledUid);
-		updateStats(blueboxMessage, recipient, false);
+
+		updateStatsRecent(blueboxMessage.getInbox().getAddress(),from,blueboxMessage.getSubject(),blueboxMessage.getIdentifier());	
+
 		// ensure the content is indexed
 		try {
 			SearchFactory.getInstance().indexMail(blueboxMessage,false);
@@ -607,10 +608,17 @@ public class Inbox implements SimpleMessageListener {
 		}
 	}
 
-	public void updateStats(BlueboxMessage message, String recipient, boolean force) throws AddressException, JSONException {
-		incrementGlobalCount();
-		if (message!=null)
-			updateStatsRecent(message.getInbox().getAddress(),message.getFrom().getString(0),message.getSubject(),message.getIdentifier());	
+	private void updateStatsRecent(String inbox, String from, String subject, String uid) {
+		try {
+			recentStats.put(BlueboxMessage.SUBJECT, MimeUtility.decodeText(subject));
+			recentStats.put(BlueboxMessage.INBOX, StringEscapeUtils.escapeJavaScript(inbox));
+			recentStats.put(BlueboxMessage.FROM, StringEscapeUtils.escapeJavaScript(from));
+			recentStats.put(BlueboxMessage.UID, uid);
+			incrementGlobalCount();
+		} 
+		catch (Throwable e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	public void clearErrors() throws Exception {
@@ -743,19 +751,6 @@ public class Inbox implements SimpleMessageListener {
 
 	public JSONObject getMPH(InboxAddress inbox) {
 		return StorageFactory.getInstance().getMPH(inbox);
-	}
-
-	private JSONObject updateStatsRecent(String inbox, String from, String subject, String uid) {
-		try {
-			recentStats.put(BlueboxMessage.SUBJECT, MimeUtility.decodeText(subject));
-			recentStats.put(BlueboxMessage.INBOX, StringEscapeUtils.escapeJavaScript(inbox));
-			recentStats.put(BlueboxMessage.FROM, StringEscapeUtils.escapeJavaScript(from));
-			recentStats.put(BlueboxMessage.UID, uid);
-		} 
-		catch (Throwable e1) {
-			e1.printStackTrace();
-		}
-		return recentStats;
 	}
 
 	public WorkerThread rebuildSearchIndexes() {

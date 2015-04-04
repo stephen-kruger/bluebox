@@ -303,12 +303,12 @@ public class SearchIndexer implements SearchIf {
 
 	public void commit(boolean force) {
 		if (force) {
-			log.info("Commit being forced");
+			log.debug("Commit being forced");
 			lastCommit = 0;
 		}	
 		long currentTime = new Date().getTime();
 		if ((currentTime-lastCommit)>SearchUtils.MAX_COMMIT_INTERVAL) {
-			log.info("Performing delayed commit {}ms",(currentTime-lastCommit));
+			log.debug("Performing delayed commit {}ms",SearchUtils.MAX_COMMIT_INTERVAL-(currentTime-lastCommit));
 			try {
 				IndexWriter iw = getIndexWriter();
 				iw.commit();
@@ -323,7 +323,7 @@ public class SearchIndexer implements SearchIf {
 			}
 		}
 		else {
-			log.info("Skipping commit {},",(currentTime-lastCommit));
+			log.debug("Skipping commit {},",SearchUtils.MAX_COMMIT_INTERVAL-(currentTime-lastCommit));
 		}
 	}
 
