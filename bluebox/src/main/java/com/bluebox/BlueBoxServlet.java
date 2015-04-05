@@ -23,6 +23,7 @@ import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONChartHandler;
 import com.bluebox.rest.json.JSONErrorHandler;
 import com.bluebox.rest.json.JSONFolderHandler;
+import com.bluebox.rest.json.JSONHeadersMessageHandler;
 import com.bluebox.rest.json.JSONInboxHandler;
 import com.bluebox.rest.json.JSONInlineHandler;
 import com.bluebox.rest.json.JSONMessageHandler;
@@ -112,7 +113,12 @@ public class BlueBoxServlet extends HttpServlet {
 			log.debug("doGetRawDetail");
 			new JSONRawMessageHandler().doGetRawDetail(inbox,req,resp);
 			return;
-		}		
+		}	
+		if (uri.indexOf(JSONHeadersMessageHandler.JSON_ROOT)>=0){
+			log.debug("doGetHeadersDetail");
+			new JSONHeadersMessageHandler().doGetHeadersDetail(inbox,req,resp);
+			return;
+		}	
 		if (uri.indexOf(JSONInboxHandler.JSON_ROOT)>=0){
 			log.debug("doGetInbox");
 			new JSONInboxHandler().doGetInbox(inbox,req,resp);

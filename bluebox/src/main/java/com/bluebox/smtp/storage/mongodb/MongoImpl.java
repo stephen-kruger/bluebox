@@ -2,6 +2,8 @@ package com.bluebox.smtp.storage.mongodb;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,16 +22,21 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
+import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.StorageIf;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.gridfs.GridFS;
@@ -44,8 +52,9 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	private MongoClient mongoClient;
 	private MongoDatabase db;
 	private MongoCollection<Document> errorFS, propsFS, mailFS;
-	private GridFS blobFS;
+	private GridFS blobFS, gfsRaw;
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void start() throws Exception {
 		log.info("Starting MongoDB connection");
@@ -56,6 +65,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		errorFS = db.getCollection(DB_ERR_NAME);
 		propsFS = db.getCollection(PROPS_TABLE_NAME);
 		blobFS = new GridFS(mongoClient.getDB(BLOB_NAME),BLOB_NAME);
+		gfsRaw = new GridFS(mongoClient.getDB(TABLE_NAME), BlueboxMessage.RAW);
 
 		log.debug("Started MongoDB connection");
 
@@ -65,6 +75,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	public void stop() throws Exception {
 		log.info("Stopping MongoDB connection");
 		mongoClient.close();
+		StorageFactory.clearInstance();
 	}
 
 	private void createIndexes() {
@@ -83,17 +94,29 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			}
 		}  
 	}
-	
+
 	@Override
 	public void store(JSONObject props, String spooledUid) throws Exception {
-		// TODO Auto-generated method stub
-
+		store(props,getSpooledInputStream(spooledUid));
 	}
 
 	@Override
 	public void store(JSONObject props, InputStream content) throws Exception {
-		// TODO Auto-generated method stub
-
+		try {
+			Document bson = Document.parse( props.toString() );
+			// little hack for int getting converted to longs when going from JSON to BSON
+			bson.put(BlueboxMessage.SIZE, Long.parseLong(bson.get(BlueboxMessage.SIZE).toString()));
+			Date d = Utils.getUTCDate(getUTCTime(),props.getLong(StorageIf.Props.Received.name()));
+			bson.put(StorageIf.Props.Received.name(), d);
+			GridFSInputFile gfsFile = gfsRaw.createFile(content,true);
+			gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
+			gfsFile.save();
+			mailFS.insertOne(bson);
+		}
+		catch (Throwable t) {
+			log.error("Error storing message :{}",t.getMessage());
+			t.printStackTrace();
+		}
 	}
 
 	@Override
@@ -119,28 +142,74 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public long getMailCount(State state) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
+		if (state == BlueboxMessage.State.ANY) {
+			return mailFS.count();
+		}
+		return mailFS.count(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
 	}
 
 	@Override
 	public long getMailCount(InboxAddress inbox, State state) throws Exception {
-		// TODO Auto-generated method stub
-		return 0;
+		if (inbox==null) {
+			if (state == BlueboxMessage.State.ANY) {
+				return mailFS.count();
+			}
+			return mailFS.count(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
+		}
+		else {
+			if (state == BlueboxMessage.State.ANY) {
+				return mailFS.count(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
+			}
+			return mailFS.count(Filters.and(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()),
+					Filters.eq(StorageIf.Props.State.name(), state.ordinal())));
+		}
 	}
+
+	//	private FindIterable<Document> listMailCommon(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
+	//		Document query = new Document();
+	//		if (state != BlueboxMessage.State.ANY)
+	//			query.append(StorageIf.Props.State.name(), state.ordinal());
+	//		if ((inbox!=null)&&(inbox.getFullAddress().length()>0))
+	//			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
+	//		int sortBit;
+	//		if (ascending) sortBit = 1; else sortBit = -1;
+	//		if (count<0)
+	//			count = 500;
+	//		return mailFS.find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
+	//	}
 
 	@Override
 	public List<BlueboxMessage> listMail(InboxAddress inbox, State state,
 			int start, int count, String orderBy, boolean ascending)
 					throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		List<BlueboxMessage> results = new ArrayList<BlueboxMessage>();
+		MongoCursor<Document> cursor = listMailCommon(inbox, state, start, count, orderBy, ascending).iterator();
+		try {
+			while (cursor.hasNext()) {
+				try {
+					Document dbo = cursor.next();
+					BlueboxMessage m = loadMessage(dbo);
+					results.add(m);
+				}
+				catch (Throwable t) {
+					log.error("Nasty problem loading message:{}",t.getMessage());;
+				}
+			}
+		} 
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		finally {
+			cursor.close();
+		}
+		return results;
 	}
 
 	@Override
 	public void setState(String uid, State state) throws Exception {
-		// TODO Auto-generated method stub
-
+		Document doc = mailFS.find(Filters.eq(StorageIf.Props.Uid.name(), uid)).first();
+		doc.put(StorageIf.Props.State.name(), state.ordinal());
+		mailFS.findOneAndReplace(Filters.eq(StorageIf.Props.Uid.name(), uid), doc);
 	}
 
 	@Override
@@ -182,7 +251,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			for (Document error : errors) {
 				logError = new JSONObject();
 				logError.put("title", error.getString("title"));
-				logError.put("date", error.getLong("date"));
+				logError.put("date", error.getDate("date").getTime());
 				logError.put("id", error.getString("uid"));
 				logError.put("id", error.getString("uid"));
 				result.put(logError);
@@ -203,60 +272,300 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public JSONObject getMostActiveInbox() {
-		// TODO Auto-generated method stub
-		return null;
+		JSONObject jo = new JSONObject();
+		try {
+			jo.put(Inbox.EMAIL,"");
+			jo.put(StorageIf.Props.Recipient.name(),"");
+			jo.put(BlueboxMessage.COUNT,0);
+		} 
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		Document sum = new Document();
+		sum.put("$sum", 1);
+
+		Document group = new Document();
+		group.put("_id", "$"+StorageIf.Props.Recipient.name());
+		group.put(BlueboxMessage.COUNT, sum);
+
+		Document all = new Document();
+		all.put("$group", group);
+
+		Document sort = new Document("$sort", new Document(BlueboxMessage.COUNT, -1));
+		List<Document> pipeline = Arrays.asList(all, sort);
+		MongoCursor<Document> output = mailFS.aggregate(pipeline).iterator();
+
+		while ( output.hasNext()) {
+			try {
+				Document result = output.next();
+				InboxAddress ia = new InboxAddress(result.get("_id").toString());
+
+				jo.put(Inbox.EMAIL,ia.getFullAddress());
+				jo.put(StorageIf.Props.Recipient.name(),ia.getDisplayName());
+				jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
+				break;// only care about first result
+			} 
+			catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		output.close();
+		// for later Mongodb use Cursor 
+		//				AggregationOptions aggregationOptions = AggregationOptions.builder()
+		//						.batchSize(100)
+		//						.outputMode(AggregationOptions.OutputMode.CURSOR)
+		//						.allowDiskUse(true)
+		//						.build();
+		//				Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
+		//				while (cursor.hasNext()) {
+		//				    log.info(cursor.next());
+		//				}
+		return jo;
 	}
 
 	@Override
 	public JSONObject getMostActiveSender() {
-		// TODO Auto-generated method stub
-		return null;
+		JSONObject jo = new JSONObject();
+		try {
+			jo.put(StorageIf.Props.Inbox.name(),"");
+			jo.put(BlueboxMessage.COUNT,0);
+		} 
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		DBObject sum = new BasicDBObject();sum.put("$sum", 1);
+		DBObject group = new BasicDBObject();
+		group.put("_id", "$"+StorageIf.Props.Sender.name());
+		group.put(BlueboxMessage.COUNT, sum);
+		Document all = new Document();
+		all.put("$group", group);
+		Document sort = new Document("$sort", new Document(BlueboxMessage.COUNT, -1));
+		List<Document> pipeline = Arrays.asList(all, sort);
+		MongoCursor<Document> output = mailFS.aggregate(pipeline).iterator();
+
+		while (output.hasNext()) {
+			try {
+				Document result = output.next();
+				jo.put(StorageIf.Props.Sender.name(),new JSONArray(result.get("_id").toString()).get(0));
+				jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
+				break;// only care about first result
+			} 
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		output.close();
+		return jo;
 	}
 
 	@Override
 	public void delete(String uid) throws Exception {
-		// TODO Auto-generated method stub
-
+		mailFS.deleteOne(Filters.eq(StorageIf.Props.Uid.name(), uid));
+		// remove the RAW blob too
+		gfsRaw.remove(gfsRaw.findOne(uid));
 	}
 
 	@Override
 	public WorkerThread cleanRaw() {
-		// TODO Auto-generated method stub
-		return null;
+		WorkerThread wt = new WorkerThread(StorageIf.RAWCLEAN) {
+
+			//private GridFS gfsRaw;
+
+			@Override
+			public void run() {
+				setProgress(0);
+				int issues = 0;
+				try {
+					log.info("Looking for orphaned blobs");
+					// clean up any blobs who have no associated inbox message
+					DBCursor cursor = gfsRaw.getFileList();
+					DBObject dbo;
+					int count = 0;
+					setStatus("Running");
+					setProgress(0);
+					while(cursor.hasNext()) {
+						if (isStopped()) break;
+						dbo = cursor.next();
+						Document query = new Document(StorageIf.Props.Uid.name(), dbo.get("filename").toString());
+						if (mailFS.count(query)<=0) {
+							log.info("Removing orphaned blob {}",dbo.get("filename"));
+							gfsRaw.remove(dbo);
+							issues++;
+						}
+						count++;
+						setProgress(count*100/cursor.count());
+					}
+					setStatus("Found and cleaned "+issues+" orphaned blobs");
+					setProgress(0);
+					cursor.close();
+					log.info("Finished looking for orphaned blobs");
+				}
+				catch (Throwable t) {
+					t.printStackTrace();
+				}
+				finally {
+					setProgress(100);
+					setStatus(issues+" issues fixed");
+				}
+			}
+		};
+		return wt;
 	}
 
 	@Override
 	public JSONObject getCountByDay() {
-		// TODO Auto-generated method stub
-		return null;
+		JSONObject resultJ = new JSONObject();
+		try {
+			// init stats with empty values
+			for (int i = 1; i < 32; i++) {
+				resultJ.put(i+"", 0);
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+
+		// now fill in query results
+		String json = "{$group : { _id : { day: { $dayOfMonth: \"$"+StorageIf.Props.Received.name()+"\" }}, count: { $sum: 1 }}}";
+		Document sum = Document.parse(json);
+		Document sort = new Document("$sort", new Document(BlueboxMessage.COUNT, -1));
+		List<Document> pipeline = Arrays.asList(sum, sort);
+		MongoCursor<Document> output = mailFS.aggregate(pipeline).iterator();
+		//{ "_id" : { "day" : 30} , "count" : 10}
+		Document row;
+		Document result;
+		while ( output.hasNext()) {
+			try {
+				result = output.next();
+				row = (Document) result.get("_id");
+				resultJ.put(row.get("day").toString(),result.get("count").toString());
+			} 
+			catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		output.close();
+		return resultJ;
 	}
 
 	@Override
 	public JSONObject getCountByHour() {
-		// TODO Auto-generated method stub
-		return null;
+		JSONObject resultJ = new JSONObject();
+		try {
+			// init stats with empty values
+			for (int i = 0; i < 24; i++) {
+				resultJ.put(i+"", 0);
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+
+		// now fill in query results
+		String json = "{$group : { _id : { hour: { $hour: \"$"+StorageIf.Props.Received.name()+"\" }}, count: { $sum: 1 }}}";
+		Document sum = Document.parse(json);
+		Document sort = new Document("$sort", new Document(BlueboxMessage.COUNT, 1));
+		List<Document> pipeline = Arrays.asList(sum, sort);
+		MongoCursor<Document> output = mailFS.aggregate(pipeline).iterator();
+		//{ "hour" : 10}
+		int hour;
+		Document row;
+		Document result;
+		while ( output.hasNext()) {
+			try {
+				result = output.next();
+				row = (Document) result.get("_id");
+				hour = Integer.parseInt(row.get("hour").toString());
+				//if (hour==24) hour = 0;
+				resultJ.put(""+hour,result.get("count").toString());
+			} 
+			catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		output.close();
+		return resultJ;
 	}
 
 	@Override
 	public JSONObject getCountByDayOfWeek() {
-		// TODO Auto-generated method stub
-		return null;
+		JSONObject resultJ = new JSONObject();
+		try {
+			// init stats with empty values
+			for (int i = 1; i < 8; i++) {
+				resultJ.put(i+"", 0);
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+
+		// now fill in query results
+		String json = "{$group : { _id : { dayOfWeek: { $dayOfWeek: \"$"+StorageIf.Props.Received.name()+"\" }}, count: { $sum: 1 }}}";
+		Document sum = Document.parse(json);
+		Document sort = new Document("$sort", new BasicDBObject(BlueboxMessage.COUNT, 1));
+		List<Document> pipeline = Arrays.asList(sum, sort);
+		MongoCursor<Document> output = mailFS.aggregate(pipeline).iterator();
+		//{ "dayOfWeek" : 2}, 1 = Sunday, 2 = monday etc
+		int dayOfWeek;
+		Document row;
+		Document doc;
+		while ( output.hasNext()) {
+			try {
+				doc = output.next();
+				row = (Document) doc.get("_id");
+				dayOfWeek = Integer.parseInt(row.get("dayOfWeek").toString());
+				if (dayOfWeek==24) dayOfWeek = 0;
+				resultJ.put(""+dayOfWeek,doc.get("count").toString());
+			} 
+			catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		output.close();
+		return resultJ;
 	}
 
 	@Override
 	public JSONObject getMPH(InboxAddress inbox) {
-		// TODO Auto-generated method stub
-		return null;
+		JSONObject resultJ = new JSONObject();
+		int mph;
+		// now fill in query results
+		// db.posts.find({created_on: {$gte: start, $lt: end}});
+		// db.gpsdatas.find({"createdAt" : { $gte : new ISODate("2012-01-12T20:15:31Z") }});
+		Date lastHour = Utils.getUTCDate(getUTCTime(),getUTCTime().getTime()-60*60*1000);// one hour ago
+		BasicDBObject query = new BasicDBObject();
+
+		// calculate mph for last hour
+		query.put(StorageIf.Props.Received.name(), new BasicDBObject("$gte", lastHour));
+		if ((inbox!=null)&&(inbox.getFullAddress().trim().length()>0)) {
+			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
+
+		}
+		mph = (int) mailFS.count(query);
+
+		try {
+			resultJ.put("mph", mph);
+		} 
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return resultJ;
 	}
 
 	@Override
 	public void setProperty(String key, String value) {
+		key = key.replace('.', '_');
 		Document document = new Document(key,value);
-		propsFS.insertOne(document );
+		if (propsFS.findOneAndReplace(Filters.exists(key), document )==null)
+			propsFS.insertOne(document);
 	}
 
 	@Override
 	public String getProperty(String key, String defaultValue) {
+		key = key.replace('.', '_');
 		FindIterable<Document> result = propsFS.find(Filters.exists(key));
 		if (result.first()!=null) {
 			return result.first().getString(key);
@@ -315,19 +624,46 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		return Utils.getUTCCalendar().getTime();
 	}
 
+	private FindIterable<Document> listMailCommon(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
+		BasicDBObject query = new BasicDBObject();
+		if (state != BlueboxMessage.State.ANY)
+			query.append(StorageIf.Props.State.name(), state.ordinal());
+		if ((inbox!=null)&&(inbox.getFullAddress().length()>0))
+			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
+		int sortBit;
+		if (ascending) sortBit = 1; else sortBit = -1;
+		if (count<0)
+			count = 500;
+		return mailFS.find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
+	}
+
 	@Override
 	public List<LiteMessage> listMailLite(InboxAddress inbox, State state,
 			int start, int count, String orderBy, boolean ascending)
 					throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		List<LiteMessage> results = new ArrayList<LiteMessage>();
+		MongoCursor<Document> cursor = listMailCommon(inbox, state, start, count, orderBy, ascending).iterator();
+		try {
+			while (cursor.hasNext()) {
+				Document dbo = cursor.next();
+				JSONObject m = loadMessageJSON(dbo);
+				results.add(new LiteMessage(m));
+			}
+		} 
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		finally {
+			cursor.close();
+		}
+		return results;
 	}
 
 	@Override
 	public String getDBOString(Object dbo, String key, String def) {
 		Document doc = (Document)dbo;
 		if (doc.containsKey(key))
-			return doc.getString(key);
+			return doc.get(key).toString();
 		return def;
 	}
 
@@ -354,9 +690,16 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public InputStream getDBORaw(Object dbo, String key) {
-		// TODO Auto-generated method stub
-		return null;
+	public InputStream getDBORaw(Object dbo, String uid) {
+		try {
+			GridFSDBFile imageForOutput = gfsRaw.findOne(uid);
+			return imageForOutput.getInputStream();
+		}
+		catch (Throwable t) {
+			log.error(t.getMessage());
+			t.printStackTrace();
+			return null;
+		}
 	}
 
 

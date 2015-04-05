@@ -49,7 +49,7 @@ public abstract class BaseServletTest extends TestCase {
 		clearMail();
 
 	}
-	
+
 	public void clearMail() throws IOException, Exception {
 		getURL("/"+JSONAdminHandler.JSON_ROOT+"/clear");
 	}
@@ -60,7 +60,7 @@ public abstract class BaseServletTest extends TestCase {
 		log.info("Shutting down servlets");
 		// clear mailboxes
 		getURL("/"+JSONAdminHandler.JSON_ROOT+"/clear");
-				
+
 		log.debug("Stopping servlet");
 
 		try {
@@ -76,7 +76,7 @@ public abstract class BaseServletTest extends TestCase {
 			t.printStackTrace();
 		}
 	}
-	
+
 	public Inbox getInbox() {
 		try {
 			return ((BlueBoxServlet)bbs.getServlet()).getInbox() ;
@@ -99,6 +99,7 @@ public abstract class BaseServletTest extends TestCase {
 	}
 
 	public JSONObject getRestJSON(String url) throws IOException, Exception {
+		log.info("Invoking {}",url);
 		HttpTester request = new HttpTester();
 		request.setMethod("GET");
 		request.setHeader("HOST","127.0.0.1");
@@ -111,8 +112,8 @@ public abstract class BaseServletTest extends TestCase {
 		assertNull(response.getMethod());
 		assertEquals(200,response.getStatus());
 		String js = response.getContent();
-			JSONObject jo = new JSONObject(js);
-			return jo;
+		JSONObject jo = new JSONObject(js);
+		return jo;
 
 	}
 

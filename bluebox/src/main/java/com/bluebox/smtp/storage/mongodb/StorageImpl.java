@@ -358,7 +358,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public List<LiteMessage> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending) throws Exception {
 
 		List<LiteMessage> results = new ArrayList<LiteMessage>();
-		DBCursor cursor = this.listMailCommon(inbox, state, start, count, orderBy, ascending);
+		DBCursor cursor = listMailCommon(inbox, state, start, count, orderBy, ascending);
 		try {
 			while (cursor.hasNext()) {
 				DBObject dbo = cursor.next();

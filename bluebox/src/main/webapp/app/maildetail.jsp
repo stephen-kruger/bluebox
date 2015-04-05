@@ -2,6 +2,7 @@
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.rest.json.JSONAttachmentHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
+<%@ page import="com.bluebox.rest.json.JSONHeadersMessageHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONMessageHandler"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.Config"%>
@@ -347,7 +348,8 @@
 								data.<%=BlueboxMessage.HTML_BODY%>,
 								data.<%=BlueboxMessage.TEXT_BODY%>,
 								data.<%=JSONMessageHandler.SECURITY%>,
-								"<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+uid
+								"<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+uid,
+								"<%=request.getContextPath()%>/<%=JSONHeadersMessageHandler.JSON_ROOT%>/"+uid
 								);
 		
 					},
@@ -380,7 +382,7 @@
 		}
 	}
 	
-	function setBodyContent(htmlContent, textContent, securityContent, rawurl) {
+	function setBodyContent(htmlContent, textContent, securityContent, rawurl, headerurl) {
 		try {
 			require(["dijit/registry","dojo/aspect"],
 		            function(registry,aspect) {
@@ -429,6 +431,27 @@
 				     	  
 					}
 				});
+				aspect.after(tabs, "selectChild", function (event) {
+					if (tabs.selectedChildWidget.id=="header-tab") {
+				     	console.log("Loading message headers from "+headerurl);
+				     	tabs.selectedChildWidget.setContent("<%= mailDetailsResource.getString("downloading") %>");
+				     	var xhrArgs = {
+								url: headerurl,
+								handleAs: "text",
+								preventCache: true,
+								load: function(data) {
+									tabs.selectedChildWidget.setContent(data);
+								},
+								error: function (error) {
+									console.log("Error loading message headers :"+error);
+									tabs.selectedChildWidget.setContent(error);
+								}
+						};
+			
+						dojo.xhrGet(xhrArgs);	
+				     	  
+					}
+				});
 			});
 			// show the table with the most content by default
 			if (!htmlContent)
@@ -468,7 +491,7 @@
 			        tabPosition:"right-h",
 			        doLayout:"false"
 			    }, "mail-tab");
-		
+			    
 			    var cp1 = new Textarea({
 			        title: "<%= mailDetailsResource.getString("text") %>",
 			        id : "text-tab",
@@ -483,20 +506,25 @@
 			    });
 			    tc.addChild(cp2);
 		
+			    var cp0 = new Textarea({
+			         title: "Security",
+			         id : "security-tab",
+			         class:"textBody"
+			    });
+			    tc.addChild(cp0);
+			    
+			    var cp4 = new ContentPane({
+			         title: "<%= mailDetailsResource.getString("headers") %>",
+			         id : "header-tab"
+			    });
+			    tc.addChild(cp4);
+			    
 			    var cp3 = new Textarea({
 			         title: "<%= mailDetailsResource.getString("raw") %>",
 			         id : "raw-tab",
 			         class:"textBody"
 			    });
 			    tc.addChild(cp3);
-			    
-			    var cp4 = new Textarea({
-			         title: "Security",
-			         id : "security-tab",
-			         class:"textBody"
-			    });
-			    tc.addChild(cp4);
-
 			    
 			    tc.startup();
 			    
