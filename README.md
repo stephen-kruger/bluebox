@@ -6,12 +6,13 @@ Bluebox is a fully functional promiscuous, non-forwarding SMTP server and mailbo
 #Installing
 ##Via RPM
 You can set up RPM based installation by adding the following to bluebox.repo in your /etc/yum.repos.d directory :
-
+```
 [bluebox]
 name=Bluebox Repository
 baseurl=https://stephen-kruger.github.io/bluebox-repo/yum/noarch
 enabled=1
 gpgcheck=0
+```
 The simply run "sudo yum install bluebox"
 
 ##Manually using war file
