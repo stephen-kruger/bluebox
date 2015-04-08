@@ -172,11 +172,12 @@
 				    handleAs: "text",
 				    load: function(data){
 				    	// TODO - implement status message overlay animation
-				    	console.log(title+":"+data);
+				    	showMessage(title+":"+data);
 				    },
 				    error: function(error){
 				      console.log("An unexpected error occurred: " + error);
-				      dialog(title,error);
+				      //dialog(title,error);
+				      showMessage(title+":"+error);
 				    }
 				  };
 

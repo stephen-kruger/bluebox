@@ -122,7 +122,11 @@
 		-webkit-border-radius: 3px;
 		border-radius: 3px;
 	}
-
+.message {
+		background: #0000ff;
+		width: 100%;
+		text-align:center;
+}
 </style>
 
 <script type="text/javascript">		
@@ -172,6 +176,22 @@
 				}
 			}
 			
+				  
+			function hideMessage() {
+				console.log("hiding div");
+				  document.getElementById("messageDiv").style.visibility = "hidden";				
+				  document.getElementById("messageDiv").style.display = "none";
+				  document.getElementById("messageDiv").innerHTML="";
+			}
+			
+			function showMessage(msg,delay) {
+				console.log("showing div");
+				  document.getElementById("messageDiv").innerHTML=msg;
+				  document.getElementById("messageDiv").style.visibility = "visible";
+				  document.getElementById("messageDiv").style.display = "block";
+				  setTimeout("hideMessage()", delay); // after 1 sec
+			}
+			
 			function updateCheck() {
 				var xhrArgs = {
 						url: "<%=request.getContextPath()%>/rest/updateavailable",
@@ -200,12 +220,8 @@
 				loadGlobalMenu();
 				startTimer();
 				updateCheck();
+				showMessage("Loading...",2);
 			});
-					
-	// Load the Tooltip widget class
-	//require(["dijit/Tooltip",  "dojo/parser", "dojo/domReady!"], function(Tooltip, parser, domReady){
-		//parser.parse();
-	//});
 </script>
 	    	    
 <!-- draw the bluebox logo and title -->
@@ -234,3 +250,4 @@
 		<span id="update" style="display:none;" class="menulink"><jsp:include page="update.jsp" /></span>
 	</div>
 </div>
+<div id="messageDiv" class="message">Loading</div>

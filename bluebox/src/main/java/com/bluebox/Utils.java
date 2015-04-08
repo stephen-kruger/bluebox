@@ -621,7 +621,6 @@ public class Utils {
 	private static Properties props;
 
 	public static Properties getOnlinePropsCached() {
-//		String propsUrl = "http://bluebox.googlecode.com/svn/trunk/bluebox/src/main/resources/bluebox.properties";
 		String propsUrl = "https://raw.githubusercontent.com/stephen-kruger/bluebox/master/bluebox/src/main/resources/bluebox.properties";
 		// cache this value for 24 hours
 		if ((new Date().getTime()-lastChecked.getTime())>86400000) {

@@ -17,7 +17,7 @@ public class BasicStorageTest extends TestCase {
 		super.setUp();
 		log.fine("Test setup");
 		si = StorageFactory.getInstance();
-		si.start();
+//		si.start();
 	}
 
 	@Override

@@ -150,19 +150,38 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public long getMailCount(InboxAddress inbox, State state) throws Exception {
-		if (inbox==null) {
-			if (state == BlueboxMessage.State.ANY) {
+//		if (inbox==null) {
+//			if (state == BlueboxMessage.State.ANY) {
+//				return mailFS.count();
+//			}
+//			return mailFS.count(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
+//		}
+//		else {
+//			if (state == BlueboxMessage.State.ANY) {
+//				return mailFS.count(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
+//			}
+//			return mailFS.count(Filters.and(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()),
+//					Filters.eq(StorageIf.Props.State.name(), state.ordinal())));
+//		}
+
+		if (state == BlueboxMessage.State.ANY) {
+			if (inbox==null) {
 				return mailFS.count();
 			}
-			return mailFS.count(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
-		}
-		else {
-			if (state == BlueboxMessage.State.ANY) {
+			else {
 				return mailFS.count(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
 			}
-			return mailFS.count(Filters.and(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()),
-					Filters.eq(StorageIf.Props.State.name(), state.ordinal())));
 		}
+		else {
+			if (inbox==null) {
+				return mailFS.count(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
+			}
+			else {
+				return mailFS.count(Filters.and(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()),
+						Filters.eq(StorageIf.Props.State.name(), state.ordinal())));
+			}
+		}
+
 	}
 
 	//	private FindIterable<Document> listMailCommon(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
@@ -632,8 +651,9 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
 		int sortBit;
 		if (ascending) sortBit = 1; else sortBit = -1;
-		if (count<0)
-			count = 500;
+		// limit search results t0 5000 entries
+		if ((count<0)||(count>5000))
+			count = 5000;
 		return mailFS.find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
 	}
 
@@ -651,7 +671,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			}
 		} 
 		catch (Throwable t) {
-			t.printStackTrace();
+			log.error("Problem listing mail",t);
 		}
 		finally {
 			cursor.close();
@@ -696,8 +716,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			return imageForOutput.getInputStream();
 		}
 		catch (Throwable t) {
-			log.error(t.getMessage());
-			t.printStackTrace();
+			log.error("Error loading raw object for uid="+uid,t);
 			return null;
 		}
 	}
