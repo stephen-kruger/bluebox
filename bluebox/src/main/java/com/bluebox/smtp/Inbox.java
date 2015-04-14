@@ -50,6 +50,9 @@ import com.bluebox.smtp.storage.LiteMessageIterator;
 import com.bluebox.smtp.storage.MessageIterator;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
+import com.bluebox.smtp.storage.BlueboxMessage.State;
+import com.bluebox.smtp.storage.mongodb.MongoImpl;
+import com.bluebox.smtp.storage.mongodb.StorageImpl;
 
 public class Inbox implements SimpleMessageListener {
 	private static final String GLOBAL_COUNT_NODE = "global_message_count";
@@ -98,7 +101,7 @@ public class Inbox implements SimpleMessageListener {
 			}, delay, period);
 		}
 		log.info("Started inbox");
-
+		migrate();
 	}
 
 	public void stop() {
@@ -690,20 +693,20 @@ public class Inbox implements SimpleMessageListener {
 			else {
 				// Plain old Lucene
 				Document result = (Document)results[i];
-                String uid = result.get(SearchFields.UID.name());
-                InboxAddress inbox;
-                inbox = new InboxAddress(result.get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
+				String uid = result.get(SearchFields.UID.name());
+				InboxAddress inbox;
+				inbox = new InboxAddress(result.get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
 
-                if (!contains(children,inbox.getAddress())) {
-                        curr = new JSONObject();
-                        curr.put("name", inbox.getAddress());
-                        curr.put("label",search.getRecipient(inbox,result.get(SearchFields.RECIPIENT.name())).getFullAddress());
-                        curr.put("identifier", uid);
-                        children.put(curr);
-                }
-                if (children.length()>=count)
-                        break;
-				
+				if (!contains(children,inbox.getAddress())) {
+					curr = new JSONObject();
+					curr.put("name", inbox.getAddress());
+					curr.put("label",search.getRecipient(inbox,result.get(SearchFields.RECIPIENT.name())).getFullAddress());
+					curr.put("identifier", uid);
+					children.put(curr);
+				}
+				if (children.length()>=count)
+					break;
+
 			}
 		}
 
@@ -854,17 +857,16 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public WorkerThread backup(final File dir) throws Exception {
-		return backup(StorageFactory.getInstance(), dir);
+		File backupFile = new File(dir.getCanonicalPath()+File.separator+"bluebox.zip");
+		return backupTo(StorageFactory.getInstance(), backupFile);
 	}
-	
-	public WorkerThread backup(final StorageIf si, final File dir) throws Exception {
+
+	public WorkerThread backupTo(final StorageIf si, final File zipFile) throws Exception {
 		WorkerThread wt = new WorkerThread("backup") {
-			private File zipFile;
 			@Override
 			public void run() {
 				int count = 0;
 				try {
-					zipFile = new File(dir.getCanonicalPath()+File.separator+"bluebox.zip");
 					log.info("Backing up mail to {}",zipFile.getCanonicalPath());
 					BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(zipFile));
 					ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
@@ -920,8 +922,68 @@ public class Inbox implements SimpleMessageListener {
 		return wt;
 	}
 
+	public void migrate() {
+		WorkerThread wt = new WorkerThread("migrate") {
+
+			@Override
+			public void run() {
+				// backup old inbox
+				StorageIf si = StorageFactory.getInstance();
+				if (si instanceof MongoImpl) {
+					log.info("Checking for migration triggers");
+					StorageIf oldStorage = new StorageImpl();
+					try {
+						oldStorage.start();
+						if (oldStorage.getMailCount(State.ANY)>0) {
+							log.info("Preparing to migrate");
+							File backupFile = File.createTempFile("migration", "zip");
+							backupFile.deleteOnExit();
+							WorkerThread backupThread = backupTo(oldStorage, backupFile);
+							Thread t = new Thread(backupThread);
+							t.start();
+							while (t.isAlive()) {
+								Thread.sleep(5000);
+								log.info("Migrating data (export)");
+							}
+							/// restore to new inbox
+							log.info("Restoring migrated data");
+							WorkerThread restoreThread = restoreTo(backupFile);
+							t = new Thread(restoreThread);
+							t.start();
+							while (t.isAlive()) {
+								Thread.sleep(5000);
+								log.info("Migrating data (import)");
+							}
+							// delete the old data
+							oldStorage.deleteAll();
+							log.info("Migration completed");
+						}
+						else {
+							log.info("No migration needed");
+						}
+					}
+					catch (Throwable t) {
+						t.printStackTrace();
+					}
+					finally {
+						try {
+							oldStorage.stop();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}				
+			}
+
+		};
+		new Thread(wt).start();
+	}
+
 	public WorkerThread restore(final File dir) throws Exception {
-		final File zipFile = new File(dir.getCanonicalPath()+File.separator+"bluebox.zip");
+		return restoreTo(new File(dir.getCanonicalPath()+File.separator+"bluebox.zip"));
+	}
+
+	public WorkerThread restoreTo(final File zipFile) throws Exception {
 		log.info("Restoring mail from {}",zipFile.getCanonicalPath());
 		WorkerThread wt = new WorkerThread("restore") {
 
