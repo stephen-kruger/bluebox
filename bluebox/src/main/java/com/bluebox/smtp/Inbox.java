@@ -858,7 +858,6 @@ public class Inbox implements SimpleMessageListener {
 	}
 	
 	public WorkerThread backup(final StorageIf si, final File dir) throws Exception {
-		final Inbox inbox = this;
 		WorkerThread wt = new WorkerThread("backup") {
 			private File zipFile;
 			@Override
