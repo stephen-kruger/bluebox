@@ -123,9 +123,13 @@
 		border-radius: 3px;
 	}
 .message {
-		background: #0000ff;
+		background: #107bbb;
 		width: 100%;
+		color: #fff;
+		inset-top; 5px;
+		inset-bottom; 5px;
 		text-align:center;
+		display:none;
 }
 </style>
 
@@ -179,17 +183,20 @@
 				  
 			function hideMessage() {
 				console.log("hiding div");
-				  document.getElementById("messageDiv").style.visibility = "hidden";				
-				  document.getElementById("messageDiv").style.display = "none";
-				  document.getElementById("messageDiv").innerHTML="";
+				document.getElementById("messageDiv").style.visibility = "hidden";				
+				document.getElementById("messageDiv").style.display = "none";
+				document.getElementById("messageDiv").innerHTML="";
 			}
 			
-			function showMessage(msg,delay) {
-				console.log("showing div");
-				  document.getElementById("messageDiv").innerHTML=msg;
-				  document.getElementById("messageDiv").style.visibility = "visible";
-				  document.getElementById("messageDiv").style.display = "block";
-				  setTimeout("hideMessage()", delay); // after 1 sec
+			function showMessage(msg) {
+				showDelayedMessage(msg,5000);
+			}
+			
+			function showDelayedMessage(msg,delay) {
+				document.getElementById("messageDiv").innerHTML=msg;
+				document.getElementById("messageDiv").style.visibility = "visible";
+				document.getElementById("messageDiv").style.display = "block";
+				setTimeout("hideMessage()", delay); // after 1 sec
 			}
 			
 			function updateCheck() {
@@ -200,7 +207,6 @@
 						load: function(data) {
 							if(data.update_available) {
 								document.getElementById("update").style.display="";
-								// TODO - implement some display to online links
 						    	dialog(title,content+"<br/>"+data);
 							}
 							else {
@@ -220,7 +226,6 @@
 				loadGlobalMenu();
 				startTimer();
 				updateCheck();
-				showMessage("Loading...",2);
 			});
 </script>
 	    	    
