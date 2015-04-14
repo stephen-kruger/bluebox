@@ -21,15 +21,21 @@ public class MessageIterator implements Iterator<BlueboxMessage> {
 	private int start=0-MAX;
 	private long totalCount, position;
 	private int overflowCount;
+	private StorageIf storage;
 
 	public MessageIterator() throws Exception {
 		this(null,BlueboxMessage.State.ANY);
 	}
 
 	public MessageIterator(InboxAddress address, BlueboxMessage.State state) throws Exception {
+		this(StorageFactory.getInstance(), address, state);
+	}
+	
+	public MessageIterator(StorageIf storage, InboxAddress address, BlueboxMessage.State state) throws Exception {
+		this.storage = storage;
 		this.address = address;
 		this.state = state;
-		totalCount =  StorageFactory.getInstance().getMailCount(address, state);
+		totalCount =  storage.getMailCount(address, state);
 		overflowCount = 0;
 		position = 0;
 		nextPage();
@@ -44,7 +50,7 @@ public class MessageIterator implements Iterator<BlueboxMessage> {
 
 	private boolean nextPage() throws Exception {
 		start+=MAX;
-		list = StorageFactory.getInstance().listMail(address, state, start, MAX, BlueboxMessage.RECEIVED, true);
+		list = storage.listMail(address, state, start, MAX, BlueboxMessage.RECEIVED, true);
 		log.debug("Getting page of {} results starting at {} (found {})",MAX,start,list.size());
 		iterator = list.iterator();
 		return list.size()>0;

@@ -854,11 +854,16 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public WorkerThread backup(final File dir) throws Exception {
+		return backup(StorageFactory.getInstance(), dir);
+	}
+	
+	public WorkerThread backup(final StorageIf si, final File dir) throws Exception {
 		final Inbox inbox = this;
 		WorkerThread wt = new WorkerThread("backup") {
 			private File zipFile;
 			@Override
 			public void run() {
+				int count = 0;
 				try {
 					zipFile = new File(dir.getCanonicalPath()+File.separator+"bluebox.zip");
 					log.info("Backing up mail to {}",zipFile.getCanonicalPath());
@@ -866,7 +871,7 @@ public class Inbox implements SimpleMessageListener {
 					ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
 					BlueboxMessage msg;
 					String emlFile,jsonFile;
-					MessageIterator mi = new MessageIterator(null, BlueboxMessage.State.ANY);
+					MessageIterator mi = new MessageIterator(si, null, BlueboxMessage.State.ANY);
 					while (mi.hasNext()) {
 						if (isStopped()) break;
 						msg = mi.next();
@@ -887,6 +892,7 @@ public class Inbox implements SimpleMessageListener {
 							zipOutputStream.putNextEntry(zipEntry);
 							zipOutputStream.write(msg.toJSON().toString().getBytes());
 							zipOutputStream.closeEntry();
+							count++;
 						}
 						catch (Throwable t) {
 							log.warn(t.getMessage());
@@ -902,7 +908,7 @@ public class Inbox implements SimpleMessageListener {
 				finally {
 					setProgress(100);			
 					try {
-						setStatus("Backed up "+inbox.getMailCount(BlueboxMessage.State.ANY)+" mails to "+zipFile.getCanonicalPath());
+						setStatus("Backed up "+count+" mails to "+zipFile.getCanonicalPath());
 					} 
 					catch (IOException e) {
 						setStatus("Error :"+e.getMessage());

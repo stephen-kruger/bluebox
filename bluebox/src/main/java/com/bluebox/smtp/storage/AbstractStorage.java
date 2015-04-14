@@ -24,7 +24,6 @@ import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public abstract class AbstractStorage implements StorageIf {
 	private static final Logger log = LoggerFactory.getLogger(AbstractStorage.class);
-	public static final String DB_NAME = "bluebox401";
 	
 	@Override
 	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {

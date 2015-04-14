@@ -38,6 +38,7 @@ import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
 public class StorageImpl extends AbstractStorage implements StorageIf {
+	public static final String DB_NAME = "bluebox401";
 	private static final Logger log = LoggerFactory.getLogger(StorageImpl.class);
 	private static final String INBOX_TABLE = "INBOX";
 	private static final String PROPS_TABLE = "PROPERTIES";
