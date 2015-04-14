@@ -150,19 +150,19 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public long getMailCount(InboxAddress inbox, State state) throws Exception {
-//		if (inbox==null) {
-//			if (state == BlueboxMessage.State.ANY) {
-//				return mailFS.count();
-//			}
-//			return mailFS.count(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
-//		}
-//		else {
-//			if (state == BlueboxMessage.State.ANY) {
-//				return mailFS.count(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
-//			}
-//			return mailFS.count(Filters.and(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()),
-//					Filters.eq(StorageIf.Props.State.name(), state.ordinal())));
-//		}
+		//		if (inbox==null) {
+		//			if (state == BlueboxMessage.State.ANY) {
+		//				return mailFS.count();
+		//			}
+		//			return mailFS.count(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
+		//		}
+		//		else {
+		//			if (state == BlueboxMessage.State.ANY) {
+		//				return mailFS.count(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
+		//			}
+		//			return mailFS.count(Filters.and(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()),
+		//					Filters.eq(StorageIf.Props.State.name(), state.ordinal())));
+		//		}
 
 		if (state == BlueboxMessage.State.ANY) {
 			if (inbox==null) {
@@ -696,8 +696,14 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public long getDBOLong(Object dbo, String key, long def) {
 		Document doc = (Document)dbo;
-		if (doc.containsKey(key))
-			return doc.getLong(key);
+		if (doc.containsKey(key)) {
+			try {
+				return doc.getLong(key);
+			}
+			catch (Throwable t) {
+				return (long)doc.getInteger(key);
+			}
+		}
 		return def;
 	}
 
