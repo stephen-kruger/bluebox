@@ -147,7 +147,7 @@ public class TestUtils extends TestCase {
 		
 		for (File file : attachments) {
 			try {
-				log.info("Adding attachment "+file.getCanonicalPath());
+				log.debug("Adding attachment "+file.getCanonicalPath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

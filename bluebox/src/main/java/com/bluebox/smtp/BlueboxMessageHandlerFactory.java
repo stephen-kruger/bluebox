@@ -15,6 +15,7 @@ import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 
 import com.bluebox.Config;
 import com.bluebox.smtp.storage.StorageFactory;
+import com.bluebox.smtp.storage.StorageIf;
 
 
 public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter implements MessageHandlerFactory {
@@ -24,8 +25,12 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 	
 	public BlueboxMessageHandlerFactory(Inbox inbox) {
 		super(inbox);
-		setSMTPBlacklist(Config.toList(StorageFactory.getInstance().getProperty(Config.BLUEBOX_SMTPBLACKLIST, 
-				Config.getInstance().getString(Config.BLUEBOX_SMTPBLACKLIST))));
+		Config config = Config.getInstance();
+		StorageIf si;
+//		do {
+			si = StorageFactory.getInstance();
+//		} while (si==null);
+		setSMTPBlacklist(Config.toList(si.getProperty(Config.BLUEBOX_SMTPBLACKLIST, config.getString(Config.BLUEBOX_SMTPBLACKLIST))));
 		inbox.setBlueboxMessageHandlerFactory(this);
 	}
 	

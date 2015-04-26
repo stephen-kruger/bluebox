@@ -155,6 +155,8 @@ public interface StorageIf {
 	public long getSpooledStreamSize(String spooledUid) throws Exception;
 	
 	public long getSpoolCount() throws Exception;
+	
+	public long trimSpools(long maxSize) throws Exception;
 
 	// time functions are db specific, so expose these mthods here
 	

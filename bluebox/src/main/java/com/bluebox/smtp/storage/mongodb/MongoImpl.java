@@ -595,7 +595,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
-		log.info("Spool count is {}",getSpoolCount());
+		log.debug("Spool count is {}",getSpoolCount());
 		try {
 			GridFSInputFile gfs = blobFS.createFile(blob);
 			gfs.save();
@@ -625,6 +625,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void removeSpooledStream(String spooledUid) throws Exception {
+		log.debug("Removing spool {}",spooledUid);
 		blobFS.remove(new ObjectId(spooledUid));		
 	}
 
@@ -636,7 +637,43 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public long getSpoolCount() throws Exception {
-		return blobFS.getFileList().count();
+		DBCursor cursor = blobFS.getFileList();
+		long count = 0;
+		try {
+			count = cursor.count();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		finally {
+			cursor.close();
+		}
+		if (count<=MAX_SPOOL_SIZE)
+			return count;
+		else
+			return trimSpools(MAX_SPOOL_SIZE);
+	}
+
+	public long trimSpools(long maxSize) throws Exception {
+		log.debug("Trimming spool count to {}",maxSize);
+		DBCursor cursor = blobFS.getFileList();
+		long count = 0;
+		try {
+			count = cursor.count();
+			for (int i = 0; i < (count-maxSize); i++) {
+				if (cursor.hasNext()) {
+					GridFSDBFile object = (GridFSDBFile) cursor.next();
+					removeSpooledStream(object.getId().toString());
+				}
+			}
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		finally {
+			cursor.close();
+		}
+		return getSpoolCount();
 	}
 
 	@Override

@@ -838,6 +838,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 	
 	@Override
+	public long trimSpools(long maxSize) throws Exception {
+		log.error("NOT IMPLEMENTED");
+		return 0;
+	}
+	
+	@Override
 	public Date getUTCTime() {
 		return Utils.getUTCCalendar().getTime();
 	}

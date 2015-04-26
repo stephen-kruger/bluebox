@@ -50,6 +50,7 @@ public class StorageFactory {
 	}
 
 	public static void clearInstance() {
+		log.info("Clearing storage instance");
 		storageInstance=null;
 	}
 

@@ -9,8 +9,8 @@
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
 		<slf4j_version>1.7.12</slf4j_version>
-		<lucene_version>5.0.0</lucene_version>
-		<solr_version>5.0.0</solr_version>
+		<lucene_version>5.1.0</lucene_version>
+		<solr_version>5.1.0</solr_version>
 		<derby_version>10.11.1.1</derby_version>
 		<mongo_version>3.0.0</mongo_version>
 		<tomcat.webapp.dir>/var/lib/tomcat6/webapps</tomcat.webapp.dir>
@@ -334,7 +334,7 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.8.1</version>
+			<version>1.8.2</version>
 		</dependency>
 		<dependency>
 			<groupId>bouncycastle</groupId>

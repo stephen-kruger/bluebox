@@ -255,7 +255,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			connection.close();
 		}
 	}
-	
+
 	@Override
 	public void store(JSONObject props, InputStream blob) throws Exception {
 		Connection connection = getConnection();
@@ -1114,13 +1114,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			blob.close();
 		}
 	}
-	
+
 	@Override
 	public long getSpoolCount() throws Exception {
 		long count = 0;
 		Connection connection = getConnection();
 		PreparedStatement ps;
-			ps = connection.prepareStatement("SELECT COUNT(*) from "+BLOB_TABLE);
+		ps = connection.prepareStatement("SELECT COUNT(*) from "+BLOB_TABLE);
 		ps.execute();
 		ResultSet result = ps.getResultSet();
 		if (result.next()) {
@@ -1130,7 +1130,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.close();
 		connection.close();
 
-		return count;
+		if (count<=MAX_SPOOL_SIZE)
+			return count;
+		else
+			return trimSpools(MAX_SPOOL_SIZE);
+
 	}
 
 	@Override
@@ -1217,6 +1221,34 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
+	public long trimSpools(long maxSize) throws Exception {
+		long count = 0;
+		Connection connection = getConnection();
+		// first get the count
+		PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) from "+BLOB_TABLE);
+		ps.execute();
+		ResultSet result = ps.getResultSet();
+		if (result.next()) {
+			count = result.getLong(1);
+		}
+		result.close();
+		ps.close();
+		if (count>maxSize) {		
+			long deleteCount = count-maxSize;
+			ps = connection.prepareStatement("SELECT * from "+BLOB_TABLE);
+			ps.execute();
+			result = ps.getResultSet();
+			while ((result.next())&&(deleteCount-- > 0)) {
+				removeSpooledStream(result.getString(StorageIf.Props.Uid.name()));
+			}
+		}
+		connection.commit();
+		result.close();
+
+		return maxSize;
+	}
+
+	@Override
 	public Date getUTCTime() {
 		//		return new Date(getUTCCalendar().getTimeInMillis());
 
@@ -1237,8 +1269,5 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 		return dateToReturn;
 	}
-
-
-
 
 }

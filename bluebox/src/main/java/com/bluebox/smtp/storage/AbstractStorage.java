@@ -23,6 +23,7 @@ import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public abstract class AbstractStorage implements StorageIf {
+	public static long MAX_SPOOL_SIZE = 100;
 	private static final Logger log = LoggerFactory.getLogger(AbstractStorage.class);
 	
 	@Override

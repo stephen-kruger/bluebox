@@ -954,12 +954,18 @@ public class Inbox implements SimpleMessageListener {
 								Thread.sleep(5000);
 								log.info("Migrating data (import)");
 							}
+							
+							log.info("Migration complete, cleaning up data");
+							
+							// delete backup file
+							backupFile.delete();
+							
 							// delete the old data
 							oldStorage.deleteAll();
-							log.info("Migration completed");
+							log.info("Migration completed, old data deleted from database");
 						}
 						else {
-							log.info("No migration needed");
+							log.info("No migration needed - old storage was empty");
 						}
 					}
 					catch (Throwable t) {
@@ -967,12 +973,17 @@ public class Inbox implements SimpleMessageListener {
 					}
 					finally {
 						try {
+							log.info("Shutting down old storage driver");
 							oldStorage.stop();
-						} catch (Exception e) {
+						} 
+						catch (Exception e) {
 							e.printStackTrace();
 						}
 					}
-				}				
+				}		
+				else {
+					log.info("No migration needed for current driver");
+				}
 			}
 
 		};

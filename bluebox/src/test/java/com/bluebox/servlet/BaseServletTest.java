@@ -26,6 +26,7 @@ public abstract class BaseServletTest extends TestCase {
 	private String baseURL;
 	private String contextPath = "/";
 	public ServletHolder bbs, feeds;
+//	private int retryCount=5;
 	private static final Logger log = LoggerFactory.getLogger(BaseServletTest.class);
 	public static final int COUNT = 5;
 	public static final String RECIPIENT = "user@there.com";
@@ -35,19 +36,22 @@ public abstract class BaseServletTest extends TestCase {
 		tester = new ServletTester();
 		tester.setContextPath(contextPath);
 		//ServletHolder jsp = tester.addServlet(org.apache.jasper.servlet.JspServlet.class, "*.jsp");
+		tester.setResourceBase("WebContent");
 		bbs = tester.addServlet(BlueBoxServlet.class, "/rest/*");
 		feeds = tester.addServlet(FeedServlet.class, "/feed/*");
 
-		tester.setResourceBase("WebContent");
-		//		tester.addServlet(DefaultServlet.class, "/");
 		baseURL = tester.createSocketConnector(false);
 
 		log.debug("Starting servlets at "+baseURL);
 		tester.start();
 
+		while(!feeds.isRunning()||!bbs.isRunning()) {
+			log.info("Waiting for servlets to start");
+			Thread.sleep(750);
+		}
+				
 		// clear mailboxes
 		clearMail();
-
 	}
 
 	public void clearMail() throws IOException, Exception {
@@ -70,10 +74,20 @@ public abstract class BaseServletTest extends TestCase {
 			t.printStackTrace();
 		}
 		try {
-			bbs.stop();
+			bbs.doStop();
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
+		}
+		try {
+			feeds.doStop();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		while(feeds.isRunning()||bbs.isRunning()) {
+			log.info("Waiting for servlets to stop");
+			Thread.sleep(750);
 		}
 	}
 
@@ -110,6 +124,10 @@ public abstract class BaseServletTest extends TestCase {
 		response.parse(getTester().getResponses(request.generate()));
 
 		assertNull(response.getMethod());
+//		while ((response.getStatus()!=200)&&(retryCount-- > 0)) {
+//			log.info("Server not ready, rechecking url");
+//			return getRestJSON(url);
+//		}
 		assertEquals(200,response.getStatus());
 		String js = response.getContent();
 		JSONObject jo = new JSONObject(js);
@@ -126,10 +144,13 @@ public abstract class BaseServletTest extends TestCase {
 
 		HttpTester response = new HttpTester();
 		response.parse(getTester().getResponses(request.generate()));
-
-		assertNull(response.getMethod());
+//		while ((response.getStatus()!=200)&&(retryCount-- > 0)) {
+//			log.info("Server not ready, rechecking url");
+//			return getURL(url);
+//		}
+		//assertNull(response.getMethod());
 		// delete gives 302 redirect, so don't check for 200
-		//		assertEquals(200,response.getStatus());
+		assertEquals(200,response.getStatus());
 		String js = response.getContent();
 		return js;
 	}
