@@ -39,6 +39,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.result.DeleteResult;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
@@ -382,7 +383,10 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void delete(String uid) throws Exception {
-		mailFS.deleteOne(Filters.eq(StorageIf.Props.Uid.name(), uid));
+		DeleteResult res = mailFS.deleteOne(Filters.eq(StorageIf.Props.Uid.name(), uid));
+		if (res.getDeletedCount()<=0) {
+			log.warn("Nothing deleted for uid {}",uid);
+		}
 		// remove the RAW blob too
 		gfsRaw.remove(gfsRaw.findOne(uid));
 	}

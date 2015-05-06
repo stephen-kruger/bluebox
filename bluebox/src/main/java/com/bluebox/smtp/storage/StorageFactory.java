@@ -31,6 +31,7 @@ public class StorageFactory {
 				// try mongodb, if it fails use derby
 				if (com.bluebox.smtp.storage.mongodb.StorageImpl.mongoDetected()) {
 //					storageInstance = new com.bluebox.smtp.storage.mongodb.StorageImpl();
+					log.info("Using MongoImpl storage driver");
 					storageInstance = new com.bluebox.smtp.storage.mongodb.MongoImpl();
 				} 
 				else {

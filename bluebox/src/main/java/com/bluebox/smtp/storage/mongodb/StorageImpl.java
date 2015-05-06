@@ -794,6 +794,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
 		log.info("Spool count is {}",getSpoolCount());
+		new Exception().printStackTrace();
 		try {
 			GridFSInputFile gfs = blobFS.createFile(blob);
 			gfs.save();
