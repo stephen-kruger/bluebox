@@ -38,6 +38,7 @@ import com.bluebox.search.SearchIf;
 import com.bluebox.search.SearchUtils;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageFactory;
+import com.bluebox.smtp.storage.StorageIf;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public class InboxTest extends BaseTestCase {
@@ -545,5 +546,19 @@ public class InboxTest extends BaseTestCase {
 		// TODO - figure out why this does not work
 		//		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
 		//		assertEquals("Body did not match",bodyWithCR,email.getText());
+	}
+	
+	@Test
+	public void testTrim() throws Exception {
+		Inbox inbox = getInbox();
+		StorageIf si = StorageFactory.getInstance();
+		// set limit to 50 emails
+		Config.getInstance().setString(Config.BLUEBOX_MESSAGE_MAX, "50");
+		// add 100 emails
+		TestUtils.addRandomDirect(si, 100);
+		// call trim
+		inbox.trim();
+		// check value equals 50
+		assertEquals(50,inbox.getMailCount(State.ANY));
 	}
 }

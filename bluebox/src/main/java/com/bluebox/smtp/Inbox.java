@@ -296,7 +296,7 @@ public class Inbox implements SimpleMessageListener {
 		return wt;
 	}
 
-	private void trim() {
+	protected void trim() {
 		List<LiteMessage> list;
 		try {
 			long max = Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_MAX);
@@ -305,6 +305,7 @@ public class Inbox implements SimpleMessageListener {
 			while ((count=StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL))>max) {
 				list = StorageFactory.getInstance().listMailLite(null, BlueboxMessage.State.NORMAL, 0, 1000, BlueboxMessage.RECEIVED, true);
 				count = count-max; // how many to delete
+				log.info("Trimming {} messages",count);
 				for (LiteMessage msg : list) {
 					if (count-->0)
 						delete(msg.getIdentifier());
@@ -314,6 +315,7 @@ public class Inbox implements SimpleMessageListener {
 			}
 		}
 		catch (Throwable t) {
+			t.printStackTrace();
 			log.error("Problem trimming mailboxes",t);
 		}
 	}

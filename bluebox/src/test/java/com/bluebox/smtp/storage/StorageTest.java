@@ -65,7 +65,7 @@ public class StorageTest extends BaseTestCase {
 				"bodyStr",
 				false);
 		InboxAddress ia = new InboxAddress(email);
-		
+
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 		BlueboxMessage m1 = getBlueBoxStorageIf().store(from, ia, getBlueBoxStorageIf().getUTCTime(), message, uid);
 		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
@@ -76,7 +76,7 @@ public class StorageTest extends BaseTestCase {
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("ste", 0, 10).length());
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("Ste", 0, 10).length());
 		// todo - fixme, maybe
-//		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("joh", 0, 10).length());
+		//		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("joh", 0, 10).length());
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("Nam", 0, 10).length());
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("stephen.johnson", 0, 10).length());
 		// Lucene cannot search this for some reason
@@ -476,7 +476,7 @@ public class StorageTest extends BaseTestCase {
 		si.setLongProperty(key, 143);
 		assertEquals("Property not correctly set",(long)143,si.getLongProperty(key));
 	}
-	
+
 	@Test
 	public void testSpool() throws Exception {
 		String data = "abcdefghijklmnopqrstuvwxyz";
@@ -486,4 +486,5 @@ public class StorageTest extends BaseTestCase {
 		assertEquals("Incorrect blob size reported",26,si.getSpooledStreamSize(uid));
 		si.removeSpooledStream(uid);
 	}
+
 }
