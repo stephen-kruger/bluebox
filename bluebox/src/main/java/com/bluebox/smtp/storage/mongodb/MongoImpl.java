@@ -123,7 +123,8 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public BlueboxMessage retrieve(String uid) throws Exception {
-		Document doc = mailFS.find(Filters.eq(StorageIf.Props.Uid.name(), uid)).first();
+		FindIterable<Document> fi = mailFS.find(Filters.eq(StorageIf.Props.Uid.name(), uid));
+		Document doc = fi.first();
 		return loadMessage(doc);
 	}
 
@@ -185,19 +186,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		}
 
 	}
-
-	//	private FindIterable<Document> listMailCommon(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
-	//		Document query = new Document();
-	//		if (state != BlueboxMessage.State.ANY)
-	//			query.append(StorageIf.Props.State.name(), state.ordinal());
-	//		if ((inbox!=null)&&(inbox.getFullAddress().length()>0))
-	//			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
-	//		int sortBit;
-	//		if (ascending) sortBit = 1; else sortBit = -1;
-	//		if (count<0)
-	//			count = 500;
-	//		return mailFS.find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
-	//	}
 
 	@Override
 	public List<BlueboxMessage> listMail(InboxAddress inbox, State state,

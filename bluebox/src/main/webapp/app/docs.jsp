@@ -47,7 +47,7 @@
 					<code style="width:200px">
 					[bluebox]<br/>
 					name=Bluebox Repository<br/>
-					baseurl=https://stephen-kruger.github.io/bluebox/yum/noarch<br/>
+					baseurl=https://stephen-kruger.github.io/bluebox-repo/yum/noarch<br/>
 					enabled=1<br/>
 					gpgcheck=0
 					</code>
@@ -55,7 +55,7 @@
 					You can then install using command <i>sudo yum install bluebox</i>
 					<h3>Manually installing via war file</h3>
 					<ol>
-						<li style="list-style-type:none;">Download the web application archive from <a href="https://drive.google.com/folderview?id=0B_idaoMmuNnyYW9FS1paTEhuSXc&usp=sharing=sharing">here</a> and drop into your application container</li>
+						<li style="list-style-type:none;">Download the web application archive from <a href="https://github.com/stephen-kruger/bluebox-repo/tree/gh-pages/yum/noarch">here</a> and drop into your application container. Well actually, it's a list of RPM's, but you can unzip them and get to the war file inside.</li>
 						<li style="list-style-type:none;">Optionally, install and start <a href="http://www.mongodb.org/">MongoDB</a>. Leaving out this step defaults to instanciating a <a href="http://db.apache.org/derby/">Derby</a> embedded instance.</li>
 						<li style="list-style-type:none;">Set up an IP table mapping to route SMTP port requests to the web app :<i>iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500</i></li>
 					</ol>

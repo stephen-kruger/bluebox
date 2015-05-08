@@ -2,6 +2,8 @@ package com.bluebox.smtp.storage;
 
 import java.io.InputStream;
 import java.io.Writer;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -15,6 +17,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
 import com.bluebox.search.SearchFactory;
@@ -25,6 +28,21 @@ import com.bluebox.smtp.storage.BlueboxMessage.State;
 public abstract class AbstractStorage implements StorageIf {
 	public static long MAX_SPOOL_SIZE = 100;
 	private static final Logger log = LoggerFactory.getLogger(AbstractStorage.class);
+	
+	public static boolean mongoDetected() {
+		try {
+			log.info("Checking for MongoDB instance");
+			Socket socket = new Socket(); // Unconnected socket, with the  system-default type of SocketImpl.
+			InetSocketAddress endPoint = new InetSocketAddress( Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST),27017);
+			socket.connect(  endPoint , 100);
+			socket.close();
+			return true;
+		}
+		catch (Throwable t) {
+			log.debug("Mongo not detected");
+		}
+		return false;
+	}
 	
 	@Override
 	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {

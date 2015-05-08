@@ -1,8 +1,6 @@
 package com.bluebox.smtp.storage.mongodb;
 
 import java.io.InputStream;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -68,21 +66,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		createIndexes();
 
 		log.debug("Started MongoDB connection");
-	}
-
-	public static boolean mongoDetected() {
-		try {
-			log.info("Checking for MongoDB instance");
-			Socket socket = new Socket(); // Unconnected socket, with the  system-default type of SocketImpl.
-			InetSocketAddress endPoint = new InetSocketAddress( Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST),27017);
-			socket.connect(  endPoint , 100);
-			socket.close();
-			return true;
-		}
-		catch (Throwable t) {
-			log.debug("Mongo not detected");
-		}
-		return false;
 	}
 
 	private void createIndexes() {

@@ -28,8 +28,8 @@
 			<div style="text-align:left;">
 					<h2>Contact and support links</h2>
 					<ol>
-						<li style="list-style-type:none;">For feature requests, info etc contact me directly via the <a href="https://code.google.com/p/bluebox/">Bluebox Project</a> site</li>
-						<li style="list-style-type:none;">To report rendering defects, bugs etc, please use the <a href="https://code.google.com/p/bluebox/issues/list">defect tracking</a> system</li>
+						<li style="list-style-type:none;">For feature requests, info etc contact me directly via the <a href="https://github.com/stephen-kruger/bluebox">Bluebox Project</a> site</li>
+						<li style="list-style-type:none;">To report rendering defects, bugs etc, please use the <a href="https://github.com/stephen-kruger/bluebox/issues">defect tracking</a> system</li>
 						<li style="list-style-type:none;">Please try and attach the offending .eml file whenever possible to help in reproducing</li>
 						<li style="list-style-type:none;">Developer and REST api documentation can be found <a href="docs.jsp">here</a></li>
 					</ol>
@@ -73,7 +73,7 @@
 					</ol>
 					<h2>Installation</h2>
 					<ol>
-						<li style="list-style-type:none;">Full install instructions can be found <a href="https://code.google.com/p/bluebox/">here</a></li>
+						<li style="list-style-type:none;">Full install instructions can be found <a href="https://github.com/stephen-kruger/bluebox">here</a></li>
 					</ol>
 					<h2>Terms and conditions of usage</h2>
 					<ol>
