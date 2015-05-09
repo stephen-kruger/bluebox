@@ -1,5 +1,7 @@
 package com.bluebox.search;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,7 +9,7 @@ public class SearchFactory {
 	private static SearchIf searcher;
 	private static final Logger log = LoggerFactory.getLogger(SearchIndexer.class);
 
-	public static SearchIf getInstance() throws Exception {
+	public static SearchIf getInstance() throws IOException {
 		if (searcher==null) {
 			log.debug("Instanciating search indexer");
 

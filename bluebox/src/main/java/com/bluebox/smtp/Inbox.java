@@ -74,6 +74,19 @@ public class Inbox implements SimpleMessageListener {
 
 	public void start() {
 		log.debug("Starting inbox");
+		
+		// start up storage services
+		StorageFactory.getInstance();
+		
+		// start up search services
+		try {
+			SearchFactory.getInstance();
+		} 
+		catch (IOException ioe) {
+			ioe.printStackTrace();
+			log.error("Error starting search instance",ioe);
+		}
+		
 		// now start a background timer for the mail expiration
 		// only one per jvm instance
 		if (timer == null) {
@@ -115,14 +128,6 @@ public class Inbox implements SimpleMessageListener {
 			timerTask = null;
 		}
 
-		//		log.debug("Stopping inbox");
-		//		try {
-		//			StorageFactory.getInstance().stop();
-		//		}
-		//		catch (Throwable e) {
-		//			log.error("Error stopping storage :{}",e.getMessage());
-		//		}
-
 		log.debug("Stopping search engine");
 		try {
 			SearchFactory.getInstance().stop();
@@ -131,7 +136,14 @@ public class Inbox implements SimpleMessageListener {
 			e.printStackTrace();
 			log.error("Error stopping search engine",e);
 		}
-		//		inbox = null;
+		log.info("Stopping storage implementation");
+		try {
+			StorageFactory.getInstance().stop();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			log.error("Error stopping storage implementation",e);
+		}
 		log.info("Stopped inbox");
 	}
 
@@ -307,10 +319,15 @@ public class Inbox implements SimpleMessageListener {
 				count = count-max; // how many to delete
 				log.info("Trimming {} messages",count);
 				for (LiteMessage msg : list) {
-					if (count-->0)
-						delete(msg.getIdentifier());
-					else
-						break;
+					try {
+						if (count-->0)
+							delete(msg.getIdentifier());
+						else
+							break;
+					}
+					catch (Throwable t) {
+						log.error("Problem trimming message", t);
+					}
 				}
 			}
 		}
@@ -956,12 +973,12 @@ public class Inbox implements SimpleMessageListener {
 								Thread.sleep(5000);
 								log.info("Migrating data (import)");
 							}
-							
+
 							log.info("Migration complete, cleaning up data");
-							
+
 							// delete backup file
 							backupFile.delete();
-							
+
 							// delete the old data
 							oldStorage.deleteAll();
 							log.info("Migration completed, old data deleted from database");

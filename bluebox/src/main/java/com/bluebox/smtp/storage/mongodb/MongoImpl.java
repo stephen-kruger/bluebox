@@ -577,10 +577,17 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String getProperty(String key, String defaultValue) {
-		key = key.replace('.', '_');
-		FindIterable<Document> result = propsFS.find(Filters.exists(key));
-		if (result.first()!=null) {
-			return result.first().getString(key);
+		try {
+			key = key.replace('.', '_');
+			FindIterable<Document> result = propsFS.find(Filters.exists(key));
+			if (result!=null) {
+				if (result.first()!=null) {
+					return result.first().getString(key);
+				}
+			}
+		}
+		catch (Throwable t) {
+			log.error("Something bad happened",t);
 		}
 		return defaultValue;
 	}

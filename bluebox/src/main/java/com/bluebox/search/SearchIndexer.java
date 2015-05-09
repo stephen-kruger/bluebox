@@ -66,7 +66,7 @@ public class SearchIndexer implements SearchIf {
 		this(new NIOFSDirectory(Paths.get(createTempDirectory().toURI())));
 	}
 
-	private SearchIndexer(Directory index) throws IOException {
+	private SearchIndexer(Directory index) {
 		this.directory = index;
 		log.info("Started SearchIndexer");
 	}
@@ -139,7 +139,7 @@ public class SearchIndexer implements SearchIf {
 	public Document[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SortFields orderBy, boolean ascending) throws ParseException, IOException {
 
 		QueryParser queryParser;
-//		log.info("field={}>>>>>>>>>>>>>>query={} sort={}",fields.name(),querystr,orderBy);
+		//		log.info("field={}>>>>>>>>>>>>>>query={} sort={}",fields.name(),querystr,orderBy);
 		switch (fields) {
 		case SUBJECT :
 			queryParser = new QueryParser(SearchUtils.SearchFields.SUBJECT.name(),analyzer);
@@ -365,15 +365,21 @@ public class SearchIndexer implements SearchIf {
 	}
 
 
-	public static File createTempDirectory()  throws IOException {
+	public static File createTempDirectory() {
 		//File tmpDir = (File)getServletContext().getAttribute(ServletContext.TEMPDIR);
-		File temp = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox4.lucene");
-		log.debug("Preparing search indexes in {}", temp.getCanonicalPath());
-		if(!(temp.mkdir())) {
-			log.debug("Re-using index directory: {}", temp.getAbsolutePath());
+		try {
+			File temp = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox4.lucene");
+			log.debug("Preparing search indexes in {}", temp.getCanonicalPath());
+			if(!(temp.mkdir())) {
+				log.debug("Re-using index directory: {}", temp.getAbsolutePath());
+			}
+			log.debug("Configured search indexes in {}",temp.getCanonicalPath());
+			return (temp);
 		}
-		log.debug("Configured search indexes in {}",temp.getCanonicalPath());
-		return (temp);
+		catch (Throwable t) {
+			log.error("Problem allocating temporary directory, defaulting to "+System.getProperty("java.io.tmpdir"),t);
+			return new File( System.getProperty("java.io.tmpdir"));
+		}
 	}
 
 	public synchronized void deleteIndexes() throws IOException {

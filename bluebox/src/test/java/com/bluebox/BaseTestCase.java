@@ -1,5 +1,7 @@
 package com.bluebox;
 
+import java.io.IOException;
+
 import junit.framework.TestCase;
 
 import com.bluebox.search.SearchFactory;
@@ -11,17 +13,13 @@ import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
 public abstract class BaseTestCase extends TestCase {
-	private StorageIf jr;
 	private Inbox inbox;
 	private BlueBoxSMTPServer smtpServer;
 	private BlueboxMessageHandlerFactory bbmhf;
-	private SearchIf si;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		jr = StorageFactory.getInstance();
-		si = SearchFactory.getInstance();
 		inbox = new Inbox();
 		inbox.start();
 		smtpServer = new BlueBoxSMTPServer(bbmhf = new BlueboxMessageHandlerFactory(inbox));
@@ -46,14 +44,14 @@ public abstract class BaseTestCase extends TestCase {
 	}
 
 	public StorageIf getBlueBoxStorageIf() {
-		return jr;
+		return StorageFactory.getInstance();
 	}
 
 	public BlueboxMessageHandlerFactory getBlueboxMessageHandlerFactory() {
 		return bbmhf;	
 	}
 	
-	public SearchIf getSearchIndexer() {
-		return si;
+	public SearchIf getSearchIndexer() throws IOException {
+		return SearchFactory.getInstance();
 	}
 }
