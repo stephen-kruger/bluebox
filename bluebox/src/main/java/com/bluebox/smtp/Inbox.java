@@ -962,7 +962,7 @@ public class Inbox implements SimpleMessageListener {
 							t.start();
 							while (t.isAlive()) {
 								Thread.sleep(5000);
-								log.info("Migrating data (export)");
+								log.info("Migrating data (export) {}%",backupThread.getProgress());
 							}
 							/// restore to new inbox
 							log.info("Restoring migrated data");
