@@ -145,13 +145,14 @@ public abstract class AbstractStorage implements StorageIf {
 						}
 						setProgress(messages.getProgress());
 					}
+					indexer.commit(true);
 				} 
 				catch (Exception e) {
 					e.printStackTrace();
 				}	
 				finally {
 					setProgress(100);
-					setStatus("Completed, with "+issues+" unindexed messages fixed");
+					setStatus("Completed, with "+issues+" unindexed messages commited to search indexes");
 				}
 			}
 
