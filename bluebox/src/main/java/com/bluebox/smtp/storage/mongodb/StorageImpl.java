@@ -54,11 +54,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void start() throws Exception {
 		log.info("Starting MongoDB connection");
-		//		MongoClientOptions options = MongoClientOptions.builder()
-		//                .maxWaitTime(250)
-		//                .connectTimeout(250)
-		//                .socketTimeout(250)
-		//                .build();
 		mongoClient = new MongoClient(Config.getInstance().getString(Config.BLUEBOX_STORAGE_HOST));
 		db = mongoClient.getDB(DB_NAME);
 		errorFS = new GridFS(mongoClient.getDB(DB_ERR_NAME),DB_ERR_NAME);
