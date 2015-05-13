@@ -28,7 +28,7 @@ import com.bluebox.smtp.storage.BlueboxMessage.State;
 public abstract class AbstractStorage implements StorageIf {
 	public static long MAX_SPOOL_SIZE = 100;
 	private static final Logger log = LoggerFactory.getLogger(AbstractStorage.class);
-	
+
 	public static boolean mongoDetected() {
 		try {
 			log.info("Checking for MongoDB instance");
@@ -43,7 +43,7 @@ public abstract class AbstractStorage implements StorageIf {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public void listInbox(InboxAddress inbox, BlueboxMessage.State state, Writer writer, int start, int count, String orderBy, boolean ascending, Locale locale) throws Exception {
 		List<LiteMessage> mail = listMailLite(inbox, state, start, count, orderBy, ascending);
@@ -58,20 +58,20 @@ public abstract class AbstractStorage implements StorageIf {
 		writer.write("]");
 		writer.flush();
 	}
-	
+
 	@Override
 	public abstract List<LiteMessage> listMailLite(InboxAddress inbox, State state, int start, int count, String orderBy, boolean ascending) throws Exception;
-	
+
 	public abstract String getDBOString(Object dbo, String key, String def);
 	public abstract int getDBOInt(Object dbo, String key, int def);
 	public abstract long getDBOLong(Object dbo, String key, long def);
 	public abstract Date getDBODate(Object dbo, String key, Date def);
 	public abstract InputStream getDBORaw(Object dbo, String key);
-	
+
 	public BlueboxMessage loadMessage(Object dbo) throws Exception {
 		return new BlueboxMessage(loadMessageJSON(dbo), Utils.loadEML(getDBORaw(dbo,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()))));
 	}
-	
+
 	/*
 	 * Light-weight method of loading only the extracted properties for a message
 	 * to allow efficient listing of inbox contents without re-loading the entire MimeMessage.
@@ -79,7 +79,15 @@ public abstract class AbstractStorage implements StorageIf {
 	public JSONObject loadMessageJSON(Object dbo) throws Exception {
 		JSONObject message = new JSONObject();
 		message.put(BlueboxMessage.UID,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()));
-		message.put(BlueboxMessage.FROM,new JSONArray(getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']")));
+		try {
+			message.put(BlueboxMessage.FROM,new JSONArray(getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']")));
+		}
+		catch (Throwable t) {
+			log.warn("Unexpected string instead of array {}",getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']"));
+			JSONArray j = new JSONArray();
+			j.put(getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']"));
+			message.put(BlueboxMessage.FROM,j);			
+		}
 		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
 		message.put(BlueboxMessage.RECIPIENT,getDBOString(dbo,BlueboxMessage.RECIPIENT,""));
 		message.put(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, getUTCTime()).getTime());
@@ -98,7 +106,7 @@ public abstract class AbstractStorage implements StorageIf {
 		store(message.toJSON(),spooledUid);
 		return message;
 	}
-	
+
 	@Override
 	public String getProperty(String key) {
 		return getProperty(key,"");
@@ -108,7 +116,7 @@ public abstract class AbstractStorage implements StorageIf {
 	public void setLongProperty(String key, long value) {
 		setProperty(key,Long.toString(value));		
 	}
-	
+
 	@Override
 	public long getLongProperty(String key) {
 		return getLongProperty(key,0);
@@ -118,13 +126,13 @@ public abstract class AbstractStorage implements StorageIf {
 	public long getLongProperty(String key, long defaultValue) {
 		return Long.parseLong(getProperty(key,Long.toString(defaultValue)));
 	}
-	
+
 	@Override
 	public boolean hasProperty(String key) {
 		String r = Long.toString(new Random().nextLong());
 		return !getProperty(key,r).equals(r);		
 	}
-	
+
 	@Override
 	public WorkerThread runMaintenance() throws Exception {
 		WorkerThread wt = new WorkerThread(StorageIf.WT_NAME) {
@@ -159,6 +167,6 @@ public abstract class AbstractStorage implements StorageIf {
 		};
 		return wt;
 	}
-	
-	
+
+
 }
