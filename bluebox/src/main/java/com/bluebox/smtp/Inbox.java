@@ -74,10 +74,10 @@ public class Inbox implements SimpleMessageListener {
 
 	public void start() {
 		log.debug("Starting inbox");
-		
+
 		// start up storage services
 		StorageFactory.getInstance();
-		
+
 		// start up search services
 		try {
 			SearchFactory.getInstance();
@@ -86,7 +86,7 @@ public class Inbox implements SimpleMessageListener {
 			ioe.printStackTrace();
 			log.error("Error starting search instance",ioe);
 		}
-		
+
 		// now start a background timer for the mail expiration
 		// only one per jvm instance
 		if (timer == null) {
@@ -337,13 +337,6 @@ public class Inbox implements SimpleMessageListener {
 		}
 	}
 
-	public void expire() throws Exception {
-		Date messageDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_AGE)*60*60*1000));
-		Date trashDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_TRASH_AGE)*60*60*1000));
-		expireOld(messageDate);
-		expireDeleted(trashDate);
-	}
-
 	/*
 	 * Remove all deleted mails, regardless of when they were received.
 	 */
@@ -368,6 +361,13 @@ public class Inbox implements SimpleMessageListener {
 		log.info("Removed {} deleted messages",count);
 	}
 
+	public void expire() throws Exception {
+		Date messageDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_AGE)*60*60*1000));
+		Date trashDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_TRASH_AGE)*60*60*1000));
+		expireOld(messageDate);
+		expireDeleted(trashDate);
+	}
+
 	private void expireOld(Date messageExpireDate) throws Exception {
 		log.info("Cleaning messages received before {}",messageExpireDate);
 		LiteMessage msg;
@@ -376,7 +376,7 @@ public class Inbox implements SimpleMessageListener {
 		while (mi.hasNext()) {
 			msg = mi.next();
 			try {
-				if ((msg.getReceived()).before(messageExpireDate)) {
+				if (isExpired(msg.getReceived(),messageExpireDate)) {
 					delete(msg.getIdentifier());
 					count++;
 				}
@@ -386,6 +386,10 @@ public class Inbox implements SimpleMessageListener {
 			}
 		}
 		log.info("Cleaned up {} messages",count);
+	}
+
+	public static final boolean isExpired(Date receievedDate, Date expireDate) {
+		return receievedDate.before(expireDate);
 	}
 
 	private void expireDeleted(Date trashExpireDate) throws Exception {
@@ -981,7 +985,7 @@ public class Inbox implements SimpleMessageListener {
 
 							// delete the old data
 							oldStorage.deleteAll();
-							
+
 							// stop old storage
 							oldStorage.stop();
 							log.info("Migration completed, old data deleted from database");
@@ -1060,9 +1064,11 @@ public class Inbox implements SimpleMessageListener {
 											}
 										}
 									}
-									// store the message only if it doesn't already exist
+									// store the message only if it doesn't already exist and is not expired
 									StorageIf si = StorageFactory.getInstance();
-									if (!si.contains(uid)) {
+									Date expireDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_AGE)*60*60*1000));
+
+									if ((!Inbox.isExpired(new Date(jo.getLong(BlueboxMessage.RECEIVED)), expireDate))&&(!si.contains(uid))) {
 										si.store(jo, archive.getInputStream(zipEntry));
 										// index the message
 										MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));
@@ -1070,7 +1076,7 @@ public class Inbox implements SimpleMessageListener {
 										restoreCount++;
 									}
 									else {
-										log.info("Ignoring restore of {}",uid);
+										log.info("Ignoring restore of {} as it already exists or is expired",uid);
 									}
 									SearchFactory.getInstance().commit(true);
 								}
