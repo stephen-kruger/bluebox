@@ -981,6 +981,9 @@ public class Inbox implements SimpleMessageListener {
 
 							// delete the old data
 							oldStorage.deleteAll();
+							
+							// stop old storage
+							oldStorage.stop();
 							log.info("Migration completed, old data deleted from database");
 						}
 						else {

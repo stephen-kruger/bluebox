@@ -25,7 +25,6 @@ import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.LiteMessage;
-import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 import com.mongodb.AggregationOutput;
 import com.mongodb.BasicDBList;
@@ -51,6 +50,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	private DB db;
 	private GridFS errorFS, blobFS;
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void start() throws Exception {
 		log.info("Starting MongoDB connection");
@@ -87,7 +87,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void stop() throws Exception {
 		mongoClient.close();
-		StorageFactory.clearInstance();
+		//StorageFactory.clearInstance();
 		log.info("Stopped Mongo client");
 	}
 
