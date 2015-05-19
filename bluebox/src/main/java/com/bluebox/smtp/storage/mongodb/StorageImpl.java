@@ -40,7 +40,7 @@ import com.mongodb.gridfs.GridFSInputFile;
 import com.mongodb.util.JSON;
 
 public class StorageImpl extends AbstractStorage implements StorageIf {
-	public static final String DB_NAME = "bluebox401";
+//	public static final String DB_NAME = "bluebox401";
 	private static final Logger log = LoggerFactory.getLogger(StorageImpl.class);
 	private static final String DB_ERR_NAME = "bluebox_errors";
 	private static final String TABLE_NAME = "inbox";

@@ -80,5 +80,24 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 		assertEquals("Did not receive expected number of results", count/2, handler.doAutoComplete(getInbox(), "", "0", ""+count/2).length());
 		assertEquals("Did not receive expected number of results", count, handler.doAutoComplete(getInbox(), "", "0", Integer.toString(count)).length());
 	}
+	
+	@Test
+	public void testAutocompleteEmpty() throws Exception {
+		String to = "user@nowhere.com";
+		String from = "user@nowhere.com";
+		int count = 10;
+		for (int i = 0; i < count; i++) {
+			TestUtils.sendMailDirect(getInbox(),i+to, from);
+			for (int j = 0; j < i; j++) {
+				TestUtils.sendMailDirect(getInbox(),i+to, from);				
+			}
+		}
+		SearchFactory.getInstance().commit(true);
+		JSONArray res;
+		for (int i = 0; i < count;i++) {
+			res = handler.doAutoComplete(getInbox(), i+"user", "0", "Infinity");
+			assertEquals("Did not receive expected number of results", 1, res.length());
+		}
+	}
 
 }

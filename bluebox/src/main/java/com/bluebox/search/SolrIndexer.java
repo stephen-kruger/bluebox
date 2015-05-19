@@ -147,7 +147,12 @@ public class SolrIndexer implements SearchIf {
 	}
 
 	public void stop() {
-		server.shutdown();
+		try {
+			server.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+			log.error("Problem shutting down search instance",e);
+		}
 		SearchFactory.stopInstance();
 
 		log.info("Stopped SearchIndexer");
