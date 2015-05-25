@@ -48,13 +48,14 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	public static final String DB_NAME = "bluebox43";
 	private static final Logger log = LoggerFactory.getLogger(MongoImpl.class);
 	private static final String DB_ERR_NAME = "bluebox_errors";
-	private static final String TABLE_NAME = "inbox";
-	private static final String BLOB_NAME = "blob";
-	private static final String PROPS_TABLE_NAME = "properties";
+	private static final String TABLE_NAME = "inbox"; // name of collection AND blob database
+	private static final String BLOB_DB_NAME = "blob";
+	private static final String PROPS_DB_NAME = "properties";
+	private static final String RAW_DB_NAME = "inbox";
 	private MongoClient mongoClient;
 	private MongoDatabase db;
 	private MongoCollection<Document> errorFS, propsFS, mailFS;
-	private GridFS blobFS, gfsRaw;
+	private GridFS blobFS, rawFS;
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -65,9 +66,10 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		mailFS = db.getCollection(TABLE_NAME);
 		createIndexes();
 		errorFS = db.getCollection(DB_ERR_NAME);
-		propsFS = db.getCollection(PROPS_TABLE_NAME);
-		blobFS = new GridFS(mongoClient.getDB(BLOB_NAME),BLOB_NAME);
-		gfsRaw = new GridFS(mongoClient.getDB(TABLE_NAME), BlueboxMessage.RAW);
+		propsFS = db.getCollection(PROPS_DB_NAME);
+		mongoClient.getDatabase("");
+		blobFS = new GridFS(mongoClient.getDB(BLOB_DB_NAME),BLOB_DB_NAME);
+		rawFS = new GridFS(mongoClient.getDB(RAW_DB_NAME), BlueboxMessage.RAW);
 
 		log.debug("Started MongoDB connection");
 
@@ -110,7 +112,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			bson.put(BlueboxMessage.SIZE, Long.parseLong(bson.get(BlueboxMessage.SIZE).toString()));
 			Date d = Utils.getUTCDate(getUTCTime(),props.getLong(StorageIf.Props.Received.name()));
 			bson.put(StorageIf.Props.Received.name(), d);
-			GridFSInputFile gfsFile = gfsRaw.createFile(content,true);
+			GridFSInputFile gfsFile = rawFS.createFile(content,true);
 			gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
 			gfsFile.save();
 			mailFS.insertOne(bson);
@@ -376,7 +378,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			log.warn("Nothing deleted for uid {}",uid);
 		}
 		// remove the RAW blob too
-		gfsRaw.remove(gfsRaw.findOne(uid));
+		rawFS.remove(rawFS.findOne(uid));
 	}
 
 	@Override
@@ -392,7 +394,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 				try {
 					log.info("Looking for orphaned blobs");
 					// clean up any blobs who have no associated inbox message
-					DBCursor cursor = gfsRaw.getFileList();
+					DBCursor cursor = rawFS.getFileList();
 					DBObject dbo;
 					int count = 0;
 					setStatus("Running");
@@ -403,7 +405,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 						Document query = new Document(StorageIf.Props.Uid.name(), dbo.get("filename").toString());
 						if (mailFS.count(query)<=0) {
 							log.info("Removing orphaned blob {}",dbo.get("filename"));
-							gfsRaw.remove(dbo);
+							rawFS.remove(dbo);
 							issues++;
 						}
 						count++;
@@ -755,7 +757,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public InputStream getDBORaw(Object dbo, String uid) {
 		try {
-			GridFSDBFile imageForOutput = gfsRaw.findOne(uid);
+			GridFSDBFile imageForOutput = rawFS.findOne(uid);
 			return imageForOutput.getInputStream();
 		}
 		catch (Throwable t) {

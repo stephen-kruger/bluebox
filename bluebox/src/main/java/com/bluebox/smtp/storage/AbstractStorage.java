@@ -86,7 +86,7 @@ public abstract class AbstractStorage implements StorageIf {
 		catch (Throwable t) {
 			log.warn("Unexpected string instead of array {}",getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']"));
 			JSONArray j = new JSONArray();
-			j.put(getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']"));
+			j.put(getDBOString(dbo,BlueboxMessage.FROM,"bounce@bluebox.com"));
 			message.put(BlueboxMessage.FROM,j);			
 		}
 		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
