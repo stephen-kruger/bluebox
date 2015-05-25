@@ -705,8 +705,13 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		try {
 			while (cursor.hasNext()) {
 				Document dbo = cursor.next();
-				JSONObject m = loadMessageJSON(dbo);
-				results.add(new LiteMessage(m));
+				try {
+					JSONObject m = loadMessageJSON(dbo);
+					results.add(new LiteMessage(m));
+				}
+				catch (Throwable t) {
+					log.error("Error loading message {}",t);
+				}
 			}
 		} 
 		catch (Throwable t) {
