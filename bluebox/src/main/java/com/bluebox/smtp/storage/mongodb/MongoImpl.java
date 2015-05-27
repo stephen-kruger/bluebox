@@ -191,6 +191,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 					results.add(m);
 				}
 				catch (Throwable t) {
+					t.printStackTrace();
 					log.error("Nasty problem loading message:{}",t.getMessage());;
 				}
 			}

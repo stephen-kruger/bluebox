@@ -2,6 +2,7 @@ package com.bluebox;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -81,7 +82,7 @@ public class Utils {
 		FileTypeMap.setDefaultFileTypeMap(ftm);
 	}
 
-	
+
 	public static String getHostName() {
 		try {
 			InetAddress addr = InetAddress.getLocalHost();
@@ -199,7 +200,7 @@ public class Utils {
 		}
 		return text;
 	}
-	
+
 	public static WorkerThread generate(final ServletContext session, final Inbox inbox, final int count) {
 		WorkerThread wt = new WorkerThread("generate") {
 
@@ -695,7 +696,7 @@ public class Utils {
 		}
 		return count;
 	}
-	
+
 	public static Calendar getUTCCalendar() {
 		return Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 	}
@@ -705,8 +706,28 @@ public class Utils {
 	}
 
 	public static Date getUTCDate(Date utct, long time) {
-//		Date utct =  getUTCTime();
+		//		Date utct =  getUTCTime();
 		utct.setTime(time);
 		return utct;
+	}
+
+	public static final void main(String[] args) {
+		StorageIf si = StorageFactory.getInstance();
+		File zipFile;
+		if (args.length>0)
+			zipFile = new File(args[0]);
+		else
+			zipFile = new File("bluebox-export.zip");
+		try {
+			WorkerThread thread = Inbox.backupTo(si, zipFile);
+			new Thread(thread).start();
+			while (thread.getProgress()<100) {
+				System.out.println("Export "+thread.getStatus()+" "+thread.getProgress()+"%");
+				Thread.sleep(2000);
+			}
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

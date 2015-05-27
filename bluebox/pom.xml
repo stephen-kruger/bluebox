@@ -67,6 +67,19 @@
 					</configuration>
 				</plugin>
 				<plugin>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<configuration>
+						<archive>
+							<manifest>
+								<mainClass>com.bluebox.Utils</mainClass>
+							</manifest>
+						</archive>
+						<descriptorRefs>
+							<descriptorRef>exporter</descriptorRef>
+						</descriptorRefs>
+					</configuration>
+				</plugin>
+				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
 					<version>2.4</version>
@@ -101,7 +114,8 @@
 						</requires>
 						<sourceEncoding>UTF-8</sourceEncoding>
 						<group>bluebox</group>
-						<summary>Promiscuous, non-forwarding SMTP server and webmail interface for dynamic email receiving and testing</summary>
+						<summary>Promiscuous, non-forwarding SMTP server and webmail
+							interface for dynamic email receiving and testing</summary>
 						<username>tomcat</username>
 						<groupname>tomcat</groupname>
 						<mappings>
@@ -296,7 +310,7 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
 			<version>3.1.0</version>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet.jsp</groupId>
