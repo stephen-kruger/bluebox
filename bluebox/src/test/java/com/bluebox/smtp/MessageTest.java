@@ -19,9 +19,9 @@ import javax.mail.internet.MimeMultipart;
 import junit.framework.TestCase;
 
 import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.util.MimeMessageParser;
 import org.apache.commons.mail.util.MimeMessageUtils;
 
-import com.bluebox.MimeMessageParser;
 import com.bluebox.Utils;
 
 public class MessageTest extends TestCase {
@@ -78,7 +78,7 @@ public class MessageTest extends TestCase {
 		MimeMessage message = Utils.loadEML(is);
 		MimeMessageParser p = new MimeMessageParser(message);
 		p.parse();
-		assertNotNull("Attachment not loaded correctly",p.getDataSourceForCid("938014623@17052000-0f9b"));
+		assertNotNull("Attachment not loaded correctly",p.findAttachmentByCid("938014623@17052000-0f9b"));
 	}
 
 	//	public void testInlineAttachmentParsing() throws IOException, MessagingException, JSONException {
@@ -141,8 +141,8 @@ public class MessageTest extends TestCase {
 		MimeMessage mm = MimeMessageUtils.createMimeMessage(null, new File("src/test/resources/test-data/attachments.eml"));
 		MimeMessageParser parser = new MimeMessageParser(mm);
 		parser.parse();
-		for (String cid : parser.getCids()) {
-			DataSource ds = parser.getDataSourceForCid(cid);
+		for (String cid : parser.getContentIds()) {
+			DataSource ds = parser.findAttachmentByCid(cid);
 			assertNotNull(ds);
 			log.info(ds.getName()+"="+cid);	
 		}
