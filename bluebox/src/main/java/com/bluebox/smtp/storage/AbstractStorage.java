@@ -84,9 +84,24 @@ public abstract class AbstractStorage implements StorageIf {
 			message.put(BlueboxMessage.FROM,new JSONArray(getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']")));
 		}
 		catch (Throwable t) {
-			log.warn("Unexpected string instead of array {}",getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']"));
+			// hack a fix to try and recover, not sure where this error comes from
+			//["ppauser20111202.111744 TestUser" <no-reply@collabserv.com>]
 			JSONArray j = new JSONArray();
-			j.put(getDBOString(dbo,BlueboxMessage.FROM,"bounce@bluebox.com"));
+			try {
+				String s = getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']");
+				if (s.startsWith("[")) {
+					s = s.substring(1,s.lastIndexOf(']'));
+					j.put(s);
+					log.info("Fixed unexpected array {}",s);
+				}
+				else {
+					j.put(s);
+				}
+			}
+			catch (Throwable t2) {
+				log.warn("Unexpected string instead of array {}",getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']"));
+				j.put(getDBOString(dbo,BlueboxMessage.FROM,"bounce@bluebox.com"));
+			}
 			message.put(BlueboxMessage.FROM,j);			
 		}
 		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
