@@ -884,7 +884,7 @@ public class Inbox implements SimpleMessageListener {
 		return backupTo(StorageFactory.getInstance(), backupFile);
 	}
 
-	public WorkerThread backupTo(final StorageIf si, final File zipFile) throws Exception {
+	public static WorkerThread backupTo(final StorageIf si, final File zipFile) throws Exception {
 		WorkerThread wt = new WorkerThread("backup") {
 			@Override
 			public void run() {
