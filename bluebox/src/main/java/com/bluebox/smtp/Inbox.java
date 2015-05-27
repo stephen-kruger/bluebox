@@ -82,7 +82,7 @@ public class Inbox implements SimpleMessageListener {
 		try {
 			SearchFactory.getInstance();
 		} 
-		catch (IOException ioe) {
+		catch (Exception ioe) {
 			ioe.printStackTrace();
 			log.error("Error starting search instance",ioe);
 		}
@@ -1033,12 +1033,14 @@ public class Inbox implements SimpleMessageListener {
 						@SuppressWarnings("rawtypes")
 						Enumeration entries = archive.entries();
 						int progress = 0;
-						int count = archive.size()/2;
+						int count = archive.size();
+						Date expireDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_AGE)*60*60*1000));
 						while (entries.hasMoreElements()) {
 							if (isStopped()) break;
 							ZipEntry zipEntry = (ZipEntry) entries.nextElement();
+							progress++;
 							setProgress(progress*100/count);
-							log.debug("Progress : {}",(progress*100/count));
+							log.debug("Restore  : progress={} count={} %={}",progress,count,(progress*100/count));
 							String uid = zipEntry.getName().substring(0,zipEntry.getName().indexOf('.'));
 							if ((!StorageFactory.getInstance().contains(uid))&&(zipEntry.getName().endsWith("eml"))) {
 								try {
@@ -1066,7 +1068,6 @@ public class Inbox implements SimpleMessageListener {
 									}
 									// store the message only if it doesn't already exist and is not expired
 									StorageIf si = StorageFactory.getInstance();
-									Date expireDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_AGE)*60*60*1000));
 
 									if ((!Inbox.isExpired(new Date(jo.getLong(BlueboxMessage.RECEIVED)), expireDate))&&(!si.contains(uid))) {
 										si.store(jo, archive.getInputStream(zipEntry));
@@ -1078,14 +1079,12 @@ public class Inbox implements SimpleMessageListener {
 									else {
 										log.info("Ignoring restore of {} as it already exists or is expired",uid);
 									}
-									SearchFactory.getInstance().commit(true);
 								}
 								catch (Throwable t) {
 									t.printStackTrace();
 									log.warn(t.getMessage());
 								}
 							}
-							progress++;
 						}
 						SearchFactory.getInstance().commit(true);
 						archive.close();

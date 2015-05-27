@@ -1,7 +1,5 @@
 package com.bluebox;
 
-import java.io.IOException;
-
 import junit.framework.TestCase;
 
 import com.bluebox.search.SearchFactory;
@@ -51,7 +49,7 @@ public abstract class BaseTestCase extends TestCase {
 		return bbmhf;	
 	}
 	
-	public SearchIf getSearchIndexer() throws IOException {
+	public SearchIf getSearchIndexer() throws Exception {
 		return SearchFactory.getInstance();
 	}
 }

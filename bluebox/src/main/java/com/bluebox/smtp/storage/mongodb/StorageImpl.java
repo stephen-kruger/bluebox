@@ -194,12 +194,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		gfsRaw.remove(gfsRaw.findOne(uid));
 	}
 
-	@Override
-	public void deleteAll(InboxAddress inbox) throws Exception {
-		BasicDBObject query = new BasicDBObject(StorageIf.Props.Inbox.name(), inbox.getAddress());
-		db.getCollection(TABLE_NAME).remove(query);
-		new Thread(cleanRaw()).start();
-	}
+//	@Override
+//	public void deleteAll(InboxAddress inbox) throws Exception {
+//		BasicDBObject query = new BasicDBObject(StorageIf.Props.Inbox.name(), inbox.getAddress());
+//		db.getCollection(TABLE_NAME).remove(query);
+//		new Thread(cleanRaw()).start();
+//	}
 
 	public WorkerThread cleanRaw() {
 		WorkerThread wt = new WorkerThread(StorageIf.RAWCLEAN) {

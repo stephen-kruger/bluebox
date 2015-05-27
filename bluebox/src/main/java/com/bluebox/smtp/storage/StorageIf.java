@@ -41,7 +41,7 @@ public interface StorageIf {
 	
 	public boolean contains(String uid);
 
-	public void deleteAll(InboxAddress inbox) throws Exception;
+	//public void deleteAll(InboxAddress inbox) throws Exception;
 
 	public void deleteAll() throws Exception;
 

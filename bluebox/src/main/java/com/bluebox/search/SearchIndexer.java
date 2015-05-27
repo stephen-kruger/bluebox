@@ -262,9 +262,9 @@ public class SearchIndexer implements SearchIf {
 				commit);
 	}
 
-	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException {
-		addDoc(uid,inbox,from,subject,text,html,recipients,size,received, commit);
-	}
+//	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException {
+//		addDoc(uid,inbox,from,subject,text,html,recipients,size,received, commit);
+//	}
 
 	/* Find which one of the potential recipeints of this mail matches the specified inbox
 	 * 

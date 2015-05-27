@@ -135,14 +135,17 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		return mailFS.count(Filters.eq(StorageIf.Props.Uid.name(), uid))>0;
 	}
 
-	@Override
-	public void deleteAll(InboxAddress inbox) throws Exception {
-		mailFS.deleteMany(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
-	}
+//	@Override
+//	public void deleteAll(InboxAddress inbox) throws Exception {
+//		mailFS.deleteMany(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
+//	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void deleteAll() throws Exception {
 		mailFS.drop();
+		rawFS.getDB().dropDatabase();
+		rawFS = new GridFS(mongoClient.getDB(RAW_DB_NAME), BlueboxMessage.RAW);
 	}
 
 	@Override
@@ -155,20 +158,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public long getMailCount(InboxAddress inbox, State state) throws Exception {
-		//		if (inbox==null) {
-		//			if (state == BlueboxMessage.State.ANY) {
-		//				return mailFS.count();
-		//			}
-		//			return mailFS.count(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
-		//		}
-		//		else {
-		//			if (state == BlueboxMessage.State.ANY) {
-		//				return mailFS.count(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
-		//			}
-		//			return mailFS.count(Filters.and(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()),
-		//					Filters.eq(StorageIf.Props.State.name(), state.ordinal())));
-		//		}
-
 		if (state == BlueboxMessage.State.ANY) {
 			if (inbox==null) {
 				return mailFS.count();
@@ -186,7 +175,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 						Filters.eq(StorageIf.Props.State.name(), state.ordinal())));
 			}
 		}
-
 	}
 
 	@Override
@@ -322,16 +310,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			}
 		}
 		output.close();
-		// for later Mongodb use Cursor 
-		//				AggregationOptions aggregationOptions = AggregationOptions.builder()
-		//						.batchSize(100)
-		//						.outputMode(AggregationOptions.OutputMode.CURSOR)
-		//						.allowDiskUse(true)
-		//						.build();
-		//				Cursor cursor = db.getCollection(TABLE_NAME).aggregate(pipeline, aggregationOptions);
-		//				while (cursor.hasNext()) {
-		//				    log.info(cursor.next());
-		//				}
 		return jo;
 	}
 
@@ -391,10 +369,10 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			public void run() {
 				setProgress(0);
 				int issues = 0;
+				DBCursor cursor = rawFS.getFileList();
 				try {
 					log.info("Looking for orphaned blobs");
 					// clean up any blobs who have no associated inbox message
-					DBCursor cursor = rawFS.getFileList();
 					DBObject dbo;
 					int count = 0;
 					setStatus("Running");
@@ -413,13 +391,13 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 					}
 					setStatus("Found and cleaned "+issues+" orphaned blobs");
 					setProgress(0);
-					cursor.close();
 					log.info("Finished looking for orphaned blobs");
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
 				}
 				finally {
+					cursor.close();
 					setProgress(100);
 					setStatus(issues+" issues fixed");
 				}

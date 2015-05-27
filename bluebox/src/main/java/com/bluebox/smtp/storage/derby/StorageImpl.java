@@ -431,16 +431,16 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-	@Override
-	public void deleteAll(InboxAddress inbox) throws Exception {
-		log.debug("Deleting inbox "+inbox);
-		Connection connection = getConnection();
-		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.INBOX+"=?");
-		ps.setString(1, inbox.getAddress());
-		ps.execute();
-		ps.close();
-		connection.close();
-	}
+//	@Override
+//	public void deleteAll(InboxAddress inbox) throws Exception {
+//		log.debug("Deleting inbox "+inbox);
+//		Connection connection = getConnection();
+//		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.INBOX+"=?");
+//		ps.setString(1, inbox.getAddress());
+//		ps.execute();
+//		ps.close();
+//		connection.close();
+//	}
 
 	@Override
 	public void deleteAll() throws Exception {
