@@ -135,10 +135,10 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		return mailFS.count(Filters.eq(StorageIf.Props.Uid.name(), uid))>0;
 	}
 
-//	@Override
-//	public void deleteAll(InboxAddress inbox) throws Exception {
-//		mailFS.deleteMany(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
-//	}
+	//	@Override
+	//	public void deleteAll(InboxAddress inbox) throws Exception {
+	//		mailFS.deleteMany(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
+	//	}
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -605,7 +605,12 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void removeSpooledStream(String spooledUid) throws Exception {
 		log.debug("Removing spool {}",spooledUid);
-		blobFS.remove(new ObjectId(spooledUid));		
+		try {
+			blobFS.remove(new ObjectId(spooledUid));	
+		}
+		catch (Throwable t){
+			log.error("Could not delete specified spooled stream {}",spooledUid);
+		}
 	}
 
 	@Override

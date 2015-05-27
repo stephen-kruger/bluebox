@@ -17,13 +17,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.mail.util.MimeMessageParser;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.bluebox.MimeMessageParser;
+
+//import com.bluebox.MimeMessageParser;
 import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONInlineHandler;
 import com.bluebox.smtp.InboxAddress;
@@ -152,7 +154,7 @@ public class BlueboxMessage {
 		try {
 			MimeMessageParser parser = new MimeMessageParser(bbmm);
 			parser.parse();
-			DataSource ds = parser.getDataSourceForCid(cid);
+			DataSource ds = parser.findAttachmentByCid(cid);
 			if (ds==null) {
 				// try by attachment name
 				ds = parser.findAttachmentByName(cid);
