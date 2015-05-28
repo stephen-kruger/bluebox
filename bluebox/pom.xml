@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.3.17</version>
+	<version>4.3.18</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
@@ -114,8 +114,7 @@
 						</requires>
 						<sourceEncoding>UTF-8</sourceEncoding>
 						<group>bluebox</group>
-						<summary>Promiscuous, non-forwarding SMTP server and webmail
-							interface for dynamic email receiving and testing</summary>
+						<summary>Promiscuous SMTP server and webmail interface</summary>
 						<username>tomcat</username>
 						<groupname>tomcat</groupname>
 						<mappings>
