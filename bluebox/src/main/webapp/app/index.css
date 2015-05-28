@@ -1,0 +1,108 @@
+/* basic 3 col with header layout */
+.headerCol {
+	/*border-radius: 1em;*/
+	background: #000;
+	width: 100%;
+	border-bottom: 3px solid #107bbb;
+}
+
+.colWrapper {
+	width: 100%;
+	display: table;
+	list-style-type: none;
+	margin: 0.5em;
+}
+
+.leftCol {
+	display: table-cell;
+	text-align: left;
+	width: 20%;
+	padding-left: 1em;
+	padding-right: 1em;
+	padding-top: 0;
+	vertical-align: top;
+}
+
+.rightCol {
+	display: table-cell;
+	padding-left: 2em;
+	padding-right: 1em;
+	padding-top: 1em;
+}
+
+.centerCol {
+	display: table-cell;
+	width: 60%;
+	height: 100%;
+	text-align: center;
+}
+/* end basic layout */
+div {
+	border: 0px solid black;
+}
+
+a {
+	text-decoration: none;
+}
+
+body,.claro,.dojoxGrid {
+	font: 'Roboto', sans-serif !important;
+	font-family: 'Roboto', sans-serif !important;
+}
+
+img.sixteenIcon {
+	width: 21px !important;
+	height: 21px !important;
+	padding-right: 3px;
+}
+
+.mailIcon {
+	position: static;
+	vertical-align: middle;
+	right: 2px;
+}
+
+.attachmentIcon {
+	position: static;
+	right: -1px;
+	font-weight: normal;
+	vertical-align: middle;
+	width: 16px;
+	height: 16px;
+}
+
+.unselectedFolder {
+	background: #ffffff;
+	padding: 5px;
+}
+
+.selectedFolder {
+	background: #efefef;
+	padding: 5px;
+	border-radius: 1em;
+}
+
+.seperator {
+	margin-top: 2em;
+	margin-bottom: 0em;
+	border-top: 1px dotted #ccc;
+}
+
+.blinkBadge {
+	background: #107bbb;
+	position: relative;
+	bottom: 0.7em;
+	margin-left: 0px;
+	padding: 0 0.4em;
+	color: #fff;
+	display: inline;
+	font-size: 0.9em;
+	line-height: 1.2 /*fixes link height with tall languages*/;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	border-radius: 3px;
+	text-decoration: blink;
+}
+
+.greyText {
+	color: gray;
