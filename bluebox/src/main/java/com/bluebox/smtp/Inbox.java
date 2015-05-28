@@ -56,6 +56,7 @@ import com.bluebox.smtp.storage.mongodb.StorageImpl;
 
 public class Inbox implements SimpleMessageListener {
 	private static final String GLOBAL_COUNT_NODE = "global_message_count";
+	private static final String BACKUP_WORKER = "backup";
 	private JSONObject recentStats = new JSONObject();
 
 	public static final String EMAIL = "Email";
@@ -114,7 +115,13 @@ public class Inbox implements SimpleMessageListener {
 			}, delay, period);
 		}
 		log.info("Started inbox");
-		migrate();
+		try {
+			migrate();
+		} 
+		catch (Exception e) {
+			log.error("Error migrating data",e);
+			e.printStackTrace();
+		}
 	}
 
 	public void stop() {
@@ -583,6 +590,12 @@ public class Inbox implements SimpleMessageListener {
 				mimeMessage,
 				spooledUid);
 
+		// if backup is requested, make sure new messages are are backed-up as they arrive
+		WorkerThread wt;
+		 if ((wt = WorkerThread.getInstance(BACKUP_WORKER))!=null) {
+			 log.info("Backing up newly arrive message");
+			 wt.generic(blueboxMessage);
+		 }
 		updateStatsRecent(blueboxMessage.getInbox().getAddress(),from,blueboxMessage.getSubject(),blueboxMessage.getIdentifier());	
 
 		// ensure the content is indexed
@@ -779,7 +792,7 @@ public class Inbox implements SimpleMessageListener {
 		return StorageFactory.getInstance().getMPH(inbox);
 	}
 
-	public WorkerThread rebuildSearchIndexes() {
+	public WorkerThread rebuildSearchIndexes() throws Exception {
 
 		WorkerThread wt = new WorkerThread("reindex") {
 
@@ -885,42 +898,54 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public static WorkerThread backupTo(final StorageIf si, final File zipFile) throws Exception {
-		WorkerThread wt = new WorkerThread("backup") {
+		WorkerThread wt = new WorkerThread(BACKUP_WORKER) {
+			private ZipOutputStream zipOutputStream;
+
+			@Override
+			public synchronized void generic(Object obj) {
+				BlueboxMessage msg = (BlueboxMessage)obj;
+				try {
+					if (zipOutputStream==null) {
+						log.error("Unable to back file - back thread not started or already finished");
+						return;
+					}
+					String emlFile = msg.getIdentifier()+".eml";
+					String jsonFile = msg.getIdentifier()+".json";
+					ZipEntry zipEntry;
+
+					// the blob
+					zipEntry = new ZipEntry(emlFile);
+					zipOutputStream.putNextEntry(zipEntry);
+					msg.getBlueBoxMimeMessage().writeTo(zipOutputStream);
+					zipOutputStream.closeEntry();
+
+					// the metadata
+					zipEntry = new ZipEntry(jsonFile);
+					zipOutputStream.putNextEntry(zipEntry);
+					zipOutputStream.write(msg.toJSON().toString().getBytes());
+
+					zipOutputStream.closeEntry();
+				}
+				catch (Throwable t) {
+					log.warn(t.getMessage());
+				}	
+			}
+
 			@Override
 			public void run() {
 				int count = 0;
 				try {
 					log.info("Backing up mail to {}",zipFile.getCanonicalPath());
 					BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(zipFile));
-					ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
+					zipOutputStream = new ZipOutputStream(fileOutputStream);
 					BlueboxMessage msg;
-					String emlFile,jsonFile;
 					MessageIterator mi = new MessageIterator(si, null, BlueboxMessage.State.ANY);
 					while (mi.hasNext()) {
 						if (isStopped()) break;
 						msg = mi.next();
 						setProgress(mi.getProgress());
-						try {
-
-							emlFile = msg.getIdentifier()+".eml";
-							jsonFile = msg.getIdentifier()+".json";
-							ZipEntry zipEntry;
-							// the blob
-							zipEntry = new ZipEntry(emlFile);
-							zipOutputStream.putNextEntry(zipEntry);
-							msg.getBlueBoxMimeMessage().writeTo(zipOutputStream);
-							zipOutputStream.closeEntry();
-
-							// the metadata
-							zipEntry = new ZipEntry(jsonFile);
-							zipOutputStream.putNextEntry(zipEntry);
-							zipOutputStream.write(msg.toJSON().toString().getBytes());
-							zipOutputStream.closeEntry();
-							count++;
-						}
-						catch (Throwable t) {
-							log.warn(t.getMessage());
-						}
+						generic(msg);
+						count++;
 					}
 
 					zipOutputStream.close();
@@ -945,7 +970,7 @@ public class Inbox implements SimpleMessageListener {
 		return wt;
 	}
 
-	public void migrate() {
+	public void migrate() throws Exception {
 		WorkerThread wt = new WorkerThread("migrate") {
 
 			@Override
@@ -1106,7 +1131,7 @@ public class Inbox implements SimpleMessageListener {
 		this.blueboxMessageHandlerFactory = blueboxMessageHandlerFactory;		
 	}
 
-	public WorkerThread cleanRaw() {
+	public WorkerThread cleanRaw() throws Exception {
 		return StorageFactory.getInstance().cleanRaw();
 	}
 

@@ -1077,7 +1077,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public WorkerThread cleanRaw() {
+	public WorkerThread cleanRaw() throws Exception {
 		WorkerThread wt = new WorkerThread(StorageIf.RAWCLEAN) {
 
 			@Override

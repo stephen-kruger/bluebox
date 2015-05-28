@@ -111,7 +111,7 @@ public interface StorageIf {
 	/*
 	 * Clean up all blobs not associated with a valid mail entry.
 	 */
-	public WorkerThread cleanRaw();
+	public WorkerThread cleanRaw() throws Exception;
 
 	/*
 	 * Return a JSON view of the count of email received per day of month

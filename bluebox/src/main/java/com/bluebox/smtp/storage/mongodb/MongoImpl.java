@@ -361,7 +361,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public WorkerThread cleanRaw() {
+	public WorkerThread cleanRaw() throws Exception {
 		WorkerThread wt = new WorkerThread(StorageIf.RAWCLEAN) {
 
 			//private GridFS gfsRaw;

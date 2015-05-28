@@ -23,8 +23,14 @@ public class JSONAdminHandler extends AbstractHandler {
 
 	public void doGet(BlueBoxServlet bbservlet, Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		if (req.getRequestURI().indexOf(JSON_ROOT+"/generate")>=0){
-			WorkerThread wt = Utils.generate(req.getSession().getServletContext(), inbox, Integer.parseInt(req.getParameter("count")));
-			bbservlet.startWorker(wt, req, resp);
+			try {
+				WorkerThread wt = Utils.generate(req.getSession().getServletContext(), inbox, Integer.parseInt(req.getParameter("count")));
+				bbservlet.startWorker(wt, req, resp);
+			}
+			catch (Throwable t) {
+				log.error("Task already running ",t.getMessage());
+				resp.getWriter().print("Aborting: "+t.getMessage());
+			}
 			resp.flushBuffer();	
 			return;
 		}	
@@ -34,8 +40,15 @@ public class JSONAdminHandler extends AbstractHandler {
 			return;
 		}	
 		if (req.getRequestURI().indexOf(JSON_ROOT+"/rebuildsearchindexes")>=0){
-			WorkerThread wt = inbox.rebuildSearchIndexes();
-			bbservlet.startWorker(wt, req, resp);
+			WorkerThread wt;
+			try {
+				wt = inbox.rebuildSearchIndexes();
+				bbservlet.startWorker(wt, req, resp);
+			} 
+			catch (Exception e) {
+				log.error("Could not start task",e);
+				resp.getWriter().print("Error: task already running ("+e.getMessage()+")");
+			}
 			resp.flushBuffer();
 			return;
 		}

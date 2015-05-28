@@ -2,8 +2,6 @@ package com.bluebox;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.servlet.ServletException;
@@ -42,7 +40,6 @@ public class BlueBoxServlet extends HttpServlet {
 	private static final long serialVersionUID = 1015755960967873612L;
 	public static final String VERSION = Config.getInstance().getString(Config.BLUEBOX_VERSION);
 	private BlueBoxSMTPServer smtpServer;
-	private Map<String,WorkerThread> workers = new HashMap<String,WorkerThread>();
 	private Inbox inbox;
 	private static Date started = new Date();
 
@@ -61,23 +58,21 @@ public class BlueBoxServlet extends HttpServlet {
 		super.destroy();
 		log.debug("Stopping servlet");
 		// shut down any worker threads
-		for (WorkerThread tw : workers.values()) {
-			tw.stop();
-		}
+		WorkerThread.stopWorkers();
 
 		// shut down the SMTP server
 		smtpServer.stop();
 
 		// shut down the inbox
 		inbox.stop();
-		
+
 		try {
 			StorageFactory.getInstance().stop();
 		} 
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		log.info("Stopped");
 	}
 
@@ -164,7 +159,7 @@ public class BlueBoxServlet extends HttpServlet {
 			new JSONAdminHandler().doGet(this,inbox,req,resp);
 			return;
 		}
-		
+
 		if (uri.indexOf("rest/updateavailable")>=0) {
 			try {
 				resp.getWriter().print(Utils.updateAvailable().toString());
@@ -176,7 +171,7 @@ public class BlueBoxServlet extends HttpServlet {
 			}
 			return;
 		}
-		
+
 		log.warn("No handler for "+uri+" expected :"+req.getContextPath());
 		super.doGet(req, resp);
 	}
@@ -186,21 +181,8 @@ public class BlueBoxServlet extends HttpServlet {
 	public void startWorker(WorkerThread wt, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		// check for running or expired works under this id
 		ResourceBundle rb = ResourceBundle.getBundle("admin",req.getLocale());
-		if (workers.containsKey(wt.getId())) {
-			WorkerThread old = workers.get(wt.getId());
-			if (old.getProgress()>=100) {
-				workers.remove(old.getId());
-			}
-		}
-		if (!workers.containsKey(wt.getId())) {
-			workers.put(wt.getId(),wt);
-			new Thread(wt).start();
-			resp.getWriter().print(rb.getString("taskStarted")+":"+wt.getId());
-		}
-		else {
-			resp.getWriter().print(rb.getString("taskAborted")+":"+wt.getId());					
-		}
-
+		new Thread(wt).start();
+		resp.getWriter().print(rb.getString("taskStarted")+":"+wt.getId());
 	}
 
 
@@ -238,14 +220,7 @@ public class BlueBoxServlet extends HttpServlet {
 	}
 
 	public JSONObject getWorkerStatus() throws JSONException {
-		JSONObject jo = new JSONObject();
-		for (WorkerThread tw : workers.values()) {
-			if (tw.getProgress()<=100) {
-				jo.put(tw.getId(), tw.getProgress());
-				jo.put(tw.getId()+"_status", tw.getStatus());
-			}
-		}
-		return jo;
+		return WorkerThread.getWorkerStatus();
 	}
 
 

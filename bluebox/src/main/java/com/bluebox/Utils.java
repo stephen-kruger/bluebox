@@ -201,7 +201,7 @@ public class Utils {
 		return text;
 	}
 
-	public static WorkerThread generate(final ServletContext session, final Inbox inbox, final int count) {
+	public static WorkerThread generate(final ServletContext session, final Inbox inbox, final int count) throws Exception {
 		WorkerThread wt = new WorkerThread("generate") {
 
 			@Override
