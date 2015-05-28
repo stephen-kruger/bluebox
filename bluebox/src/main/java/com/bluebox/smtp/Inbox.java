@@ -900,13 +900,14 @@ public class Inbox implements SimpleMessageListener {
 	public static WorkerThread backupTo(final StorageIf si, final File zipFile) throws Exception {
 		WorkerThread wt = new WorkerThread(BACKUP_WORKER) {
 			private ZipOutputStream zipOutputStream;
+			private int count = 0;
 
 			@Override
 			public synchronized void generic(Object obj) {
 				BlueboxMessage msg = (BlueboxMessage)obj;
 				try {
 					if (zipOutputStream==null) {
-						log.error("Unable to back file - back thread not started or already finished");
+						log.error("Unable to backup file - backup thread not started or already finished");
 						return;
 					}
 					String emlFile = msg.getIdentifier()+".eml";
@@ -925,6 +926,8 @@ public class Inbox implements SimpleMessageListener {
 					zipOutputStream.write(msg.toJSON().toString().getBytes());
 
 					zipOutputStream.closeEntry();
+					
+					count++;
 				}
 				catch (Throwable t) {
 					log.warn(t.getMessage());
@@ -933,7 +936,6 @@ public class Inbox implements SimpleMessageListener {
 
 			@Override
 			public void run() {
-				int count = 0;
 				try {
 					log.info("Backing up mail to {}",zipFile.getCanonicalPath());
 					BufferedOutputStream fileOutputStream = new BufferedOutputStream(new FileOutputStream(zipFile));
@@ -945,7 +947,6 @@ public class Inbox implements SimpleMessageListener {
 						msg = mi.next();
 						setProgress(mi.getProgress());
 						generic(msg);
-						count++;
 					}
 
 					zipOutputStream.close();
