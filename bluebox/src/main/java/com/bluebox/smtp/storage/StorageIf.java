@@ -12,6 +12,8 @@ import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
 import com.bluebox.WorkerThread;
+import com.bluebox.search.SearchUtils.SearchFields;
+import com.bluebox.search.SearchUtils.SortFields;
 import com.bluebox.smtp.InboxAddress;
 
 public interface StorageIf {
@@ -164,5 +166,7 @@ public interface StorageIf {
 	 * Return the current time
 	 */
 	public Date getUTCTime();
+
+	public Object[] search(String querystr, SearchFields fields, int start, int count, SortFields orderBy, boolean ascending);
 
 }

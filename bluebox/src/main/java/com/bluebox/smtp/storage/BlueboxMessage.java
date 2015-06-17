@@ -27,9 +27,11 @@ import org.slf4j.LoggerFactory;
 
 
 
+
 //import com.bluebox.MimeMessageParser;
 import com.bluebox.Utils;
 import com.bluebox.rest.json.JSONInlineHandler;
+import com.bluebox.search.SearchUtils;
 import com.bluebox.smtp.InboxAddress;
 
 public class BlueboxMessage {
@@ -91,6 +93,8 @@ public class BlueboxMessage {
 		setLongProperty(RECEIVED, received.getTime());
 		setIntProperty(STATE, State.NORMAL.ordinal());
 		setLongProperty(SIZE, Utils.getSize(bbmm));
+		setProperty(HTML_BODY, SearchUtils.htmlToString(getHtml(null).toLowerCase()));
+		setProperty(TEXT_BODY, getText().toLowerCase());
 	}
 
 	public State getState() {
@@ -321,8 +325,9 @@ public class BlueboxMessage {
 	public String getHtml(HttpServletRequest request) {
 		try {
 			String html = getParser().getHtmlContent();
-			if (html==null)
+			if (html==null) {
 				html = "";
+			}
 			return convertCidLinks(request,getIdentifier(),html);
 		} 
 		catch (Throwable e) {

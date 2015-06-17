@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
+import com.bluebox.search.SearchUtils.SearchFields;
+import com.bluebox.search.SearchUtils.SortFields;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.AbstractStorage;
@@ -1268,6 +1270,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 
 		return dateToReturn;
+	}
+
+	@Override
+	public Object[] search(String querystr, SearchFields fields, int start,
+			int count, SortFields orderBy, boolean ascending) {
+		log.error("Not yet implemented on Derby");
+		return null;
 	}
 
 }

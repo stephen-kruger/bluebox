@@ -2,10 +2,14 @@ package com.bluebox.search;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Date;
+
+import org.bson.Document;
 
 import org.apache.solr.client.solrj.SolrServerException;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,12 +32,35 @@ public class StorageIndexer implements SearchIf {
 		log.info("Stopped StorageIndexer");
 	}
 
-	public Object[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SortFields orderBy, boolean ascending) throws IOException, SolrServerException {
-		return null;
+	public Object[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SortFields orderBy, boolean ascending) throws Exception {
+		return StorageFactory.getInstance().search(querystr, fields,  start,  count, orderBy, ascending);
 	}
 
-	public long searchInboxes(String search, Writer writer, int start,	int count, SearchUtils.SearchFields fields, SearchUtils.SortFields orderBy, boolean ascending) throws IOException, SolrServerException {
-		return 0;
+	public long searchInboxes(String search, Writer writer, int start,	int count, SearchUtils.SearchFields fields, SearchUtils.SortFields orderBy, boolean ascending) throws Exception {
+		Object[] hits = search(search, fields, start, count, orderBy, ascending);
+		JSONObject curr;
+		writer.write("[");
+		for (int i = 0; i < hits.length; i++) {
+			String uid = ((Document)hits[i]).getString(BlueboxMessage.UID);
+			log.info(hits[i].toString());
+			try {
+				curr = new JSONObject();
+				curr.put(BlueboxMessage.FROM, ((Document)hits[i]).get(BlueboxMessage.FROM));
+				curr.put(BlueboxMessage.SUBJECT, ((Document)hits[i]).get(BlueboxMessage.SUBJECT));
+				curr.put(BlueboxMessage.RECEIVED, ((Document)hits[i]).getDate(BlueboxMessage.RECEIVED));
+				curr.put(BlueboxMessage.SIZE, (((Document)hits[i]).getLong(BlueboxMessage.SIZE)/1000)+"K");
+				curr.put(BlueboxMessage.UID, uid);
+				writer.write(curr.toString(3));
+				if (i < hits.length-1) {
+					writer.write(",");
+				}
+			}
+			catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
+		writer.write("]");
+		return hits.length;
 	}
 
 

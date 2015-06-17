@@ -7,11 +7,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.IOUtils;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -22,13 +24,15 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
+import com.bluebox.search.SearchUtils.SearchFields;
+import com.bluebox.search.SearchUtils.SortFields;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.AbstractStorage;
 import com.bluebox.smtp.storage.BlueboxMessage;
-import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.LiteMessage;
+import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
@@ -39,6 +43,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Sorts;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.gridfs.GridFS;
 import com.mongodb.gridfs.GridFSDBFile;
@@ -754,6 +759,89 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			log.error("Error loading raw object for uid="+uid,t);
 			return null;
 		}
+	}
+
+	@Override
+	public Object[] search(String querystr, SearchFields fields, int start,	int count, SortFields orderBy, boolean ascending) {
+		querystr = querystr.toLowerCase();
+		if (querystr=="*")
+			querystr = "";
+		Bson query=null;
+		switch (fields) {
+		case INBOX :
+			query = Filters.and(
+					Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
+					Filters.regex(BlueboxMessage.INBOX, querystr)
+					);
+			break;
+		case SUBJECT :
+			query = Filters.and(
+					Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
+					Filters.regex(BlueboxMessage.SUBJECT,Pattern.compile(querystr , Pattern.CASE_INSENSITIVE))
+					);
+			break;
+		case TEXT_BODY :
+			query = Filters.and(
+					Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
+					Filters.regex(BlueboxMessage.TEXT_BODY, querystr.toLowerCase())
+					);
+			break;
+		case HTML_BODY :
+			query = Filters.and(
+					Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
+					Filters.regex(BlueboxMessage.HTML_BODY, querystr.toLowerCase())
+					);
+			break;
+		case BODY :
+			query = Filters.and(
+					Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
+					Filters.or(Filters.regex(BlueboxMessage.HTML_BODY, querystr.toLowerCase()),Filters.regex(BlueboxMessage.TEXT_BODY, querystr.toLowerCase()))
+					);
+			break;
+		case FROM :
+			query = Filters.and(
+					Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
+					Filters.regex(BlueboxMessage.FROM, querystr.toLowerCase())
+					);					
+			break;
+		case ANY :
+		default :
+			log.info(querystr);;
+			query = Filters.and(
+					Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
+					Filters.or(
+					Filters.regex(BlueboxMessage.INBOX, querystr),
+					Filters.regex(BlueboxMessage.SUBJECT,Pattern.compile(querystr , Pattern.CASE_INSENSITIVE)),
+					Filters.regex(BlueboxMessage.FROM, querystr),
+					Filters.regex(BlueboxMessage.RECIPIENT, querystr),
+					Filters.regex(BlueboxMessage.HTML_BODY, querystr.toLowerCase()),
+					Filters.regex(BlueboxMessage.TEXT_BODY, querystr.toLowerCase()))
+					);
+		}
+		Bson sortOrder=null;
+		String sortKey;
+		switch (orderBy) {
+		case SORT_RECEIVED : 
+			sortKey = BlueboxMessage.RECEIVED;
+			break;
+		case SORT_SIZE : 
+			sortKey = BlueboxMessage.SIZE;
+			break;
+			default :
+				sortKey = BlueboxMessage.RECEIVED;
+		}
+		if (ascending) {
+			sortOrder = Sorts.ascending(sortKey);
+		}
+		else {
+			sortOrder = Sorts.descending(sortKey);			
+		}
+		FindIterable<Document> result = mailFS.find(query).sort(sortOrder).skip(start).limit(count);
+		List<Document> res = new ArrayList<Document>();
+		for (Document d : result) {
+			res.add(d);
+		}
+		return res.toArray();
 	}
 
 
