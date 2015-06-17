@@ -17,12 +17,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.mail.util.MimeMessageParser;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 
 //import com.bluebox.MimeMessageParser;
@@ -83,9 +85,9 @@ public class BlueboxMessage {
 		else {
 			setProperty(FROM,toJSONArray(new Address[]{new InternetAddress(from)}));
 		}
-		setProperty(RECIPIENT, recipient.getFullAddress());
-		setProperty(INBOX, getInbox().getAddress());
-		setProperty(SUBJECT, bbmm.getSubject());
+		setProperty(RECIPIENT, StringEscapeUtils.escapeJava(recipient.getFullAddress()));
+		setProperty(INBOX, StringEscapeUtils.escapeJava(getInbox().getAddress()));
+		setProperty(SUBJECT, StringEscapeUtils.escapeJava(bbmm.getSubject()));
 		setLongProperty(RECEIVED, received.getTime());
 		setIntProperty(STATE, State.NORMAL.ordinal());
 		setLongProperty(SIZE, Utils.getSize(bbmm));
@@ -105,7 +107,7 @@ public class BlueboxMessage {
 			if (r!=null)
 				for (int i = 0; i < r.length;i++) {
 					try {
-						ja.put(Utils.decodeQuotedPrintable(r[i].toString()));
+						ja.put(StringEscapeUtils.escapeJava(Utils.decodeQuotedPrintable(r[i].toString())));
 					}
 					catch (Throwable t) {
 						log.error(t.getMessage());
@@ -191,7 +193,7 @@ public class BlueboxMessage {
 	public JSONObject toJSON() throws Exception {
 		JSONObject json;
 		try {
-			json = new JSONObject(properties.toString());				
+			json = new JSONObject(properties.toString());			
 
 			List<DataSource> ds = getParser().getAttachmentList();
 			JSONArray ja = new JSONArray();
@@ -200,13 +202,6 @@ public class BlueboxMessage {
 			}
 			if (ja.length()>0)
 				json.put(ATTACHMENT, ja);
-
-//			@SuppressWarnings("unchecked")
-//			Iterator<String> keys = properties.keys();
-//			while (keys.hasNext()) {
-//				String key = keys.next();
-//				json.put(key, properties.get(key));
-//			}
 
 			return json;
 
