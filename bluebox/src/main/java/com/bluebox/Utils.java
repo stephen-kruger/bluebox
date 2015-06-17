@@ -222,7 +222,7 @@ public class Utils {
 									getRandomAddresses(bccC),//bcc
 									(counter++)+" "+randomLine(35), 
 									randomText(14),
-									"",
+									randomText(14),
 									true);
 
 							sendMessageDirect(inbox,msg);
@@ -260,7 +260,7 @@ public class Utils {
 						getRandomAddresses(bccC),//bcc
 						(counter++)+" "+randomLine(35), 
 						randomText(14),
-						"",
+						randomText(14),
 						true);
 
 				sendMessageDirect(inbox,msg);
@@ -290,7 +290,7 @@ public class Utils {
 									getRandomAddresses(2),//bcc
 									(counter++)+" "+randomLine(35), 
 									randomText(14),
-									"",
+									randomText(14),
 									true);
 
 							sendMessageDirect(inbox,msg);
@@ -392,7 +392,7 @@ public class Utils {
 				body,
 				"");
 	}
-	
+
 	public static MimeMessage createMessage(ServletContext session, String from, String to, String cc, String bcc, String subject, String body, String htmlBody) throws MessagingException, IOException {
 		InternetAddress[] toa=new InternetAddress[0], cca=new InternetAddress[0], bcca=new InternetAddress[0];
 		if (to!=null)
@@ -401,6 +401,7 @@ public class Utils {
 			cca = new InternetAddress[]{new InternetAddress(cc)};
 		if (bcc!=null)
 			bcca = new InternetAddress[]{new InternetAddress(bcc)};
+
 		return createMessage(session, 
 				new InternetAddress(from),
 				toa,
@@ -415,6 +416,7 @@ public class Utils {
 	public static MimeMessage createMessage(ServletContext session, InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String textBody, String htmlBody, boolean attachment) 
 			throws MessagingException, IOException {
 		Session s = null;
+
 		MimeMessage msg = new MimeMessage(s);
 		msg.setFrom(from);
 		msg.setSubject(subject,UTF8);
@@ -425,26 +427,29 @@ public class Utils {
 			msg.setRecipients(Message.RecipientType.CC, cc);
 		if (bcc.length>0)
 			msg.setRecipients(Message.RecipientType.BCC, bcc);
-
-		if (attachment) {
+		if ((htmlBody.length()>0)||(attachment)) {
 			// set the body
 			Multipart multipart = new MimeMultipart();
 
-			// create the text message part 
-			MimeBodyPart textBodyPart = new MimeBodyPart();
-			textBodyPart.setContent(textBody,"text/plain; charset=\""+UTF8+"\"");
-			multipart.addBodyPart(textBodyPart);
-
 			// create the html message part 
-			MimeBodyPart htmlBodyPart = new MimeBodyPart();
-//			htmlBodyPart.setContent("<html><head><script>alert('gotcha!');</script></head><body><font color=\"red\">"+textBody.replaceAll("\n", "</br>")+"</font></body></html>","text/html; charset=\""+UTF8+"\"");
-			htmlBodyPart.setContent(htmlBody,"text/html; charset=\""+UTF8+"\"");
-			multipart.addBodyPart(htmlBodyPart);
+			if (htmlBody.length()>0) {
+				// create the text message part 
+				MimeBodyPart textBodyPart = new MimeBodyPart();
+				textBodyPart.setContent(textBody,"text/plain; charset=\""+UTF8+"\"");
+				multipart.addBodyPart(textBodyPart);
 
-			// randomly create up to 5 attachment
-			int attachmentCount = new Random().nextInt(25);
-			for (int i = 0; i < attachmentCount; i++)
-				multipart.addBodyPart(createAttachment(session));
+				// create the html part
+				MimeBodyPart htmlBodyPart = new MimeBodyPart();
+				//			htmlBodyPart.setContent("<html><head><script>alert('gotcha!');</script></head><body><font color=\"red\">"+textBody.replaceAll("\n", "</br>")+"</font></body></html>","text/html; charset=\""+UTF8+"\"");
+				htmlBodyPart.setContent(htmlBody,"text/html; charset=\""+UTF8+"\"");
+				multipart.addBodyPart(htmlBodyPart);
+			}
+			if (attachment) {
+				// randomly create up to 5 attachment
+				int attachmentCount = new Random().nextInt(25);
+				for (int i = 0; i < attachmentCount; i++)
+					multipart.addBodyPart(createAttachment(session));
+			}
 
 			// Put parts in message
 			msg.setContent(multipart);
@@ -452,6 +457,11 @@ public class Utils {
 		else {
 			msg.setText(textBody,UTF8);
 		}
+
+
+		//		else {
+		//			msg.setText(textBody,UTF8);
+		//		}
 		return msg;
 	}
 
@@ -725,23 +735,23 @@ public class Utils {
 		return utct;
 	}
 
-//	public static final void main(String[] args) {
-//		StorageIf si = StorageFactory.getInstance();
-//		File zipFile;
-//		if (args.length>0)
-//			zipFile = new File(args[0]);
-//		else
-//			zipFile = new File("bluebox-export.zip");
-//		try {
-//			WorkerThread thread = Inbox.backupTo(si, zipFile);
-//			new Thread(thread).start();
-//			while (thread.getProgress()<100) {
-//				System.out.println("Export "+thread.getStatus()+" "+thread.getProgress()+"%");
-//				Thread.sleep(2000);
-//			}
-//		} 
-//		catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//	}
+	//	public static final void main(String[] args) {
+	//		StorageIf si = StorageFactory.getInstance();
+	//		File zipFile;
+	//		if (args.length>0)
+	//			zipFile = new File(args[0]);
+	//		else
+	//			zipFile = new File("bluebox-export.zip");
+	//		try {
+	//			WorkerThread thread = Inbox.backupTo(si, zipFile);
+	//			new Thread(thread).start();
+	//			while (thread.getProgress()<100) {
+	//				System.out.println("Export "+thread.getStatus()+" "+thread.getProgress()+"%");
+	//				Thread.sleep(2000);
+	//			}
+	//		} 
+	//		catch (Exception e) {
+	//			e.printStackTrace();
+	//		}
+	//	}
 }

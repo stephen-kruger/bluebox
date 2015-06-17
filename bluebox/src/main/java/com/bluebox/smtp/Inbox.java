@@ -699,11 +699,8 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public JSONArray autoComplete(String hint, long start, long count) throws Exception {
-
 		return SearchFactory.getInstance().autoComplete(hint, start, count);
 	}
-
-
 
 	public long getStatsGlobalCount() {
 		return StorageFactory.getInstance().getLongProperty(GLOBAL_COUNT_NODE,48755551);	
@@ -720,7 +717,6 @@ public class Inbox implements SimpleMessageListener {
 	public JSONObject getStatsRecent() {
 		return recentStats;
 	}
-
 
 	public JSONObject getStatsActiveInbox() {	
 		return StorageFactory.getInstance().getMostActiveInbox();

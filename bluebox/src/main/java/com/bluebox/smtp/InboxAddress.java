@@ -3,6 +3,7 @@ package com.bluebox.smtp;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,7 @@ public class InboxAddress extends Object {
 				return "";
 			}
 			email = Utils.decodeRFC2407(email);
+			email = StringEscapeUtils.unescapeJava(email);
 			// check if it's a Notes address
 			if (Utils.isNotesAddress(email)) {
 				log.info("Converting Notes style address :{}",email);
@@ -60,7 +62,7 @@ public class InboxAddress extends Object {
 			return EmailAddress.getInternetAddress(email).getAddress();
 		}
 		catch (Throwable e) {
-			log.debug("Error for {}",email);
+			log.error("Error for {}",email,e);
 			//e.printStackTrace();
 		}
 		return "*";

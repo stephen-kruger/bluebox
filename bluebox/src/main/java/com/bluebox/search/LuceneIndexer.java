@@ -257,7 +257,8 @@ public class LuceneIndexer implements SearchIf {
 				commit);
 	}
 
-	/* Find which one of the potential recipeints of this mail matches the specified inbox
+	/* 
+	 * Find which one of the potential recipeints of this mail matches the specified inbox
 	 * 
 	 */
 	public InboxAddress getRecipient(InboxAddress inbox, String recipients) {

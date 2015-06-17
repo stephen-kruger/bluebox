@@ -31,27 +31,33 @@ public class SearchIndexerTest extends TestCase {
 	protected void setUp() throws Exception {
 		getSearchIndexer().deleteIndexes();
 		MimeMessage mm;
-		mm = Utils.createMessage(null,"sender1@there.com", "receiever1@here.com", null, null, "Subject in action", "<b>Lucene in Action</b>");
+		mm = Utils.createMessage(null,"sender1@there.com", "receiever1@here.com", null, null, "Lucene in action", "Lucene in action", "<b>Lucene in action</b>");
 		uid1 = Utils.spoolStream(StorageFactory.getInstance(), mm);
 		uid1 = StorageFactory.getInstance().store("sender1@there.com", new InboxAddress("receiever1@here.com"), new Date(), mm, uid1).getIdentifier();
-		getSearchIndexer().addDoc(uid1,"receiever1@here.com","[sender1@there.com]","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543,false);
+		getSearchIndexer().addDoc(uid1,"receiever1@here.com","[sender1@there.com]",mm.getSubject(),"Lucene in action","<b>Lucene in action</b>", "receiever1@here.com",23423,6346543,false);
 
-		mm = Utils.createMessage(null,"sender2@there.com", "receiever3@here.com", null, null, "Subject for dummies", "<b>Lucene in Action</b>");
+		mm = Utils.createMessage(null,"sender2@there.com", "receiever3@here.com", null, null, "Lucene for dummies", "Lucene for dummies", "<b>Lucene for dummies</b>");
 		uid2 = Utils.spoolStream(StorageFactory.getInstance(), mm);
 		uid2 = StorageFactory.getInstance().store("sender2@there.com", new InboxAddress("receiever2@here.com"), new Date(), mm, uid2).getIdentifier();;
-		getSearchIndexer().addDoc(uid2,"receiever2@here.com","[sender2@there.com]","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543,false);
+		getSearchIndexer().addDoc(uid2,"receiever2@here.com","[sender2@there.com]",mm.getSubject(),"Lucene for dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543,false);
 
-		mm = Utils.createMessage(null,"sender3@there.com", "receiever3@here.com", null, null, "Managing Gigabytes","<b>stephen</b><i>johnson</i>");
+		mm = Utils.createMessage(null,"sender3@there.com", "receiever3@here.com", null, null, "Managing Gigabytes","Managing Gigabytes","<b>Managing Gigabytes</b>");
 		uid3 = Utils.spoolStream(StorageFactory.getInstance(), mm);
 		uid3 = StorageFactory.getInstance().store("sender3@there.com", new InboxAddress("receiever3@here.com"), new Date(), mm, uid3).getIdentifier();;
-		getSearchIndexer().addDoc(uid3,"receiever3@here.com","[sender3@there.com]","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543,false);
+		getSearchIndexer().addDoc(uid3,"receiever3@here.com","[sender3@there.com]",mm.getSubject(), "Managing Gigabytes","<b>Managing Gigabytes</b>",  "receiever3@here.com",7646,6346543,false);
 
-		mm = Utils.createMessage(null,"sender4@there.com", "receiever4@here.com", null, null, "Subject for Computer Science", "The Art of Computer Science","<b>Lucene for Computer Science</b>");
+		mm = Utils.createMessage(null,"sender4@there.com", "receiever4@here.com", null, null, "Subject for Computer Science", "The Art of Computer Science","<b>The Art of Computer Science</b>");
 		uid4 = Utils.spoolStream(StorageFactory.getInstance(), mm);
 		uid4 = StorageFactory.getInstance().store("sender4@there.com", new InboxAddress("receiever4@here.com"), new Date(), mm, uid4).getIdentifier();;
-		getSearchIndexer().addDoc(uid4,"receiever4@here.com","[sender4@there.com]","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543,false);
+		getSearchIndexer().addDoc(uid4,"receiever4@here.com","[sender4@there.com]",mm.getSubject(), "The Art of Computer Science","<b>The Art of Computer Science</b>",  "receiever4@here.com",543,6346543,false);
+		
+		String uid;
 		for (int i = 0; i < 50; i++) {
-			getSearchIndexer().addDoc(UUID.randomUUID().toString(),"xxx@xxx.com","[xxx@xxx.com]","ttttttttttttttttttttttttttt","tttttttttttttttttttttttttt","tttttttttttttttttttttttttttt",  "xxx@xxx.com",543,6346543,false);			
+			mm = Utils.createMessage(null,"xxx@xxx.com","xxx@xxx.com", null, null, "ttttttttttttttttttttttttttt","tttttttttttttttttttttttttt","tttttttttttttttttttttttttttt");
+			uid = Utils.spoolStream(StorageFactory.getInstance(), mm);
+			uid = StorageFactory.getInstance().store("xxx@xxx.com", new InboxAddress("xxx@xxx.com"), new Date(), mm, uid).getIdentifier();;
+
+			getSearchIndexer().addDoc(uid,"xxx@xxx.com","[xxx@xxx.com]","ttttttttttttttttttttttttttt","tttttttttttttttttttttttttt","tttttttttttttttttttttttttttt",  "xxx@xxx.com",543,6346543,false);			
 		}
 		getSearchIndexer().commit(true);
 	}
@@ -61,6 +67,7 @@ public class SearchIndexerTest extends TestCase {
 		getSearchIndexer().deleteIndexes();
 		getSearchIndexer().stop();
 		StorageFactory.getInstance().trimSpools(0);
+		StorageFactory.getInstance().deleteAll();
 	}
 
 	public SearchIf getSearchIndexer() throws Exception {
@@ -77,8 +84,8 @@ public class SearchIndexerTest extends TestCase {
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("Art of Computer",SearchUtils.SearchFields.BODY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("for dummies",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("in action",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("Subject in action",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
-		assertEquals("Missing expected search results",0,getSearchIndexer().search("Subject in action",SearchUtils.SearchFields.BODY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("Lucene in action",SearchUtils.SearchFields.SUBJECT,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("Lucene in action",SearchUtils.SearchFields.BODY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
 	@Test
@@ -89,9 +96,17 @@ public class SearchIndexerTest extends TestCase {
 
 	@Test
 	public void testFromSearch() throws IOException, Exception {
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("johnson",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("stephen",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("Lucene in Action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("sender1",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+//		assertEquals("Missing expected search results",1,getSearchIndexer().search("johnson",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+//		assertEquals("Missing expected search results",1,getSearchIndexer().search("stephen",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+	}
+	
+	@Test
+	public void testTextBodySearch() throws IOException, Exception {
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("Lucene in action",SearchUtils.SearchFields.BODY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("Lucene in action",SearchUtils.SearchFields.TEXT_BODY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("Lucene in action",SearchUtils.SearchFields.HTML_BODY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("Lucene in action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
 	@Test
@@ -104,6 +119,9 @@ public class SearchIndexerTest extends TestCase {
 
 	@Test
 	public void testMailIndexing() throws Exception {
+		getSearchIndexer().deleteIndexes();
+		StorageFactory.getInstance().deleteAll();
+
 		BlueboxMessage msg = TestUtils.addRandomDirect(StorageFactory.getInstance());
 		getSearchIndexer().indexMail(msg,true);
 		//		assertEquals("Missing expected search results",1,getSearchIndexer().search(SearchUtils.substringQuery(msg.getSubject()),SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
@@ -114,22 +132,21 @@ public class SearchIndexerTest extends TestCase {
 	@Test
 	public void testDelete() throws Exception {
 		getSearchIndexer().deleteDoc(uid1);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("johnson",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
-		assertEquals("Missing expected search results",1,getSearchIndexer().search("stephen",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		StorageFactory.getInstance().delete(uid1);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("sender2",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		assertEquals("Missing expected search results",1,getSearchIndexer().search("sender3",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",0,getSearchIndexer().search("Lucene in Action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",0,getSearchIndexer().search("sender1@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("sender2@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		getSearchIndexer().deleteDoc(uid2);
+		StorageFactory.getInstance().delete(uid2);
 		assertEquals("Missing expected search results",0,getSearchIndexer().search("sender2@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
 	@Test
 	public void testTextSearch() throws IOException, Exception {
-		Object[] hits = getSearchIndexer().search("lucene",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false);
-		assertEquals("Missing expected search results",3,hits.length);
-		//		for(int i=0;i<hits.length;++i) {
-		//			log.info((i + 1) + ". " + hits[i].get(SearchUtils.SearchFields.UID.name()));
-		//		}
+		Object[] hits = getSearchIndexer().search("Lucene",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false);
+		assertEquals("Missing expected search results",2,hits.length);
 	}
 
 	@Test
@@ -163,30 +180,30 @@ public class SearchIndexerTest extends TestCase {
 
 		// test search in subject
 		sw = new StringWriter();
-		searchString = "Subject for gigabytes";
+		searchString = "Managing Gigabytes";
 		getSearchIndexer().searchInboxes(searchString, sw, 0, 50, SearchUtils.SearchFields.SUBJECT, SearchUtils.SortFields.SORT_RECEIVED, true);
 		ja = new JSONArray(sw.toString());
 		assertTrue("Missing search results",ja.length()>0);
-		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),"Subject for gigabytes");
+		assertEquals(ja.getJSONObject(0).get(BlueboxMessage.SUBJECT),searchString);
 
 		// search for last few chars of subject
 		sw = new StringWriter();
-		searchString = "gigabytes";
+		searchString = "Gigabytes";
 		getSearchIndexer().searchInboxes(searchString, sw, 0, 50, SearchUtils.SearchFields.SUBJECT, SearchUtils.SortFields.SORT_RECEIVED, true);
 		ja = new JSONArray(sw.toString());
 		log.info(searchString+"="+ja.toString(3));
 		assertTrue("Missing search results",ja.length()>0);
-		assertEquals("Subject for gigabytes",ja.getJSONObject(0).get(BlueboxMessage.SUBJECT));
+		assertEquals("Managing Gigabytes",ja.getJSONObject(0).get(BlueboxMessage.SUBJECT));
 
 		// search for first few chars of subject
 		sw = new StringWriter();
-		searchString = "Subject in";
+		searchString = "Managing";
 		getSearchIndexer().searchInboxes(searchString, sw, 0, 50, SearchUtils.SearchFields.SUBJECT, SearchUtils.SortFields.SORT_RECEIVED, true);
 		ja = new JSONArray(sw.toString());
 		log.info(searchString+"="+ja.toString(3));
 		assertTrue("Missing search results",ja.length()>0);
 		for (int i = 0; i < ja.length(); i++) {
-			assertTrue("Inaccurate search result found",ja.getJSONObject(i).get(BlueboxMessage.SUBJECT).toString().contains("Subject"));
+			assertTrue("Inaccurate search result found",ja.getJSONObject(i).get(BlueboxMessage.SUBJECT).toString().contains("Managing"));
 		}
 
 		// test search To:

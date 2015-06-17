@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.BaseTestCase;
 import com.bluebox.TestUtils;
 import com.bluebox.search.SearchFactory;
+import com.bluebox.smtp.InboxAddress;
 
 public class TestJSONAutoCompleteHandler extends BaseTestCase {
 	private static final Logger log = LoggerFactory.getLogger(TestJSONAutoCompleteHandler.class);
@@ -18,14 +19,14 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 		super.setUp();
 		handler = new JSONAutoCompleteHandler();
 	}
-	
+
 	@Test
 	public void testFullname() throws Exception {
 		TestUtils.sendMailDirect(getInbox(),"\"Joe Blow\" <jblow@example.com>", "WinEdt Mailing List <winedt+list@wsg.net>");
 		SearchFactory.getInstance().commit(true);
 		JSONArray result = handler.doAutoComplete(getInbox(), "Joe", "0", "10");
 		assertEquals("Missing results",1,result.length());
-		assertEquals("Incorrect name set","Joe Blow <jblow@example.com>",result.getJSONObject(0).getString("label"));
+		assertEquals("Incorrect name set",new InboxAddress("Joe Blow <jblow@example.com>").getDisplayName(),new InboxAddress(result.getJSONObject(0).getString("label")).getDisplayName());
 	}
 
 	@Test
@@ -37,7 +38,7 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 		SearchFactory.getInstance().commit(true);
 		assertEquals("Should not trigger for one character", 0, handler.doAutoComplete(getInbox(), "j", "0", "10").length());
 		assertTrue("No results found", handler.doAutoComplete(getInbox(), "Joe", "0", "10").length()>0);
-		log.debug(handler.doAutoComplete(getInbox(), "Joe", "0", "10").toString(3));
+		log.info(handler.doAutoComplete(getInbox(), "Joe", "0", "10").toString(3));
 		assertTrue("Unexpected results found", handler.doAutoComplete(getInbox(), "Joe", "0", "10").getJSONObject(0).getString("label").toLowerCase().contains("joe"));
 		assertTrue("Case sensitivity problem", handler.doAutoComplete(getInbox(), "joe", "0", "10").length()>0);
 		assertEquals("Uniqueness problem", 1, handler.doAutoComplete(getInbox(), "joe", "0", "10").length());
@@ -64,7 +65,7 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 		assertEquals("Did not receive expected number of results", 1, handler.doAutoComplete(getInbox(), "bob", "0", Integer.toString(count)).length());
 		assertEquals("Did not recieve expected number of results", 1, handler.doAutoComplete(getInbox(), "", "0", Integer.toString(count)).length());
 	}
-	
+
 	@Test
 	public void testAutoCompleteWildcard() throws Exception {
 		// add 10 emails. Then check we recieved 10 auto-complete results
@@ -80,7 +81,7 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 		assertEquals("Did not receive expected number of results", count/2, handler.doAutoComplete(getInbox(), "", "0", ""+count/2).length());
 		assertEquals("Did not receive expected number of results", count, handler.doAutoComplete(getInbox(), "", "0", Integer.toString(count)).length());
 	}
-	
+
 	@Test
 	public void testAutocompleteEmpty() throws Exception {
 		String to = "user@nowhere.com";
@@ -98,6 +99,16 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 			res = handler.doAutoComplete(getInbox(), i+"user", "0", "Infinity");
 			assertEquals("Did not receive expected number of results", 1, res.length());
 		}
+		log.info(">>>>>{}",handler.doAutoComplete(getInbox(), "0user", "0", "Infinity").toString(3));
 	}
 
+//	[{
+//		   "name": "0user@nowhere.com",
+//		   "label": "0user@nowhere.com",
+//		   "identifier": "18d0e286-7b4d-40c9-98dc-6da2c815a38c"
+//		}]
+//	[{
+//		   "name": "0user@nowhere.com",
+//		   "label": "0user@nowhere.com"
+//		}]
 }

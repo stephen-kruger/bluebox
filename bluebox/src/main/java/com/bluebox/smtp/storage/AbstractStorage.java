@@ -105,6 +105,8 @@ public abstract class AbstractStorage implements StorageIf {
 			message.put(BlueboxMessage.FROM,j);			
 		}
 		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
+		message.put(BlueboxMessage.HTML_BODY,getDBOString(dbo,BlueboxMessage.HTML_BODY,""));
+		message.put(BlueboxMessage.TEXT_BODY,getDBOString(dbo,BlueboxMessage.TEXT_BODY,""));
 		message.put(BlueboxMessage.RECIPIENT,getDBOString(dbo,BlueboxMessage.RECIPIENT,""));
 		message.put(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, getUTCTime()).getTime());
 		message.put(BlueboxMessage.STATE,getDBOInt(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
