@@ -55,16 +55,9 @@ public class LuceneIndexer implements SearchIf {
 	private StandardAnalyzer analyzer;
 	private long lastCommit=new Date().getTime();// last time a commit was performed
 
-	//	private static SearchIndexer getInstance() throws IOException {
-	//		if (si==null) {
-	//			si = new SearchIndexer();
-	//		}
-	//		return si;
-	//	}
-
 	public LuceneIndexer() throws IOException {
-		//						this(new SimpleFSDirectory(createTempDirectory()));
-		//				this(new NIOFSDirectory(createTempDirectory()));
+		// this(new SimpleFSDirectory(createTempDirectory()));
+		// this(new NIOFSDirectory(createTempDirectory()));
 		this(new NIOFSDirectory(Paths.get(createTempDirectory().toURI())));
 	}
 
@@ -76,7 +69,7 @@ public class LuceneIndexer implements SearchIf {
 	public IndexWriter getIndexWriter() throws IOException {
 		if (indexWriter==null) {
 			analyzer = new StandardAnalyzer();		
-			//			config = new IndexWriterConfig(Version.LATEST, analyzer);
+			// config = new IndexWriterConfig(Version.LATEST, analyzer);
 			config = new IndexWriterConfig(analyzer);
 			config.setUseCompoundFile(true);
 			indexWriter = new IndexWriter(getDirectory(), config);
@@ -264,10 +257,6 @@ public class LuceneIndexer implements SearchIf {
 				commit);
 	}
 
-	//	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException {
-	//		addDoc(uid,inbox,from,subject,text,html,recipients,size,received, commit);
-	//	}
-
 	/* Find which one of the potential recipeints of this mail matches the specified inbox
 	 * 
 	 */
@@ -413,8 +402,6 @@ public class LuceneIndexer implements SearchIf {
 		try {
 			Object[] results = search(SearchUtils.autocompleteQuery(hint), SearchUtils.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchUtils.SortFields.SORT_RECEIVED,false);
 			for (int i = 0; i < results.length;i++) {
-
-				// Plain old Lucene
 				Document result = (Document)results[i];
 				String uid = result.get(SearchFields.UID.name());
 				InboxAddress inbox;
