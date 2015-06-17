@@ -63,6 +63,7 @@ public class StorageTest extends BaseTestCase {
 				Utils.getRandomAddresses(0), 
 				"subjStr",
 				"bodyStr",
+				"",
 				false);
 		InboxAddress ia = new InboxAddress(email);
 
@@ -118,6 +119,7 @@ public class StorageTest extends BaseTestCase {
 				Utils.getRandomAddresses(0), 
 				"subjStr",
 				"bodyStr",
+				"",
 				false);
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 		BlueboxMessage bbm = getBlueBoxStorageIf().store(from, inbox, getBlueBoxStorageIf().getUTCTime(), message, uid);
@@ -144,6 +146,7 @@ public class StorageTest extends BaseTestCase {
 				Utils.getRandomAddresses(0), 
 				"subjStr",
 				"bodyStr",
+				"",
 				false);
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 
@@ -335,6 +338,7 @@ public class StorageTest extends BaseTestCase {
 				Utils.getRandomAddresses(0), 
 				"subjStr",
 				"bodyStr",
+				"",
 				false);
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 
@@ -395,6 +399,7 @@ public class StorageTest extends BaseTestCase {
 				Utils.getRandomAddresses(0), 
 				"subjStr",
 				"bodyStr",
+				"",
 				false);
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 

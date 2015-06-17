@@ -5,10 +5,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
-import java.util.StringTokenizer;
-
-import javax.mail.Address;
-import javax.mail.internet.MimeMessage;
 
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -242,7 +238,7 @@ public class SolrIndexer implements SearchIf {
 				Utils.decodeQuotedPrintable(message.getSubject()),
 				message.getHtml(null),
 				message.getText(),
-				getRecipients(message),
+				SearchUtils.getRecipients(message),
 				message.getSize(),
 				message.getReceived().getTime(),
 				commit);
@@ -270,35 +266,7 @@ public class SolrIndexer implements SearchIf {
 	//		addDoc(uid,inbox,from,subject,text,html,recipients,size,received);
 	//	}
 
-	/* Find which one of the potential recipeints of this mail matches the specified inbox
-	 * 
-	 */
-	public InboxAddress getRecipient(InboxAddress inbox, String recipients) {
-		StringTokenizer tok = new StringTokenizer(recipients,",");
-		while (tok.hasMoreElements()) {
-			try {
-				InboxAddress curr = new InboxAddress(Utils.decodeRFC2407(tok.nextToken()));
-				if (inbox.getAddress().equalsIgnoreCase(curr.getAddress()))
-					return curr;
-			}
-			catch (Throwable t) {
-				t.printStackTrace();
-			}
-		}
-		return inbox;
-	}
-
-	private String getRecipients(BlueboxMessage message) throws Exception {
-		MimeMessage bbmm = message.getBlueBoxMimeMessage();
-		StringBuffer sb = new StringBuffer();
-		Address[] addr = bbmm.getAllRecipients();
-		if (addr!=null) {
-			for (int i = 0; i < addr.length;i++) {
-				sb.append(Utils.decodeQuotedPrintable(addr[i].toString())).append(",");
-			}
-		}
-		return sb.toString().trim();
-	}
+	
 
 	public synchronized void deleteDoc(String uid) throws SolrServerException, IOException {
 		deleteDoc(uid,SearchUtils.SearchFields.UID);
@@ -381,7 +349,7 @@ public class SolrIndexer implements SearchIf {
 				if (!contains(children,inbox.getAddress())) {
 					curr = new JSONObject();
 					curr.put("name", inbox.getAddress());
-					curr.put("label",getRecipient(inbox,result.getFieldValue(SearchFields.RECIPIENT.name()).toString()).getFullAddress());
+					curr.put("label",SearchUtils.getRecipient(inbox,result.getFieldValue(SearchFields.RECIPIENT.name()).toString()).getFullAddress());
 					curr.put("identifier", uid);
 					children.put(curr);
 				}

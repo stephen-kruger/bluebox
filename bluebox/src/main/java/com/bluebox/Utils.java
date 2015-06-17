@@ -222,6 +222,7 @@ public class Utils {
 									getRandomAddresses(bccC),//bcc
 									(counter++)+" "+randomLine(35), 
 									randomText(14),
+									"",
 									true);
 
 							sendMessageDirect(inbox,msg);
@@ -259,6 +260,7 @@ public class Utils {
 						getRandomAddresses(bccC),//bcc
 						(counter++)+" "+randomLine(35), 
 						randomText(14),
+						"",
 						true);
 
 				sendMessageDirect(inbox,msg);
@@ -288,6 +290,7 @@ public class Utils {
 									getRandomAddresses(2),//bcc
 									(counter++)+" "+randomLine(35), 
 									randomText(14),
+									"",
 									true);
 
 							sendMessageDirect(inbox,msg);
@@ -380,6 +383,17 @@ public class Utils {
 	}
 
 	public static MimeMessage createMessage(ServletContext session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
+		return Utils.createMessage(session, 
+				from,
+				to,
+				cc,
+				bcc,
+				subject,
+				body,
+				"");
+	}
+	
+	public static MimeMessage createMessage(ServletContext session, String from, String to, String cc, String bcc, String subject, String body, String htmlBody) throws MessagingException, IOException {
 		InternetAddress[] toa=new InternetAddress[0], cca=new InternetAddress[0], bcca=new InternetAddress[0];
 		if (to!=null)
 			toa = new InternetAddress[]{new InternetAddress(to)};
@@ -394,10 +408,11 @@ public class Utils {
 				bcca,
 				subject,
 				body,
+				htmlBody,
 				false);
 	}
 
-	public static MimeMessage createMessage(ServletContext session, InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String body, boolean attachment) 
+	public static MimeMessage createMessage(ServletContext session, InternetAddress from, InternetAddress[] to, InternetAddress[] cc, InternetAddress[] bcc, String subject, String textBody, String htmlBody, boolean attachment) 
 			throws MessagingException, IOException {
 		Session s = null;
 		MimeMessage msg = new MimeMessage(s);
@@ -417,13 +432,13 @@ public class Utils {
 
 			// create the text message part 
 			MimeBodyPart textBodyPart = new MimeBodyPart();
-			textBodyPart.setContent(body,"text/plain; charset=\""+UTF8+"\"");
+			textBodyPart.setContent(textBody,"text/plain; charset=\""+UTF8+"\"");
 			multipart.addBodyPart(textBodyPart);
 
 			// create the html message part 
 			MimeBodyPart htmlBodyPart = new MimeBodyPart();
-			htmlBodyPart.setContent("<html><head><script>alert('gotcha!');</script></head><body><font color=\"red\">"+body.replaceAll("\n", "</br>")+"</font></body></html>","text/html; charset=\""+UTF8+"\"");
-
+//			htmlBodyPart.setContent("<html><head><script>alert('gotcha!');</script></head><body><font color=\"red\">"+textBody.replaceAll("\n", "</br>")+"</font></body></html>","text/html; charset=\""+UTF8+"\"");
+			htmlBodyPart.setContent(htmlBody,"text/html; charset=\""+UTF8+"\"");
 			multipart.addBodyPart(htmlBodyPart);
 
 			// randomly create up to 5 attachment
@@ -435,7 +450,7 @@ public class Utils {
 			msg.setContent(multipart);
 		}
 		else {
-			msg.setText(body,UTF8);
+			msg.setText(textBody,UTF8);
 		}
 		return msg;
 	}

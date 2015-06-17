@@ -10,8 +10,8 @@ public class SearchFactory {
 	public static SearchIf getInstance() throws Exception {
 		if (searcher==null) {
 			log.debug("Instanciating search indexer");
-
 			searcher = new LuceneIndexer();
+//			searcher = new StorageIndexer();
 		}
 		return searcher;
 	}

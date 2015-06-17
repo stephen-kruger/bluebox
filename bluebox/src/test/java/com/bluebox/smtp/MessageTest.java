@@ -44,6 +44,7 @@ public class MessageTest extends TestCase {
 				Utils.getRandomAddresses(1), 
 				"subjStr",
 				"bodyStr", 
+				"htmlBodyStr",
 				false);
 		message.addHeader("name", "value");
 		assertEquals("Header was not set","value",message.getHeader("name")[0]);
@@ -63,6 +64,7 @@ public class MessageTest extends TestCase {
 				Utils.getRandomAddresses(1), 
 				subjStr,
 				bodyStr, 
+				"",
 				false);
 
 		assertEquals("Body did not get stored and retrieved correctly",bodyStr,message.getContent());

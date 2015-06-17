@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.StringTokenizer;
 
+import javax.mail.Address;
+import javax.mail.internet.MimeMessage;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
@@ -12,6 +14,10 @@ import javax.swing.text.html.parser.ParserDelegator;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.bluebox.Utils;
+import com.bluebox.smtp.InboxAddress;
+import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class SearchUtils {
 	private static final Logger log = LoggerFactory.getLogger(SearchUtils.class);
@@ -83,7 +89,37 @@ public class SearchUtils {
 		}
 		return inbox;
 	}
+	
+	/* Find which one of the potential recipeints of this mail matches the specified inbox
+	 * 
+	 */
+	public static InboxAddress getRecipient(InboxAddress inbox, String recipients) {
+		StringTokenizer tok = new StringTokenizer(recipients,",");
+		while (tok.hasMoreElements()) {
+			try {
+				InboxAddress curr = new InboxAddress(Utils.decodeRFC2407(tok.nextToken()));
+				if (inbox.getAddress().equalsIgnoreCase(curr.getAddress()))
+					return curr;
+			}
+			catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
+		return inbox;
+	}
 
+	public static  String getRecipients(BlueboxMessage message) throws Exception {
+		MimeMessage bbmm = message.getBlueBoxMimeMessage();
+		StringBuffer sb = new StringBuffer();
+		Address[] addr = bbmm.getAllRecipients();
+		if (addr!=null) {
+			for (int i = 0; i < addr.length;i++) {
+				sb.append(Utils.decodeQuotedPrintable(addr[i].toString())).append(",");
+			}
+		}
+		return sb.toString().trim();
+	}
+	
 	/*
 	 * Convert the specified html string to a text only rendering of the final html content
 	 */

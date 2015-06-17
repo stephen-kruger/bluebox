@@ -39,6 +39,7 @@ import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 import com.mongodb.util.JSON;
 
+@Deprecated
 public class StorageImpl extends AbstractStorage implements StorageIf {
 //	public static final String DB_NAME = "bluebox401";
 	private static final Logger log = LoggerFactory.getLogger(StorageImpl.class);
@@ -50,7 +51,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	private DB db;
 	private GridFS errorFS, blobFS;
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void start() throws Exception {
 		log.info("Starting MongoDB connection");

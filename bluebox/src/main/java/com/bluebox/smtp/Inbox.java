@@ -48,7 +48,6 @@ import com.bluebox.smtp.storage.MessageIterator;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 import com.bluebox.smtp.storage.mongodb.MongoImpl;
-import com.bluebox.smtp.storage.mongodb.StorageImpl;
 
 public class Inbox implements SimpleMessageListener {
 	private static final String GLOBAL_COUNT_NODE = "global_message_count";
@@ -923,7 +922,8 @@ public class Inbox implements SimpleMessageListener {
 				StorageIf si = StorageFactory.getInstance();
 				if (si instanceof MongoImpl) {
 					log.info("Checking for migration triggers");
-					StorageIf oldStorage = new StorageImpl();
+					@SuppressWarnings("deprecation")
+					StorageIf oldStorage = new com.bluebox.smtp.storage.mongodb.StorageImpl();
 					try {
 						oldStorage.start();
 						if (oldStorage.getMailCount(State.ANY)>0) {

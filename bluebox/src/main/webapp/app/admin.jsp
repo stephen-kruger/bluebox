@@ -224,8 +224,7 @@
 						    value:100,
 						    intermediateChanges:false,
 						    showButtons:false">
-								<div data-dojo-type="dijit/form/HorizontalRule"
-									container="bottomDecoration" count=5 style="height: 0.75em;"></div>
+								<div data-dojo-type="dijit/form/HorizontalRule" container="bottomDecoration" count=5 style="height: 0.75em;"></div>
 								<ol data-dojo-type="dijit/form/HorizontalRuleLabels"
 									container="bottomDecoration"
 									style="height: 1em; font-size: 75%; color: gray;">

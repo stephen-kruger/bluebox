@@ -2,8 +2,11 @@ package com.bluebox.search;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.UUID;
 import java.util.logging.Logger;
+
+import javax.mail.internet.MimeMessage;
 
 import junit.framework.TestCase;
 
@@ -11,23 +14,41 @@ import org.codehaus.jettison.json.JSONArray;
 import org.junit.Test;
 
 import com.bluebox.TestUtils;
+import com.bluebox.Utils;
+import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageFactory;
 
 public class SearchIndexerTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
-	private String uid1 = UUID.randomUUID().toString();
-	private String uid2 = UUID.randomUUID().toString();
-	private String uid3 = UUID.randomUUID().toString();
-	private String uid4 = UUID.randomUUID().toString();
+	private String uid1;
+	private String uid2;
+	private String uid3;
+	private String uid4;
 
 
 	@Override
 	protected void setUp() throws Exception {
 		getSearchIndexer().deleteIndexes();
+		MimeMessage mm;
+		mm = Utils.createMessage(null,"sender1@there.com", "receiever1@here.com", null, null, "Subject in action", "<b>Lucene in Action</b>");
+		uid1 = Utils.spoolStream(StorageFactory.getInstance(), mm);
+		uid1 = StorageFactory.getInstance().store("sender1@there.com", new InboxAddress("receiever1@here.com"), new Date(), mm, uid1).getIdentifier();
 		getSearchIndexer().addDoc(uid1,"receiever1@here.com","[sender1@there.com]","Subject in action","Lucene in Action","<b>Lucene in Action</b>", "receiever1@here.com",23423,6346543,false);
+
+		mm = Utils.createMessage(null,"sender2@there.com", "receiever3@here.com", null, null, "Subject for dummies", "<b>Lucene in Action</b>");
+		uid2 = Utils.spoolStream(StorageFactory.getInstance(), mm);
+		uid2 = StorageFactory.getInstance().store("sender2@there.com", new InboxAddress("receiever2@here.com"), new Date(), mm, uid2).getIdentifier();;
 		getSearchIndexer().addDoc(uid2,"receiever2@here.com","[sender2@there.com]","Subject for dummies","Lucene for Dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543,false);
+
+		mm = Utils.createMessage(null,"sender3@there.com", "receiever3@here.com", null, null, "Managing Gigabytes","<b>stephen</b><i>johnson</i>");
+		uid3 = Utils.spoolStream(StorageFactory.getInstance(), mm);
+		uid3 = StorageFactory.getInstance().store("sender3@there.com", new InboxAddress("receiever3@here.com"), new Date(), mm, uid3).getIdentifier();;
 		getSearchIndexer().addDoc(uid3,"receiever3@here.com","[sender3@there.com]","Subject for gigabytes", "Managing Gigabytes","<b>stephen</b><i>johnson</i>",  "receiever3@here.com",7646,6346543,false);
+
+		mm = Utils.createMessage(null,"sender4@there.com", "receiever4@here.com", null, null, "Subject for Computer Science", "The Art of Computer Science","<b>Lucene for Computer Science</b>");
+		uid4 = Utils.spoolStream(StorageFactory.getInstance(), mm);
+		uid4 = StorageFactory.getInstance().store("sender4@there.com", new InboxAddress("receiever4@here.com"), new Date(), mm, uid4).getIdentifier();;
 		getSearchIndexer().addDoc(uid4,"receiever4@here.com","[sender4@there.com]","Subject for Computer Science","The Art of Computer Science","<b>Lucene for Computer Science</b>",  "receiever4@here.com",543,6346543,false);
 		for (int i = 0; i < 50; i++) {
 			getSearchIndexer().addDoc(UUID.randomUUID().toString(),"xxx@xxx.com","[xxx@xxx.com]","ttttttttttttttttttttttttttt","tttttttttttttttttttttttttt","tttttttttttttttttttttttttttt",  "xxx@xxx.com",543,6346543,false);			
@@ -39,6 +60,7 @@ public class SearchIndexerTest extends TestCase {
 	protected void tearDown() throws Exception {
 		getSearchIndexer().deleteIndexes();
 		getSearchIndexer().stop();
+		StorageFactory.getInstance().trimSpools(0);
 	}
 
 	public SearchIf getSearchIndexer() throws Exception {
@@ -84,7 +106,7 @@ public class SearchIndexerTest extends TestCase {
 	public void testMailIndexing() throws Exception {
 		BlueboxMessage msg = TestUtils.addRandomDirect(StorageFactory.getInstance());
 		getSearchIndexer().indexMail(msg,true);
-//		assertEquals("Missing expected search results",1,getSearchIndexer().search(SearchUtils.substringQuery(msg.getSubject()),SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
+		//		assertEquals("Missing expected search results",1,getSearchIndexer().search(SearchUtils.substringQuery(msg.getSubject()),SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("steve",SearchUtils.SearchFields.INBOX,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search(SearchUtils.plainQuery(msg.getInbox().toString()),SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
@@ -194,6 +216,7 @@ public class SearchIndexerTest extends TestCase {
 		assertTrue("Did not find document by UID",getSearchIndexer().containsUid(uid4));
 		assertFalse("Unexpected UID found",getSearchIndexer().containsUid(UUID.randomUUID().toString()));
 		getSearchIndexer().deleteDoc(uid1);
+		StorageFactory.getInstance().delete(uid1);
 		assertFalse("Should not find deleted document by UID",getSearchIndexer().containsUid(uid1));
 	}
 

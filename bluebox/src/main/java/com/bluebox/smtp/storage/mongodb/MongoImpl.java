@@ -140,10 +140,12 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	//		mailFS.deleteMany(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
 	//	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void deleteAll() throws Exception {
 		mailFS.drop();
 		rawFS.getDB().dropDatabase();
+		// TODO will be fixed in Mongo 3.1
 		rawFS = new GridFS(mongoClient.getDB(RAW_DB_NAME), BlueboxMessage.RAW);
 	}
 

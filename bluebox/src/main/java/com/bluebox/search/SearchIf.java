@@ -4,7 +4,6 @@ import java.io.Writer;
 
 import org.codehaus.jettison.json.JSONArray;
 
-import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public interface SearchIf {
@@ -21,11 +20,6 @@ public interface SearchIf {
 	 * to prevent multiple, consecutive commits 
 	 */
 	public void commit(boolean force) throws Exception;
-
-	/* Find which one of the potential recipeints of this mail matches the specified inbox
-	 * 
-	 */
-	public InboxAddress getRecipient(InboxAddress inbox, String recipients);
 	
 	public void deleteDoc(String uid) throws Exception;
 

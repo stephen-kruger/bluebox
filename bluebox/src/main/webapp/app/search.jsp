@@ -12,7 +12,6 @@
 <%@ page import="com.bluebox.rest.json.JSONAutoCompleteHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONSearchHandler"%>
 <%@ page import="com.bluebox.search.SearchUtils"%>
-<%@ page import="com.bluebox.search.SearchIndexer"%>
 <%
 	Config bbconfig = Config.getInstance();
 %>
