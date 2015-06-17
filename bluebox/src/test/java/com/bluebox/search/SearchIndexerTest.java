@@ -137,7 +137,7 @@ public class SearchIndexerTest extends TestCase {
 		getSearchIndexer().searchInboxes(SearchUtils.substringQuery(searchString), sw, 0, 50, SearchUtils.SearchFields.FROM, SearchUtils.SortFields.SORT_RECEIVED, true);
 		ja = new JSONArray(sw.toString());
 		log.info(ja.toString(3));
-		assertTrue("No 'Subject' found in search results",ja.length()>0);
+		assertTrue("No 'sender' found in search results",ja.length()>0);
 
 		// test search in subject
 		sw = new StringWriter();

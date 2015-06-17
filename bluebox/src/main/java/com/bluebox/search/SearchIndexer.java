@@ -34,12 +34,14 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopFieldCollector;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
+import com.bluebox.search.SearchUtils.SearchFields;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
@@ -262,9 +264,9 @@ public class SearchIndexer implements SearchIf {
 				commit);
 	}
 
-//	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException {
-//		addDoc(uid,inbox,from,subject,text,html,recipients,size,received, commit);
-//	}
+	//	public void indexMail(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws IOException {
+	//		addDoc(uid,inbox,from,subject,text,html,recipients,size,received, commit);
+	//	}
 
 	/* Find which one of the potential recipeints of this mail matches the specified inbox
 	 * 
@@ -399,4 +401,54 @@ public class SearchIndexer implements SearchIf {
 		}
 	}
 
+	@Override
+	public JSONArray autoComplete(String hint, long start, long count) {
+		JSONObject curr;
+		JSONArray children = new JSONArray();
+
+		if (hint.length()==1) {
+			return children;
+		}
+
+		try {
+			Object[] results = search(SearchUtils.autocompleteQuery(hint), SearchUtils.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchUtils.SortFields.SORT_RECEIVED,false);
+			for (int i = 0; i < results.length;i++) {
+
+				// Plain old Lucene
+				Document result = (Document)results[i];
+				String uid = result.get(SearchFields.UID.name());
+				InboxAddress inbox;
+				inbox = new InboxAddress(result.get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
+
+				if (!contains(children,inbox.getAddress())) {
+					curr = new JSONObject();
+					curr.put("name", inbox.getAddress());
+					curr.put("label",getRecipient(inbox,result.get(SearchFields.RECIPIENT.name())).getFullAddress());
+					curr.put("identifier", uid);
+					children.put(curr);
+				}
+				if (children.length()>=count)
+					break;
+
+			}
+		}
+		catch (Throwable t) {
+			log.error("Error during type-ahead",t);
+		}
+		return children;
+	}
+
+	private boolean contains(JSONArray children, String name) {
+		for (int i = 0; i < children.length();i++) {
+			try {
+				if (children.getJSONObject(i).getString("name").equals(name)) {
+					return true;
+				}
+			} 
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
+	}
 }

@@ -9,10 +9,10 @@
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
 		<slf4j_version>1.7.12</slf4j_version>
-		<lucene_version>5.1.0</lucene_version>
-		<solr_version>5.1.0</solr_version>
+		<lucene_version>5.2.1</lucene_version>
+		<solr_version>5.2.1</solr_version>
 		<derby_version>10.11.1.1</derby_version>
-		<mongo_version>3.0.1</mongo_version>
+		<mongo_version>3.0.2</mongo_version>
 		<tomcat.webapp.dir>/var/lib/tomcat6/webapps</tomcat.webapp.dir>
 		<tomcat.script.dir>/etc/init.d</tomcat.script.dir>
 		<rpm.file.owner>tomcat</rpm.file.owner>
@@ -232,7 +232,7 @@
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>
 			<artifactId>jsp-2.1</artifactId>
-			<version>6.1.14</version>
+			<version>7.0.0pre2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

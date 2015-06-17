@@ -2,6 +2,8 @@ package com.bluebox.search;
 
 import java.io.Writer;
 
+import org.codehaus.jettison.json.JSONArray;
+
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
@@ -36,5 +38,7 @@ public interface SearchIf {
 	public void deleteIndexes() throws Exception;
 
 	public boolean containsUid(String uid);
+	
+	public JSONArray autoComplete(String hint, long start, long count);
 
 }

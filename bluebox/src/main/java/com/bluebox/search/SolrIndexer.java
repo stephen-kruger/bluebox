@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
+import com.bluebox.search.SearchUtils.SearchFields;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
@@ -183,7 +184,10 @@ public class SolrIndexer implements SearchIf {
 			query.setQuery(fields.name()+":"+querystr);
 		query.setStart(start); 
 		query.setRows(count);
-		query.addSort(orderBy.name(), SolrQuery.ORDER.desc);
+		if (orderBy==SearchUtils.SortFields.SORT_SIZE)
+			query.addSort(SearchUtils.SearchFields.SIZE.name(), SolrQuery.ORDER.desc);
+		else
+			query.addSort(SearchUtils.SearchFields.RECEIVED.name(), SolrQuery.ORDER.desc);
 		query.setRequestHandler("standard");
 
 		QueryResponse response = server.query(query);
@@ -323,8 +327,8 @@ public class SolrIndexer implements SearchIf {
 		doc.addField( SearchUtils.SearchFields.RECIPIENTS.name(), recipients);
 		doc.addField( SearchUtils.SearchFields.SIZE.name(), size);
 		doc.addField( SearchUtils.SearchFields.RECEIVED.name(), received);
-		doc.addField( SearchUtils.SortFields.SORT_SIZE.name(), size);
-		doc.addField( SearchUtils.SortFields.SORT_RECEIVED.name(), received);
+		//		doc.addField( SearchUtils.SortFields.SORT_SIZE.name(), size);
+		//		doc.addField( SearchUtils.SortFields.SORT_RECEIVED.name(), received);
 		server.add(doc);
 		commit(commit);
 	}
@@ -356,6 +360,54 @@ public class SolrIndexer implements SearchIf {
 			t.printStackTrace();
 			return false;
 		}
+	}
+
+	@Override
+	public JSONArray autoComplete(String hint, long start, long count) {
+		JSONObject curr;
+		JSONArray children = new JSONArray();
+
+		if (hint.length()==1) {
+			return children;
+		}
+		try {
+			Object[] results = search(SearchUtils.autocompleteQuery(hint), SearchUtils.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchUtils.SortFields.SORT_RECEIVED,false);
+			for (int i = 0; i < results.length;i++) {
+				SolrDocument result = (SolrDocument) results[i];
+				String uid = result.getFieldValue(SearchFields.UID.name()).toString();
+				InboxAddress inbox;
+				inbox = new InboxAddress(result.getFieldValue(Utils.decodeRFC2407(SearchFields.INBOX.name())).toString());
+
+				if (!contains(children,inbox.getAddress())) {
+					curr = new JSONObject();
+					curr.put("name", inbox.getAddress());
+					curr.put("label",getRecipient(inbox,result.getFieldValue(SearchFields.RECIPIENT.name()).toString()).getFullAddress());
+					curr.put("identifier", uid);
+					children.put(curr);
+				}
+				if (children.length()>=count)
+					break;
+
+			}
+		}
+		catch (Throwable t) {
+			log.error("Error during type-ahead",t);
+		}
+		return children;
+	}
+
+	private boolean contains(JSONArray children, String name) {
+		for (int i = 0; i < children.length();i++) {
+			try {
+				if (children.getJSONObject(i).getString("name").equals(name)) {
+					return true;
+				}
+			} 
+			catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		return false;
 	}
 
 }

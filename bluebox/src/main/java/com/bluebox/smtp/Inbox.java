@@ -26,11 +26,8 @@ import javax.mail.internet.MimeUtility;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexNotFoundException;
-import org.apache.solr.common.SolrDocument;
 import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,14 +40,13 @@ import com.bluebox.WorkerThread;
 import com.bluebox.search.SearchFactory;
 import com.bluebox.search.SearchIf;
 import com.bluebox.search.SearchUtils;
-import com.bluebox.search.SearchUtils.SearchFields;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.LiteMessageIterator;
 import com.bluebox.smtp.storage.MessageIterator;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
-import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.mongodb.MongoImpl;
 import com.bluebox.smtp.storage.mongodb.StorageImpl;
 
@@ -65,6 +61,7 @@ public class Inbox implements SimpleMessageListener {
 	public static final long MAX_MAIL_BYTES = Config.getInstance().getLong(Config.BLUEBOX_MAIL_LIMIT);
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
 	private BlueboxMessageHandlerFactory blueboxMessageHandlerFactory;
+//	private Thread migrationThread;
 
 	private static Timer timer = null;
 	private static TimerTask timerTask = null;
@@ -103,7 +100,7 @@ public class Inbox implements SimpleMessageListener {
 				public void run() {
 					log.info("Cleanup timer activated");
 					try {
-						new Thread(cleanUp()).start();
+						WorkerThread.startWorker(cleanUp());
 						// commit any pending search indexing
 						SearchFactory.getInstance().commit(true);
 					} 
@@ -134,6 +131,9 @@ public class Inbox implements SimpleMessageListener {
 			timerTask.cancel();
 			timerTask = null;
 		}
+
+		// stopping migration thread
+		WorkerThread.stopWorker("migrate");
 
 		log.debug("Stopping search engine");
 		try {
@@ -592,10 +592,10 @@ public class Inbox implements SimpleMessageListener {
 
 		// if backup is requested, make sure new messages are are backed-up as they arrive
 		WorkerThread wt;
-		 if ((wt = WorkerThread.getInstance(BACKUP_WORKER))!=null) {
-			 log.info("Backing up newly arrive message");
-			 wt.generic(blueboxMessage);
-		 }
+		if ((wt = WorkerThread.getInstance(BACKUP_WORKER))!=null) {
+			log.info("Backing up newly arrive message");
+			wt.generic(blueboxMessage);
+		}
 		updateStatsRecent(blueboxMessage.getInbox().getAddress(),from,blueboxMessage.getSubject(),blueboxMessage.getIdentifier());	
 
 		// ensure the content is indexed
@@ -701,67 +701,10 @@ public class Inbox implements SimpleMessageListener {
 
 	public JSONArray autoComplete(String hint, long start, long count) throws Exception {
 
-		JSONObject curr;
-		JSONArray children = new JSONArray();
-
-		if (hint.length()==1) {
-			return children;
-		}
-		SearchIf search = SearchFactory.getInstance();
-		Object[] results = search.search(SearchUtils.autocompleteQuery(hint), SearchUtils.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchUtils.SortFields.SORT_RECEIVED,false);
-		for (int i = 0; i < results.length;i++) {
-			if (results[i] instanceof SolrDocument) {
-				SolrDocument result = (SolrDocument) results[i];
-				String uid = result.getFieldValue(SearchFields.UID.name()).toString();
-				InboxAddress inbox;
-				inbox = new InboxAddress(result.getFieldValue(Utils.decodeRFC2407(SearchFields.INBOX.name())).toString());
-
-				if (!contains(children,inbox.getAddress())) {
-					curr = new JSONObject();
-					curr.put("name", inbox.getAddress());
-					curr.put("label",search.getRecipient(inbox,result.getFieldValue(SearchFields.RECIPIENT.name()).toString()).getFullAddress());
-					curr.put("identifier", uid);
-					children.put(curr);
-				}
-				if (children.length()>=count)
-					break;
-			}
-			else {
-				// Plain old Lucene
-				Document result = (Document)results[i];
-				String uid = result.get(SearchFields.UID.name());
-				InboxAddress inbox;
-				inbox = new InboxAddress(result.get(Utils.decodeRFC2407(SearchFields.INBOX.name())));
-
-				if (!contains(children,inbox.getAddress())) {
-					curr = new JSONObject();
-					curr.put("name", inbox.getAddress());
-					curr.put("label",search.getRecipient(inbox,result.get(SearchFields.RECIPIENT.name())).getFullAddress());
-					curr.put("identifier", uid);
-					children.put(curr);
-				}
-				if (children.length()>=count)
-					break;
-
-			}
-		}
-
-		return children;
+		return SearchFactory.getInstance().autoComplete(hint, start, count);
 	}
 
-	private boolean contains(JSONArray children, String name) {
-		for (int i = 0; i < children.length();i++) {
-			try {
-				if (children.getJSONObject(i).getString("name").equals(name)) {
-					return true;
-				}
-			} 
-			catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-		return false;
-	}
+
 
 	public long getStatsGlobalCount() {
 		return StorageFactory.getInstance().getLongProperty(GLOBAL_COUNT_NODE,48755551);	
@@ -926,7 +869,7 @@ public class Inbox implements SimpleMessageListener {
 					zipOutputStream.write(msg.toJSON().toString().getBytes());
 
 					zipOutputStream.closeEntry();
-					
+
 					count++;
 				}
 				catch (Throwable t) {
@@ -988,8 +931,7 @@ public class Inbox implements SimpleMessageListener {
 							File backupFile = File.createTempFile("migration", "zip");
 							backupFile.deleteOnExit();
 							WorkerThread backupThread = backupTo(oldStorage, backupFile);
-							Thread t = new Thread(backupThread);
-							t.start();
+							Thread t = WorkerThread.startWorker(backupThread);
 							while (t.isAlive()) {
 								Thread.sleep(5000);
 								log.info("Migrating data (export) {}% complete",backupThread.getProgress());
@@ -997,8 +939,7 @@ public class Inbox implements SimpleMessageListener {
 							/// restore to new inbox
 							log.info("Restoring migrated data");
 							WorkerThread restoreThread = restoreTo(backupFile);
-							t = new Thread(restoreThread);
-							t.start();
+							t = WorkerThread.startWorker(restoreThread);
 							while (t.isAlive()) {
 								Thread.sleep(5000);
 								log.info("Migrating data (import) {}% complete",restoreThread.getProgress());
@@ -1039,7 +980,7 @@ public class Inbox implements SimpleMessageListener {
 			}
 
 		};
-		new Thread(wt).start();
+		WorkerThread.startWorker(wt);
 	}
 
 	public WorkerThread restore(final File dir) throws Exception {
