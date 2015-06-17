@@ -140,7 +140,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	//		mailFS.deleteMany(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
 	//	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	public void deleteAll() throws Exception {
 		mailFS.drop();

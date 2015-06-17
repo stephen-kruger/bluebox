@@ -17,6 +17,7 @@ public abstract class WorkerThread implements Runnable {
 	private String id, status;
 	private boolean stop = false;
 	private static Map<String,WorkerThread> workers = new HashMap<String,WorkerThread>();
+	private static Map<String,Thread> workerThreads = new HashMap<String,Thread>();
 	private static final Logger log = LoggerFactory.getLogger(JSONAdminHandler.class);
 
 	public WorkerThread(String id) throws Exception {
@@ -82,6 +83,34 @@ public abstract class WorkerThread implements Runnable {
 		for (WorkerThread tw : workers.values()) {
 			tw.stop();
 		}		
+	}
+
+	public static void stopWorker(String name) {
+		WorkerThread tw = workers.get(name);
+		if (tw!=null) {
+			tw.setProgress(100);
+			tw.stop();
+		}
+		else {
+			log.error("Unknown thread []",name);
+		}
+	}
+
+	public static void startWorker(String name) {
+		WorkerThread tw = workers.get(name);
+		if (tw!=null) {
+			startWorker(tw);
+		}
+		else {
+			log.error("Unknown thread []",name);
+		}
+	}
+
+	public static Thread startWorker(WorkerThread tw) {
+		Thread t = new Thread(tw);
+		t.start();
+		workerThreads.put(tw.getId(), t);
+		return t;
 	}
 
 	public static JSONObject getWorkerStatus() throws JSONException {

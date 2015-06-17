@@ -5,13 +5,13 @@ import org.slf4j.LoggerFactory;
 
 public class SearchFactory {
 	private static SearchIf searcher;
-	private static final Logger log = LoggerFactory.getLogger(SearchIndexer.class);
+	private static final Logger log = LoggerFactory.getLogger(LuceneIndexer.class);
 
 	public static SearchIf getInstance() throws Exception {
 		if (searcher==null) {
 			log.debug("Instanciating search indexer");
 
-			searcher = new SearchIndexer();
+			searcher = new LuceneIndexer();
 		}
 		return searcher;
 	}

@@ -121,13 +121,13 @@ public class InboxTest extends BaseTestCase {
 		File dir = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
 		dir.mkdirs();
 		WorkerThread wt = getInbox().backup(dir);
-		new Thread(wt).start();
+		WorkerThread.startWorker(wt);
 		while (wt.getProgress()<100)
 			Thread.sleep(250);
 		getInbox().deleteAll();
 		assertEquals(0,getInbox().getMailCount(BlueboxMessage.State.ANY));
 		wt = getInbox().restore(dir);
-		new Thread(wt).start();
+		WorkerThread.startWorker(wt);
 		while (wt.getProgress()<100)
 			Thread.sleep(250);
 		assertEquals(3,getInbox().getMailCount(BlueboxMessage.State.ANY));

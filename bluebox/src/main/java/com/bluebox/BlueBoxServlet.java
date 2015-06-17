@@ -181,7 +181,7 @@ public class BlueBoxServlet extends HttpServlet {
 	public void startWorker(WorkerThread wt, HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		// check for running or expired works under this id
 		ResourceBundle rb = ResourceBundle.getBundle("admin",req.getLocale());
-		new Thread(wt).start();
+		WorkerThread.startWorker(wt);
 		resp.getWriter().print(rb.getString("taskStarted")+":"+wt.getId());
 	}
 
