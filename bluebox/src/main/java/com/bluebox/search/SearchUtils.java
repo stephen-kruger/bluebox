@@ -25,33 +25,33 @@ public class SearchUtils {
 	public enum SortFields {SORT_RECEIVED, SORT_SIZE};
 	public static final int MAX_COMMIT_INTERVAL = 20000; // ensure at least some time between unforced commits
 
-	public static String substringQuery(String querystr) {
-		//              querystr = QueryParser.escape(querystr);
-		//              querystr = "*"+QueryParser.escape(querystr)+"*";
-		//              querystr = "*"+querystr+"*";
-		if ((querystr==null)||(querystr.length()==0)) {
-			return "*";
-		}
-		else {
-			@SuppressWarnings("unused")
-			boolean leadingWC=false, trailingWC=false;
-			if (querystr.endsWith("*")) {
-				querystr = querystr.substring(0,querystr.length()-1);
-				trailingWC=true;
-			}
-			if (querystr.startsWith("*")) {
-				querystr = querystr.substring(1,querystr.length());
-				leadingWC = true;
-			}
-			querystr = QueryParser.escape(querystr);
-
-			if (leadingWC)
-				querystr = "*"+querystr;
-//			if (trailingWC) 
-				querystr = querystr+"*";
-		}
-		return querystr;
-	}
+//	public static String substringQuery(String querystr) {
+//		//              querystr = QueryParser.escape(querystr);
+//		//              querystr = "*"+QueryParser.escape(querystr)+"*";
+//		//              querystr = "*"+querystr+"*";
+//		if ((querystr==null)||(querystr.length()==0)) {
+//			return "*";
+//		}
+//		else {
+//			@SuppressWarnings("unused")
+//			boolean leadingWC=false, trailingWC=false;
+//			if (querystr.endsWith("*")) {
+//				querystr = querystr.substring(0,querystr.length()-1);
+//				trailingWC=true;
+//			}
+//			if (querystr.startsWith("*")) {
+//				querystr = querystr.substring(1,querystr.length());
+//				leadingWC = true;
+//			}
+//			querystr = QueryParser.escape(querystr);
+//
+//			if (leadingWC)
+//				querystr = "*"+querystr;
+////			if (trailingWC) 
+//				querystr = querystr+"*";
+//		}
+//		return querystr;
+//	}
 
 	public static String plainQuery(String querystr) {
 		return querystr;
@@ -69,7 +69,7 @@ public class SearchUtils {
 				querystr = querystr.substring(1,querystr.length());
 			}
 			querystr = QueryParser.escape(querystr);
-			querystr = querystr+"*";
+//			querystr = querystr+"*";
 			//			querystr = querystr;
 		}
 		return querystr;

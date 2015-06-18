@@ -2,6 +2,8 @@ package com.bluebox.search;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -14,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
-import com.bluebox.search.SearchUtils.SearchFields;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.StorageFactory;
@@ -43,14 +44,23 @@ public class StorageIndexer implements SearchIf {
 		Object[] hits = search(search, fields, start, count, orderBy, ascending);
 		JSONObject curr;
 		writer.write("[");
+		Document doc;
 		for (int i = 0; i < hits.length; i++) {
-			String uid = ((Document)hits[i]).getString(BlueboxMessage.UID);
+			doc = (Document)hits[i];
+			String uid = doc.getString(BlueboxMessage.UID);
 			try {
 				curr = new JSONObject();
-				curr.put(BlueboxMessage.FROM, ((Document)hits[i]).get(BlueboxMessage.FROM));
-				curr.put(BlueboxMessage.SUBJECT, ((Document)hits[i]).get(BlueboxMessage.SUBJECT));
-				curr.put(BlueboxMessage.RECEIVED, ((Document)hits[i]).getDate(BlueboxMessage.RECEIVED));
-				curr.put(BlueboxMessage.SIZE, (((Document)hits[i]).getLong(BlueboxMessage.SIZE)/1000)+"K");
+				curr.put(BlueboxMessage.FROM, doc.get(BlueboxMessage.FROM));
+				curr.put(BlueboxMessage.SUBJECT, doc.get(BlueboxMessage.SUBJECT));
+				//				log.info(">>>>>>>>>>{}",doc.get(BlueboxMessage.SUBJECT));
+				if (doc.get(BlueboxMessage.RECEIVED) instanceof Date)
+					curr.put(BlueboxMessage.RECEIVED, doc.getDate(BlueboxMessage.RECEIVED));
+				else
+					curr.put(BlueboxMessage.RECEIVED, Timestamp.valueOf(doc.getString(BlueboxMessage.RECEIVED)));
+				if (doc.get(BlueboxMessage.SIZE) instanceof Long)
+					curr.put(BlueboxMessage.SIZE, (doc.getLong(BlueboxMessage.SIZE)/1000)+"K");
+				else
+					curr.put(BlueboxMessage.SIZE, (Long.valueOf( doc.getString(BlueboxMessage.SIZE))/1000) +"K");
 				curr.put(BlueboxMessage.UID, uid);
 				writer.write(curr.toString(3));
 				if (i < hits.length-1) {
@@ -107,7 +117,7 @@ public class StorageIndexer implements SearchIf {
 	public boolean containsUid(String uid) {
 		return StorageFactory.getInstance().contains(uid);
 	}
-	
+
 	private boolean contains(JSONArray children, String name) {
 		for (int i = 0; i < children.length();i++) {
 			try {
@@ -121,7 +131,7 @@ public class StorageIndexer implements SearchIf {
 		}
 		return false;
 	}
-	
+
 	/* 
 	 * Find which one of the potential recipients of this mail matches the specified inbox
 	 * 
@@ -177,7 +187,7 @@ public class StorageIndexer implements SearchIf {
 		return children;
 	}
 
-	
+
 
 
 }

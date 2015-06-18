@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import javax.mail.internet.MimeMessage;
 
+import org.bson.Document;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -40,7 +41,7 @@ import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
 public class StorageImpl extends AbstractStorage implements StorageIf {
-//	public static final String DB_NAME = "bluebox401";
+	//	public static final String DB_NAME = "bluebox401";
 	private static final Logger log = LoggerFactory.getLogger(StorageImpl.class);
 	private static final String INBOX_TABLE = "INBOX";
 	private static final String PROPS_TABLE = "PROPERTIES";
@@ -189,8 +190,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					StorageIf.Props.Recipient.name()+" VARCHAR(255), "+
 					StorageIf.Props.Sender.name()+" VARCHAR(255), "+
 					StorageIf.Props.Subject.name()+" VARCHAR(255), "+
+					BlueboxMessage.HTML_BODY+" VARCHAR(512), "+
+					BlueboxMessage.TEXT_BODY+" VARCHAR(512), "+
 					StorageIf.Props.Received.name()+" TIMESTAMP, "+
-					//					DOW+" INTEGER, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
 					StorageIf.Props.Size.name()+" BIGINT, "+
 					BlueboxMessage.RAW+" blob("+getBlobSize()+"))");
@@ -216,7 +218,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		connection.close();
 
 		//		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED,DOW};
-		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED};
+		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.RECIPIENT,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.HTML_BODY,BlueboxMessage.TEXT_BODY,BlueboxMessage.RECEIVED,BlueboxMessage.STATE,BlueboxMessage.SIZE};
 		createIndexes(INBOX_TABLE,indexes);
 
 		indexes = new String[]{KEY,VALUE};
@@ -262,17 +264,19 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public void store(JSONObject props, InputStream blob) throws Exception {
 		Connection connection = getConnection();
 		try {
-			PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 			ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
 			ps.setString(2, props.getString(StorageIf.Props.Inbox.name()));// INBOX
 			ps.setString(3, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
 			ps.setString(4, props.getString(StorageIf.Props.Sender.name())); // FROM
 			ps.setString(5, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
+			ps.setString(6, props.getString(BlueboxMessage.HTML_BODY)); // html body
+			ps.setString(7, props.getString(BlueboxMessage.TEXT_BODY)); // text body
 			Timestamp timestamp = new Timestamp(props.getLong(StorageIf.Props.Received.name()));
-			ps.setTimestamp(6, timestamp); // RECEIVED
-			ps.setInt(7, props.getInt(StorageIf.Props.State.name())); // STATE
-			ps.setLong(8, props.getLong(StorageIf.Props.Size.name())); // SIZE
-			ps.setBinaryStream(9, blob); // MIMEMESSAGE
+			ps.setTimestamp(8, timestamp); // RECEIVED
+			ps.setInt(9, props.getInt(StorageIf.Props.State.name())); // STATE
+			ps.setLong(10, props.getLong(StorageIf.Props.Size.name())); // SIZE
+			ps.setBinaryStream(11, blob); // MIMEMESSAGE
 			ps.execute();
 			connection.commit();
 		}
@@ -433,16 +437,16 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-//	@Override
-//	public void deleteAll(InboxAddress inbox) throws Exception {
-//		log.debug("Deleting inbox "+inbox);
-//		Connection connection = getConnection();
-//		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.INBOX+"=?");
-//		ps.setString(1, inbox.getAddress());
-//		ps.execute();
-//		ps.close();
-//		connection.close();
-//	}
+	//	@Override
+	//	public void deleteAll(InboxAddress inbox) throws Exception {
+	//		log.debug("Deleting inbox "+inbox);
+	//		Connection connection = getConnection();
+	//		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.INBOX+"=?");
+	//		ps.setString(1, inbox.getAddress());
+	//		ps.execute();
+	//		ps.close();
+	//		connection.close();
+	//	}
 
 	@Override
 	public void deleteAll() throws Exception {
@@ -1094,7 +1098,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
-		log.info("Spool count is {}",getSpoolCount());
+		log.debug("Spool count is {}",getSpoolCount());
 		Connection connection = getConnection();
 		try {
 			String uid;
@@ -1273,10 +1277,109 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public Object[] search(String querystr, SearchFields fields, int start,
-			int count, SortFields orderBy, boolean ascending) {
-		log.error("Not yet implemented on Derby");
-		return null;
+	public Object[] search(String querystr, SearchFields fields, int start,	int count, SortFields orderBy, boolean ascending) throws Exception {
+
+		querystr = querystr.toLowerCase();
+		if (querystr=="*")
+			querystr = "";
+//		querystr = querystr.substring(0,querystr.length()-1);
+		Connection connection = getConnection();
+		PreparedStatement ps=null;
+
+		String sortKey;
+		switch (orderBy) {
+		case SORT_RECEIVED : 
+			sortKey = BlueboxMessage.RECEIVED;
+			break;
+		case SORT_SIZE : 
+			sortKey = BlueboxMessage.SIZE;
+			break;
+		default :
+			sortKey = BlueboxMessage.RECEIVED;
+		}
+		String orderStr;
+		if (ascending)
+			orderStr = " ASC";
+		else
+			orderStr = " DESC";
+
+		switch (fields) {
+		case INBOX :
+			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.INBOX+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+			ps.setString(1, "%"+querystr+"%");
+			ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());
+			break;
+		case SUBJECT :
+			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.SUBJECT+") LIKE ? AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+			ps.setString(1, "%"+querystr+"%");
+			ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());
+			break;
+		case TEXT_BODY :
+			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.TEXT_BODY+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+			ps.setString(1, "%"+querystr+"%");
+			ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());
+			break;
+		case HTML_BODY :
+			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.HTML_BODY+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+			ps.setString(1, "%"+querystr+"%");
+			ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());
+			break;
+		case BODY :
+			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE ((LOWER("+BlueboxMessage.HTML_BODY+") LIKE LOWER(?) OR LOWER("+BlueboxMessage.TEXT_BODY+") LIKE LOWER(?)) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+			ps.setString(1, "%"+querystr+"%");
+			ps.setString(2, "%"+querystr+"%");
+			ps.setInt(3, BlueboxMessage.State.NORMAL.ordinal());
+			break;
+		case FROM :
+			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.FROM+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+			ps.setString(1, "%"+querystr+"%");
+			ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());		
+			break;
+		case RECIPIENT :
+			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+			ps.setString(1, "%"+querystr+"%");
+			ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());			
+			break;
+		case RECIPIENTS :
+			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+			ps.setString(1, "%"+querystr+"%");
+			ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());					
+			break;
+		case ANY :
+		default :
+			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (("+
+					"LOWER("+BlueboxMessage.INBOX+") LIKE LOWER(?) OR "+
+					"LOWER("+BlueboxMessage.FROM+") LIKE LOWER(?) OR "+
+					"LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) OR "+
+					"LOWER("+BlueboxMessage.HTML_BODY+") LIKE LOWER(?) OR "+
+					"LOWER("+BlueboxMessage.TEXT_BODY+") LIKE LOWER(?) OR "+
+					"LOWER("+BlueboxMessage.SUBJECT+") LIKE LOWER(?)"+
+					") AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+			ps.setString(1, "%"+querystr+"%");
+			ps.setString(2, "%"+querystr+"%");
+			ps.setString(3, "%"+querystr+"%");
+			ps.setString(4, "%"+querystr+"%");
+			ps.setString(5, "%"+querystr+"%");
+			ps.setString(6, "%"+querystr+"%");
+			ps.setInt(7, BlueboxMessage.State.NORMAL.ordinal());
+		}
+		ps.execute();
+		ResultSet result = ps.getResultSet();
+		List<Document> res = new ArrayList<Document>();
+		while (result.next()) {
+			Document d = new Document();
+			d.put(BlueboxMessage.UID, result.getString(BlueboxMessage.UID));
+			d.put(BlueboxMessage.INBOX, result.getString(BlueboxMessage.INBOX));
+			d.put(BlueboxMessage.SUBJECT, result.getString(BlueboxMessage.SUBJECT));
+			d.put(BlueboxMessage.FROM, result.getString(BlueboxMessage.FROM));
+			d.put(BlueboxMessage.RECIPIENT, result.getString(BlueboxMessage.RECIPIENT));
+			d.put(BlueboxMessage.RECEIVED, result.getString(BlueboxMessage.RECEIVED));
+			d.put(BlueboxMessage.SIZE, result.getString(BlueboxMessage.SIZE));
+			res.add(d);
+		}
+		result.close();
+		connection.close();
+		return res.toArray();
 	}
 
 }

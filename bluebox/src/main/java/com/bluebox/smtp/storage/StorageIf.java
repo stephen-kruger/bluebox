@@ -167,6 +167,6 @@ public interface StorageIf {
 	 */
 	public Date getUTCTime();
 
-	public Object[] search(String querystr, SearchFields fields, int start, int count, SortFields orderBy, boolean ascending);
+	public Object[] search(String querystr, SearchFields fields, int start, int count, SortFields orderBy, boolean ascending) throws Exception;
 
 }

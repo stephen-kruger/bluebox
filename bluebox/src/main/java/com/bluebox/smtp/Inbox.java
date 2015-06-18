@@ -194,7 +194,7 @@ public class Inbox implements SimpleMessageListener {
 	public long searchInbox(String search, Writer writer, int start, int count, SearchUtils.SearchFields searchScope, SearchUtils.SortFields orderBy, boolean ascending) throws Exception {
 		log.debug("Searching for {} ordered by {}",search,orderBy);
 		try {
-			return SearchFactory.getInstance().searchInboxes(SearchUtils.substringQuery(search), writer, start, count, searchScope, orderBy, ascending);
+			return SearchFactory.getInstance().searchInboxes(search, writer, start, count, searchScope, orderBy, ascending);
 		}
 		catch (IndexNotFoundException inf) {
 			log.info("Detected index problems ({})",inf.getMessage());

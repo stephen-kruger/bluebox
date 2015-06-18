@@ -707,7 +707,7 @@ public class Utils {
 		try {
 			count = bbmm.getSize();
 			if (count<0) {
-				log.warn("Manually calculating message size");
+				log.debug("Manually calculating message size");
 				count=0;
 				InputStream is = bbmm.getInputStream();
 				while (is.read()>=0)
