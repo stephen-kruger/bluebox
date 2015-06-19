@@ -339,7 +339,7 @@ public class Inbox implements SimpleMessageListener {
 			log.error("Problem trimming mailboxes",t);
 		}
 	}
-	
+
 	protected void orphan() {
 		try {
 			StorageFactory.getInstance().cleanSpools();
@@ -1039,8 +1039,12 @@ public class Inbox implements SimpleMessageListener {
 									// store the message only if it doesn't already exist and is not expired
 									StorageIf si = StorageFactory.getInstance();
 
-									if ((!Inbox.isExpired(new Date(jo.getLong(BlueboxMessage.RECEIVED)), expireDate))&&(!si.contains(uid))) {
+									if ((!isExpired(new Date(jo.getLong(BlueboxMessage.RECEIVED)), expireDate))&&(!si.contains(uid))) {
 										String rawId = si.spoolStream(archive.getInputStream(zipEntry));
+										// set up the text and html body
+										BlueboxMessage m = new BlueboxMessage(jo,si.getSpooledStream(rawId));
+										jo.put(BlueboxMessage.HTML_BODY, SearchUtils.htmlToString(m.getHtml(null).toLowerCase()));
+										jo.put(BlueboxMessage.TEXT_BODY, m.getText());
 										si.store(jo, rawId);
 										// index the message
 										MimeMessage mm = Utils.loadEML(archive.getInputStream(zipEntry));

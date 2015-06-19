@@ -372,7 +372,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		// now remove the blob if no more references exist
 		if (!spoolReferenced(connection,rawid)) {
 			log.info("Removing associated blob");
-			removeSpooledStream(rawid);
+			removeSpooledStream(connection,rawid);
 		}
 		connection.close();
 	}
@@ -1142,7 +1142,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					while (result.next()) {
 						String spooledId = result.getString(BlueboxMessage.UID);
 						if (!spoolReferenced(connection,spooledId)) {
-							removeSpooledStream(spooledId);
+							removeSpooledStream(connection,spooledId);
 						}
 					}
 					connection.close();
@@ -1251,15 +1251,21 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 //		return null;
 //	}
 
+	public void removeSpooledStream(Connection connection, String spooledUid) throws Exception {
+		log.debug("Removing spooled entry for uid={}",spooledUid);
+			PreparedStatement ps = connection.prepareStatement("DELETE FROM "+BLOB_TABLE+" WHERE "+StorageIf.Props.Uid.name()+"=?");
+			ps.setString(1, spooledUid);
+			ps.execute();
+			connection.commit();
+		log.debug("Removed blob entry {}",spooledUid);
+	}
+	
 	@Override
 	public void removeSpooledStream(String spooledUid) throws Exception {
 		log.debug("Removing spooled entry for uid={}",spooledUid);
 		Connection connection = getConnection();
 		try {
-			PreparedStatement ps = connection.prepareStatement("DELETE FROM "+BLOB_TABLE+" WHERE "+StorageIf.Props.Uid.name()+"=?");
-			ps.setString(1, spooledUid);
-			ps.execute();
-			connection.commit();
+			removeSpooledStream(connection,spooledUid);
 		}
 		finally {
 			connection.close();
