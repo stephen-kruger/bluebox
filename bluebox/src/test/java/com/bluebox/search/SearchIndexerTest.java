@@ -21,10 +21,10 @@ import com.bluebox.smtp.storage.StorageFactory;
 
 public class SearchIndexerTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
-	private String uid1;
-	private String uid2;
-	private String uid3;
-	private String uid4;
+	private String uid1,rawid1;
+	private String uid2,rawid2;
+	private String uid3,rawid3;
+	private String uid4,rawid4;
 
 
 	@Override
@@ -32,23 +32,23 @@ public class SearchIndexerTest extends TestCase {
 		getSearchIndexer().deleteIndexes();
 		MimeMessage mm;
 		mm = Utils.createMessage(null,"sender1@there.com", "receiever1@here.com", null, null, "Lucene in action", "Lucene in action", "<b>Lucene in action</b>");
-		uid1 = Utils.spoolStream(StorageFactory.getInstance(), mm);
-		uid1 = StorageFactory.getInstance().store("sender1@there.com", new InboxAddress("receiever1@here.com"), new Date(), mm, uid1).getIdentifier();
+		rawid1 = Utils.spoolStream(StorageFactory.getInstance(), mm);
+		uid1 = StorageFactory.getInstance().store("sender1@there.com", new InboxAddress("receiever1@here.com"), new Date(), mm, rawid1).getIdentifier();
 		getSearchIndexer().addDoc(uid1,"receiever1@here.com","[sender1@there.com]",mm.getSubject(),"Lucene in action","<b>Lucene in action</b>", "receiever1@here.com",23423,6346543,false);
 
 		mm = Utils.createMessage(null,"sender2@there.com", "receiever3@here.com", null, null, "Lucene for dummies", "Lucene for dummies", "<b>Lucene for dummies</b>");
-		uid2 = Utils.spoolStream(StorageFactory.getInstance(), mm);
-		uid2 = StorageFactory.getInstance().store("sender2@there.com", new InboxAddress("receiever2@here.com"), new Date(), mm, uid2).getIdentifier();;
+		rawid2 = Utils.spoolStream(StorageFactory.getInstance(), mm);
+		uid2 = StorageFactory.getInstance().store("sender2@there.com", new InboxAddress("receiever2@here.com"), new Date(), mm, rawid2).getIdentifier();;
 		getSearchIndexer().addDoc(uid2,"receiever2@here.com","[sender2@there.com]",mm.getSubject(),"Lucene for dummies","<b>Lucene for dummies</b>",  "receiever2@here.com",235324,6346543,false);
 
 		mm = Utils.createMessage(null,"sender3@there.com", "receiever3@here.com", null, null, "Managing Gigabytes","Managing Gigabytes","<b>Managing Gigabytes</b>");
-		uid3 = Utils.spoolStream(StorageFactory.getInstance(), mm);
-		uid3 = StorageFactory.getInstance().store("sender3@there.com", new InboxAddress("receiever3@here.com"), new Date(), mm, uid3).getIdentifier();;
+		rawid3 = Utils.spoolStream(StorageFactory.getInstance(), mm);
+		uid3 = StorageFactory.getInstance().store("sender3@there.com", new InboxAddress("receiever3@here.com"), new Date(), mm, rawid3).getIdentifier();;
 		getSearchIndexer().addDoc(uid3,"receiever3@here.com","[sender3@there.com]",mm.getSubject(), "Managing Gigabytes","<b>Managing Gigabytes</b>",  "receiever3@here.com",7646,6346543,false);
 
 		mm = Utils.createMessage(null,"sender4@there.com", "receiever4@here.com", null, null, "Subject for Computer Science", "The Art of Computer Science","<b>The Art of Computer Science</b>");
-		uid4 = Utils.spoolStream(StorageFactory.getInstance(), mm);
-		uid4 = StorageFactory.getInstance().store("sender4@there.com", new InboxAddress("receiever4@here.com"), new Date(), mm, uid4).getIdentifier();;
+		rawid4 = Utils.spoolStream(StorageFactory.getInstance(), mm);
+		uid4 = StorageFactory.getInstance().store("sender4@there.com", new InboxAddress("receiever4@here.com"), new Date(), mm, rawid4).getIdentifier();;
 		getSearchIndexer().addDoc(uid4,"receiever4@here.com","[sender4@there.com]",mm.getSubject(), "The Art of Computer Science","<b>The Art of Computer Science</b>",  "receiever4@here.com",543,6346543,false);
 		
 		String uid;
@@ -66,7 +66,6 @@ public class SearchIndexerTest extends TestCase {
 	protected void tearDown() throws Exception {
 		getSearchIndexer().deleteIndexes();
 		getSearchIndexer().stop();
-		StorageFactory.getInstance().trimSpools(0);
 		StorageFactory.getInstance().deleteAll();
 	}
 
@@ -133,14 +132,14 @@ public class SearchIndexerTest extends TestCase {
 	@Test
 	public void testDelete() throws Exception {
 		getSearchIndexer().deleteDoc(uid1);
-		StorageFactory.getInstance().delete(uid1);
+		StorageFactory.getInstance().delete(uid1,rawid1);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("sender2",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("sender3",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",0,getSearchIndexer().search("Lucene in Action",SearchUtils.SearchFields.ANY,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",0,getSearchIndexer().search("sender1@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		assertEquals("Missing expected search results",1,getSearchIndexer().search("sender2@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 		getSearchIndexer().deleteDoc(uid2);
-		StorageFactory.getInstance().delete(uid2);
+		StorageFactory.getInstance().delete(uid2,rawid2);
 		assertEquals("Missing expected search results",0,getSearchIndexer().search("sender2@there.com",SearchUtils.SearchFields.FROM,0,10,SearchUtils.SortFields.SORT_RECEIVED,false).length);
 	}
 
@@ -234,7 +233,7 @@ public class SearchIndexerTest extends TestCase {
 		assertTrue("Did not find document by UID",getSearchIndexer().containsUid(uid4));
 		assertFalse("Unexpected UID found",getSearchIndexer().containsUid(UUID.randomUUID().toString()));
 		getSearchIndexer().deleteDoc(uid1);
-		StorageFactory.getInstance().delete(uid1);
+		StorageFactory.getInstance().delete(uid1,rawid1);
 		assertFalse("Should not find deleted document by UID",getSearchIndexer().containsUid(uid1));
 	}
 

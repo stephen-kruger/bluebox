@@ -552,6 +552,7 @@ public class InboxTest extends BaseTestCase {
 	public void testTrim() throws Exception {
 		Inbox inbox = getInbox();
 		StorageIf si = StorageFactory.getInstance();
+		si.deleteAll();
 		// set limit to 50 emails
 		Config.getInstance().setString(Config.BLUEBOX_MESSAGE_MAX, "50");
 		// add 100 emails

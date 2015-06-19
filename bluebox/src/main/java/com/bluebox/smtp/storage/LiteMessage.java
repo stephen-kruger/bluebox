@@ -18,6 +18,10 @@ public class LiteMessage {
 	public String getIdentifier() throws JSONException {
 		return data.getString(BlueboxMessage.UID);
 	}
+	
+	public String getRawIdentifier() throws JSONException {
+		return data.getString(BlueboxMessage.RAWID);
+	}
 
 	public String getSubject() throws JSONException {
 		return data.getString(BlueboxMessage.SUBJECT);

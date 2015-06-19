@@ -59,7 +59,7 @@ public class TestUtils extends TestCase {
 		MimeMessage message = Utils.createMessage(null,from, to, null,null, Utils.randomLine(25), Utils.randomLine(25));
 		String uid = spoolMessage(StorageFactory.getInstance(),message);
 		inbox.deliver(from, to, message, uid);
-		removeSpooledMessage(StorageFactory.getInstance(),uid);
+//		removeSpooledMessage(StorageFactory.getInstance(),uid);
 	}
 
 		public static String spoolMessage(StorageIf si, MimeMessage message) throws Exception {
@@ -70,9 +70,9 @@ public class TestUtils extends TestCase {
 //			return StorageFactory.getInstance().getSpooledStream(uid);
 //		}
 		
-		public static void removeSpooledMessage(StorageIf si, String uid) throws Exception {
-			si.removeSpooledStream(uid);
-		}
+//		public static void removeSpooledMessage(StorageIf si, String uid) throws Exception {
+//			si.removeSpooledStream(uid);
+//		}
 
 	public static void addRandomDirect(StorageIf storage, int count) throws Exception {
 		for (int i = 0; i < count; i++) {
@@ -92,15 +92,15 @@ public class TestUtils extends TestCase {
 	
 	public static BlueboxMessage addRandomDirect(StorageIf storage) throws Exception {
 		MimeMessage mm = Utils.createMessage(null,"steve@there.com", "steve@here.com", "steve@here.com", "steve@here.com", Utils.randomLine(25), Utils.randomLine(25), Utils.randomLine(25));
-		String uid = spoolMessage(storage,mm);
+		String rawuid = spoolMessage(storage,mm);
 		Date received = storage.getUTCTime();
 		BlueboxMessage message = storage.store(
 				"steve@there.com",
 				new InboxAddress("steve@here.com"),
 				received,
 				mm,
-				uid);
-		removeSpooledMessage(storage,uid);
+				rawuid);
+//		removeSpooledMessage(storage,uid);
 		return message;
 	}
 	

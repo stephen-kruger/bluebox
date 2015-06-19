@@ -74,7 +74,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Mailbox should not be empty",1,si.getMailCount(message.getInbox(),State.NORMAL));
 		assertEquals("Mailbox should not be empty",0,si.getMailCount(message.getInbox(),State.DELETED));
 
-		si.delete(message.getIdentifier());
+		si.delete(message.getIdentifier(),message.getRawUid());
 
 		assertEquals("Mailbox should be empty",0,si.getMailCount(State.NORMAL));
 		assertEquals("Mailbox should be empty",0,si.getMailCount(State.DELETED));

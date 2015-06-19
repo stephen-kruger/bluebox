@@ -1,6 +1,5 @@
 package com.bluebox.smtp.storage;
 
-import java.io.InputStream;
 import java.io.Writer;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -18,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.Config;
-import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
 import com.bluebox.search.SearchFactory;
 import com.bluebox.search.SearchIf;
@@ -27,7 +25,7 @@ import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public abstract class AbstractStorage implements StorageIf {
 	public static final String DB_NAME = "bluebox401";
-	public static long MAX_SPOOL_SIZE = 100;
+//	public static long MAX_SPOOL_SIZE = 100;
 	private static final Logger log = LoggerFactory.getLogger(AbstractStorage.class);
 
 	public static boolean mongoDetected() {
@@ -67,10 +65,11 @@ public abstract class AbstractStorage implements StorageIf {
 	public abstract int getDBOInt(Object dbo, String key, int def);
 	public abstract long getDBOLong(Object dbo, String key, long def);
 	public abstract Date getDBODate(Object dbo, String key, Date def);
-	public abstract InputStream getDBORaw(Object dbo, String key);
+//	public abstract InputStream getDBORaw(Object dbo, String key);
 
 	public BlueboxMessage loadMessage(Object dbo) throws Exception {
-		return new BlueboxMessage(loadMessageJSON(dbo), Utils.loadEML(getDBORaw(dbo,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()))));
+		JSONObject json = loadMessageJSON(dbo);
+		return new BlueboxMessage(json, getSpooledStream(json.getString(BlueboxMessage.RAWID)));
 	}
 
 	/*
@@ -104,6 +103,7 @@ public abstract class AbstractStorage implements StorageIf {
 			}
 			message.put(BlueboxMessage.FROM,j);			
 		}
+		message.put(BlueboxMessage.RAWID,getDBOString(dbo,BlueboxMessage.RAWID,""));
 		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
 		message.put(BlueboxMessage.HTML_BODY,getDBOString(dbo,BlueboxMessage.HTML_BODY,""));
 		message.put(BlueboxMessage.TEXT_BODY,getDBOString(dbo,BlueboxMessage.TEXT_BODY,""));
@@ -119,7 +119,7 @@ public abstract class AbstractStorage implements StorageIf {
 	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm, String spooledUid) throws Exception {
 		String uid = UUID.randomUUID().toString();
 		BlueboxMessage message = new BlueboxMessage(uid,recipient);
-		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
+		message.setBlueBoxMimeMessage(from, recipient, received, bbmm, spooledUid);
 		// now store in underlying db
 		store(message.toJSON(),spooledUid);
 		return message;
@@ -158,7 +158,8 @@ public abstract class AbstractStorage implements StorageIf {
 			@Override
 			public void run() {
 				int issues = 0;
-				setProgress(0);
+				setProgress(50);
+				// check all messages are indexed
 				try {
 					SearchIf indexer = SearchFactory.getInstance();
 					LiteMessageIterator messages = new LiteMessageIterator(null,BlueboxMessage.State.NORMAL);
@@ -170,6 +171,7 @@ public abstract class AbstractStorage implements StorageIf {
 							issues++;
 						}
 						setProgress(messages.getProgress());
+						setStatus(" Indexed "+issues+" messages");
 					}
 					indexer.commit(true);
 				} 

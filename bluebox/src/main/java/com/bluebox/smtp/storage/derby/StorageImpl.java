@@ -195,7 +195,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					StorageIf.Props.Received.name()+" TIMESTAMP, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
 					StorageIf.Props.Size.name()+" BIGINT, "+
-					BlueboxMessage.RAW+" blob("+getBlobSize()+"))");
+					BlueboxMessage.RAWID+" blob("+getBlobSize()+"))");
 		}
 		catch (Throwable t) {
 			log.debug(t.getMessage());
@@ -209,7 +209,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 
 		try {
-			s.executeUpdate("CREATE TABLE "+BLOB_TABLE+" ("+StorageIf.Props.Uid.name()+" VARCHAR(36),  "+BlueboxMessage.RAW+" blob("+getBlobSize()+"))");
+			s.executeUpdate("CREATE TABLE "+BLOB_TABLE+" ("+StorageIf.Props.Uid.name()+" VARCHAR(36),  "+BlueboxMessage.RAWID+" blob("+getBlobSize()+"))");
 		}
 		catch (Throwable t) {
 			log.debug(t.getMessage());
@@ -325,7 +325,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	//	}
 
 	@Override
-	public void delete(String id) throws Exception {
+	public void delete(String id, String rawid) throws Exception {
+		log.error("rawid not yet implemented");
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.UID+"=?");
 		ps.setString(1, id);
@@ -424,11 +425,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return def;
 	}
 
-	@Override
 	public InputStream getDBORaw(Object dbo, String key) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
-			return mo.getBinaryStream(BlueboxMessage.RAW);
+			return mo.getBinaryStream(BlueboxMessage.RAWID);
 		}
 		catch (Throwable t) {
 			log.error(t.getMessage());
@@ -1136,10 +1136,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.close();
 		connection.close();
 
-		if (count<=MAX_SPOOL_SIZE)
+//		if (count<=MAX_SPOOL_SIZE)
 			return count;
-		else
-			return trimSpools(MAX_SPOOL_SIZE);
+//		else
+//			return trimSpools(MAX_SPOOL_SIZE);
 
 	}
 
@@ -1207,7 +1207,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			ResultSet result = ps.getResultSet();
 			if (result.next()) {
 				log.debug("Found spooled entry uid={}",spooledUid);
-				Blob blob = result.getBlob(BlueboxMessage.RAW);
+				Blob blob = result.getBlob(BlueboxMessage.RAWID);
 				size = blob.length();
 				blob.free();
 			}
@@ -1227,31 +1227,33 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public long trimSpools(long maxSize) throws Exception {
-		long count = 0;
-		Connection connection = getConnection();
-		// first get the count
-		PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) from "+BLOB_TABLE);
-		ps.execute();
-		ResultSet result = ps.getResultSet();
-		if (result.next()) {
-			count = result.getLong(1);
-		}
-		result.close();
-		ps.close();
-		if (count>maxSize) {		
-			long deleteCount = count-maxSize;
-			ps = connection.prepareStatement("SELECT * from "+BLOB_TABLE);
-			ps.execute();
-			result = ps.getResultSet();
-			while ((result.next())&&(deleteCount-- > 0)) {
-				removeSpooledStream(result.getString(StorageIf.Props.Uid.name()));
-			}
-		}
-		connection.commit();
-		result.close();
-
-		return maxSize;
+	public long trimSpools() throws Exception {
+		log.error("Not yet implemented");
+//		long count = 0;
+//		Connection connection = getConnection();
+//		// first get the count
+//		PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) from "+BLOB_TABLE);
+//		ps.execute();
+//		ResultSet result = ps.getResultSet();
+//		if (result.next()) {
+//			count = result.getLong(1);
+//		}
+//		result.close();
+//		ps.close();
+//		if (count>maxSize) {		
+//			long deleteCount = count-maxSize;
+//			ps = connection.prepareStatement("SELECT * from "+BLOB_TABLE);
+//			ps.execute();
+//			result = ps.getResultSet();
+//			while ((result.next())&&(deleteCount-- > 0)) {
+//				removeSpooledStream(result.getString(StorageIf.Props.RawUid.name()));
+//			}
+//		}
+//		connection.commit();
+//		result.close();
+//
+//		return maxSize;
+		return 0;
 	}
 
 	@Override

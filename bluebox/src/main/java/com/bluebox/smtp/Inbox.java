@@ -60,7 +60,7 @@ public class Inbox implements SimpleMessageListener {
 	public static final long MAX_MAIL_BYTES = Config.getInstance().getLong(Config.BLUEBOX_MAIL_LIMIT);
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
 	private BlueboxMessageHandlerFactory blueboxMessageHandlerFactory;
-//	private Thread migrationThread;
+	//	private Thread migrationThread;
 
 	private static Timer timer = null;
 	private static TimerTask timerTask = null;
@@ -100,8 +100,6 @@ public class Inbox implements SimpleMessageListener {
 					log.info("Cleanup timer activated");
 					try {
 						WorkerThread.startWorker(cleanUp());
-						// commit any pending search indexing
-						SearchFactory.getInstance().commit(true);
 					} 
 					catch (Exception e) {
 						log.error("Error running message cleanup",e);
@@ -202,8 +200,8 @@ public class Inbox implements SimpleMessageListener {
 		}
 	}
 
-	public void delete(String uid) throws Exception {
-		StorageFactory.getInstance().delete(uid);
+	public void delete(String uid, String rawId) throws Exception {
+		StorageFactory.getInstance().delete(uid, rawId);
 		SearchFactory.getInstance().deleteDoc(uid);
 	}
 
@@ -299,6 +297,9 @@ public class Inbox implements SimpleMessageListener {
 					setProgress(60);
 					// trim total mailbox size
 					trim();
+					// remove any orphaned blobs
+					setProgress(90);
+					orphan();
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
@@ -315,31 +316,36 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	protected void trim() {
-		List<LiteMessage> list;
+		int errors = 0;
 		try {
 			long max = Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_MAX);
-			log.info("Trimming mailboxes to limit of {} entries",max);
-			long count;
-			while ((count=StorageFactory.getInstance().getMailCount(BlueboxMessage.State.NORMAL))>max) {
-				list = StorageFactory.getInstance().listMailLite(null, BlueboxMessage.State.NORMAL, 0, 1000, BlueboxMessage.RECEIVED, true);
-				count = count-max; // how many to delete
-				log.info("Trimming {} messages",count);
-				for (LiteMessage msg : list) {
-					try {
-						if (count-->0)
-							delete(msg.getIdentifier());
-						else
-							break;
-					}
-					catch (Throwable t) {
-						log.error("Problem trimming message", t);
-					}
+			StorageIf si = StorageFactory.getInstance();
+			long count = si.getMailCount(BlueboxMessage.State.ANY);
+			long deleteCount = count-max;
+			log.info("Trimming {} of total {} mailboxes to limit of {} entries",deleteCount,count,max);
+			List<LiteMessage> list = si.listMailLite(null, BlueboxMessage.State.ANY, 0, (int)deleteCount, BlueboxMessage.RECEIVED, true);
+			for (LiteMessage m : list) {
+				try {
+					delete(m.getIdentifier(), m.getRawIdentifier());
+				}
+				catch (Throwable t) {
+					errors++;
+					log.error("Error trimming message",t);
 				}
 			}
+			log.info("Finished trimming {} messages with {} errors encouters", deleteCount,errors);
 		}
 		catch (Throwable t) {
-			t.printStackTrace();
 			log.error("Problem trimming mailboxes",t);
+		}
+	}
+	
+	protected void orphan() {
+		try {
+			StorageFactory.getInstance().trimSpools();
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -355,7 +361,7 @@ public class Inbox implements SimpleMessageListener {
 			list = StorageFactory.getInstance().listMail(null, BlueboxMessage.State.DELETED, start, 500, BlueboxMessage.RECEIVED, true);
 			for (BlueboxMessage msg : list) {
 				try {
-					delete(msg.getIdentifier());
+					delete(msg.getIdentifier(),msg.getRawUid());
 					count++;			
 				}
 				catch (Throwable t) {
@@ -383,7 +389,7 @@ public class Inbox implements SimpleMessageListener {
 			msg = mi.next();
 			try {
 				if (isExpired(msg.getReceived(),messageExpireDate)) {
-					delete(msg.getIdentifier());
+					delete(msg.getIdentifier(), msg.getRawIdentifier());
 					count++;
 				}
 			}
@@ -407,7 +413,7 @@ public class Inbox implements SimpleMessageListener {
 			msg = mi.next();
 			try {
 				if ((msg.getReceived()).before(trashExpireDate)) {
-					delete(msg.getIdentifier());
+					delete(msg.getIdentifier(),msg.getRawIdentifier());
 					count++;
 				}				
 			}
@@ -568,13 +574,14 @@ public class Inbox implements SimpleMessageListener {
 		catch (Exception ioe) {
 			ioe.printStackTrace();
 		}
-		finally {
-			try {
-				si.removeSpooledStream(spooledUid);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		//		finally {
+		//			try {
+		//				si.removeSpooledStream(spooledUid);
+		//			} 
+		//			catch (Exception e) {
+		//				e.printStackTrace();
+		//			}
+		//		}
 	}
 
 	public void deliver(String from, String recipient, MimeMessage mimeMessage, String spooledUid) throws Exception {

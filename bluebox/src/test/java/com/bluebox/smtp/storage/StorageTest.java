@@ -69,7 +69,7 @@ public class StorageTest extends BaseTestCase {
 
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 		BlueboxMessage m1 = getBlueBoxStorageIf().store(from, ia, getBlueBoxStorageIf().getUTCTime(), message, uid);
-		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
+		//		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		SearchFactory.getInstance().indexMail(m1,true);
 
 		assertEquals("Autocomplete not working as expected",1,getInbox().autoComplete("First Name", 0, 10).length());
@@ -121,9 +121,9 @@ public class StorageTest extends BaseTestCase {
 				"bodyStr",
 				"",
 				false);
-		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
-		BlueboxMessage bbm = getBlueBoxStorageIf().store(from, inbox, getBlueBoxStorageIf().getUTCTime(), message, uid);
-		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
+		String rawuid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
+		BlueboxMessage bbm = getBlueBoxStorageIf().store(from, inbox, getBlueBoxStorageIf().getUTCTime(), message, rawuid);
+		//		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		BlueboxMessage stored = getBlueBoxStorageIf().retrieve(bbm.getIdentifier());
 		assertEquals("Identifiers did not match",bbm.getIdentifier(),stored.getIdentifier());
 		MimeMessage storedMM = stored.getBlueBoxMimeMessage();
@@ -151,7 +151,7 @@ public class StorageTest extends BaseTestCase {
 		String uid = TestUtils.spoolMessage(getBlueBoxStorageIf(),message);
 
 		BlueboxMessage bbm = getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid);
-		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
+		//		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		BlueboxMessage stored = getBlueBoxStorageIf().retrieve(bbm.getIdentifier());
 		//		assertEquals("Stored recipient did not match original",inbox.getFullAddress(),stored.getInbox().getFullAddress());
 		assertEquals("Stored recipient did not match original",inbox.getAddress(),stored.getInbox().getAddress());
@@ -345,7 +345,7 @@ public class StorageTest extends BaseTestCase {
 		BlueboxMessage m1 = getBlueBoxStorageIf().store(email.getAddress(), email, getBlueBoxStorageIf().getUTCTime(), message, uid);
 		BlueboxMessage m2 = getBlueBoxStorageIf().store(email.getAddress(), email, getBlueBoxStorageIf().getUTCTime(), message, uid);
 		BlueboxMessage m3 = getBlueBoxStorageIf().store(email.getAddress(), email, getBlueBoxStorageIf().getUTCTime(), message, uid);
-		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
+		//		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 		SearchFactory.getInstance().indexMail(m1,true);
 		SearchFactory.getInstance().indexMail(m2,true);
 		SearchFactory.getInstance().indexMail(m3,true);
@@ -406,7 +406,7 @@ public class StorageTest extends BaseTestCase {
 		SearchFactory.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
 		SearchFactory.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
 		SearchFactory.getInstance().indexMail(getBlueBoxStorageIf().store(inbox.getAddress(), inbox, getBlueBoxStorageIf().getUTCTime(), message, uid),true);
-		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
+		//		TestUtils.removeSpooledMessage(getBlueBoxStorageIf(),uid);
 
 		// check for empty string
 		JSONArray ja = getInbox().autoComplete("", 0, 10);
@@ -490,6 +490,17 @@ public class StorageTest extends BaseTestCase {
 		assertNotNull("UID not allocated correctly",uid);
 		assertEquals("Incorrect blob size reported",26,si.getSpooledStreamSize(uid));
 		si.removeSpooledStream(uid);
+	}
+
+	@Test
+	public void testOrphanedSpools() throws Exception {
+		StorageIf si = StorageFactory.getInstance();
+		assertEquals("Did not expect to find spools",0,si.getSpoolCount());
+		for (int i = 0; i < 50; i++)
+			si.spoolStream(new ByteArrayInputStream("xxxxxxxxxxxxxxxxxxxxx".getBytes()));
+		assertEquals("Did not find expected spools",50,si.getSpoolCount());
+		assertEquals("Did not trim all spools",50,si.trimSpools());
+		assertEquals("Did not expect to find spools",0,si.getSpoolCount());
 	}
 
 }
