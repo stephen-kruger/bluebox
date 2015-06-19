@@ -165,15 +165,14 @@ public class StorageIndexer implements SearchIf {
 			Object[] results = search(SearchUtils.autocompleteQuery(hint), SearchUtils.SearchFields.RECIPIENT, (int)start, (int)count*10, SearchUtils.SortFields.SORT_RECEIVED,false);
 			for (int i = 0; i < results.length;i++) {
 				Document result = (Document)results[i];
-				String uid = result.getString(BlueboxMessage.UID);
 				InboxAddress inbox;
 				inbox = new InboxAddress(result.getString(Utils.decodeRFC2407(BlueboxMessage.INBOX)));
-				log.debug("{} from {}",getRecipient(inbox,result.getString(BlueboxMessage.RECIPIENT)).getFullAddress(),result.getString(BlueboxMessage.RECIPIENT));
+//				log.info(">>>>>>>>>>>>>>>>>>>>>{}",result.getString(Utils.decodeRFC2407(BlueboxMessage.INBOX)));
 				if (!contains(children,inbox.getAddress())) {
 					curr = new JSONObject();
 					curr.put("name", inbox.getAddress());
 					curr.put("label",StringEscapeUtils.unescapeJava(getRecipient(inbox,result.getString(BlueboxMessage.RECIPIENT)).getFullAddress()));
-					curr.put("identifier", uid);
+					curr.put("identifier", result.getString(BlueboxMessage.UID));
 					children.put(curr);
 				}
 				if (children.length()>=count)

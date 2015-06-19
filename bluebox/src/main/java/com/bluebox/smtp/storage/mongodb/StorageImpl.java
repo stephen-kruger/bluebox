@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import javax.mail.internet.MimeMessage;
 
@@ -268,7 +269,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		DBObject dbo;
 		while(cursor.hasNext()) {
 			dbo = cursor.next();
-			log.debug("Deleting raw {}",dbo.get("filename"));
+//			log.debug("Deleting raw {}",dbo.get("filename"));
 			gfsRaw.remove(dbo);
 		}
 		cursor.close();
@@ -293,7 +294,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
 		long start = getUTCTime().getTime();
 		long count = db.getCollection(TABLE_NAME).count(query);
-		log.debug("Calculated mail count in {}ms",(getUTCTime().getTime()-start));
+//		log.debug("Calculated mail count in {}ms",(getUTCTime().getTime()-start));
 		return count;
 	}
 
@@ -773,10 +774,15 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
+		return spoolStream(UUID.randomUUID().toString(), blob);
+	}
+	
+	public String spoolStream(String uid, InputStream blob) throws Exception {
 		log.info("Spool count is {}",getSpoolCount());
 		new Exception().printStackTrace();
 		try {
 			GridFSInputFile gfs = blobFS.createFile(blob);
+			gfs.setId(uid);
 			gfs.save();
 			log.debug("Saved blob with uid {}",gfs.getId());
 			return gfs.getId().toString();

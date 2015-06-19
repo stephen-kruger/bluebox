@@ -149,7 +149,7 @@ public interface StorageIf {
 	public boolean hasProperty(String key);
 	
 	public String spoolStream(InputStream is) throws Exception;
-	
+
 	public MimeMessage getSpooledStream(String spooledUid) throws Exception;
 	
 	public void removeSpooledStream(String spooledUid) throws Exception;

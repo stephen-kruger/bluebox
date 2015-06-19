@@ -301,7 +301,7 @@ public class Utils {
 							e.printStackTrace();
 							// server overloaded, try again later
 							try {
-								log.debug("Waiting to deliver ({})",e.getMessage());
+								log.debug("Waiting to deliver",e);
 								Thread.sleep(5000);
 							} 
 							catch (InterruptedException e1) {
@@ -571,7 +571,7 @@ public class Utils {
 			catch (Throwable e) {
 				res.append(s);
 				//e.printStackTrace();
-				log.debug("Error decoding quoted-printable :{}",e.getMessage());
+				log.debug("Error decoding quoted-printable",e);
 			}				
 		}
 		return res.toString();

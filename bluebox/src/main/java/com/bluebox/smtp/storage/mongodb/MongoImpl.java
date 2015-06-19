@@ -2,6 +2,8 @@ package com.bluebox.smtp.storage.mongodb;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -56,7 +58,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	private static final String TABLE_NAME = "inbox"; // name of collection AND blob database
 	private static final String BLOB_DB_NAME = "blob";
 	private static final String PROPS_DB_NAME = "properties";
-//	private static final String RAW_DB_NAME = "inbox";
+	//	private static final String RAW_DB_NAME = "inbox";
 	private MongoClient mongoClient;
 	private MongoDatabase db;
 	private MongoCollection<Document> errorFS, propsFS, mailFS;
@@ -74,7 +76,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		propsFS = db.getCollection(PROPS_DB_NAME);
 		mongoClient.getDatabase("");
 		blobFS = new GridFS(mongoClient.getDB(BLOB_DB_NAME),BLOB_DB_NAME);
-//		rawFS = new GridFS(mongoClient.getDB(RAW_DB_NAME), BlueboxMessage.RAW);
+		//		rawFS = new GridFS(mongoClient.getDB(RAW_DB_NAME), BlueboxMessage.RAW);
 
 		log.debug("Started MongoDB connection");
 
@@ -107,43 +109,43 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void store(JSONObject props, String spooledUid) throws Exception {
 		props.put(BlueboxMessage.RAWID, spooledUid);
-//		store(props,getSpooledInputStream(spooledUid));
+		//		store(props,getSpooledInputStream(spooledUid));
 		try {
 			Document bson = Document.parse( props.toString() );
 			// little hack for int getting converted to longs when going from JSON to BSON
 			bson.put(BlueboxMessage.SIZE, Long.parseLong(bson.get(BlueboxMessage.SIZE).toString()));
 			Date d = Utils.getUTCDate(getUTCTime(),props.getLong(StorageIf.Props.Received.name()));
 			bson.put(StorageIf.Props.Received.name(), d);
-//			GridFSInputFile gfsFile = rawFS.createFile(content,true);
-//			gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
-//			gfsFile.save();
+			//			GridFSInputFile gfsFile = rawFS.createFile(content,true);
+			//			gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
+			//			gfsFile.save();
 			mailFS.insertOne(bson);
 		}
 		catch (Throwable t) {
 			log.error("Error storing message :{}",t.getMessage());
 			t.printStackTrace();
 		}
-		
+
 	}
 
-//	@Override
-//	public void store(JSONObject props, InputStream content) throws Exception {
-//		try {
-//			Document bson = Document.parse( props.toString() );
-//			// little hack for int getting converted to longs when going from JSON to BSON
-//			bson.put(BlueboxMessage.SIZE, Long.parseLong(bson.get(BlueboxMessage.SIZE).toString()));
-//			Date d = Utils.getUTCDate(getUTCTime(),props.getLong(StorageIf.Props.Received.name()));
-//			bson.put(StorageIf.Props.Received.name(), d);
-////			GridFSInputFile gfsFile = rawFS.createFile(content,true);
-////			gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
-////			gfsFile.save();
-//			mailFS.insertOne(bson);
-//		}
-//		catch (Throwable t) {
-//			log.error("Error storing message :{}",t.getMessage());
-//			t.printStackTrace();
-//		}
-//	}
+	//	@Override
+	//	public void store(JSONObject props, InputStream content) throws Exception {
+	//		try {
+	//			Document bson = Document.parse( props.toString() );
+	//			// little hack for int getting converted to longs when going from JSON to BSON
+	//			bson.put(BlueboxMessage.SIZE, Long.parseLong(bson.get(BlueboxMessage.SIZE).toString()));
+	//			Date d = Utils.getUTCDate(getUTCTime(),props.getLong(StorageIf.Props.Received.name()));
+	//			bson.put(StorageIf.Props.Received.name(), d);
+	////			GridFSInputFile gfsFile = rawFS.createFile(content,true);
+	////			gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
+	////			gfsFile.save();
+	//			mailFS.insertOne(bson);
+	//		}
+	//		catch (Throwable t) {
+	//			log.error("Error storing message :{}",t.getMessage());
+	//			t.printStackTrace();
+	//		}
+	//	}
 
 	@Override
 	public BlueboxMessage retrieve(String uid) throws Exception {
@@ -168,9 +170,9 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		for (DBObject x : blobFS.getFileList()) {
 			blobFS.remove(x);
 		}
-//		rawFS.getDB().dropDatabase();
+		//		rawFS.getDB().dropDatabase();
 		// TODO will be fixed in Mongo 3.1
-//		rawFS = new GridFS(mongoClient.getDB(RAW_DB_NAME), BlueboxMessage.RAW);
+		//		rawFS = new GridFS(mongoClient.getDB(RAW_DB_NAME), BlueboxMessage.RAW);
 	}
 
 	@Override
@@ -216,7 +218,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 					results.add(m);
 				}
 				catch (Throwable t) {
-//					t.printStackTrace();
+					//					t.printStackTrace();
 					log.error("Nasty problem loading message:{}",dbo);;
 				}
 			}
@@ -377,13 +379,13 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void delete(String uid, String rawId) throws Exception {
-//		BlueboxMessage bbm = retrieve(uid);
+		//		BlueboxMessage bbm = retrieve(uid);
 		DeleteResult res = mailFS.deleteOne(Filters.eq(StorageIf.Props.Uid.name(), uid));
 		if (res.getDeletedCount()<=0) {
 			log.warn("Nothing deleted for uid {}",uid);
 		}
 		// remove the RAW blob too if there are no more references to it
-//		rawFS.remove(rawFS.findOne(uid));
+		//		rawFS.remove(rawFS.findOne(uid));
 		FindIterable<Document> rawres = mailFS.find(Filters.eq(StorageIf.Props.RawUid.name(), rawId));
 		if (rawres.first()==null) {
 			log.debug("Deleting last instance of spooled message {}",rawId);
@@ -405,7 +407,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			public void run() {
 				setProgress(0);
 				int issues = 0;
-//				DBCursor cursor = rawFS.getFileList();
+				//				DBCursor cursor = rawFS.getFileList();
 				try {
 					log.info("Looking for orphaned blobs");
 					DBCursor cursor = blobFS.getFileList();
@@ -426,7 +428,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 					t.printStackTrace();
 				}
 				finally {
-//					cursor.close();
+					//					cursor.close();
 					setProgress(100);
 					setStatus(issues+" issues fixed");
 				}
@@ -603,20 +605,47 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
-		log.debug("Spool count is {}",getSpoolCount());
+//		log.debug("Spool count is {}",getSpoolCount());
 		try {
-			GridFSInputFile gfs = blobFS.createFile(blob);
-			gfs.save();
-			log.debug("Saved blob with uid {}",gfs.getId());
-			return gfs.getId().toString();
+			// create temp version to calculate md5
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			DigestInputStream dis = new DigestInputStream(blob, md);
+			GridFSInputFile temp = blobFS.createFile(dis,true);
+			temp.save();
+
+			if (blobFS.findOne(temp.getMD5())==null) {
+				rename(blobFS,temp,temp.getMD5());
+			}
+			else {
+				blobFS.remove(new ObjectId(temp.getId().toString()));
+			}
+			// now create final one with md5 as file name
+//			if (blobFS.findOne(temp.getMD5())==null) {
+//				GridFSInputFile real = blobFS.createFile(blobFS.findOne(new ObjectId(temp.getId().toString())).getInputStream());
+//				real.setFilename(temp.getMD5());
+//				real.save();
+//			}
+//			blobFS.remove(new ObjectId(temp.getId().toString()));
+			return temp.getMD5();
+
 		}
 		catch (Throwable t) {
-			log.error("Error storing blob :{}",t.getMessage());
+			log.error("Error storing blob",t);
 		}
 		finally {
 			blob.close();
 		}
 		return null;
+	}
+
+	public void rename(GridFS files, GridFSInputFile oldName, String newName){
+//		GridFSDBFile old = files.findOne(oldName);
+//		ObjectId id = (ObjectId)old.getId();
+//		DBObject dbo = new BasicDBObject("_id", old.getId());
+//		dbo.put("filename", newName);
+//		old.setMetaData(dbo);
+		oldName.setFilename(newName);
+		oldName.save();
 	}
 
 	@Override
@@ -625,7 +654,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	}
 
 	public InputStream getSpooledInputStream(String spooledUid) throws Exception {
-		GridFSDBFile blob = blobFS.findOne(new ObjectId(spooledUid));
+		GridFSDBFile blob = blobFS.findOne(spooledUid);
 		return blob.getInputStream();
 	}
 
@@ -633,7 +662,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	public void removeSpooledStream(String spooledUid) throws Exception {
 		log.debug("Removing spool {}",spooledUid);
 		try {
-			blobFS.remove(new ObjectId(spooledUid));	
+			blobFS.remove(spooledUid);	
 		}
 		catch (Throwable t){
 			log.error("Could not delete specified spooled stream {}",spooledUid);
@@ -642,7 +671,8 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public long getSpooledStreamSize(String spooledUid) {
-		GridFSDBFile blob = blobFS.findOne(new ObjectId(spooledUid));
+		log.debug("Looking for spool {}",spooledUid);
+		GridFSDBFile blob = blobFS.findOne(spooledUid);
 		return blob.getLength();
 	}
 
@@ -659,17 +689,16 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		finally {
 			cursor.close();
 		}
-//		if (count<=MAX_SPOOL_SIZE)
-			return count;
-//		else
-//			return trimSpools(MAX_SPOOL_SIZE);
+		return count;
 	}
 
 	public long cleanSpools() throws Exception {
-		long startCount = getSpoolCount();
-		WorkerThread wt = cleanRaw();
-		wt.run();
-		return startCount - getSpoolCount();
+		long count = 0;
+		for (DBObject f : blobFS.getFileList()) {
+			blobFS.remove(f);
+			count++;
+		}
+		return count;
 	}
 
 	@Override
@@ -755,17 +784,17 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		return def;
 	}
 
-//	@Override
-//	public InputStream getDBORaw(Object dbo, String uid) {
-//		try {
-//			GridFSDBFile imageForOutput = rawFS.findOne(uid);
-//			return imageForOutput.getInputStream();
-//		}
-//		catch (Throwable t) {
-//			log.error("Error loading raw object for uid="+uid,t);
-//			return null;
-//		}
-//	}
+	//	@Override
+	//	public InputStream getDBORaw(Object dbo, String uid) {
+	//		try {
+	//			GridFSDBFile imageForOutput = rawFS.findOne(uid);
+	//			return imageForOutput.getInputStream();
+	//		}
+	//		catch (Throwable t) {
+	//			log.error("Error loading raw object for uid="+uid,t);
+	//			return null;
+	//		}
+	//	}
 
 	@Override
 	public Object[] search(String querystr, SearchFields fields, int start,	int count, SortFields orderBy, boolean ascending) {
@@ -827,12 +856,12 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			query = Filters.and(
 					Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
 					Filters.or(
-					Filters.regex(BlueboxMessage.INBOX, querystr),
-					Filters.regex(BlueboxMessage.SUBJECT,Pattern.compile(querystr , Pattern.CASE_INSENSITIVE)),
-					Filters.regex(BlueboxMessage.FROM, querystr),
-					Filters.regex(BlueboxMessage.RECIPIENT, querystr),
-					Filters.regex(BlueboxMessage.HTML_BODY, querystr.toLowerCase()),
-					Filters.regex(BlueboxMessage.TEXT_BODY, querystr.toLowerCase()))
+							Filters.regex(BlueboxMessage.INBOX, querystr),
+							Filters.regex(BlueboxMessage.SUBJECT,Pattern.compile(querystr , Pattern.CASE_INSENSITIVE)),
+							Filters.regex(BlueboxMessage.FROM, querystr),
+							Filters.regex(BlueboxMessage.RECIPIENT, querystr),
+							Filters.regex(BlueboxMessage.HTML_BODY, querystr.toLowerCase()),
+							Filters.regex(BlueboxMessage.TEXT_BODY, querystr.toLowerCase()))
 					);
 		}
 		Bson sortOrder=null;
@@ -844,8 +873,8 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		case SORT_SIZE : 
 			sortKey = BlueboxMessage.SIZE;
 			break;
-			default :
-				sortKey = BlueboxMessage.RECEIVED;
+		default :
+			sortKey = BlueboxMessage.RECEIVED;
 		}
 		if (ascending) {
 			sortOrder = Sorts.ascending(sortKey);

@@ -97,6 +97,7 @@ public class TestJSONAutoCompleteHandler extends BaseTestCase {
 		JSONArray res;
 		for (int i = 0; i < count;i++) {
 			res = handler.doAutoComplete(getInbox(), i+"user", "0", "Infinity");
+			log.info(res.toString(3));;
 			assertEquals("Did not receive expected number of results", 1, res.length());
 		}
 		log.info(">>>>>{}",handler.doAutoComplete(getInbox(), "0user", "0", "Infinity").toString(3));

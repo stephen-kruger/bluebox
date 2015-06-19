@@ -37,9 +37,9 @@ import com.bluebox.search.SearchFactory;
 import com.bluebox.search.SearchIf;
 import com.bluebox.search.SearchUtils;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
-import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public class InboxTest extends BaseTestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -515,7 +515,7 @@ public class InboxTest extends BaseTestCase {
 		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertEquals("Subject did not match",subject,mimeMessage.getSubject().toString());
 		// TODO - figure out why this does not work
-//				assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
+		//				assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
 		//		assertEquals("Body did not match",bodyWithCR,email.getText());
 	}
 
@@ -547,7 +547,7 @@ public class InboxTest extends BaseTestCase {
 		//		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
 		//		assertEquals("Body did not match",bodyWithCR,email.getText());
 	}
-	
+
 	@Test
 	public void testTrim() throws Exception {
 		Inbox inbox = getInbox();
@@ -561,5 +561,20 @@ public class InboxTest extends BaseTestCase {
 		inbox.trim();
 		// check value equals 50
 		assertEquals(50,inbox.getMailCount(State.ANY));
+	}
+
+	@Test
+	public void testBlobLinking() throws Exception {
+//		byte[] b = new byte[12];
+//		ObjectId id = new ObjectId(b);
+//		assertTrue(ObjectId.isValid(new String(b)));
+		StorageIf si = StorageFactory.getInstance();
+		si.deleteAll();
+		assertEquals("No blobs expected",0,si.getSpoolCount());
+		// now send mail to multiple recipients
+		for (int i = 0; i < 10; i++) {
+			TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", "jj@nowhere.com", "mik@there.com", "xxxx", "dfkfsdf");
+		}
+		assertEquals("Spool reuse expected",10,si.getSpoolCount());
 	}
 }
