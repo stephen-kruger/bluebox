@@ -52,6 +52,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public static final String ERROR_TITLE = "error_title";
 	public static final String ERROR_DATE = "error_date";
 	public static final String ERROR_CONTENT = "error_content";
+	private static final String RAW = "raw";
 	private boolean started = false;
 
 
@@ -169,13 +170,31 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			Connection connection = getConnection();
 			Statement s = connection.createStatement();
 			s.executeUpdate("DROP TABLE "+INBOX_TABLE);
+			s.close();
+		}
+		catch (Throwable t) {
+			log.warn("Cannot drop INBOX_TABLE :"+t.getMessage());
+			//			t.printStackTrace();
+		}
+		try {
+			Connection connection = getConnection();
+			Statement s = connection.createStatement();
 			s.executeUpdate("DROP TABLE "+PROPS_TABLE);
+			s.close();
+		}
+		catch (Throwable t) {
+			log.warn("Cannot drop PROPS_TABLE :"+t.getMessage());
+			//			t.printStackTrace();
+		}
+		try {
+			Connection connection = getConnection();
+			Statement s = connection.createStatement();
 			s.executeUpdate("DROP TABLE "+BLOB_TABLE);
 			s.close();
 		}
 		catch (Throwable t) {
-			log.warn("Cannot drop tables :"+t.getMessage());
-			t.printStackTrace();
+			log.warn("Cannot drop BLOB_TABLE :"+t.getMessage());
+			//			t.printStackTrace();
 		}
 	}
 
@@ -186,6 +205,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			s.executeUpdate("CREATE TABLE "+INBOX_TABLE+
 					" ("+
 					StorageIf.Props.Uid.name()+" VARCHAR(36), "+
+					StorageIf.Props.RawUid.name()+" VARCHAR(36), "+
 					StorageIf.Props.Inbox.name()+" VARCHAR(255), "+
 					StorageIf.Props.Recipient.name()+" VARCHAR(255), "+
 					StorageIf.Props.Sender.name()+" VARCHAR(255), "+
@@ -194,8 +214,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					BlueboxMessage.TEXT_BODY+" VARCHAR(512), "+
 					StorageIf.Props.Received.name()+" TIMESTAMP, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
-					StorageIf.Props.Size.name()+" BIGINT, "+
-					BlueboxMessage.RAW+" blob("+getBlobSize()+"))");
+					StorageIf.Props.Size.name()+" BIGINT "+")");
 		}
 		catch (Throwable t) {
 			log.debug(t.getMessage());
@@ -209,7 +228,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 
 		try {
-			s.executeUpdate("CREATE TABLE "+BLOB_TABLE+" ("+StorageIf.Props.Uid.name()+" VARCHAR(36),  "+BlueboxMessage.RAW+" blob("+getBlobSize()+"))");
+			s.executeUpdate("CREATE TABLE "+BLOB_TABLE+" ("+BlueboxMessage.UID+" VARCHAR(36),  "+RAW+" blob("+getBlobSize()+"))");
 		}
 		catch (Throwable t) {
 			log.debug(t.getMessage());
@@ -218,7 +237,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		connection.close();
 
 		//		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED,DOW};
-		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.RECIPIENT,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.HTML_BODY,BlueboxMessage.TEXT_BODY,BlueboxMessage.RECEIVED,BlueboxMessage.STATE,BlueboxMessage.SIZE};
+		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.RAWID,BlueboxMessage.INBOX,BlueboxMessage.RECIPIENT,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.HTML_BODY,BlueboxMessage.TEXT_BODY,BlueboxMessage.RECEIVED,BlueboxMessage.STATE,BlueboxMessage.SIZE};
 		createIndexes(INBOX_TABLE,indexes);
 
 		indexes = new String[]{KEY,VALUE};
@@ -250,43 +269,60 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	public void store(JSONObject props, String spooledUid) throws Exception {
 		Connection connection = getConnection();
 		try {
-			store(props, getSpooledStream(connection,spooledUid));
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+			ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
+			ps.setString(2, props.getString(StorageIf.Props.RawUid.name())); // RAW UID
+			ps.setString(3, props.getString(StorageIf.Props.Inbox.name()));// INBOX
+			ps.setString(4, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
+			ps.setString(5, props.getString(StorageIf.Props.Sender.name())); // FROM
+			ps.setString(6, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
+			ps.setString(7, props.getString(BlueboxMessage.HTML_BODY)); // html body
+			ps.setString(8, props.getString(BlueboxMessage.TEXT_BODY)); // text body
+			Timestamp timestamp = new Timestamp(props.getLong(StorageIf.Props.Received.name()));
+			ps.setTimestamp(9, timestamp); // RECEIVED
+			ps.setInt(10, props.getInt(StorageIf.Props.State.name())); // STATE
+			ps.setLong(11, props.getLong(StorageIf.Props.Size.name())); // SIZE
+			//			ps.setBinaryStream(11, blob); // MIMEMESSAGE
+			ps.execute();
+			connection.commit();
 		}
 		catch (Throwable t) {
-			log.error("Error storing message :{}",t.getMessage());
+			log.error("Error storing message :{}",t);
+			log.info(props.toString(3));
 		}
 		finally {
 			connection.close();
 		}
 	}
 
-	@Override
-	public void store(JSONObject props, InputStream blob) throws Exception {
-		Connection connection = getConnection();
-		try {
-			PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-			ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
-			ps.setString(2, props.getString(StorageIf.Props.Inbox.name()));// INBOX
-			ps.setString(3, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
-			ps.setString(4, props.getString(StorageIf.Props.Sender.name())); // FROM
-			ps.setString(5, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
-			ps.setString(6, props.getString(BlueboxMessage.HTML_BODY)); // html body
-			ps.setString(7, props.getString(BlueboxMessage.TEXT_BODY)); // text body
-			Timestamp timestamp = new Timestamp(props.getLong(StorageIf.Props.Received.name()));
-			ps.setTimestamp(8, timestamp); // RECEIVED
-			ps.setInt(9, props.getInt(StorageIf.Props.State.name())); // STATE
-			ps.setLong(10, props.getLong(StorageIf.Props.Size.name())); // SIZE
-			ps.setBinaryStream(11, blob); // MIMEMESSAGE
-			ps.execute();
-			connection.commit();
-		}
-		catch (Throwable t) {
-			log.error("Error storing message :{}",t.getMessage());
-		}
-		finally {
-			connection.close();
-		}
-	}
+	//	@Override
+	//	public void store(JSONObject props, InputStream blob) throws Exception {
+	//		Connection connection = getConnection();
+	//		try {
+	//			PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	//			ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
+	//			ps.setString(2, props.getString(StorageIf.Props.RawUid.name())); // RAW UID
+	//			ps.setString(3, props.getString(StorageIf.Props.Inbox.name()));// INBOX
+	//			ps.setString(4, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
+	//			ps.setString(5, props.getString(StorageIf.Props.Sender.name())); // FROM
+	//			ps.setString(6, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
+	//			ps.setString(7, props.getString(BlueboxMessage.HTML_BODY)); // html body
+	//			ps.setString(8, props.getString(BlueboxMessage.TEXT_BODY)); // text body
+	//			Timestamp timestamp = new Timestamp(props.getLong(StorageIf.Props.Received.name()));
+	//			ps.setTimestamp(9, timestamp); // RECEIVED
+	//			ps.setInt(10, props.getInt(StorageIf.Props.State.name())); // STATE
+	//			ps.setLong(11, props.getLong(StorageIf.Props.Size.name())); // SIZE
+	////			ps.setBinaryStream(11, blob); // MIMEMESSAGE
+	//			ps.execute();
+	//			connection.commit();
+	//		}
+	//		catch (Throwable t) {
+	//			log.error("Error storing message :{}",t.getMessage());
+	//		}
+	//		finally {
+	//			connection.close();
+	//		}
+	//	}
 
 	//	public String add(String id, String from, InboxAddress recipient, String subject, Date date, State state, long size, InputStream blob) throws Exception {
 	//		Connection connection = getConnection();
@@ -325,14 +361,20 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	//	}
 
 	@Override
-	public void delete(String id) throws Exception {
+	public void delete(String id, String rawid) throws Exception {
 		Connection connection = getConnection();
 		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.UID+"=?");
 		ps.setString(1, id);
 		ps.execute();
 		connection.commit();
-		connection.close();
 		log.debug("Removed mail entry {}",id);
+
+		// now remove the blob if no more references exist
+		if (!spoolReferenced(connection,rawid)) {
+			log.info("Removing associated blob");
+			removeSpooledStream(rawid);
+		}
+		connection.close();
 	}
 
 	@Override
@@ -424,11 +466,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return def;
 	}
 
-	@Override
 	public InputStream getDBORaw(Object dbo, String key) {
 		ResultSet mo = (ResultSet)dbo;
 		try {
-			return mo.getBinaryStream(BlueboxMessage.RAW);
+			return mo.getBinaryStream(RAW);
 		}
 		catch (Throwable t) {
 			log.error(t.getMessage());
@@ -582,8 +623,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public List<LiteMessage> listMailLite(InboxAddress email, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
+		List<LiteMessage> list = new ArrayList<LiteMessage>();
+		if (count<=0) return list;
 		Connection connection = getConnection();
 		String cols = 	BlueboxMessage.UID+","+
+				BlueboxMessage.RAWID+","+
 				BlueboxMessage.INBOX+","+
 				BlueboxMessage.FROM+","+
 				BlueboxMessage.SUBJECT+","+
@@ -592,7 +636,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				BlueboxMessage.STATE+","+
 				BlueboxMessage.SIZE;
 		ResultSet result = listMailCommon(cols,connection, email, state, start, count, orderBy, ascending);
-		List<LiteMessage> list = new ArrayList<LiteMessage>();
+
 		while (result.next()) {
 			JSONObject message = loadMessageJSON(result);			
 			list.add(new LiteMessage(message));
@@ -1088,6 +1132,26 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 			@Override
 			public void run() {
+				try {
+					// loop through all blobs
+					Connection connection = getConnection();
+					PreparedStatement ps = connection.prepareStatement("SELECT "+BlueboxMessage.UID+" FROM "+BLOB_TABLE);
+					ps.execute();
+					ResultSet result = ps.getResultSet();
+
+					while (result.next()) {
+						String spooledId = result.getString(BlueboxMessage.UID);
+						if (!spoolReferenced(connection,spooledId)) {
+							removeSpooledStream(spooledId);
+						}
+					}
+					connection.close();
+				}
+				catch (Throwable t) {
+					t.printStackTrace();
+				}
+				finally {
+				}
 				setProgress(100);
 				setStatus("Completed");
 			}
@@ -1096,6 +1160,19 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return wt;
 	}
 
+	private boolean spoolReferenced(Connection connection,String spooledId) throws SQLException {
+		PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) from "+INBOX_TABLE+" where "+BlueboxMessage.RAWID+"=?");
+		ps.setString(1, spooledId);
+		ps.execute();
+		ResultSet result = ps.getResultSet();
+		long count = 0;
+		if (result.next()) {
+			count = result.getLong(1);
+		}
+		result.close();
+		return count>0;
+	}
+	
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
 		log.debug("Spool count is {}",getSpoolCount());
@@ -1136,11 +1213,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.close();
 		connection.close();
 
-		if (count<=MAX_SPOOL_SIZE)
-			return count;
-		else
-			return trimSpools(MAX_SPOOL_SIZE);
-
+		return count;
 	}
 
 	@Override
@@ -1166,17 +1239,17 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return msg;
 	}
 
-	private InputStream getSpooledStream(Connection connection, String spooledUid) throws SQLException {
-		PreparedStatement ps = connection.prepareStatement("SELECT * FROM "+BLOB_TABLE+" WHERE "+BlueboxMessage.UID+"=?");
-		ps.setString(1, spooledUid);
-		log.debug("Retrieving spooled entry using uid={}",spooledUid);
-		ps.execute();
-		ResultSet result = ps.getResultSet();
-		if (result.next()) {
-			return getDBORaw(ps.getResultSet(),getDBOString(ps.getResultSet(),BlueboxMessage.UID,UUID.randomUUID().toString()));
-		}
-		return null;
-	}
+//	private InputStream getSpooledStream(Connection connection, String spooledUid) throws SQLException {
+//		PreparedStatement ps = connection.prepareStatement("SELECT * FROM "+BLOB_TABLE+" WHERE "+BlueboxMessage.UID+"=?");
+//		ps.setString(1, spooledUid);
+//		log.debug("Retrieving spooled entry using uid={}",spooledUid);
+//		ps.execute();
+//		ResultSet result = ps.getResultSet();
+//		if (result.next()) {
+//			return getDBORaw(ps.getResultSet(),getDBOString(ps.getResultSet(),BlueboxMessage.UID,UUID.randomUUID().toString()));
+//		}
+//		return null;
+//	}
 
 	@Override
 	public void removeSpooledStream(String spooledUid) throws Exception {
@@ -1207,7 +1280,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			ResultSet result = ps.getResultSet();
 			if (result.next()) {
 				log.debug("Found spooled entry uid={}",spooledUid);
-				Blob blob = result.getBlob(BlueboxMessage.RAW);
+				Blob blob = result.getBlob(RAW);
 				size = blob.length();
 				blob.free();
 			}
@@ -1227,31 +1300,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public long trimSpools(long maxSize) throws Exception {
-		long count = 0;
-		Connection connection = getConnection();
-		// first get the count
-		PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) from "+BLOB_TABLE);
-		ps.execute();
-		ResultSet result = ps.getResultSet();
-		if (result.next()) {
-			count = result.getLong(1);
-		}
-		result.close();
-		ps.close();
-		if (count>maxSize) {		
-			long deleteCount = count-maxSize;
-			ps = connection.prepareStatement("SELECT * from "+BLOB_TABLE);
-			ps.execute();
-			result = ps.getResultSet();
-			while ((result.next())&&(deleteCount-- > 0)) {
-				removeSpooledStream(result.getString(StorageIf.Props.Uid.name()));
-			}
-		}
-		connection.commit();
-		result.close();
-
-		return maxSize;
+	public long cleanSpools() throws Exception {
+		long startCount = getSpoolCount();
+		WorkerThread wt = cleanRaw();
+		wt.run();
+		return startCount - getSpoolCount();
 	}
 
 	@Override
@@ -1282,7 +1335,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		querystr = querystr.toLowerCase();
 		if (querystr=="*")
 			querystr = "";
-//		querystr = querystr.substring(0,querystr.length()-1);
+		//		querystr = querystr.substring(0,querystr.length()-1);
 		Connection connection = getConnection();
 		PreparedStatement ps=null;
 

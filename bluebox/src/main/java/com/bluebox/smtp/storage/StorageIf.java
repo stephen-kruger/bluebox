@@ -27,7 +27,7 @@ public interface StorageIf {
 	
 	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm, String spooledUid) throws Exception;
 	
-	public enum Props {Uid,Inbox,Recipient,Sender,Subject,Received,State,Size};
+	public enum Props {Uid,RawUid,Inbox,Recipient,Sender,Subject,Received,State,Size};
 	
 	/*
 	 * Implementations must ensure all the fields in the Props object are persisted.
@@ -37,7 +37,7 @@ public interface StorageIf {
 	/*
 	 * This method is only ever used when loading out of a zip file from backup restore.
 	 */
-	public void store(JSONObject props, InputStream content) throws Exception;
+//	public void store(JSONObject props, InputStream content) throws Exception;
 
 	public BlueboxMessage retrieve(String uid) throws Exception;
 	
@@ -103,7 +103,7 @@ public interface StorageIf {
 	public JSONObject getMostActiveSender();
 		
 
-	public void delete(String uid) throws Exception;
+	public void delete(String uid, String rawId) throws Exception;
 	
 	/*
 	 * Called to perform housekeep tasks on the underlying storage, such as rebuilding indexes.
@@ -158,7 +158,10 @@ public interface StorageIf {
 	
 	public long getSpoolCount() throws Exception;
 	
-	public long trimSpools(long maxSize) throws Exception;
+	/*
+	 * Remove any spooled messages which are not referenced by a mailbox entry
+	 */
+	public long cleanSpools() throws Exception;
 
 	// time functions are db specific, so expose these mthods here
 	

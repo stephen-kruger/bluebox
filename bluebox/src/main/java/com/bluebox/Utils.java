@@ -367,7 +367,7 @@ public class Utils {
 		StorageIf si = StorageFactory.getInstance();
 		String spooledUid = spoolStream(si,msg);
 		sendMessageDirect(inbox,msg,spooledUid);
-		si.removeSpooledStream(spooledUid);
+//		si.removeSpooledStream(spooledUid);
 	}
 
 	public static void sendMessageDirect(StorageIf storage, MimeMessage msg) throws Exception {
@@ -379,7 +379,7 @@ public class Utils {
 			SearchFactory.getInstance().indexMail(bbm,false);
 		}
 		SearchFactory.getInstance().commit(true);
-		storage.removeSpooledStream(spooledUid);
+//		storage.removeSpooledStream(spooledUid);
 	}
 
 	public static MimeMessage createMessage(ServletContext session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {

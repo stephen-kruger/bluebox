@@ -48,7 +48,7 @@ public class BlueboxMessage {
 	public static final String INBOX = "Inbox";
 	public static final String RECIPIENT = "Recipient";
 	public static final String COUNT = "Count";
-	public static final String RAW = "pic";
+	public static final String RAWID = "RawUid";
 	public static final String ATTACHMENT = "Attachment";
 	public static final String HTML_BODY = "HtmlBody";
 	public static final String TEXT_BODY = "TextBody";
@@ -78,7 +78,7 @@ public class BlueboxMessage {
 		return mmw;
 	}
 
-	public void setBlueBoxMimeMessage(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws IOException, MessagingException, SQLException, JSONException {
+	public void setBlueBoxMimeMessage(String from, InboxAddress recipient, Date received, MimeMessage bbmm, String rawId) throws IOException, MessagingException, SQLException, JSONException {
 		mmw = bbmm;
 		log.debug("Persisting mime message");
 		if ((from==null)||(from.length()==0)) {
@@ -87,6 +87,7 @@ public class BlueboxMessage {
 		else {
 			setProperty(FROM,toJSONArray(new Address[]{new InternetAddress(from)}));
 		}
+		setProperty(RAWID, rawId);
 		setProperty(RECIPIENT, StringEscapeUtils.escapeJava(recipient.getFullAddress()));
 		setProperty(INBOX, StringEscapeUtils.escapeJava(getInbox().getAddress()));
 		setProperty(SUBJECT, StringEscapeUtils.escapeJava(bbmm.getSubject()));
@@ -301,6 +302,10 @@ public class BlueboxMessage {
 		return getLongProperty(SIZE);
 	}
 
+	public String getRawUid() {
+		return getProperty(RAWID);
+	}
+	
 	protected MimeMessageParser getParser() throws Exception {
 		if (parser==null) {
 			MimeMessageParser p = new MimeMessageParser(getBlueBoxMimeMessage());

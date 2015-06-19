@@ -9,6 +9,7 @@ import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.derby.StorageImpl;
+
 public class StorageTest extends TestCase {
 	private StorageImpl si;
 //	private byte[] blob = new  String("123456").getBytes();
@@ -74,7 +75,7 @@ public class StorageTest extends TestCase {
 		assertEquals("Mailbox should not be empty",1,si.getMailCount(message.getInbox(),State.NORMAL));
 		assertEquals("Mailbox should not be empty",0,si.getMailCount(message.getInbox(),State.DELETED));
 
-		si.delete(message.getIdentifier());
+		si.delete(message.getIdentifier(),message.getRawUid());
 
 		assertEquals("Mailbox should be empty",0,si.getMailCount(State.NORMAL));
 		assertEquals("Mailbox should be empty",0,si.getMailCount(State.DELETED));

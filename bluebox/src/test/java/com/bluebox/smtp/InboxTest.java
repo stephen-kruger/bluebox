@@ -129,7 +129,7 @@ public class InboxTest extends BaseTestCase {
 		wt = getInbox().restore(dir);
 		WorkerThread.startWorker(wt);
 		while (wt.getProgress()<100)
-			Thread.sleep(250);
+			Thread.sleep(500);
 		assertEquals(3,getInbox().getMailCount(BlueboxMessage.State.ANY));
 	}
 
@@ -552,6 +552,7 @@ public class InboxTest extends BaseTestCase {
 	public void testTrim() throws Exception {
 		Inbox inbox = getInbox();
 		StorageIf si = StorageFactory.getInstance();
+		si.deleteAll();
 		// set limit to 50 emails
 		Config.getInstance().setString(Config.BLUEBOX_MESSAGE_MAX, "50");
 		// add 100 emails
