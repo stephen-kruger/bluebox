@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
-<%@ page import="java.util.ResourceBundle"%>
-<%@ page import="com.bluebox.Config"%>
-<%@ page import="com.bluebox.Utils"%>
-<%@ page import="com.bluebox.smtp.Inbox"%>
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" %>
+<%@ page import="java.util.ResourceBundle" %>
+<%@ page import="com.bluebox.Config" %>
+<%@ page import="com.bluebox.Utils" %>
+<%@ page import="com.bluebox.smtp.Inbox" %>
+<%@ page import="com.bluebox.smtp.storage.StorageFactory" %>
 <%
 	Config bbconfig = Config.getInstance();
 	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
@@ -161,6 +162,17 @@
 					<td class="infoLabel"><label><%=infoResource.getString("fromwhitelist")%></label></td>
 					<td class="infoValue">
 						<%= Utils.toString(new Inbox().getFromWhitelist()) %>
+					</td>
+					<td></td>
+				</tr>
+				
+				<tr>
+					<td><br/></td>
+				</tr>
+				<tr>
+					<td class="infoLabel"><label><%=infoResource.getString("spoolcount")%></label></td>
+					<td class="infoValue">
+						<%= StorageFactory.getInstance().getSpoolCount() %>
 					</td>
 					<td></td>
 				</tr>

@@ -16,7 +16,6 @@ import javax.mail.internet.MimeMessage;
 import org.apache.commons.io.IOUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.bson.types.ObjectId;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -167,9 +166,10 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void deleteAll() throws Exception {
 		mailFS.drop();
-		for (DBObject x : blobFS.getFileList()) {
-			blobFS.remove(x);
-		}
+//		for (DBObject x : blobFS.getFileList()) {
+//			blobFS.remove(x);
+//		}
+		blobFS.getDB().dropDatabase();
 		//		rawFS.getDB().dropDatabase();
 		// TODO will be fixed in Mongo 3.1
 		//		rawFS = new GridFS(mongoClient.getDB(RAW_DB_NAME), BlueboxMessage.RAW);
@@ -605,7 +605,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
-//		log.debug("Spool count is {}",getSpoolCount());
+//		log.info("Spool count is {}",getSpoolCount());
 		try {
 			// create temp version to calculate md5
 			MessageDigest md = MessageDigest.getInstance("MD5");
@@ -615,11 +615,13 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			temp.save();
 
 			if (blobFS.findOne(temp.getMD5())==null) {
+				// no blob exists with this checksum, rename it and save
 				String old = temp.getFilename();
 				rename(blobFS,temp,temp.getMD5());
 				blobFS.remove(old);
 			}
 			else {
+				// already have a version of this mail, just delete it
 				blobFS.remove(temp.getFilename());
 			}
 			// now create final one with md5 as file name
