@@ -1277,10 +1277,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public void removeSpooledStream(Connection connection, String spooledUid) throws Exception {
 		log.debug("Removing spooled entry for uid={}",spooledUid);
-		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+BLOB_TABLE+" WHERE "+StorageIf.Props.Uid.name()+"=?");
-		ps.setString(1, spooledUid);
-		ps.execute();
-		connection.commit();
+			PreparedStatement ps = connection.prepareStatement("DELETE FROM "+BLOB_TABLE+" WHERE "+StorageIf.Props.Uid.name()+"=?");
+			ps.setString(1, spooledUid);
+			ps.execute();
+			connection.commit();
 		log.debug("Removed blob entry {}",spooledUid);
 	}
 	

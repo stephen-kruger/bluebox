@@ -292,7 +292,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			query.append(StorageIf.Props.State.name(), state.ordinal());
 		if (inbox!=null)
 			query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
-		long start = getUTCTime().getTime();
+//		long start = getUTCTime().getTime();
 		long count = db.getCollection(TABLE_NAME).count(query);
 //		log.debug("Calculated mail count in {}ms",(getUTCTime().getTime()-start));
 		return count;
