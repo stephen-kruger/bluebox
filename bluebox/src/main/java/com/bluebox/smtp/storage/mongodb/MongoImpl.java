@@ -413,7 +413,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 					DBCursor cursor = blobFS.getFileList();
 					while (cursor.hasNext()) {
 						GridFSDBFile blob = (GridFSDBFile) cursor.next();
-						String rawId = blob.getId().toString();
+						String rawId = blob.getFilename();
 						FindIterable<Document> rawres = mailFS.find(Filters.eq(StorageIf.Props.RawUid.name(), rawId));
 						if (rawres.first()==null) {
 							issues++;
@@ -611,13 +611,16 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			MessageDigest md = MessageDigest.getInstance("MD5");
 			DigestInputStream dis = new DigestInputStream(blob, md);
 			GridFSInputFile temp = blobFS.createFile(dis,true);
+			temp.setFilename(UUID.randomUUID().toString());
 			temp.save();
 
 			if (blobFS.findOne(temp.getMD5())==null) {
+				String old = temp.getFilename();
 				rename(blobFS,temp,temp.getMD5());
+				blobFS.remove(old);
 			}
 			else {
-				blobFS.remove(new ObjectId(temp.getId().toString()));
+				blobFS.remove(temp.getFilename());
 			}
 			// now create final one with md5 as file name
 //			if (blobFS.findOne(temp.getMD5())==null) {
