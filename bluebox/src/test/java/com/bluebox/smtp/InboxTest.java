@@ -25,6 +25,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
+import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
 
@@ -576,5 +577,25 @@ public class InboxTest extends BaseTestCase {
 			TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", "jj@nowhere.com", "mik@there.com", "xxxx", "dfkfsdf");
 		}
 		assertEquals("Spool reuse expected",10,si.getSpoolCount());
+	}
+	
+	@Test
+	public void testFromParse() throws Exception {
+		String t = "\"PPAUser.20111201.120331 TestUser\" <no-reply@cckdlswservsvt1.zf.ma.yoyo.com>";
+		JSONArray k = new JSONArray();
+		k.put(t);
+		log.info(k.toString());
+//		JSONArray j = new JSONArray("["+t+"]");
+//		assertEquals("Invalid length",1,j.length());
+		TestUtils.sendMailSMTP(t,t,t,t, "subject", "body");
+		Inbox inbox = getInbox();
+		TestUtils.waitFor(inbox, 3);
+		File dir = new File(".");
+		dir.deleteOnExit();
+		inbox.backup(dir).run();
+		inbox.deleteAll();
+		inbox.restore(dir).run();
+		new File(dir.getCanonicalPath()+File.separator+"bluebox.zip").delete();
+		assertEquals("Bckup or restore failed",3,inbox.getMailCount(BlueboxMessage.State.ANY));
 	}
 }

@@ -841,4 +841,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return null;
 	}
 
+	@Override
+	public List<String> getDBOArray(Object dbo, String key) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

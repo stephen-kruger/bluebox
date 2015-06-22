@@ -218,7 +218,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 					results.add(m);
 				}
 				catch (Throwable t) {
-					//					t.printStackTrace();
+										t.printStackTrace();
 					log.error("Nasty problem loading message:{}",dbo);;
 				}
 			}
@@ -757,8 +757,18 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	public String getDBOString(Object dbo, String key, String def) {
 		Document doc = (Document)dbo;
 		if (doc.containsKey(key))
-			return doc.get(key).toString();
+			return doc.getString(key);
 		return def;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<String> getDBOArray(Object dbo, String key) {
+
+		Document doc = (Document)dbo;
+		if (doc.containsKey(key)) {
+			return (List<String>)doc.get(key);
+		}
+		return new ArrayList<String>();
 	}
 
 	@Override

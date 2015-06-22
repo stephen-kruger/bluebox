@@ -87,6 +87,7 @@ public class BlueboxMessage {
 		else {
 			setProperty(FROM,toJSONArray(new Address[]{new InternetAddress(from)}));
 		}
+
 		setProperty(RAWID, rawId);
 		setProperty(RECIPIENT, StringEscapeUtils.escapeJava(recipient.getFullAddress()));
 		setProperty(INBOX, StringEscapeUtils.escapeJava(getInbox().getAddress()));
@@ -112,7 +113,7 @@ public class BlueboxMessage {
 			if (r!=null)
 				for (int i = 0; i < r.length;i++) {
 					try {
-						ja.put(StringEscapeUtils.escapeJava(Utils.decodeQuotedPrintable(r[i].toString())));
+						ja.put(Utils.decodeQuotedPrintable(r[i].toString()));
 					}
 					catch (Throwable t) {
 						log.error(t.getMessage());

@@ -508,5 +508,13 @@ public class StorageTest extends BaseTestCase {
 		si.cleanSpools();
 		assertEquals("Did not expect to find spools",0,si.getSpoolCount());
 	}
+	
+	public void testFrom() throws Exception {
+		StorageIf si = StorageFactory.getInstance();
+		BlueboxMessage message = TestUtils.addRandomDirect(si);
+		BlueboxMessage saved = si.retrieve(message.getIdentifier());
+
+		assertEquals("Message reported incorrect sender",message.getFrom().get(0),saved.getFrom().get(0));
+	}
 
 }

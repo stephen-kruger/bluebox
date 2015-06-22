@@ -7,6 +7,8 @@ import junit.framework.TestCase;
 import org.codehaus.jettison.json.JSONArray;
 import org.junit.Test;
 
+import com.bluebox.TestUtils;
+
 public class BasicStorageTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
 	private StorageIf si;
@@ -58,4 +60,11 @@ public class BasicStorageTest extends TestCase {
 //		}
 //		assertEquals("Spool count should be capped at "+AbstractStorage.MAX_SPOOL_SIZE,AbstractStorage.MAX_SPOOL_SIZE,si.getSpoolCount());
 //	}
+	
+	public void testFrom() throws Exception {
+		BlueboxMessage message = TestUtils.addRandomDirect(si);
+		BlueboxMessage saved = si.retrieve(message.getIdentifier());
+
+		assertEquals("Message reported incorrect sender",message.getFrom().get(0),saved.getFrom().get(0));
+	}
 }

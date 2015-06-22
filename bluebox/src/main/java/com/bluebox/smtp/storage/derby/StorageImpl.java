@@ -512,7 +512,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public long getMailCount(BlueboxMessage.State state) throws Exception {
-//		long start = getUTCTime().getTime();
+		//		long start = getUTCTime().getTime();
 		long count = 0;
 		Connection connection = getConnection();
 		PreparedStatement ps;
@@ -532,7 +532,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		ps.close();
 		connection.close();
 
-//		log.debug("Calculated mail count ({}) in {}ms", count, (getUTCTime().getTime()-start));
+		//		log.debug("Calculated mail count ({}) in {}ms", count, (getUTCTime().getTime()-start));
 		return count;
 	}
 
@@ -541,7 +541,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if ((inbox==null)||(inbox.getAddress().length()==0))
 			return getMailCount(state);
 		//		String inbox = Utils.getEmail(email);
-//		long start = getUTCTime().getTime();
+		//		long start = getUTCTime().getTime();
 		long count = 0;
 		Connection connection = getConnection();
 		Statement s = connection.createStatement();
@@ -565,7 +565,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		s.close();
 		connection.close();
 
-//		log.debug("Calculated mail count for {} ({}) in {}ms",inbox,count,(getUTCTime().getTime()-start));
+		//		log.debug("Calculated mail count for {} ({}) in {}ms",inbox,count,(getUTCTime().getTime()-start));
 		return count;
 	}
 
@@ -1277,13 +1277,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public void removeSpooledStream(Connection connection, String spooledUid) throws Exception {
 		log.debug("Removing spooled entry for uid={}",spooledUid);
-			PreparedStatement ps = connection.prepareStatement("DELETE FROM "+BLOB_TABLE+" WHERE "+StorageIf.Props.Uid.name()+"=?");
-			ps.setString(1, spooledUid);
-			ps.execute();
-			connection.commit();
+		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+BLOB_TABLE+" WHERE "+StorageIf.Props.Uid.name()+"=?");
+		ps.setString(1, spooledUid);
+		ps.execute();
+		connection.commit();
 		log.debug("Removed blob entry {}",spooledUid);
 	}
-	
+
 	@Override
 	public void removeSpooledStream(String spooledUid) throws Exception {
 		log.debug("Removing spooled entry for uid={}",spooledUid);
@@ -1419,7 +1419,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());		
 			break;
 		case RECIPIENT :
-//			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+			//			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 			ps = connection.prepareStatement("SELECT DISTINCT "+getFields()+" FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 			ps.setString(1, "%"+querystr+"%");
 			ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());	
@@ -1477,6 +1477,20 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				StorageIf.Props.Received.name()+", "+
 				StorageIf.Props.State.name()+", "+
 				StorageIf.Props.Size.name();
+	}
+
+	@Override
+	public List<String> getDBOArray(Object dbo, String key) {
+		List<String> l = new ArrayList<String>();
+		try {
+			JSONArray j = new JSONArray(getDBOString(dbo, key, "[]"));
+			for (int i = 0; i < j.length();i++)
+				l.add(j.get(i).toString());
+		} 
+		catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return l;
 	}
 
 }

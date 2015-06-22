@@ -65,6 +65,7 @@ public abstract class AbstractStorage implements StorageIf {
 	public abstract int getDBOInt(Object dbo, String key, int def);
 	public abstract long getDBOLong(Object dbo, String key, long def);
 	public abstract Date getDBODate(Object dbo, String key, Date def);
+	public abstract List<String> getDBOArray(Object dbo, String key);
 	//	public abstract InputStream getDBORaw(Object dbo, String key);
 
 	public BlueboxMessage loadMessage(Object dbo) throws Exception {
@@ -79,35 +80,13 @@ public abstract class AbstractStorage implements StorageIf {
 	public JSONObject loadMessageJSON(Object dbo) throws Exception {
 		JSONObject message = new JSONObject();
 		message.put(BlueboxMessage.UID,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()));
-		try {
-			message.put(BlueboxMessage.FROM,new JSONArray(getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']")));
-		}
-		catch (Throwable t) {
-			// hack a fix to try and recover, not sure where this error comes from
-			//["ppauser20111202.111744 TestUser" <no-reply@collabserv.com>]
-			JSONArray j = new JSONArray();
-			try {
-				String s = getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']");
-				if (s.startsWith("[")) {
-					s = s.substring(1,s.lastIndexOf(']'));
-					j.put(s);
-					log.info("Fixed unexpected array {}",s);
-				}
-				else {
-					j.put(s);
-				}
-			}
-			catch (Throwable t2) {
-				log.warn("Unexpected string instead of array {}",getDBOString(dbo,BlueboxMessage.FROM,"['bounce@bluebox.com']"));
-				j.put(getDBOString(dbo,BlueboxMessage.FROM,"bounce@bluebox.com"));
-			}
-			message.put(BlueboxMessage.FROM,j);			
-		}
+		message.put(BlueboxMessage.FROM,new JSONArray(getDBOArray(dbo,BlueboxMessage.FROM)));
+
 		message.put(BlueboxMessage.RAWID,getDBOString(dbo,BlueboxMessage.RAWID,""));
 		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
 		// don't ever need the text and html content, it's only used for searching
-//		message.put(BlueboxMessage.HTML_BODY,getDBOString(dbo,BlueboxMessage.HTML_BODY,""));
-//		message.put(BlueboxMessage.TEXT_BODY,getDBOString(dbo,BlueboxMessage.TEXT_BODY,""));
+		//		message.put(BlueboxMessage.HTML_BODY,getDBOString(dbo,BlueboxMessage.HTML_BODY,""));
+		//		message.put(BlueboxMessage.TEXT_BODY,getDBOString(dbo,BlueboxMessage.TEXT_BODY,""));
 		message.put(BlueboxMessage.RECIPIENT,getDBOString(dbo,BlueboxMessage.RECIPIENT,""));
 		message.put(BlueboxMessage.RECEIVED,getDBODate(dbo,BlueboxMessage.RECEIVED, getUTCTime()).getTime());
 		message.put(BlueboxMessage.STATE,getDBOInt(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
@@ -188,5 +167,7 @@ public abstract class AbstractStorage implements StorageIf {
 		};
 		return wt;
 	}
+
+
 
 }

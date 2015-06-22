@@ -37,14 +37,14 @@ public class StorageTest extends TestCase {
 
 	public void testListMail() throws Exception {
 		BlueboxMessage message = TestUtils.addRandomDirect(si);
-//		String id = si.add(UUID.randomUUID().toString(), "test@nowhere.com", "Test Name <test@nowhere.com>", "send@here.com", "this is a subject", Utils.getUTCTime(), State.NORMAL, 45,  new ByteArrayInputStream(blob));
-
-//		Log.info("Added mail "+message.getInbox());
 		List<BlueboxMessage> messages;
 		messages = si.listMail(message.getInbox(), State.NORMAL, 0, 10, BlueboxMessage.RECEIVED, true);
 		assertEquals("Message was missing",1,messages.size());
 		assertEquals("Message was missing subject",message.getSubject(),messages.get(0).getSubject());
-		assertEquals("Message reported incorrect sender",message.getFrom(),messages.get(0).getFrom());
+		// Message reported incorrect sender expected:<["steve@there.com"]> but was:<["[\"steve@there.com\"]"]>
+
+
+		assertEquals("Message reported incorrect sender",message.getFrom().get(0),messages.get(0).getFrom().get(0));
 		
 		messages = si.listMail(message.getInbox(), State.ANY, 0, 10, BlueboxMessage.RECEIVED, true);
 		assertEquals("Message was missing",1,messages.size());
