@@ -614,6 +614,45 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			temp.setFilename(UUID.randomUUID().toString());
 			temp.save();
 
+//			if (blobFS.findOne(temp.getMD5())==null) {
+//				// no blob exists with this checksum, rename it and save
+//				String old = temp.getFilename();
+//				rename(blobFS,temp,temp.getMD5());
+//				blobFS.remove(old);
+//			}
+//			else {
+//				// already have a version of this mail, just delete it
+//				blobFS.remove(temp.getFilename());
+//			}
+			// now create final one with md5 as file name
+//			if (blobFS.findOne(temp.getMD5())==null) {
+//				GridFSInputFile real = blobFS.createFile(blobFS.findOne(new ObjectId(temp.getId().toString())).getInputStream());
+//				real.setFilename(temp.getMD5());
+//				real.save();
+//			}
+//			blobFS.remove(new ObjectId(temp.getId().toString()));
+			return temp.getFilename();
+
+		}
+		catch (Throwable t) {
+			log.error("Error storing blob",t);
+		}
+		finally {
+			blob.close();
+		}
+		return null;
+	}
+	
+	public String oldspoolStream(InputStream blob) throws Exception {
+//		log.info("Spool count is {}",getSpoolCount());
+		try {
+			// create temp version to calculate md5
+			MessageDigest md = MessageDigest.getInstance("MD5");
+			DigestInputStream dis = new DigestInputStream(blob, md);
+			GridFSInputFile temp = blobFS.createFile(dis,true);
+			temp.setFilename(UUID.randomUUID().toString());
+			temp.save();
+
 			if (blobFS.findOne(temp.getMD5())==null) {
 				// no blob exists with this checksum, rename it and save
 				String old = temp.getFilename();
