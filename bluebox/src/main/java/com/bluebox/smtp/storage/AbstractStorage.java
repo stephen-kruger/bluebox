@@ -11,12 +11,14 @@ import java.util.UUID;
 
 import javax.mail.internet.MimeMessage;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.Config;
+import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
 import com.bluebox.search.SearchFactory;
 import com.bluebox.search.SearchIf;
@@ -83,7 +85,7 @@ public abstract class AbstractStorage implements StorageIf {
 		message.put(BlueboxMessage.FROM,new JSONArray(getDBOArray(dbo,BlueboxMessage.FROM)));
 
 		message.put(BlueboxMessage.RAWID,getDBOString(dbo,BlueboxMessage.RAWID,""));
-		message.put(BlueboxMessage.SUBJECT,getDBOString(dbo,BlueboxMessage.SUBJECT,""));
+		message.put(BlueboxMessage.SUBJECT,Utils.decodeRFC2407(StringEscapeUtils.unescapeJava(getDBOString(dbo,BlueboxMessage.SUBJECT,""))));
 		// don't ever need the text and html content, it's only used for searching
 		//		message.put(BlueboxMessage.HTML_BODY,getDBOString(dbo,BlueboxMessage.HTML_BODY,""));
 		//		message.put(BlueboxMessage.TEXT_BODY,getDBOString(dbo,BlueboxMessage.TEXT_BODY,""));
