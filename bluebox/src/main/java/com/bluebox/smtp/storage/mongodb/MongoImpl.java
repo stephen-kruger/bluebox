@@ -434,7 +434,9 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 					}
 					log.info("Finished looking for orphaned blobs (found "+issues+")");
 					log.info("Looking for orphaned messages");
+
 					List<LiteMessage> list = listMailLite(null, BlueboxMessage.State.ANY, 0, (int)getMailCount(BlueboxMessage.State.ANY), BlueboxMessage.RECEIVED, true);
+
 					for (LiteMessage m : list) {
 						setProgress((int)((100*count++)/totalCount));
 						try {
