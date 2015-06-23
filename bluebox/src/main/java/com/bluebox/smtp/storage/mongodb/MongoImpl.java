@@ -376,12 +376,12 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		output.close();
 		return jo;
 	}
-	
+
 	/*
 	 * Delete only the JSON portion of the mail entry
 	 */
 	private void delete(String uid) throws Exception {
-//		BlueboxMessage bbm = retrieve(uid);
+		//		BlueboxMessage bbm = retrieve(uid);
 		DeleteResult res = mailFS.deleteOne(Filters.eq(StorageIf.Props.Uid.name(), uid));
 		if (res.getDeletedCount()<=0) {
 			log.warn("Nothing deleted for uid {}",uid);
@@ -640,32 +640,12 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
-		//		log.info("Spool count is {}",getSpoolCount());
 		try {
-			// create temp version to calculate md5
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			DigestInputStream dis = new DigestInputStream(blob, md);
-			GridFSInputFile temp = blobFS.createFile(dis,true);
+			GridFSInputFile temp = blobFS.createFile(blob,true);
 			temp.setFilename(UUID.randomUUID().toString());
+			temp.saveChunks();
+			temp.setFilename(temp.getMD5());
 			temp.save();
-
-			//			if (blobFS.findOne(temp.getMD5())==null) {
-			//				// no blob exists with this checksum, rename it and save
-			//				String old = temp.getFilename();
-			//				rename(blobFS,temp,temp.getMD5());
-			//				blobFS.remove(old);
-			//			}
-			//			else {
-			//				// already have a version of this mail, just delete it
-			//				blobFS.remove(temp.getFilename());
-			//			}
-			// now create final one with md5 as file name
-			//			if (blobFS.findOne(temp.getMD5())==null) {
-			//				GridFSInputFile real = blobFS.createFile(blobFS.findOne(new ObjectId(temp.getId().toString())).getInputStream());
-			//				real.setFilename(temp.getMD5());
-			//				real.save();
-			//			}
-			//			blobFS.remove(new ObjectId(temp.getId().toString()));
 			return temp.getFilename();
 
 		}
