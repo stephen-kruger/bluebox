@@ -166,9 +166,9 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void deleteAll() throws Exception {
 		mailFS.drop();
-//		for (DBObject x : blobFS.getFileList()) {
-//			blobFS.remove(x);
-//		}
+		//		for (DBObject x : blobFS.getFileList()) {
+		//			blobFS.remove(x);
+		//		}
 		blobFS.getDB().dropDatabase();
 		//		rawFS.getDB().dropDatabase();
 		// TODO will be fixed in Mongo 3.1
@@ -218,8 +218,8 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 					results.add(m);
 				}
 				catch (Throwable t) {
-										t.printStackTrace();
-					log.error("Nasty problem loading message:{}",dbo);;
+					//					t.printStackTrace();
+					log.error("Nasty problem loading message:{}",dbo,t);
 				}
 			}
 		} 
@@ -376,14 +376,21 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		output.close();
 		return jo;
 	}
-
-	@Override
-	public void delete(String uid, String rawId) throws Exception {
-		//		BlueboxMessage bbm = retrieve(uid);
+	
+	/*
+	 * Delete only the JSON portion of the mail entry
+	 */
+	private void delete(String uid) throws Exception {
+//		BlueboxMessage bbm = retrieve(uid);
 		DeleteResult res = mailFS.deleteOne(Filters.eq(StorageIf.Props.Uid.name(), uid));
 		if (res.getDeletedCount()<=0) {
 			log.warn("Nothing deleted for uid {}",uid);
 		}
+	}
+
+	@Override
+	public void delete(String uid, String rawId) throws Exception {
+		delete(uid);
 		// remove the RAW blob too if there are no more references to it
 		//		rawFS.remove(rawFS.findOne(uid));
 		FindIterable<Document> rawres = mailFS.find(Filters.eq(StorageIf.Props.RawUid.name(), rawId));
@@ -407,8 +414,10 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			public void run() {
 				setProgress(0);
 				int issues = 0;
+				long count = 0;
 				//				DBCursor cursor = rawFS.getFileList();
 				try {
+					long totalCount = getSpoolCount()+getMailCount(BlueboxMessage.State.ANY);
 					log.info("Looking for orphaned blobs");
 					DBCursor cursor = blobFS.getFileList();
 					while (cursor.hasNext()) {
@@ -421,8 +430,31 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 							setStatus("Deleted orphaned spooled message "+issues);
 							removeSpooledStream(rawId);
 						}
+						setProgress((int)((100*count++)/totalCount));
 					}
 					log.info("Finished looking for orphaned blobs (found "+issues+")");
+					log.info("Looking for orphaned messages");
+					List<LiteMessage> list = listMailLite(null, BlueboxMessage.State.ANY, 0, 500, BlueboxMessage.RECEIVED, true);
+					for (LiteMessage m : list) {
+						setProgress((int)((100*count++)/totalCount));
+						try {
+							if (!containsSpool(m.getRawIdentifier())) {
+								// delete this mail entry
+								delete(m.getIdentifier());
+								issues++;
+								setStatus("Deleting orphaned mail entry ("+issues+")");
+								log.info("Deleting orphaned mail entry ({})",issues);
+							}
+						}
+						catch (Throwable t) {
+							log.warn("Issue with mail entry",t);
+							// delete it anyway
+							delete(m.getIdentifier());
+							issues++;
+							setStatus("Deleting orphaned mail entry ("+issues+")");
+							log.info("Deleting orphaned mail entry ({})",issues);
+						}
+					}
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
@@ -431,6 +463,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 					//					cursor.close();
 					setProgress(100);
 					setStatus(issues+" issues fixed");
+					log.info("Finished looking for orphaned messages");
 				}
 			}
 		};
@@ -605,7 +638,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
-//		log.info("Spool count is {}",getSpoolCount());
+		//		log.info("Spool count is {}",getSpoolCount());
 		try {
 			// create temp version to calculate md5
 			MessageDigest md = MessageDigest.getInstance("MD5");
@@ -614,23 +647,23 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			temp.setFilename(UUID.randomUUID().toString());
 			temp.save();
 
-//			if (blobFS.findOne(temp.getMD5())==null) {
-//				// no blob exists with this checksum, rename it and save
-//				String old = temp.getFilename();
-//				rename(blobFS,temp,temp.getMD5());
-//				blobFS.remove(old);
-//			}
-//			else {
-//				// already have a version of this mail, just delete it
-//				blobFS.remove(temp.getFilename());
-//			}
+			//			if (blobFS.findOne(temp.getMD5())==null) {
+			//				// no blob exists with this checksum, rename it and save
+			//				String old = temp.getFilename();
+			//				rename(blobFS,temp,temp.getMD5());
+			//				blobFS.remove(old);
+			//			}
+			//			else {
+			//				// already have a version of this mail, just delete it
+			//				blobFS.remove(temp.getFilename());
+			//			}
 			// now create final one with md5 as file name
-//			if (blobFS.findOne(temp.getMD5())==null) {
-//				GridFSInputFile real = blobFS.createFile(blobFS.findOne(new ObjectId(temp.getId().toString())).getInputStream());
-//				real.setFilename(temp.getMD5());
-//				real.save();
-//			}
-//			blobFS.remove(new ObjectId(temp.getId().toString()));
+			//			if (blobFS.findOne(temp.getMD5())==null) {
+			//				GridFSInputFile real = blobFS.createFile(blobFS.findOne(new ObjectId(temp.getId().toString())).getInputStream());
+			//				real.setFilename(temp.getMD5());
+			//				real.save();
+			//			}
+			//			blobFS.remove(new ObjectId(temp.getId().toString()));
 			return temp.getFilename();
 
 		}
@@ -642,9 +675,9 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		}
 		return null;
 	}
-	
+
 	public String oldspoolStream(InputStream blob) throws Exception {
-//		log.info("Spool count is {}",getSpoolCount());
+		//		log.info("Spool count is {}",getSpoolCount());
 		try {
 			// create temp version to calculate md5
 			MessageDigest md = MessageDigest.getInstance("MD5");
@@ -664,12 +697,12 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 				blobFS.remove(temp.getFilename());
 			}
 			// now create final one with md5 as file name
-//			if (blobFS.findOne(temp.getMD5())==null) {
-//				GridFSInputFile real = blobFS.createFile(blobFS.findOne(new ObjectId(temp.getId().toString())).getInputStream());
-//				real.setFilename(temp.getMD5());
-//				real.save();
-//			}
-//			blobFS.remove(new ObjectId(temp.getId().toString()));
+			//			if (blobFS.findOne(temp.getMD5())==null) {
+			//				GridFSInputFile real = blobFS.createFile(blobFS.findOne(new ObjectId(temp.getId().toString())).getInputStream());
+			//				real.setFilename(temp.getMD5());
+			//				real.save();
+			//			}
+			//			blobFS.remove(new ObjectId(temp.getId().toString()));
 			return temp.getMD5();
 
 		}
@@ -683,11 +716,11 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	}
 
 	public void rename(GridFS files, GridFSInputFile oldName, String newName){
-//		GridFSDBFile old = files.findOne(oldName);
-//		ObjectId id = (ObjectId)old.getId();
-//		DBObject dbo = new BasicDBObject("_id", old.getId());
-//		dbo.put("filename", newName);
-//		old.setMetaData(dbo);
+		//		GridFSDBFile old = files.findOne(oldName);
+		//		ObjectId id = (ObjectId)old.getId();
+		//		DBObject dbo = new BasicDBObject("_id", old.getId());
+		//		dbo.put("filename", newName);
+		//		old.setMetaData(dbo);
 		oldName.setFilename(newName);
 		oldName.save();
 	}
@@ -700,6 +733,15 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	public InputStream getSpooledInputStream(String spooledUid) throws Exception {
 		GridFSDBFile blob = blobFS.findOne(spooledUid);
 		return blob.getInputStream();
+	}
+
+	public boolean containsSpool(String spooledUid) {
+		try {
+			return blobFS.findOne(spooledUid)!=null;		
+		}
+		catch (Throwable t) {
+			return false;
+		}
 	}
 
 	@Override
@@ -799,7 +841,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			return doc.getString(key);
 		return def;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<String> getDBOArray(Object dbo, String key) {
 
