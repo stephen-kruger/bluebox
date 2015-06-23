@@ -644,9 +644,19 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			GridFSInputFile temp = blobFS.createFile(blob,true);
 			temp.setFilename(UUID.randomUUID().toString());
 			temp.saveChunks();
-			temp.setFilename(temp.getMD5());
-			temp.save();
-			return temp.getFilename();
+			// check if it already exists
+			if (containsSpool(temp.getMD5())) {
+				log.info("Removing duplicated spool {}",temp.getMD5());
+				temp.save();
+				removeSpooledStream(temp.getFilename());
+			}
+			else {
+				log.info("Saving spool {}",temp.getMD5());
+				temp.setFilename(temp.getMD5());
+				temp.save();
+			}
+
+			return temp.getMD5();
 
 		}
 		catch (Throwable t) {
