@@ -240,7 +240,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		connection.close();
 
 		//		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED,DOW};
-		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.RAWID,BlueboxMessage.INBOX,BlueboxMessage.RECIPIENT,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.HTML_BODY,BlueboxMessage.TEXT_BODY,BlueboxMessage.RECEIVED,BlueboxMessage.STATE,BlueboxMessage.SIZE};
+		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.RAWUID,BlueboxMessage.INBOX,BlueboxMessage.RECIPIENT,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.HTML_BODY,BlueboxMessage.TEXT_BODY,BlueboxMessage.RECEIVED,BlueboxMessage.STATE,BlueboxMessage.SIZE};
 		createIndexes(INBOX_TABLE,indexes);
 
 		indexes = new String[]{KEY,VALUE};
@@ -630,7 +630,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		if (count<=0) return list;
 		Connection connection = getConnection();
 		String cols = 	BlueboxMessage.UID+","+
-				BlueboxMessage.RAWID+","+
+				BlueboxMessage.RAWUID+","+
 				BlueboxMessage.INBOX+","+
 				BlueboxMessage.FROM+","+
 				BlueboxMessage.SUBJECT+","+
@@ -1164,7 +1164,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	private boolean spoolReferenced(Connection connection,String spooledId) throws SQLException {
-		PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) from "+INBOX_TABLE+" where "+BlueboxMessage.RAWID+"=?");
+		PreparedStatement ps = connection.prepareStatement("SELECT COUNT(*) from "+INBOX_TABLE+" where "+BlueboxMessage.RAWUID+"=?");
 		ps.setString(1, spooledId);
 		ps.execute();
 		ResultSet result = ps.getResultSet();

@@ -73,7 +73,7 @@ public abstract class AbstractStorage implements StorageIf {
 
 	public BlueboxMessage loadMessage(Object dbo) throws Exception {
 		JSONObject json = loadMessageJSON(dbo);
-		return new BlueboxMessage(json, getSpooledStream(json.getString(BlueboxMessage.RAWID)));
+		return new BlueboxMessage(json, getSpooledStream(json.getString(BlueboxMessage.RAWUID)));
 	}
 
 	/*
@@ -98,7 +98,7 @@ public abstract class AbstractStorage implements StorageIf {
 			}
 			message.put(BlueboxMessage.FROM,ja);
 		}
-		message.put(BlueboxMessage.RAWID,getDBOString(dbo,BlueboxMessage.RAWID,""));
+		message.put(BlueboxMessage.RAWUID,getDBOString(dbo,BlueboxMessage.RAWUID,""));
 		message.put(BlueboxMessage.SUBJECT,Utils.decodeRFC2407(StringEscapeUtils.unescapeJava(getDBOString(dbo,BlueboxMessage.SUBJECT,""))));
 		// don't ever need the text and html content, it's only used for searching
 		//		message.put(BlueboxMessage.HTML_BODY,getDBOString(dbo,BlueboxMessage.HTML_BODY,""));

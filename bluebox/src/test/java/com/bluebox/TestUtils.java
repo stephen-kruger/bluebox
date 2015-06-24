@@ -39,7 +39,7 @@ public class TestUtils extends TestCase {
 		while ((retryCount-->0)&&(inbox.getMailCount(BlueboxMessage.State.NORMAL)<count)) {
 			try {
 				log.info("Waiting for delivery "+count);
-				Thread.sleep(250);
+				Thread.sleep(450);
 			} 
 			catch (InterruptedException e) {
 				e.printStackTrace();

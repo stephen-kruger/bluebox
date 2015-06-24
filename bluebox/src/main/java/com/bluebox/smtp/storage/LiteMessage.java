@@ -20,7 +20,7 @@ public class LiteMessage {
 	}
 	
 	public String getRawIdentifier() throws JSONException {
-		return data.getString(BlueboxMessage.RAWID);
+		return data.getString(BlueboxMessage.RAWUID);
 	}
 
 	public String getSubject() throws JSONException {

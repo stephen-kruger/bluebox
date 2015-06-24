@@ -2,8 +2,6 @@ package com.bluebox.smtp.storage.mongodb;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -107,7 +105,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public void store(JSONObject props, String spooledUid) throws Exception {
-		props.put(BlueboxMessage.RAWID, spooledUid);
+		props.put(BlueboxMessage.RAWUID, spooledUid);
 		//		store(props,getSpooledInputStream(spooledUid));
 		try {
 			Document bson = Document.parse( props.toString() );
@@ -393,15 +391,13 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		delete(uid);
 		// remove the RAW blob too if there are no more references to it
 		//		rawFS.remove(rawFS.findOne(uid));
-		FindIterable<Document> rawres = mailFS.find(Filters.eq(StorageIf.Props.RawUid.name(), rawId));
-		if (rawres.first()==null) {
+		if (spoolReferenced(rawId)) {
+			log.debug("Leaving still referenced spooled message {}",rawId);						
+		}
+		else {
 			log.debug("Deleting last instance of spooled message {}",rawId);
 			removeSpooledStream(rawId);
 		}
-		else {
-			log.debug("Leaving still referenced spooled message {}",rawId);			
-		}
-
 	}
 
 	@Override
@@ -650,12 +646,12 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			if (enableSpoolReuse) {
 				// check if it already exists
 				if (containsSpool(spoolName)) {
-					log.info("Removing duplicated spool {} with md5 {}",temp.getFilename(),spoolName);
+					log.debug("Removing duplicated spool {} with md5 {}",temp.getFilename(),spoolName);
 					temp.save();
 					removeSpooledStream(temp.getFilename());
 				}
 				else {
-					log.info("Saving spool {}",spoolName);
+					log.debug("Saving spool {}",spoolName);
 					temp.setFilename(spoolName);
 					temp.save();
 				}
@@ -733,10 +729,27 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	public long cleanSpools() throws Exception {
 		long count = 0;
 		for (DBObject f : blobFS.getFileList()) {
-			blobFS.remove(f);
+			List<GridFSDBFile> blobs = blobFS.find(f);
+			for (GridFSDBFile blob : blobs)
+			if (!spoolReferenced(blob.getFilename())) {
+				removeSpooledStream(blob.getFilename());
+			}
 			count++;
 		}
 		return count;
+	}
+
+	/*
+	 * Return true if there are mail entries referencing this blob, else return false;
+	 */
+	private boolean spoolReferenced(String spoolUid) {
+		FindIterable<Document> rawres = mailFS.find(Filters.eq(StorageIf.Props.RawUid.name(), spoolUid));
+		if (rawres.first()==null) {
+			return false;
+		}
+		else {
+			return true;		
+		}
 	}
 
 	@Override

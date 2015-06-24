@@ -105,7 +105,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			DBObject bson = ( DBObject ) JSON.parse( props.toString() );
 			Date d = Utils.getUTCDate(getUTCTime(),props.getLong(StorageIf.Props.Received.name()));
 			bson.put(StorageIf.Props.Received.name(), d);
-			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAWID);
+			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAWUID);
 			GridFSInputFile gfsFile = gfsRaw.createFile(blob,true);
 			gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
 			gfsFile.save();
@@ -176,7 +176,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	public InputStream getDBORaw(Object dbo, String uid) {
 		try {
-			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAWID);
+			GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAWUID);
 			GridFSDBFile imageForOutput = gfsRaw.findOne(uid);
 			return imageForOutput.getInputStream();
 		}
@@ -193,7 +193,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		BasicDBObject query = new BasicDBObject(StorageIf.Props.Uid.name(), uid);
 		db.getCollection(TABLE_NAME).remove(query);	
 		// remove the RAW blob too
-		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAWID);
+		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAWUID);
 		gfsRaw.remove(gfsRaw.findOne(uid));
 	}
 
@@ -214,7 +214,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 				try {
 					log.info("Looking for orphaned blobs");
 					// clean up any blobs who have no associated inbox message
-					GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAWID);
+					GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAWUID);
 					DBCursor cursor = gfsRaw.getFileList();
 					DBObject dbo;
 					int count = 0;
@@ -264,7 +264,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			log.error("Cannot delete from closed inbox");
 		}
 		// remove all blobs
-		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAWID);
+		GridFS gfsRaw = new GridFS(db, BlueboxMessage.RAWUID);
 		DBCursor cursor = gfsRaw.getFileList();
 		DBObject dbo;
 		while(cursor.hasNext()) {

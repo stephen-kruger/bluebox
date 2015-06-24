@@ -48,7 +48,7 @@ public class BlueboxMessage {
 	public static final String INBOX = "Inbox";
 	public static final String RECIPIENT = "Recipient";
 	public static final String COUNT = "Count";
-	public static final String RAWID = "RawUid";
+	public static final String RAWUID = "RawUid";
 	public static final String ATTACHMENT = "Attachment";
 	public static final String HTML_BODY = "HtmlBody";
 	public static final String TEXT_BODY = "TextBody";
@@ -88,7 +88,7 @@ public class BlueboxMessage {
 			setProperty(FROM,toJSONArray(new Address[]{new InternetAddress(from)}));
 		}
 
-		setProperty(RAWID, rawId);
+		setProperty(RAWUID, rawId);
 		setProperty(RECIPIENT, StringEscapeUtils.escapeJava(recipient.getFullAddress()));
 		setProperty(INBOX, StringEscapeUtils.escapeJava(getInbox().getAddress()));
 		setProperty(SUBJECT, StringEscapeUtils.escapeJava(bbmm.getSubject()));
@@ -304,7 +304,7 @@ public class BlueboxMessage {
 	}
 
 	public String getRawUid() {
-		return getProperty(RAWID);
+		return getProperty(RAWUID);
 	}
 	
 	protected MimeMessageParser getParser() throws Exception {
