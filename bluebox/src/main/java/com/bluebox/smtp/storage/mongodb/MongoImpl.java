@@ -640,20 +640,29 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String spoolStream(InputStream blob) throws Exception {
+		boolean enableSpoolReuse = true;
 		try {
 			GridFSInputFile temp = blobFS.createFile(blob,true);
-			temp.setFilename(UUID.randomUUID().toString());
+			String spoolName = UUID.randomUUID().toString(); 
+			temp.setFilename(spoolName);
 			temp.saveChunks();
-			// check if it already exists
-			if (containsSpool(temp.getMD5())) {
-				log.info("Removing duplicated spool {}",temp.getMD5());
-				temp.save();
-				removeSpooledStream(temp.getFilename());
+			spoolName = temp.getMD5();
+			if (enableSpoolReuse) {
+				// check if it already exists
+				if (containsSpool(spoolName)) {
+					log.info("Removing duplicated spool {} with md5 {}",temp.getFilename(),spoolName);
+					temp.save();
+					removeSpooledStream(temp.getFilename());
+				}
+				else {
+					log.info("Saving spool {}",spoolName);
+					temp.setFilename(spoolName);
+					temp.save();
+				}
 			}
 			else {
-				log.info("Saving spool {}",temp.getMD5());
-				temp.setFilename(temp.getMD5());
 				temp.save();
+				return temp.getFilename();				
 			}
 
 			return temp.getMD5();
@@ -666,55 +675,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			blob.close();
 		}
 		return null;
-	}
-
-	public String oldspoolStream(InputStream blob) throws Exception {
-		//		log.info("Spool count is {}",getSpoolCount());
-		try {
-			// create temp version to calculate md5
-			MessageDigest md = MessageDigest.getInstance("MD5");
-			DigestInputStream dis = new DigestInputStream(blob, md);
-			GridFSInputFile temp = blobFS.createFile(dis,true);
-			temp.setFilename(UUID.randomUUID().toString());
-			temp.save();
-
-			if (blobFS.findOne(temp.getMD5())==null) {
-				// no blob exists with this checksum, rename it and save
-				String old = temp.getFilename();
-				rename(blobFS,temp,temp.getMD5());
-				blobFS.remove(old);
-			}
-			else {
-				// already have a version of this mail, just delete it
-				blobFS.remove(temp.getFilename());
-			}
-			// now create final one with md5 as file name
-			//			if (blobFS.findOne(temp.getMD5())==null) {
-			//				GridFSInputFile real = blobFS.createFile(blobFS.findOne(new ObjectId(temp.getId().toString())).getInputStream());
-			//				real.setFilename(temp.getMD5());
-			//				real.save();
-			//			}
-			//			blobFS.remove(new ObjectId(temp.getId().toString()));
-			return temp.getMD5();
-
-		}
-		catch (Throwable t) {
-			log.error("Error storing blob",t);
-		}
-		finally {
-			blob.close();
-		}
-		return null;
-	}
-
-	public void rename(GridFS files, GridFSInputFile oldName, String newName){
-		//		GridFSDBFile old = files.findOne(oldName);
-		//		ObjectId id = (ObjectId)old.getId();
-		//		DBObject dbo = new BasicDBObject("_id", old.getId());
-		//		dbo.put("filename", newName);
-		//		old.setMetaData(dbo);
-		oldName.setFilename(newName);
-		oldName.save();
 	}
 
 	@Override

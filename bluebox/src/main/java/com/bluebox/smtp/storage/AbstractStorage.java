@@ -13,6 +13,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,8 +83,21 @@ public abstract class AbstractStorage implements StorageIf {
 	public JSONObject loadMessageJSON(Object dbo) throws Exception {
 		JSONObject message = new JSONObject();
 		message.put(BlueboxMessage.UID,getDBOString(dbo,BlueboxMessage.UID,UUID.randomUUID().toString()));
-		message.put(BlueboxMessage.FROM,new JSONArray(getDBOArray(dbo,BlueboxMessage.FROM)));
-
+		try {
+			message.put(BlueboxMessage.FROM,new JSONArray(getDBOArray(dbo,BlueboxMessage.FROM)));
+		}
+		catch (JSONException je) {
+			log.warn("Fixing bum FROM field {}",je.getMessage());
+			// hack to fix this error, not sure where it comes from
+			//org.codehaus.jettison.json.JSONException: Expected a ',' or ']' at character 37 of ["PPAUser.20111201.120331 TestUser" <no-reply@servsvt1.xxx.yyy.zzz.com>]
+			List<String> res = getDBOArray(dbo,BlueboxMessage.FROM);
+			JSONArray ja = new JSONArray();
+			for (String s : res) {
+				s = s.substring(1,s.length()-1);
+				ja.put(s.substring(1,s.length()-1));
+			}
+			message.put(BlueboxMessage.FROM,ja);
+		}
 		message.put(BlueboxMessage.RAWID,getDBOString(dbo,BlueboxMessage.RAWID,""));
 		message.put(BlueboxMessage.SUBJECT,Utils.decodeRFC2407(StringEscapeUtils.unescapeJava(getDBOString(dbo,BlueboxMessage.SUBJECT,""))));
 		// don't ever need the text and html content, it's only used for searching

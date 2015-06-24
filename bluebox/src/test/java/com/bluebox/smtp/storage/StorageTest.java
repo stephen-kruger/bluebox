@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -496,15 +497,23 @@ public class StorageTest extends BaseTestCase {
 	@Test
 	public void testOrphanedSpools() throws Exception {
 		StorageIf si = StorageFactory.getInstance();
+		List<String> uids = new ArrayList<String>();
 		assertEquals("Did not expect to find spools",0,si.getSpoolCount());
 		for (int i = 0; i < 50; i++) {
 			log.info("Spooling to uid {}",si.spoolStream(new ByteArrayInputStream((i+"xxxxxxxxxxxxxxxxxxxxx").getBytes())));
 		}
-		assertEquals("Did not find expected spools",50,si.getSpoolCount());
-//		log.info("spool count {}",si.getSpoolCount());
-//		assertEquals("Did not trim all spools",50,si.getSpoolCount());
-		si.cleanSpools();
-		si.cleanSpools();
+		assertEquals("Unexpected spool count found",50,si.getSpoolCount());
+		
+		for (int i = 0; i < 50; i++) {
+			log.info("Spooling to uid {}",si.spoolStream(new ByteArrayInputStream(("xxxxxxxxxxxxxxxxxxxxx").getBytes())));
+		}
+		assertEquals("Unexpected spool count found",51,si.getSpoolCount());
+
+		for (String uid : uids) {
+			assertTrue("Spool was not found",si.contains(uid));
+			assertTrue(si.getSpooledStreamSize(uid)>0);
+		}
+		
 		si.cleanSpools();
 		assertEquals("Did not expect to find spools",0,si.getSpoolCount());
 	}
