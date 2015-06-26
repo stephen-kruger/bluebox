@@ -44,4 +44,11 @@ public class InboxAddressTest extends TestCase {
 		assertTrue(new InboxAddress(email2).isValidAddress());
 		assertNotNull(new InboxAddress(email2).getDomain());
 	}
+	
+	@Test
+	public void testQuotedForm() {
+		String email = "L’arrivée étendus9605 <queenelizabeth9605@smtphouse.com>";
+		assertEquals("Email did not match","queenelizabeth9605@smtphouse.com",InboxAddress.getEmail(email));
+		assertEquals("Email did not match","L’arrivée étendus9605",new InboxAddress(email).getDisplayName());
+	}
 }

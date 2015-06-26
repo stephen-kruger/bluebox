@@ -1,0 +1,107 @@
+Received: from llnsvtsmtp.acme.com (llnsvtsmtp.acme.com [9.70.123.123])
+        by ghvm352.lotus.com
+        with SMTP (BlueBox V4.4.5) id IBBOE3GY
+        for queenelizabeth9605@smtphouse.com;
+        Thu, 25 Jun 2015 00:14:15 -0400 (EDT)
+Received: from sdr2b.tst6.acme.com (sdr2b.tst6.acme.com [10.1.111.111])
+	by llnsvtsmtp.acme.com (8.13.8/8.13.8) with ESMTP id t5P4EFom027842
+	for <queenelizabeth9605@smtphouse.com>; Thu, 25 Jun 2015 00:14:15 -0400
+Received: from sdr2b.tst6.acme.com (localhost.localdomain [127.0.0.1])
+	by sdr2b.tst6.acme.com (8.14.4/8.14.4) with ESMTP id t5P4EFvC023727
+	for <queenelizabeth9605@smtphouse.com>; Thu, 25 Jun 2015 04:14:15 GMT
+Date: Thu, 25 Jun 2015 04:14:15 +0000 (GMT)
+From: Openstack Cloud <no-reply@collabservsvt2.acme.com>
+Reply-To: Cloud Platform FVT5 <cp_fvt5@smtphouse.com>
+To: =?UTF-8?Q?L=E2=80=99arriv=C3=A9e_=C3=A9tendus9605?= <queenelizabeth9605@smtphouse.com>
+Message-ID: <-609587732.554.1435205655685.JavaMail.websphere@sdr2b.tst6.acme.com>
+Subject: Openstack Cloud - You have been added to Cloud Platform FVT 5's
+ Openstack Cloud account
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_552_548082617.1435205655683"
+Content-Transfer-Encoding: 8bit
+X-SUBSCRIBERID: 21346217
+X-EMAILTEMPLATE: user_add
+
+------=_Part_552_548082617.1435205655683
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_553_-14571622.1435205655683"
+Content-Transfer-Encoding: 8bit
+
+------=_Part_553_-14571622.1435205655683
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Hi L’arrivée étendus9605,
+
+Your ACME Openstack Cloud user account is now available. 
+
+An administrator from Cloud Platform FVT 5 has added you to their organization in ACME Openstack Cloud. There is no charge to you to access the services with this account. 
+
+
+To get started with ACME Openstack Cloud, click the following link:
+https://testserver.acme.com/manage/account/public/registration/input?token=dliQgrhRtNpXyN1Xq3Xj1FHWMU4%40&locale=en_US
+Tip: If clicking the link does not work, try copying it into your Web browser.
+
+To learn more about ACME Openstack Cloud, visit us at:
+
+http://www.ACMEcloud.com/social
+
+As an employee of ACME, do not post ACME confidential information to ACME Openstack Cloud.  
+
+If you have questions, please contact your company's support or help desk.
+
+
+
+Sincerely,
+
+The ACME Openstack Cloud Team
+http://www.ACMEcloud.com/social
+
+ACME Openstack Cloud offices are located at: 5 Technology Park Drive, Westford, MA  01886, United States.
+
+------=_Part_553_-14571622.1435205655683
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+<html>
+<body>
+<img height=97 alt="[Banner]" title="[Banner]" src="cid:BannerImg@banner.ACME.com"/>
+<div>
+<p>Hi L&rsquo;arriv&eacute;e &eacute;tendus9605,</p>
+
+<p>Your ACME Openstack Cloud user account is now available.</p>
+<p>An administrator from Cloud Platform FVT 5 has added you to their organization in ACME Openstack Cloud. There is no charge to you to access the services with this account. </p>
+
+
+
+<p>To get started with ACME Openstack Cloud, click the following link:</p>
+<p><a href="https://testserver.acme.com/manage/account/public/registration/input?token=dliQgrhRtNpXyN1Xq3Xj1FHWMU4%40&amp;locale=en_US">https://testserver.acme.com/manage/account/public/registration/input?token=dliQgrhRtNpXyN1Xq3Xj1FHWMU4%40&amp;locale=en_US</a></p>
+<p>Tip: If clicking the link does not work, try copying it into your Web browser.</p>
+
+<p>To learn more about ACME Openstack Cloud, visit us at:</p>
+
+<p><a href="http://www.ACMEcloud.com/social">http://www.ACMEcloud.com/social</a></p>
+
+<p>As an employee of ACME, do not post ACME confidential information to ACME Openstack Cloud. </p>
+
+<p>We apologize if you received this email by mistake. Do not reply to this email, it was generated automatically. </p>
+
+<p>If you have questions, please contact your company's support or help desk.</p>
+
+
+	
+</div>
+<div>
+<br>
+Sincerely,<br>
+<br>
+The ACME Openstack Cloud Team <br>
+<a href="http://www.ACMEcloud.com/social">http://www.ACMEcloud.com/social</a><br><br>
+ACME Openstack Cloud offices are located at: 5 Technology Park Drive, Westford, MA  01886, United States.
+</div>
+</body>
+</html>
+------=_Part_553_-14571622.1435205655683--
+
+------=_Part_552_548082617.1435205655683--

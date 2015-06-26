@@ -598,4 +598,13 @@ public class InboxTest extends BaseTestCase {
 		new File(dir.getCanonicalPath()+File.separator+"bluebox.zip").delete();
 		assertEquals("Bckup or restore failed",3,inbox.getMailCount(BlueboxMessage.State.ANY));
 	}
+	
+	@Test
+	public void testQuotedRecipient() throws Exception {
+		assertEquals("Should not be any mail yet",0,getInbox().getMailCount(BlueboxMessage.State.ANY));
+		InputStream is = new FileInputStream(new File("src/test/resources/test-data/quotedrecipient.eml"));
+		MimeMessage message = Utils.loadEML(is);
+		Utils.sendMessageDirect(StorageFactory.getInstance(), message);
+		assertEquals("Mail not loaded",1,getInbox().getMailCount(BlueboxMessage.State.ANY));		
+	}
 }

@@ -500,12 +500,12 @@ public class StorageTest extends BaseTestCase {
 		List<String> uids = new ArrayList<String>();
 		assertEquals("Did not expect to find spools",0,si.getSpoolCount());
 		for (int i = 0; i < 50; i++) {
-			log.info("Spooling to uid {}",si.spoolStream(new ByteArrayInputStream((i+"xxxxxxxxxxxxxxxxxxxxx").getBytes())));
+			log.debug("Spooling to uid {}",si.spoolStream(new ByteArrayInputStream((i+"xxxxxxxxxxxxxxxxxxxxx").getBytes())));
 		}
 		assertEquals("Unexpected spool count found",50,si.getSpoolCount());
 		
 		for (int i = 0; i < 50; i++) {
-			log.info("Spooling to uid {}",si.spoolStream(new ByteArrayInputStream(("xxxxxxxxxxxxxxxxxxxxx").getBytes())));
+			log.debug("Spooling to uid {}",si.spoolStream(new ByteArrayInputStream(("xxxxxxxxxxxxxxxxxxxxx").getBytes())));
 		}
 		assertEquals("Unexpected spool count found",51,si.getSpoolCount());
 

@@ -1,6 +1,7 @@
 package com.bluebox.smtp;
 
 
+import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringEscapeUtils;
@@ -57,20 +58,26 @@ public class InboxAddress extends Object {
 				}
 			}
 
-//			InternetAddress address = new InternetAddress(Utils.decodeRFC2407(email));
-//			return address.getAddress();
+			//			return EmailAddress.getInternetAddress(Utils.decodeRFC2407(email)).getAddress();
 			return EmailAddress.getInternetAddress(email).getAddress();
 		}
 		catch (Throwable e) {
-			log.error("Error for {}",email,e);
-			//e.printStackTrace();
+			log.warn("Error parsing {}",email);
+			try {
+				InternetAddress address = new InternetAddress(Utils.decodeRFC2407(email));
+				return address.getAddress();
+			}
+			catch (Throwable t) {
+				log.error("Giving up trying to parse {}",email);
+			}
 		}
-		return "*";
+		return email;
 	}
 
 	public String getDisplayName() {
 		try {
-			String p = EmailAddress.getPersonalName(address);//new InternetAddress(address).getPersonal();
+			String p = new InternetAddress(address).getPersonal();
+//			String p = EmailAddress.getPersonalName(address);
 			if (p!=null) {
 				if (p.length()>0) {
 					return p;
@@ -84,7 +91,7 @@ public class InboxAddress extends Object {
 	}
 
 	public String getDomain() {
-		
+
 		String domain =  EmailAddress.getDomain(address);
 		if (domain==null)
 			return "localhost";

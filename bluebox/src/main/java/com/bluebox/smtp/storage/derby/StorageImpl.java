@@ -1197,11 +1197,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			String newUid = Hex.encodeHexString(md.digest());
 			// if this digest already exists, delete the one we just added
 			if (spoolReferenced(connection, newUid)) {
-				log.debug("spool already exists, deleting new one {}",uid);
+				log.info("spool already exists, deleting new one {}",uid);
 				removeSpooledStream(uid);
 			}
 			else {
-				log.debug("renaming spool to {}",newUid);
+				log.info("renaming spool to {}",newUid);
 				// rename uid to newUid
 				ps = connection.prepareStatement("UPDATE "+BLOB_TABLE+" SET "+BlueboxMessage.UID+"=? WHERE "+BlueboxMessage.UID+"=?");
 				ps.setString(1, newUid);
