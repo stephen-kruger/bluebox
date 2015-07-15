@@ -75,7 +75,7 @@ public abstract class AbstractStorage implements StorageIf {
 		JSONObject json = loadMessageJSON(dbo);
 		return new BlueboxMessage(json, getSpooledStream(json.getString(BlueboxMessage.RAWUID)));
 	}
-
+	
 	/*
 	 * Light-weight method of loading only the extracted properties for a message
 	 * to allow efficient listing of inbox contents without re-loading the entire MimeMessage.

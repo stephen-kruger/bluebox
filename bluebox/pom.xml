@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.4.6</version>
+	<version>4.4.7</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
@@ -151,65 +151,23 @@
 			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>org.restlet.jse</groupId>
-			<artifactId>org.restlet</artifactId>
-			<version>3.0-M1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.restlet.jse</groupId>
-			<artifactId>org.restlet.ext.simple</artifactId>
-			<version>3.0-M1</version>
-		</dependency>
-		 -->
 		<dependency>
 			<groupId>org.apache.solr</groupId>
 			<artifactId>solr-solrj</artifactId>
 			<version>${solr_version}</version>
 			<scope>compile</scope>
-			<!-- 
-			<exclusions>
-				<exclusion>
-					<groupId>org.restlet.jee</groupId>
-					<artifactId>org.restlet</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.restlet.jee</groupId>
-					<artifactId>org.restlet.ext.servlet</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>jdk.tools</groupId>
-					<artifactId>jdk.tools</artifactId>
-				</exclusion>
-			</exclusions>
-			 -->
 		</dependency>
 		<dependency>
 			<artifactId>solr-core</artifactId>
 			<groupId>org.apache.solr</groupId>
 			<version>${solr_version}</version>
 			<scope>compile</scope>
-			<!-- 
 			<exclusions>
 				<exclusion>
-					<groupId>org.restlet.jee</groupId>
-					<artifactId>org.restlet</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.restlet.jee</groupId>
-					<artifactId>org.restlet.ext.servlet</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>jdk.tools</groupId>
 					<artifactId>jdk.tools</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>javax.servlet</artifactId>
-					<groupId>org.eclipse.jetty.orbit</groupId>
+					<groupId>jdk.tools</groupId>
 				</exclusion>
 			</exclusions>
-			 -->
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
@@ -229,36 +187,12 @@
 			<version>${lucene_version}</version>
 			<scope>compile</scope>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queries</artifactId>
-			<version>${lucene_version}</version>
-			<scope>compile</scope>
-		</dependency>
-		 -->
-		<!-- 
-		<dependency>
-			<groupId>org.mortbay.jetty</groupId>
-			<artifactId>jsp-2.1</artifactId>
-			<version>7.0.0pre2</version>
-			<scope>test</scope>
-		</dependency>
-		 -->
 		<dependency>
 			<groupId>org.codehaus.jettison</groupId>
 			<artifactId>jettison</artifactId>
 			<version>1.3.7</version>
 			<scope>compile</scope>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>javax.jcr</groupId>
-			<artifactId>jcr</artifactId>
-			<version>2.0</version>
-			<scope>compile</scope>
-		</dependency>
-		 -->
 		<dependency>
 			<groupId>org.subethamail</groupId>
 			<artifactId>subethasmtp</artifactId>
@@ -294,13 +228,6 @@
 			<artifactId>commons-email</artifactId>
 			<version>1.4</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-collections4</artifactId>
-			<version>4.0</version>
-		</dependency>
-		 -->
 		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
@@ -362,24 +289,32 @@
 			<artifactId>jsoup</artifactId>
 			<version>1.8.2</version>
 		</dependency>
-		<!-- 
-		<dependency>
-			<groupId>bouncycastle</groupId>
-			<artifactId>bcprov-jdk16</artifactId>
-			<version>140</version>
-		</dependency>
- 		-->
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>2.6</version>
 		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.4</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4.5</version>
+		</dependency>
 	</dependencies>
 
 	<scm>
-		<url>https://bluebox.googlecode.com/svn/trunk</url>
+		<url>https://github.com/stephen-kruger/bluebox.git</url>
 	</scm>
 	<issueManagement>
-		<url>https://code.google.com/p/bluebox/issues/list</url>
+		<url>https://github.com/stephen-kruger/bluebox/issues</url>
 	</issueManagement>
 </project>
