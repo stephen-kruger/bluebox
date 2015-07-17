@@ -35,23 +35,23 @@ import com.bluebox.search.SearchUtils;
 import com.bluebox.smtp.InboxAddress;
 
 public class BlueboxMessage {
-	public static final String UID = "Uid";
+	public static final String UID = StorageIf.Props.Uid.name();
 	public static final String JSON = "Json";
-	public static final String FROM = "Sender";
+	public static final String FROM = StorageIf.Props.Sender.name();
 	public static final String TO = "To";
 	public static final String CC = "Cc";
 	public static final String BCC = "Bcc";
-	public static final String SUBJECT = "Subject";
-	public static final String RECEIVED = "Received";
-	public static final String STATE = "State";
-	public static final String SIZE = "Size";
-	public static final String INBOX = "Inbox";
-	public static final String RECIPIENT = "Recipient";
-	public static final String COUNT = "Count";
-	public static final String RAWUID = "RawUid";
 	public static final String ATTACHMENT = "Attachment";
 	public static final String HTML_BODY = "HtmlBody";
 	public static final String TEXT_BODY = "TextBody";
+	public static final String SUBJECT = StorageIf.Props.Subject.name();
+	public static final String RECEIVED = StorageIf.Props.Received.name();
+	public static final String STATE = StorageIf.Props.State.name();
+	public static final String SIZE = StorageIf.Props.Size.name();
+	public static final String INBOX = StorageIf.Props.Inbox.name();
+	public static final String RECIPIENT = StorageIf.Props.Recipient.name();
+	public static final String RAWUID = StorageIf.Props.RawUid.name();
+	public static final String COUNT = "Count";
 
 	public enum State {ANY, NORMAL, DELETED};
 

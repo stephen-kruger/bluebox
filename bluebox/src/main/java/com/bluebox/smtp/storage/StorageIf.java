@@ -109,11 +109,6 @@ public interface StorageIf {
 	 * Called to perform housekeep tasks on the underlying storage, such as rebuilding indexes.
 	 */
 	public WorkerThread runMaintenance() throws Exception;
-	
-	/*
-	 * Clean up all blobs not associated with a valid mail entry.
-	 */
-	public WorkerThread cleanRaw() throws Exception;
 
 	/*
 	 * Return a JSON view of the count of email received per day of month
@@ -159,9 +154,10 @@ public interface StorageIf {
 	public long getSpoolCount() throws Exception;
 	
 	/*
-	 * Remove any spooled messages which are not referenced by a mailbox entry
+	 * Remove any spooled messages which are not referenced by a mailbox entry, and any mail entries which have dangling spool
+	 * references.
 	 */
-	public long cleanSpools() throws Exception;
+	public WorkerThread cleanOrphans() throws Exception;
 
 	// time functions are db specific, so expose these mthods here
 	

@@ -58,6 +58,9 @@ public class Inbox implements SimpleMessageListener {
 
 	private static final Logger log = LoggerFactory.getLogger(Inbox.class);
 	public static final long MAX_MAIL_BYTES = Config.getInstance().getLong(Config.BLUEBOX_MAIL_LIMIT);
+	public static final String EXPIRE_WORKER = "expire";
+	public static final String TRIM_WORKER = "trim";
+	public static final String ORPHAN_WORKER = "orphan";
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
 	private BlueboxMessageHandlerFactory blueboxMessageHandlerFactory;
 	//	private Thread migrationThread;
@@ -99,7 +102,9 @@ public class Inbox implements SimpleMessageListener {
 				public void run() {
 					log.info("Cleanup timer activated");
 					try {
-						WorkerThread.startWorker(cleanUp());
+						WorkerThread.startWorker(expireThread());
+						WorkerThread.startWorker(trimThread());
+						WorkerThread.startWorker(orphanThread());
 					} 
 					catch (Exception e) {
 						log.error("Error running message cleanup",e);
@@ -285,24 +290,65 @@ public class Inbox implements SimpleMessageListener {
 		}
 	}
 
-	public WorkerThread cleanUp() throws Exception {
-		WorkerThread wt = new WorkerThread("cleanup") {
+	//	public WorkerThread cleanUp() throws Exception {
+	//		WorkerThread wt = new WorkerThread("cleanup") {
+	//
+	//			@Override
+	//			public void run() {
+	//				try {
+	//					setProgress(30);
+	//					// remove old messages
+	//					expire();
+	//					setProgress(60);
+	//					// trim total mailbox size
+	//					trim();
+	//					// remove any orphaned blobs
+	//					setProgress(90);
+	//					orphan();
+	//				}
+	//				catch (Throwable t) {
+	//					t.printStackTrace();
+	//				}
+	//				finally {
+	//					setProgress(100);
+	//					setStatus("Complete");
+	//				}
+	//			}
+	//
+	//		};
+	//
+	//		return wt;
+	//	}
+
+	public WorkerThread expireThread() throws Exception {
+		WorkerThread wt = new WorkerThread(EXPIRE_WORKER) {
 
 			@Override
 			public void run() {
 				try {
-					setProgress(30);
-					// remove old messages
-					expire();
-					setProgress(60);
-					// trim total mailbox size
-					trim();
-					// remove any orphaned blobs
-					setProgress(90);
-					orphan();
+					Date messageExpireDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_AGE)*60*60*1000));
+					log.info("Cleaning messages received before {}",messageExpireDate);
+					LiteMessage msg;
+					int count = 0;
+					LiteMessageIterator mi = new LiteMessageIterator(null, BlueboxMessage.State.NORMAL);
+					while (mi.hasNext()) {
+						setProgress(mi.getProgress());
+						msg = mi.next();
+						try {
+							if (isExpired(msg.getReceived(),messageExpireDate)) {
+								delete(msg.getIdentifier(), msg.getRawIdentifier());
+								count++;
+							}
+						}
+						catch (Throwable t) {
+							log.warn("Problem cleaning up message {} {}",msg.getIdentifier(),t.getMessage());
+						}
+					}
+					log.info("Cleaned up {} messages",count);
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
+					log.error("Problem expiring mail",t);
 				}
 				finally {
 					setProgress(100);
@@ -315,38 +361,46 @@ public class Inbox implements SimpleMessageListener {
 		return wt;
 	}
 
-	protected void trim() {
-		int errors = 0;
-		try {
-			long max = Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_MAX);
-			StorageIf si = StorageFactory.getInstance();
-			long count = si.getMailCount(BlueboxMessage.State.ANY);
-			long deleteCount = count-max;
-			log.info("Trimming {} of total {} mailboxes to limit of {} entries",deleteCount,count,max);
-			List<LiteMessage> list = si.listMailLite(null, BlueboxMessage.State.ANY, 0, (int)deleteCount, BlueboxMessage.RECEIVED, true);
-			for (LiteMessage m : list) {
+	public WorkerThread trimThread() throws Exception {
+		WorkerThread wt = new WorkerThread(TRIM_WORKER) {
+
+			@Override
+			public void run() {
+				int errors = 0;
 				try {
-					delete(m.getIdentifier(), m.getRawIdentifier());
+					long max = Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_MAX);
+					StorageIf si = StorageFactory.getInstance();
+					long count = si.getMailCount(BlueboxMessage.State.ANY);
+					long deleteCount = count-max;
+					log.info("Trimming {} of total {} mailboxes to limit of {} entries",deleteCount,count,max);
+					long deletedCount=0;
+					while ((deleteCount>0)&&(si.getMailCount(BlueboxMessage.State.ANY)>max)) {
+						List<LiteMessage> list = si.listMailLite(null, BlueboxMessage.State.ANY, 0, 500, BlueboxMessage.RECEIVED, true);
+						for (LiteMessage m : list) {
+							setProgress((int)((deletedCount++)*100/deleteCount));
+							try {
+								delete(m.getIdentifier(), m.getRawIdentifier());
+							}
+							catch (Throwable t) {
+								errors++;
+								log.error("Error trimming message",t);
+							}
+						}
+					} 
+					setProgress(100);
+					log.info("Finished trimming {} messages with {} errors encouters", deleteCount,errors);
 				}
 				catch (Throwable t) {
-					errors++;
-					log.error("Error trimming message",t);
+					log.error("Problem trimming mailboxes",t);
 				}
 			}
-			log.info("Finished trimming {} messages with {} errors encouters", deleteCount,errors);
-		}
-		catch (Throwable t) {
-			log.error("Problem trimming mailboxes",t);
-		}
+		};
+		return wt;
 	}
 
-	protected void orphan() {
-		try {
-			StorageFactory.getInstance().cleanSpools();
-		} 
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+	protected WorkerThread orphanThread() throws Exception {
+		WorkerThread wt = StorageFactory.getInstance().cleanOrphans();
+		return wt;
 	}
 
 	/*
@@ -373,56 +427,56 @@ public class Inbox implements SimpleMessageListener {
 		log.info("Removed {} deleted messages",count);
 	}
 
-	public void expire() throws Exception {
-		Date messageDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_AGE)*60*60*1000));
-		Date trashDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_TRASH_AGE)*60*60*1000));
-		expireOld(messageDate);
-		expireDeleted(trashDate);
-	}
+	//	public void expire() throws Exception {
+	//		Date messageDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_AGE)*60*60*1000));
+	//		Date trashDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_TRASH_AGE)*60*60*1000));
+	//		//		expireOld(messageDate);
+	//		expireDeleted(trashDate);
+	//	}
 
-	private void expireOld(Date messageExpireDate) throws Exception {
-		log.info("Cleaning messages received before {}",messageExpireDate);
-		LiteMessage msg;
-		int count = 0;
-		LiteMessageIterator mi = new LiteMessageIterator(null, BlueboxMessage.State.NORMAL);
-		while (mi.hasNext()) {
-			msg = mi.next();
-			try {
-				if (isExpired(msg.getReceived(),messageExpireDate)) {
-					delete(msg.getIdentifier(), msg.getRawIdentifier());
-					count++;
-				}
-			}
-			catch (Throwable t) {
-				log.warn("Problem cleaning up message {} {}",msg.getIdentifier(),t.getMessage());
-			}
-		}
-		log.info("Cleaned up {} messages",count);
-	}
+	//	private void expireOld(Date messageExpireDate) throws Exception {
+	//		log.info("Cleaning messages received before {}",messageExpireDate);
+	//		LiteMessage msg;
+	//		int count = 0;
+	//		LiteMessageIterator mi = new LiteMessageIterator(null, BlueboxMessage.State.NORMAL);
+	//		while (mi.hasNext()) {
+	//			msg = mi.next();
+	//			try {
+	//				if (isExpired(msg.getReceived(),messageExpireDate)) {
+	//					delete(msg.getIdentifier(), msg.getRawIdentifier());
+	//					count++;
+	//				}
+	//			}
+	//			catch (Throwable t) {
+	//				log.warn("Problem cleaning up message {} {}",msg.getIdentifier(),t.getMessage());
+	//			}
+	//		}
+	//		log.info("Cleaned up {} messages",count);
+	//	}
 
 	public static final boolean isExpired(Date receievedDate, Date expireDate) {
 		return receievedDate.before(expireDate);
 	}
 
-	private void expireDeleted(Date trashExpireDate) throws Exception {
-		log.info("Cleaning deleted messages received before {}",trashExpireDate);
-		LiteMessage msg;
-		int count = 0;
-		LiteMessageIterator mi = new LiteMessageIterator(null, BlueboxMessage.State.DELETED);
-		while (mi.hasNext()) {
-			msg = mi.next();
-			try {
-				if ((msg.getReceived()).before(trashExpireDate)) {
-					delete(msg.getIdentifier(),msg.getRawIdentifier());
-					count++;
-				}				
-			}
-			catch (Throwable t) {
-				log.warn("Problem cleaning up message {}",msg.getIdentifier());
-			}
-		}
-		log.info("Cleaned up {} deleted messages",count);
-	}
+	//	private void expireDeleted(Date trashExpireDate) throws Exception {
+	//		log.info("Cleaning deleted messages received before {}",trashExpireDate);
+	//		LiteMessage msg;
+	//		int count = 0;
+	//		LiteMessageIterator mi = new LiteMessageIterator(null, BlueboxMessage.State.DELETED);
+	//		while (mi.hasNext()) {
+	//			msg = mi.next();
+	//			try {
+	//				if ((msg.getReceived()).before(trashExpireDate)) {
+	//					delete(msg.getIdentifier(),msg.getRawIdentifier());
+	//					count++;
+	//				}				
+	//			}
+	//			catch (Throwable t) {
+	//				log.warn("Problem cleaning up message {}",msg.getIdentifier());
+	//			}
+	//		}
+	//		log.info("Cleaned up {} deleted messages",count);
+	//	}
 
 	/*
 	 * Some Non Delivery Records have null or <> as from. This hacks in a default
@@ -545,7 +599,7 @@ public class Inbox implements SimpleMessageListener {
 		StorageIf si = StorageFactory.getInstance();
 		String spooledUid="";
 		try {
-//			MimeMessage mimeMessage = Utils.loadEML(data);
+			//			MimeMessage mimeMessage = Utils.loadEML(data);
 			spooledUid = si.spoolStream(data);
 			if (si.getSpooledStreamSize(spooledUid)<MAX_MAIL_BYTES) {
 				try {
@@ -1082,8 +1136,8 @@ public class Inbox implements SimpleMessageListener {
 		this.blueboxMessageHandlerFactory = blueboxMessageHandlerFactory;		
 	}
 
-	public WorkerThread cleanRaw() throws Exception {
-		return StorageFactory.getInstance().cleanRaw();
+	public WorkerThread cleanOrphans() throws Exception {
+		return StorageFactory.getInstance().cleanOrphans();
 	}
 
 	//	/**

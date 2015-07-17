@@ -4,8 +4,8 @@
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.smtp.storage.StorageIf"%>
 <%@ page import="com.bluebox.Config"%>
-<%@ page import="com.bluebox.rest.json.JSONAdminHandler"%><%@ page
-	import="com.bluebox.Utils"%>
+<%@ page import="com.bluebox.rest.json.JSONAdminHandler"%>
+<%@ page import="com.bluebox.Utils"%>
 <%@ page import="com.bluebox.smtp.Inbox"%>
 <%
 	Config bbconfig = Config.getInstance();
@@ -62,9 +62,13 @@
 										  dbmaintenance.set({value: queryResults.dbmaintenance});
 										  document.getElementById("dbmaintenanceLabel").innerHTML = queryResults.dbmaintenance_status;
 									  }
-									  if (queryResults.cleanup) {
-										  cleanup.set({value: queryResults.cleanup});
-										  document.getElementById("cleanupLabel").innerHTML = queryResults.cleanup_status;
+									  if (queryResults.<%=Inbox.TRIM_WORKER%>) {
+										  <%=Inbox.TRIM_WORKER%>.set({value: queryResults.<%=Inbox.TRIM_WORKER%>});
+										  document.getElementById("pruneLabel").innerHTML = queryResults.<%=Inbox.TRIM_WORKER%>_status;
+									  }
+									  if (queryResults.<%=Inbox.EXPIRE_WORKER%>) {
+										  <%=Inbox.EXPIRE_WORKER%>.set({value: queryResults.<%=Inbox.EXPIRE_WORKER%>});
+										  document.getElementById("expireLabel").innerHTML = queryResults.<%=Inbox.EXPIRE_WORKER%>_status;
 									  }
 									  if (queryResults.generate) {
 										  generate.set({value: queryResults.generate});
@@ -119,8 +123,13 @@
 		}
 		
 		function pruneMail() {
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/prune",
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/<%=Inbox.TRIM_WORKER%>",
 					"<%=adminResource.getString("prune_action")%>");
+		}
+		
+		function expireMail() {
+			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/<%=Inbox.EXPIRE_WORKER%>",
+					"<%=adminResource.getString("expire_action")%>");
 		}
 		
 		function rebuildSearchIndexes() {
@@ -281,11 +290,25 @@
 						<td><button onclick="pruneMail()"
 								data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
 						<td><div data-dojo-type="dijit/ProgressBar"
-								style="width: 100%" data-dojo-id="cleanup" id="cleanupProgress"
+								style="width: 100%" data-dojo-id="<%=Inbox.TRIM_WORKER%>" id="<%=Inbox.TRIM_WORKER%>Progress"
 								data-dojo-props="maximum:100"></div></td>
 						<td></td>
-						<td align="right"><label data-dojo-id="cleanuplabel"
-							id="cleanupLabel"></label></td>
+						<td align="right"><label data-dojo-id="<%=Inbox.TRIM_WORKER%>label" id="<%=Inbox.TRIM_WORKER%>Label"></label></td>
+					</tr>
+					<tr>
+						<td><br /></td>
+					</tr>
+					<tr>
+						<td><label><%=adminResource.getString("expire_action")%></label></td>
+						<td></td>
+						<td><button onclick="expireMail()"
+								data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
+						<td><div data-dojo-type="dijit/ProgressBar"
+								style="width: 100%" data-dojo-id="expire" id="expireProgress"
+								data-dojo-props="maximum:100"></div></td>
+						<td></td>
+						<td align="right"><label data-dojo-id="expirelabel"
+							id="expireLabel"></label></td>
 					</tr>
 					<tr>
 						<td><br /></td>

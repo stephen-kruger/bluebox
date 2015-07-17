@@ -514,7 +514,7 @@ public class StorageTest extends BaseTestCase {
 			assertTrue(si.getSpooledStreamSize(uid)>0);
 		}
 		
-		si.cleanSpools();
+		si.cleanOrphans().run();
 		assertEquals("Did not expect to find spools",0,si.getSpoolCount());
 	}
 	

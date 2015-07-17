@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
+import com.bluebox.utils.FallbackValidator;
 
 public class InboxAddress extends Object {
 	private static final Logger log = LoggerFactory.getLogger(InboxAddress.class);
@@ -62,13 +63,19 @@ public class InboxAddress extends Object {
 			return EmailAddress.getInternetAddress(email).getAddress();
 		}
 		catch (Throwable e) {
-			log.warn("Error parsing {}",email);
+			log.debug("Error parsing {}",email);
 			try {
 				InternetAddress address = new InternetAddress(Utils.decodeRFC2407(email));
 				return address.getAddress();
 			}
 			catch (Throwable t) {
-				log.error("Giving up trying to parse {}",email);
+				// try one more time using Apache Commons parser
+				try {
+					FallbackValidator.getInternetAddress(email).getAddress();
+				}
+				catch (Throwable t2) {
+					log.error("Giving up trying to parse {}",email);
+				}
 			}
 		}
 		return email;
@@ -77,7 +84,7 @@ public class InboxAddress extends Object {
 	public String getDisplayName() {
 		try {
 			String p = new InternetAddress(address).getPersonal();
-//			String p = EmailAddress.getPersonalName(address);
+			//			String p = EmailAddress.getPersonalName(address);
 			if (p!=null) {
 				if (p.length()>0) {
 					return p;

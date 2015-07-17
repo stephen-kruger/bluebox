@@ -559,7 +559,8 @@ public class InboxTest extends BaseTestCase {
 		// add 100 emails
 		TestUtils.addRandomDirect(si, 100);
 		// call trim
-		inbox.trim();
+		inbox.expireThread().run();
+		inbox.trimThread().run();
 		// check value equals 50
 		assertEquals(50,inbox.getMailCount(State.ANY));
 	}

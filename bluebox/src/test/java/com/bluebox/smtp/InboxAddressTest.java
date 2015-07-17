@@ -5,6 +5,7 @@ import javax.mail.internet.AddressException;
 import junit.framework.TestCase;
 
 import org.junit.Test;
+import org.mortbay.log.Log;
 
 public class InboxAddressTest extends TestCase {
 
@@ -34,6 +35,13 @@ public class InboxAddressTest extends TestCase {
 		InboxAddress a = new InboxAddress("steve");
 		assertTrue("invalid email address",a.isValidAddress());
 //		assertEquals("Expected clean email address","Steve_Johnson@MA.XXX",a.getAddress());
+	}
+	
+	@Test
+	public void testSpace() throws AddressException {
+		InboxAddress a = new InboxAddress("sandy4 user3@ghvm352.lotus.com");
+		Log.info(a.getAddress());
+		assertEquals("invalid email address","sandy4 user3@ghvm352.lotus.com",a.getAddress());
 	}
 	
 	@Test

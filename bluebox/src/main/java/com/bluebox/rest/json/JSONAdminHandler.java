@@ -52,10 +52,10 @@ public class JSONAdminHandler extends AbstractHandler {
 			resp.flushBuffer();
 			return;
 		}
-		if (req.getRequestURI().indexOf(JSON_ROOT+"/prune")>=0){
+		if (req.getRequestURI().indexOf(JSON_ROOT+"/"+Inbox.TRIM_WORKER)>=0){
 			log.debug("Prune");
 			try {
-				WorkerThread wt = inbox.cleanUp();
+				WorkerThread wt = inbox.trimThread();
 				bbservlet.startWorker(wt, req, resp);
 				resp.flushBuffer();
 			} 
@@ -64,7 +64,20 @@ public class JSONAdminHandler extends AbstractHandler {
 				resp.getWriter().print(e.getMessage());	
 			}
 			return;
-		}							
+		}		
+		if (req.getRequestURI().indexOf(JSON_ROOT+"/"+Inbox.EXPIRE_WORKER)>=0){
+			log.debug("Expire");
+			try {
+				WorkerThread wt = inbox.expireThread();
+				bbservlet.startWorker(wt, req, resp);
+				resp.flushBuffer();
+			} 
+			catch (Exception e) {
+				e.printStackTrace();
+				resp.getWriter().print(e.getMessage());	
+			}
+			return;
+		}		
 		if (req.getRequestURI().indexOf(JSON_ROOT+"/errors")>=0){
 			try {
 				inbox.clearErrors();
@@ -110,7 +123,7 @@ public class JSONAdminHandler extends AbstractHandler {
 		}	
 		if (req.getRequestURI().indexOf(JSON_ROOT+"/rawclean")>=0){
 			try {
-				WorkerThread wt = inbox.cleanRaw();
+				WorkerThread wt = inbox.cleanOrphans();
 				bbservlet.startWorker(wt, req, resp);
 				resp.flushBuffer();
 			} 

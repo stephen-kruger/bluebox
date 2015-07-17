@@ -94,6 +94,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			catch (Throwable t) {
 				log.error(t.getMessage());
 			}
+
 			try {
 				db.getCollection(TABLE_NAME).createIndex(new BasicDBObject(index.name(), -1));
 			}
@@ -101,6 +102,17 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 				log.error(t.getMessage());
 			}
 		}  
+
+		// create some compound indexes
+		try {
+			BasicDBObject obj = new BasicDBObject();
+			obj.put(BlueboxMessage.STATE, 1);
+			obj.put(BlueboxMessage.RECEIVED, -1);
+			db.getCollection(TABLE_NAME).createIndex(obj);
+		}
+		catch (Throwable t) {
+			log.error(t.getMessage());
+		}
 	}
 
 	@Override
@@ -380,7 +392,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	 */
 	private void delete(String uid) throws Exception {
 		//		BlueboxMessage bbm = retrieve(uid);
-		DeleteResult res = mailFS.deleteOne(Filters.eq(StorageIf.Props.Uid.name(), uid));
+		DeleteResult res = mailFS.deleteMany(Filters.eq(StorageIf.Props.Uid.name(), uid));
 		if (res.getDeletedCount()<=0) {
 			log.warn("Nothing deleted for uid {}",uid);
 		}
@@ -398,74 +410,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 			log.debug("Deleting last instance of spooled message {}",rawId);
 			removeSpooledStream(rawId);
 		}
-	}
-
-	@Override
-	public WorkerThread cleanRaw() throws Exception {
-		WorkerThread wt = new WorkerThread(StorageIf.RAWCLEAN) {
-
-			//private GridFS gfsRaw;
-
-			@Override
-			public void run() {
-				setProgress(0);
-				int issues = 0;
-				long count = 0;
-				//				DBCursor cursor = rawFS.getFileList();
-				try {
-					long totalCount = getSpoolCount()+getMailCount(BlueboxMessage.State.ANY);
-					log.info("Looking for orphaned blobs");
-					DBCursor cursor = blobFS.getFileList();
-					while (cursor.hasNext()) {
-						GridFSDBFile blob = (GridFSDBFile) cursor.next();
-						String rawId = blob.getFilename();
-						FindIterable<Document> rawres = mailFS.find(Filters.eq(StorageIf.Props.RawUid.name(), rawId));
-						if (rawres.first()==null) {
-							issues++;
-							log.debug("Deleted orphaned spooled message {} ",issues);
-							setStatus("Deleted orphaned spooled message "+issues);
-							removeSpooledStream(rawId);
-						}
-						setProgress((int)((100*count++)/totalCount));
-					}
-					log.info("Finished looking for orphaned blobs (found "+issues+")");
-					log.info("Looking for orphaned messages");
-
-					List<LiteMessage> list = listMailLite(null, BlueboxMessage.State.ANY, 0, (int)getMailCount(BlueboxMessage.State.ANY), BlueboxMessage.RECEIVED, true);
-
-					for (LiteMessage m : list) {
-						setProgress((int)((100*count++)/totalCount));
-						try {
-							if (!containsSpool(m.getRawIdentifier())) {
-								// delete this mail entry
-								delete(m.getIdentifier());
-								issues++;
-								setStatus("Deleting orphaned mail entry ("+issues+")");
-								log.info("Deleting orphaned mail entry ({})",issues);
-							}
-						}
-						catch (Throwable t) {
-							log.warn("Issue with mail entry",t);
-							// delete it anyway
-							delete(m.getIdentifier());
-							issues++;
-							setStatus("Deleting orphaned mail entry ("+issues+")");
-							log.info("Deleting orphaned mail entry ({})",issues);
-						}
-					}
-				}
-				catch (Throwable t) {
-					t.printStackTrace();
-				}
-				finally {
-					//					cursor.close();
-					setProgress(100);
-					setStatus(issues+" issues fixed");
-					log.info("Finished looking for orphaned messages");
-				}
-			}
-		};
-		return wt;
 	}
 
 	@Override
@@ -726,17 +670,95 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		return count;
 	}
 
-	public long cleanSpools() throws Exception {
-		long count = 0;
-		for (DBObject f : blobFS.getFileList()) {
-			List<GridFSDBFile> blobs = blobFS.find(f);
-			for (GridFSDBFile blob : blobs)
-			if (!spoolReferenced(blob.getFilename())) {
-				removeSpooledStream(blob.getFilename());
+	@Override
+	public WorkerThread cleanOrphans() throws Exception {
+		WorkerThread wt = new WorkerThread(StorageIf.RAWCLEAN) {
+
+			@Override
+			public void run() {
+				setProgress(0);
+				int issues = 0;
+				long count = 0;
+				//				DBCursor cursor = rawFS.getFileList();
+				try {
+					long totalCount = getSpoolCount()+getMailCount(BlueboxMessage.State.ANY);
+					log.info("Looking for orphaned blobs");
+					DBCursor cursor = blobFS.getFileList();
+					while (cursor.hasNext()) {
+						GridFSDBFile blob = (GridFSDBFile) cursor.next();
+						if (!spoolReferenced(blob.getFilename())) {
+							issues++;
+							log.debug("Deleted orphaned spooled message {} ",issues);
+							setStatus("Deleted orphaned spooled message "+issues);
+							removeSpooledStream(blob.getFilename());
+						}
+						setProgress((int)((100*count++)/totalCount)/2);
+					}
+					log.info("Finished looking for orphaned blobs (found "+issues+")");
+					
+					log.info("Looking for orphaned messages");
+					List<LiteMessage> list = listMailLite(null, BlueboxMessage.State.ANY, 0, (int)getMailCount(BlueboxMessage.State.ANY), BlueboxMessage.RECEIVED, true);
+
+					for (LiteMessage m : list) {
+						setProgress((int)((100*count++)/totalCount)/2);
+						try {
+							if (!containsSpool(m.getRawIdentifier())) {
+								// delete this mail entry
+								delete(m.getIdentifier());
+								issues++;
+								setStatus("Deleting orphaned mail entry ("+issues+")");
+								log.info("Deleting orphaned mail entry ({})",issues);
+							}
+						}
+						catch (Throwable t) {
+							log.warn("Issue with mail entry",t);
+							// delete it anyway
+							delete(m.getIdentifier());
+							issues++;
+							setStatus("Deleting orphaned mail entry ("+issues+")");
+							log.info("Deleting orphaned mail entry ({})",issues);
+						}
+					}
+				}
+				catch (Throwable t) {
+					t.printStackTrace();
+				}
+				finally {
+					//					cursor.close();
+					setProgress(100);
+					setStatus(issues+" issues fixed");
+					log.info("Finished looking for orphaned messages");
+				}
 			}
-			count++;
-		}
-		return count;
+		};
+		return wt;
+	}
+	
+	public WorkerThread cleanOrphanSpoolsOld() throws Exception {
+		log.info("Cleaning unreferenced spooled mails");
+
+		WorkerThread wt = new WorkerThread(Inbox.ORPHAN_WORKER) {
+
+			@Override
+			public void run() {
+				long count = 0;
+				for (DBObject f : blobFS.getFileList()) {
+					List<GridFSDBFile> blobs = blobFS.find(f);
+					for (GridFSDBFile blob : blobs)
+						if (!spoolReferenced(blob.getFilename())) {
+							count++;
+							log.info("Found unreferenced mail spool (total={})",count);
+							try {
+								removeSpooledStream(blob.getFilename());
+							} 
+							catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+				}
+			}
+		};
+		return wt;
 	}
 
 	/*

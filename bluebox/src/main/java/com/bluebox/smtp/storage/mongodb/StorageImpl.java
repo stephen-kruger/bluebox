@@ -825,9 +825,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 	
 	@Override
-	public long cleanSpools() throws Exception {
+	public WorkerThread cleanOrphans() throws Exception {
 		log.error("NOT IMPLEMENTED");
-		return 0;
+		return null;
 	}
 	
 	@Override

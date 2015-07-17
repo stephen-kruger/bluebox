@@ -213,8 +213,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					StorageIf.Props.Recipient.name()+" VARCHAR(255), "+
 					StorageIf.Props.Sender.name()+" VARCHAR(255), "+
 					StorageIf.Props.Subject.name()+" VARCHAR(255), "+
-					BlueboxMessage.HTML_BODY+" VARCHAR(512), "+
-					BlueboxMessage.TEXT_BODY+" VARCHAR(512), "+
+					BlueboxMessage.HTML_BODY+" VARCHAR(2048), "+
+					BlueboxMessage.TEXT_BODY+" VARCHAR(2048), "+
 					StorageIf.Props.Received.name()+" TIMESTAMP, "+
 					StorageIf.Props.State.name()+" INTEGER, "+
 					StorageIf.Props.Size.name()+" BIGINT "+")");
@@ -279,8 +279,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			ps.setString(4, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
 			ps.setString(5, props.getString(StorageIf.Props.Sender.name())); // FROM
 			ps.setString(6, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
-			ps.setString(7, props.getString(BlueboxMessage.HTML_BODY)); // html body
-			ps.setString(8, props.getString(BlueboxMessage.TEXT_BODY)); // text body
+			ps.setString(7, trimString(props.getString(BlueboxMessage.HTML_BODY),2048)); // html body
+			ps.setString(8, trimString(props.getString(BlueboxMessage.TEXT_BODY),2048)); // text body
 			Timestamp timestamp = new Timestamp(props.getLong(StorageIf.Props.Received.name()));
 			ps.setTimestamp(9, timestamp); // RECEIVED
 			ps.setInt(10, props.getInt(StorageIf.Props.State.name())); // STATE
@@ -296,6 +296,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		finally {
 			connection.close();
 		}
+	}
+
+	private String trimString(String string, int i) {
+		if (string.length()>i)
+			return string.substring(0,i);
+		return string;
 	}
 
 	//	@Override
@@ -1130,7 +1136,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 
 	@Override
-	public WorkerThread cleanRaw() throws Exception {
+	public WorkerThread cleanOrphans() throws Exception {
 		WorkerThread wt = new WorkerThread(StorageIf.RAWCLEAN) {
 
 			@Override
@@ -1149,14 +1155,39 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 						}
 					}
 					connection.close();
+					
+					// loop through all the mails
+					List<LiteMessage> list = listMailLite(null, BlueboxMessage.State.ANY, 0, (int)getMailCount(BlueboxMessage.State.ANY), BlueboxMessage.RECEIVED, true);
+
+					for (LiteMessage m : list) {
+						// TODO - implement this code for Derby
+//						setProgress((int)((100*count++)/totalCount)/2);
+//						try {
+//							if (!containsSpool(m.getRawIdentifier())) {
+//								// delete this mail entry
+//								delete(m.getIdentifier());
+//								issues++;
+//								setStatus("Deleting orphaned mail entry ("+issues+")");
+//								log.info("Deleting orphaned mail entry ({})",issues);
+//							}
+//						}
+//						catch (Throwable t) {
+//							log.warn("Issue with mail entry",t);
+//							// delete it anyway
+//							delete(m.getIdentifier());
+//							issues++;
+//							setStatus("Deleting orphaned mail entry ("+issues+")");
+//							log.info("Deleting orphaned mail entry ({})",issues);
+//						}
+					}
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
 				}
-				finally {
-				}
+				finally {				
 				setProgress(100);
 				setStatus("Completed");
+				}
 			}
 
 		};
@@ -1327,14 +1358,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		log.debug("Size "+size);
 		return size;
-	}
-
-	@Override
-	public long cleanSpools() throws Exception {
-		long startCount = getSpoolCount();
-		WorkerThread wt = cleanRaw();
-		wt.run();
-		return startCount - getSpoolCount();
 	}
 
 	@Override
