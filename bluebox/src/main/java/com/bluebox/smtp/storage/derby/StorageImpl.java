@@ -44,7 +44,6 @@ import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
 public class StorageImpl extends AbstractStorage implements StorageIf {
-	//	public static final String DB_NAME = "bluebox401";
 	private static final Logger log = LoggerFactory.getLogger(StorageImpl.class);
 	private static final String INBOX_TABLE = "INBOX";
 	private static final String PROPS_TABLE = "PROPERTIES";
@@ -1142,6 +1141,9 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			@Override
 			public void run() {
 				try {
+					int issues = 0;
+					long totalCount = getSpoolCount()+getMailCount(BlueboxMessage.State.ANY);
+					int count = 0;
 					// loop through all blobs
 					Connection connection = getConnection();
 					PreparedStatement ps = connection.prepareStatement("SELECT "+BlueboxMessage.UID+" FROM "+BLOB_TABLE);
@@ -1151,42 +1153,42 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 					while (result.next()) {
 						String spooledId = result.getString(BlueboxMessage.UID);
 						if (!spoolReferenced(connection,spooledId)) {
+							issues++;
 							removeSpooledStream(connection,spooledId);
 						}
+						setProgress((int)((100*count++)/totalCount)/2);
 					}
 					connection.close();
-					
+
 					// loop through all the mails
 					List<LiteMessage> list = listMailLite(null, BlueboxMessage.State.ANY, 0, (int)getMailCount(BlueboxMessage.State.ANY), BlueboxMessage.RECEIVED, true);
-
 					for (LiteMessage m : list) {
-						// TODO - implement this code for Derby
-//						setProgress((int)((100*count++)/totalCount)/2);
-//						try {
-//							if (!containsSpool(m.getRawIdentifier())) {
-//								// delete this mail entry
-//								delete(m.getIdentifier());
-//								issues++;
-//								setStatus("Deleting orphaned mail entry ("+issues+")");
-//								log.info("Deleting orphaned mail entry ({})",issues);
-//							}
-//						}
-//						catch (Throwable t) {
-//							log.warn("Issue with mail entry",t);
-//							// delete it anyway
-//							delete(m.getIdentifier());
-//							issues++;
-//							setStatus("Deleting orphaned mail entry ("+issues+")");
-//							log.info("Deleting orphaned mail entry ({})",issues);
-//						}
+						setProgress((int)((100*count++)/totalCount)/2);
+						try {
+							if (!containsSpool(m.getRawIdentifier())) {
+								// delete this mail entry
+								delete(m.getIdentifier(),m.getRawIdentifier());
+								issues++;
+								setStatus("Deleting orphaned mail entry ("+issues+")");
+								log.info("Deleting orphaned mail entry ({})",issues);
+							}
+						}
+						catch (Throwable t) {
+							log.warn("Issue with mail entry",t);
+							// delete it anyway
+							delete(m.getIdentifier(),m.getRawIdentifier());
+							issues++;
+							setStatus("Deleting orphaned mail entry ("+issues+")");
+							log.info("Deleting orphaned mail entry ({})",issues);
+						}
 					}
 				}
 				catch (Throwable t) {
 					t.printStackTrace();
 				}
 				finally {				
-				setProgress(100);
-				setStatus("Completed");
+					setProgress(100);
+					setStatus("Completed");
 				}
 			}
 
@@ -1205,6 +1207,25 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		result.close();
 		return count>0;
+	}
+
+	public boolean containsSpool(String spoolUid) {
+		boolean contains = false;
+		try {
+			Connection connection = getConnection();
+			PreparedStatement ps = connection.prepareStatement("SELECT * FROM "+BLOB_TABLE+" WHERE "+BlueboxMessage.UID+"=?");
+			ps.setString(1, spoolUid);
+			ps.execute();
+			ResultSet result = ps.getResultSet();
+			if (result.next()) {
+				contains = true;
+			}
+			connection.close();
+		}
+		catch (Throwable t) {
+			log.error("Problem checking for spool uid {} ({})",spoolUid,t.getMessage());
+		}
+		return contains;
 	}
 
 	@Override
@@ -1227,12 +1248,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			// now get checksum
 			String newUid = Hex.encodeHexString(md.digest());
 			// if this digest already exists, delete the one we just added
-			if (spoolReferenced(connection, newUid)) {
-				log.info("spool already exists, deleting new one {}",uid);
+			if (containsSpool(newUid)) {
+				log.debug("spool already exists, deleting new one {}",uid);
 				removeSpooledStream(uid);
 			}
 			else {
-				log.info("renaming spool to {}",newUid);
+				log.debug("renaming spool to {}",newUid);
 				// rename uid to newUid
 				ps = connection.prepareStatement("UPDATE "+BLOB_TABLE+" SET "+BlueboxMessage.UID+"=? WHERE "+BlueboxMessage.UID+"=?");
 				ps.setString(1, newUid);

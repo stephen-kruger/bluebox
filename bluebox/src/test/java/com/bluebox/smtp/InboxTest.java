@@ -558,8 +558,8 @@ public class InboxTest extends BaseTestCase {
 		Config.getInstance().setString(Config.BLUEBOX_MESSAGE_MAX, "50");
 		// add 100 emails
 		TestUtils.addRandomDirect(si, 100);
-		// call trim
-		inbox.expireThread().run();
+		// call expire and trim
+//		inbox.expireThread().run();
 		inbox.trimThread().run();
 		// check value equals 50
 		assertEquals(50,inbox.getMailCount(State.ANY));

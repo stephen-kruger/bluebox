@@ -679,7 +679,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 				setProgress(0);
 				int issues = 0;
 				long count = 0;
-				//				DBCursor cursor = rawFS.getFileList();
 				try {
 					long totalCount = getSpoolCount()+getMailCount(BlueboxMessage.State.ANY);
 					log.info("Looking for orphaned blobs");

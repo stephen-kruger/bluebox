@@ -370,20 +370,26 @@ public class Inbox implements SimpleMessageListener {
 				try {
 					long max = Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_MAX);
 					StorageIf si = StorageFactory.getInstance();
-					long count = si.getMailCount(BlueboxMessage.State.ANY);
-					long deleteCount = count-max;
+					final long count = si.getMailCount(BlueboxMessage.State.ANY);
+					final long deleteCount = count-max;
 					log.info("Trimming {} of total {} mailboxes to limit of {} entries",deleteCount,count,max);
 					long deletedCount=0;
-					while ((deleteCount>0)&&(si.getMailCount(BlueboxMessage.State.ANY)>max)) {
+					while ((deleteCount>0)&&(si.getMailCount(BlueboxMessage.State.ANY)>max)&&(deletedCount<deleteCount)) {
 						List<LiteMessage> list = si.listMailLite(null, BlueboxMessage.State.ANY, 0, 500, BlueboxMessage.RECEIVED, true);
 						for (LiteMessage m : list) {
-							setProgress((int)((deletedCount++)*100/deleteCount));
-							try {
-								delete(m.getIdentifier(), m.getRawIdentifier());
+							// this checks the inner loop doesn't delete more than needed
+							if (deletedCount<deleteCount) {
+								setProgress((int)((deletedCount++)*100/deleteCount));
+								try {
+									delete(m.getIdentifier(), m.getRawIdentifier());
+								}
+								catch (Throwable t) {
+									errors++;
+									log.error("Error trimming message",t);
+								}
 							}
-							catch (Throwable t) {
-								errors++;
-								log.error("Error trimming message",t);
+							else {
+								break;
 							}
 						}
 					} 

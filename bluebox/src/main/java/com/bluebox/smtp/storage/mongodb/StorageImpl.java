@@ -826,7 +826,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	
 	@Override
 	public WorkerThread cleanOrphans() throws Exception {
-		log.error("NOT IMPLEMENTED");
+		log.error("This class is deprecated, this method should never be called");
 		return null;
 	}
 	
@@ -843,7 +843,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public List<String> getDBOArray(Object dbo, String key) {
-		// TODO Auto-generated method stub
+		log.error("This class is deprecated, this method should never be called");
 		return null;
 	}
 
