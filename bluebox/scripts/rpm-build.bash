@@ -1,7 +1,7 @@
 #!/bin/bash
 export SCRIPT_DIR=`dirname "$BASH_SOURCE"`
 export BLUEBOX_SRC=$SCRIPT_DIR/..
-export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.45-28.b13.el6_6.x86_64
+export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.51-1.b16.el6_7.x86_64
 export PATH=$JAVA_HOME/bin:$PATH
 
 function command_exists () {
