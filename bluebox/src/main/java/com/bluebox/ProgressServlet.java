@@ -19,6 +19,7 @@ public class ProgressServlet extends HttpServlet {
 	}
 
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+		request.setCharacterEncoding("UTF-8");
 		response.setContentType("text/html");
 		response.setHeader("Cache-Control", "no-cache");
 		

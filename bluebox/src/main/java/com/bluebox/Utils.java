@@ -665,7 +665,7 @@ public class Utils {
 			}
 		}
 		else {
-			log.info("Using cached value for online update, expiring in {}ms",(new Date().getTime()-lastChecked.getTime()));
+			log.debug("Using cached value for online update, expiring in {}ms",(new Date().getTime()-lastChecked.getTime()));
 		}
 		return props;
 	}

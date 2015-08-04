@@ -11,6 +11,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title><%=headerResource.getString("welcome")%></title>
 	<jsp:include page="dojo.jsp" />
 </head>

@@ -1,7 +1,8 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
-<%@ page import="java.util.ResourceBundle"%>
-<%@ page import="com.bluebox.Config"%>
+<%@ page import="java.util.ResourceBundle" language="java" %>
+<%@ page import="com.bluebox.Config" language="java" %>
 <%@ page import="com.bluebox.rest.json.JSONStatsHandler" language="java"%>
+<% request.setCharacterEncoding("utf-8"); %>
 
 <%
 	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
@@ -11,6 +12,7 @@
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title><%=headerResource.getString("welcome")%></title>
 	<jsp:include page="dojo.jsp" />
 	<script type="text/javascript" charset="utf-8">
@@ -26,7 +28,7 @@
 		function updateMph(emailAddress) {
 			try {
 				require(["dojox/data/JsonRestStore"], function () {
-					var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.MPH_STAT %>/"+escape(emailAddress)+"/";
+					var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.MPH_STAT %>/"+encodeURIComponent(emailAddress)+"/";
 					console.log(urlStr);
 					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 					var queryResults = jStore.fetch({
@@ -61,7 +63,7 @@
 			try {
 				// start the refresh timer
 				require(["dojox/timing"], function(registry){
-					var t = new dojox.timing.Timer(5000);
+					var t = new dojox.timing.Timer(10000);
 					t.onTick = function() {
 						updateMph(folderEmail);
 					}

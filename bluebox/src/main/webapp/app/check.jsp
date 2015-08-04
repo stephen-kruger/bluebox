@@ -1,20 +1,15 @@
-<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
-<%@ page import="com.bluebox.smtp.Inbox"%>
-<%@ page import="com.bluebox.rest.json.JSONAutoCompleteHandler"%>
-<%@ page import="com.bluebox.rest.json.JSONStatsHandler"%>
-<%@ page language="java" import="java.util.ResourceBundle"%>
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" %>
+<%@ page import="com.bluebox.smtp.Inbox" language="java" %>
+<%@ page import="com.bluebox.rest.json.JSONAutoCompleteHandler" language="java" %>
+<%@ page import="com.bluebox.rest.json.JSONStatsHandler" language="java" %>
+<%@ page import="java.util.ResourceBundle" language="java" %>
+<%@ page import="org.apache.commons.lang.StringEscapeUtils" language="java" %>
+<% request.setCharacterEncoding("utf-8"); %>
+
 <%
 	ResourceBundle checkResource = ResourceBundle.getBundle("check",request.getLocale());
 %>
-<%
-	String email;
-	if (request.getParameter(Inbox.EMAIL)!=null) {
-		email = request.getParameter(Inbox.EMAIL);
-	}
-	else {
-		email = "";
-	}
-%>
+
 <style type="text/css">
 .checkbox {
 	position: fixed;
@@ -33,7 +28,7 @@
 	height: 100%;
 }
 </style>
-<script type="text/javascript">
+<script type="text/javascript" charset="utf-8">
 
 	require(["dijit/form/Button"]);
 
@@ -65,7 +60,7 @@
 	               new dijit.form.ComboBox({
 	                   id: "<%= Inbox.EMAIL %>",
 	                   name: "Email",
-	                   value: "<%=org.apache.commons.lang.StringEscapeUtils.escapeJavaScript(email)%>",
+	                   value: getParam("<%= Inbox.EMAIL %>"),
 	                   autocomplete:true,
 	                   store: stateStore,
 	                   placeholder: "<%= checkResource.getString("typeaheadPlaceholder") %>",

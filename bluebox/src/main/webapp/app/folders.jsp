@@ -5,17 +5,18 @@
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.Config"%>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils"%>
+<% request.setCharacterEncoding("utf-8"); %>
 
 <% 
 	ResourceBundle folderDetailResource = ResourceBundle.getBundle("folderDetails",request.getLocale());
 
 %>
-<script>		
+<script type="text/javascript" charset="utf-8">
 	
-	var folderEmail = "<%= StringEscapeUtils.escapeJavaScript(request.getParameter(Inbox.EMAIL)) %>";
-	if (folderEmail=="null")
-		folderEmail = "";
-		
+	//var folderEmail = "<%= StringEscapeUtils.escapeHtml(request.getParameter(Inbox.EMAIL)) %>";
+	//var folderEmail = "<%= request.getParameter(Inbox.EMAIL) %>";
+	var folderEmail = getParam("<%= Inbox.EMAIL %>");
+	
 	function setInboxCount(count) {
 		try {
 			document.getElementById("inboxCount").innerHTML = count;		
@@ -35,7 +36,7 @@
 	}
 	
 	function loadInboxAndFolder(email, state) {
-		console.log("loadInboxAndFolder "+state);
+		console.log("loadInboxAndFolder "+email+" "+state);
 		loadInbox(email, state);
 		loadFolder(email);
 	} 
@@ -45,7 +46,7 @@
 
 		try {
 			require(["dojox/data/JsonRestStore"], function (JsonRestStore) {
-				var urlStr = "<%=request.getContextPath()%>/<%=JSONFolderHandler.JSON_ROOT%>/"+encodeURI(newEmail);
+				var urlStr = "<%=request.getContextPath()%>/<%=JSONFolderHandler.JSON_ROOT%>/"+newEmail;
 				var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:true});
 				var queryResults = jStore.fetch({}).results;
 				setInboxCount(queryResults.NORMAL.count);

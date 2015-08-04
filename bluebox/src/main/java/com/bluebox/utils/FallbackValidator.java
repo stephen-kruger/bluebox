@@ -746,8 +746,7 @@ public class FallbackValidator
 
     private static final String atom = "(?:" + cfws + ")?" + atext + "+" + "(?:" + cfws + ")?";
     private static final String dotAtomText = regularAtext + "+" + "(?:" + "\\." + regularAtext + "+)*";
-    private static final String dotAtom = "(?:" + cfws + ")?" + dotAtomText + "(?:" +
-        cfws + ")?";
+    //private static final String dotAtom = "(?:" + cfws + ")?" + dotAtomText + "(?:" + cfws + ")?";
     private static final String capDotAtomNoCFWS = "(?:" + cfws + ")?(" + dotAtomText +
         ")(?:" + cfws + ")?";
     private static final String capDotAtomTrailingCFWS = "(?:" + cfws + ")?(" + dotAtomText +

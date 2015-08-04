@@ -109,7 +109,7 @@
 					document.getElementById("mailTitle").innerHTML = "<%=inboxDetailsResource.getString("allMail")%>";
 				}
 				else {
-					document.getElementById("mailTitle").innerHTML = trimString(email,22);
+					document.getElementById("mailTitle").innerHTML = "<span>"+trimString(email,22)+"</span>";
 				}
 					
 				// set the check fragment
@@ -296,12 +296,12 @@
 		}
 		
 		function rssFeed() {
-			window.open("<%=request.getContextPath()%>/feed/inbox?email="+encodeURIComponent(currentEmail));
+			window.open("<%=request.getContextPath()%>/feed/inbox?email="+currentEmail);
 		}
 		
 		function getStore(email, state) {
 			try {
-				var urlStr = "<%=request.getContextPath()%>/<%=JSONInboxHandler.JSON_ROOT%>/"+encodeURI(email)+"/"+state;
+				var urlStr = "<%=request.getContextPath()%>/<%=JSONInboxHandler.JSON_ROOT%>/"+email+"/"+state;
 				 var store = new dojox.data.JsonRestStore({ 
 					    				target: urlStr, 
 					    				parameters: [{name: "state", type: "string", optional: true}]
@@ -374,9 +374,13 @@
 		
 		require(["dojo/domReady!","dojox/data/JsonRestStore"], function(domready, JSONRestStore) {
 			// will not be called until DOM is ready
-	    	var email = "<%=StringEscapeUtils.escapeJavaScript(request.getParameter(Inbox.EMAIL))%>";
-			if (email=="null")
-				email = "";
+			// this was buggy when displaying asian fullname emails
+	    	//var email = "<%=StringEscapeUtils.escapeJavaScript(request.getParameter(Inbox.EMAIL))%>";
+	    	//var email = "<%=request.getParameter(Inbox.EMAIL)%>";
+			//if (email=="null")
+			//	email = "";
+			var email = getParam("<%= Inbox.EMAIL %>");
+
 			setupTable(email,"<%=BlueboxMessage.State.NORMAL.ordinal()%>");
 			loadInbox(email,"<%=BlueboxMessage.State.NORMAL.ordinal()%>");
 		});

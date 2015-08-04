@@ -56,3 +56,18 @@ function dialog(title, content) {
 <link type="text/css" href='https://fonts.googleapis.com/css?family=Roboto:700,400&subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic' rel='stylesheet'>
 <link type="text/css" href="<%=request.getContextPath()%>/app/index.css" rel="stylesheet" />
 <link type="text/css" href="<%=request.getContextPath()%>/app/<%=bbconfig.getString("bluebox_theme")%>/theme.css" rel="stylesheet" />
+
+<script type="text/javascript" charset="utf-8">
+
+	function getParamRaw(name){
+	   if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+	      return decodeURIComponent(name[1]);
+	}
+	
+	function getParam(name){
+		p = getParamRaw(name);
+		if ((p=="null")||(!p))
+			p = "";
+		return p;
+	}
+</script>

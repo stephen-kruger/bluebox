@@ -82,6 +82,7 @@ public class BlueBoxServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(final HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		req.setCharacterEncoding("UTF-8");
 		String uri = req.getRequestURI(); 
 
 		if (uri.indexOf(JSONMessageHandler.JSON_ROOT)>=0){
@@ -204,6 +205,7 @@ public class BlueBoxServlet extends HttpServlet {
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
+		req.setCharacterEncoding("UTF-8");
 		log.debug("doDelete :{}",req.getRequestURI());
 		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
 			new JSONMessageHandler().doDelete(inbox,req,resp);
