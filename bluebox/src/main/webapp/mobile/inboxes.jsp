@@ -5,7 +5,6 @@
     <title>Inbox</title>
    
     <link href="//code.ionicframework.com/nightly/css/ionic.css" rel="stylesheet">
-    <link href="inboxes.css" rel="stylesheet">
     <script src="//code.ionicframework.com/nightly/js/ionic.bundle.js"></script>
     <script src="inboxes.js"></script>
   </head>
@@ -22,10 +21,7 @@
 	  </label>
     </ion-header-bar>
 
-    <ion-content>
-
-      <!-- The list directive is great, but be sure to also checkout the collection repeat directive when scrolling through large lists -->
-   
+    <ion-content>   
       <ion-list>
       	<ion-item collection-repeat="item in data.items" item="item" href="inbox.jsp?Email={{item.label}}" class="item-remove-animate">{{ item.label }}</ion-item>
 		<!-- <ion-infinite-scroll on-infinite="addItems('')"></ion-infinite-scroll> -->
