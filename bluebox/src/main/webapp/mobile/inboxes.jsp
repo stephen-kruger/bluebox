@@ -23,7 +23,7 @@
 
     <ion-content>   
       <ion-list>
-      	<ion-item collection-repeat="item in data.items" item="item" href="inbox.jsp?Email={{item.label}}" class="item-remove-animate">{{ item.label }}</ion-item>
+      	<ion-item collection-repeat="item in data.items" item="item" href="inbox.jsp?Email={{item.label}}&State=1" class="item-remove-animate">{{ item.label }}</ion-item>
 		<!-- <ion-infinite-scroll on-infinite="addItems('')"></ion-infinite-scroll> -->
       </ion-list>
 

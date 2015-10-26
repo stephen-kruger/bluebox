@@ -21,25 +21,11 @@ angular.module('ionicApp', ['ionic'])
 		return $scope.data.items;
 		//$scope.search("ste");
 	}
-	
-//	$scope.addItems = function(query) {
-//		console.log('Searching inboxes for '+query+' from start='+$scope.data.count+' to '+($scope.data.count+50));
-//		$http.get('../rest/json/autocomplete?start='+$scope.count+'&count=50&label='+query).success(function(res){
-//		  $scope.data.count += res.items.length;
-//		  for (var i = 0; i < res.items.length; i++) {
-//			  $scope.data.items.push(res.items[i]);
-//		  }
-//		  $scope.$broadcast('scroll.infiniteScrollComplete');
-//		}).error(function(failure) {
-//			console.log('Failed');		  
-//		});;
-//	  }
-  
   
   $scope.data = {
 		    items: [],
 		    query: ''
 		  };
-  
+      
   $scope.search($scope.data.query);
 });
