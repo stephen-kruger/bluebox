@@ -694,7 +694,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 						setProgress((int)((100*count++)/totalCount)/2);
 					}
 					log.info("Finished looking for orphaned blobs (found "+issues+")");
-					
+
 					log.info("Looking for orphaned messages");
 					List<LiteMessage> list = listMailLite(null, BlueboxMessage.State.ANY, 0, (int)getMailCount(BlueboxMessage.State.ANY), BlueboxMessage.RECEIVED, true);
 
@@ -732,7 +732,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		};
 		return wt;
 	}
-	
+
 	public WorkerThread cleanOrphanSpoolsOld() throws Exception {
 		log.info("Cleaning unreferenced spooled mails");
 
@@ -822,9 +822,14 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	@Override
 	public String getDBOString(Object dbo, String key, String def) {
-		Document doc = (Document)dbo;
-		if (doc.containsKey(key))
-			return doc.getString(key);
+		try {
+			Document doc = (Document)dbo;
+			if (doc.containsKey(key))
+				return doc.getString(key);
+		}
+		catch (Throwable t) {
+			log.warn("Problem getting key {}",key, t);
+		}
 		return def;
 	}
 

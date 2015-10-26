@@ -4,15 +4,15 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.4.9</version>
+	<version>4.4.10</version>
 	<name>bluebox</name>
 	<url>https://code.google.com/p/bluebox/</url>
 	<properties>
 		<slf4j_version>1.7.12</slf4j_version>
-		<lucene_version>5.2.1</lucene_version>
-		<solr_version>5.2.1</solr_version>
-		<derby_version>10.11.1.1</derby_version>
-		<mongo_version>3.0.3</mongo_version>
+		<lucene_version>5.3.1</lucene_version>
+		<solr_version>5.3.1</solr_version>
+		<derby_version>10.12.1.1</derby_version>
+		<mongo_version>3.1.0</mongo_version>
 		<tomcat.webapp.dir>/var/lib/tomcat6/webapps</tomcat.webapp.dir>
 		<tomcat.script.dir>/etc/init.d</tomcat.script.dir>
 		<rpm.file.owner>tomcat</rpm.file.owner>
