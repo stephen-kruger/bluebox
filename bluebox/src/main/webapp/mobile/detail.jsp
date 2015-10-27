@@ -16,12 +16,11 @@
 	<ion-nav-bar class="bar-positive">
 	
 	  <ion-nav-buttons side="left">
-	    <button class="button button-icon ion-ios-arrow-back" onclick="history.go(-1);"></button>
+	    <button class="button button-icon ion-ios-arrow-back" onclick="history.go(-1);"> {{Inbox}}</button>
 	  </ion-nav-buttons>
 	  <ion-nav-buttons side="right">
-	    <button class="button button-icon ion-search"></button>
-	    <button class="button button-icon ion-ios-email"></button>
-	    <button class="button button-icon ion-ios-person"></button>
+	    <button class="button button-icon ion-trash-a"></button>
+	    <button class="button button-icon ion-home" onclick="window.location='./inboxes.jsp'"></button>
 	  </ion-nav-buttons>
 	</ion-nav-bar>
 	<ion-header-bar class="bar-balanced bar-subheader">
