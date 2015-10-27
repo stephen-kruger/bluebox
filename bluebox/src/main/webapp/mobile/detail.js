@@ -12,13 +12,20 @@ function getParameter(name,defaultValue) {
 }
 angular.module('ionicApp', ['ionic'])
 
-.controller('DetailCtrl', function($scope,$http) {
+.controller('DetailCtrl', function($scope,$http,$sce,$ionicTabsDelegate) {
   
+	$scope.to_trusted = function(html_code) {
+	    return $sce.trustAsHtml(html_code);
+	}
+	
 	$scope.getdetail = function(uid) {
 		// state=1 for normal, state=2 for deleted
 		console.log('listing detail for '+uid);
 		$http.get('../rest/json/inbox/detail/'+uid).success(function(res){
 			$scope.detail = res;
+			// now select html or text tab
+			if (res.HtmlBody.length>0)
+				$ionicTabsDelegate .select(1, false);
 			}).error(function(failure) {
 				console.log('Failed');		  
 			});

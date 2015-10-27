@@ -25,8 +25,8 @@
 	</ion-nav-bar>
 	<ion-header-bar class="bar-balanced bar-subheader">
 		<h2 class="title">{{detail.Subject}}</h2>
-		From <span ng-repeat="sender in detail.Sender">{{ sender }}</span><br/>
-		<span>Received {{ detail.Received }}</span>
+		From <b><span ng-repeat="sender in detail.Sender">{{ sender }}</span></b><br/>
+		<span>Received <b>{{ detail.Received }}</b></span>
 	</ion-header-bar>
 	
 	<ion-tabs class="tabs-positive tabs-icon-only"> 
@@ -45,7 +45,8 @@
 			icon-off="ion-ios-world-outline"> 
 			<ion-view view-title="Html">
 	        <ion-content>
-	          {{detail.HtmlBody}}
+	        <div ng-bind-html="to_trusted(detail.HtmlBody)"></div>
+	          <!-- {{detail.HtmlBody}} -->
 	        </ion-content>
 	      </ion-view> 
 		</ion-tab>
@@ -55,7 +56,11 @@
 			<ion-view view-title="Attachments">
 	        <ion-content>
 	        	<h3>Attachments</h3>
-	          <p ng-repeat="attachment in detail.Attachment"><button class="button button-icon ion-android-attach"> {{ attachment }}</button></p><
+	          <p ng-repeat="attachment in detail.Attachment">
+	          	<a class="button button-icon ion-android-attach" 
+	          			href="../rest/json/inbox/attachment/3887c26f-7f32-4557-8007-dc383149005a/0/{{attachment}}"> {{ attachment }}
+	          	</a>
+	          </p>
 	        </ion-content>
 	      </ion-view> 
 		</ion-tab>

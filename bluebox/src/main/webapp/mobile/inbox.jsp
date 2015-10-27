@@ -27,7 +27,7 @@
 			<ion-view view-title="Home">
 	        <ion-content>
 	         <ion-list>
-		      	<ion-item collection-repeat="d in data" item="item" href="detail.jsp?Email={{d.Sender[0]}}&Uid={{d.Uid}}" class="item-remove-animate">
+		      	<ion-item collection-repeat="d in data" item="item" href="detail.jsp?Email={{d.Inbox}}&Uid={{d.Uid}}" class="item-remove-animate">
 		      	<h3 class="spaceWrap"><b>{{d.Subject}}</b></h3>
 		      	<p class="spaceWrap">
 			                    <span class="small"><i class="icon ion-person">&nbsp;</i>{{d.Sender[0]}}</span>

@@ -246,6 +246,7 @@
 		<a id="errors" class="menulink" href="<%=request.getContextPath()%>/app/errors.jsp"><%= menuResource.getString("errors") %><span id="statsMenuErrorCount" class="badge">?</span></a>
 		<a id="upload" class="menulink" href="<%=request.getContextPath()%>/app/upload.jsp"><%= menuResource.getString("upload") %></a>
 		<a id="info" class="menulink" href="<%=request.getContextPath()%>/app/info.jsp"><%= menuResource.getString("info") %></a>
+		<a id="mobile" class="menulink" href="<%=request.getContextPath()%>/mobile/inboxes.jsp"><%= menuResource.getString("mobile") %></a>
 	</div>
 	<div class="menu3">
 		<a id="docs" class="menulink" href="<%=request.getContextPath()%>/app/docs.jsp"><%= menuResource.getString("docs") %></a>
