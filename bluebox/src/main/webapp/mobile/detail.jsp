@@ -1,0 +1,67 @@
+<html ng-app="ionicApp">
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Detail</title>
+
+<link href="//code.ionicframework.com/nightly/css/ionic.css"
+	rel="stylesheet">
+<script src="//code.ionicframework.com/nightly/js/ionic.bundle.js"></script>
+<script src="detail.js"></script>
+</head>
+
+<body ng-controller="DetailCtrl">
+
+	<ion-nav-bar class="bar-positive">
+	
+	  <ion-nav-buttons side="left">
+	    <button class="button button-icon ion-ios-arrow-back" onclick="history.go(-1);"></button>
+	  </ion-nav-buttons>
+	  <ion-nav-buttons side="right">
+	    <button class="button button-icon ion-search"></button>
+	    <button class="button button-icon ion-ios-email"></button>
+	    <button class="button button-icon ion-ios-person"></button>
+	  </ion-nav-buttons>
+	</ion-nav-bar>
+	<ion-header-bar class="bar-balanced bar-subheader">
+		<h2 class="title">{{detail.Subject}}</h2>
+		From <span ng-repeat="sender in detail.Sender">{{ sender }}</span><br/>
+		<span>Received {{ detail.Received }}</span>
+	</ion-header-bar>
+	
+	<ion-tabs class="tabs-positive tabs-icon-only"> 
+	
+		<ion-tab
+			title="Text" icon-on="ion-ios-paper"
+			icon-off="ion-ios-paper-outline"> 
+			<ion-view view-title="Text">
+	        <ion-content>
+	          {{detail.TextBody}}
+	        </ion-content>
+	      </ion-view>
+		</ion-tab> 
+	
+		<ion-tab title="Html" icon-on="ion-ios-world"
+			icon-off="ion-ios-world-outline"> 
+			<ion-view view-title="Html">
+	        <ion-content>
+	          {{detail.HtmlBody}}
+	        </ion-content>
+	      </ion-view> 
+		</ion-tab>
+		
+		<ion-tab title="Attachments" icon-on="ion-social-buffer"
+			icon-off="ion-social-buffer-outline"> 
+			<ion-view view-title="Attachments">
+	        <ion-content>
+	        	<h3>Attachments</h3>
+	          <p ng-repeat="attachment in detail.Attachment"><button class="button button-icon ion-android-attach"> {{ attachment }}</button></p><
+	        </ion-content>
+	      </ion-view> 
+		</ion-tab>
+		
+	</ion-tabs>
+	
+</body>
+</html>

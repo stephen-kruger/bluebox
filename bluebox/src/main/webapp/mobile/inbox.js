@@ -15,6 +15,7 @@ angular.module('ionicApp', ['ionic'])
 .controller('InboxCtrl', function($scope,$http) {
   
 	$scope.listmail = function(email) {
+		$scope.Inbox = decodeURI(email);
 		// state=1 for normal, state=2 for deleted
 		console.log('listing inbox for '+email+' state=1');
 		$http.get('../rest/json/inbox/'+email+'/1/').success(function(res){
@@ -44,7 +45,7 @@ angular.module('ionicApp', ['ionic'])
 	
 	$scope.data = [];
 	$scope.deleted = [];
-		
-	  $scope.data = $scope.listmail(getParameter('Email','*'));
-	  $scope.deleted = $scope.listtrash(getParameter('Email','*'));
+	$scope.Inbox = '';
+	$scope.data = $scope.listmail(getParameter('Email','*'));
+	$scope.deleted = $scope.listtrash(getParameter('Email','*'));
 });
