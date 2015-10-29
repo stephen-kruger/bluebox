@@ -1,3 +1,7 @@
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
+<%@ page language="java" import="java.util.ResourceBundle" %>
+<% ResourceBundle folderDetailResource = ResourceBundle.getBundle("folderDetails",request.getLocale());%>
+
 <html ng-app="ionicApp">
 <head>
 <meta charset="utf-8">
@@ -17,7 +21,7 @@
 	<div class="item-icon-left">
 		<a href="inboxes.jsp"><i class="icon ion-ios-home bgskyblue  iconx dashboardsquare"></i></a>
 	</div>
-	<h1 class="title">Inbox for {{Inbox}}</h1>
+	<h1 class="title"><%= folderDetailResource.getString("inboxfor") %> {{Inbox}}</h1>
 	</ion-header-bar>
 
 	<ion-tabs class="tabs-positive tabs-icon-only"> 

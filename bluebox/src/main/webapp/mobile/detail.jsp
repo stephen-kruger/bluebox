@@ -1,3 +1,7 @@
+<%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
+<%@ page language="java" import="java.util.ResourceBundle" %>
+<% ResourceBundle inboxDetailResource = ResourceBundle.getBundle("inboxDetails",request.getLocale());%>
+<% ResourceBundle mailDetailResource = ResourceBundle.getBundle("mailDetails",request.getLocale());%>
 <html ng-app="ionicApp">
 <head>
 <meta charset="utf-8">
@@ -25,8 +29,8 @@
 	</ion-nav-bar>
 	<ion-header-bar class="bar-balanced bar-subheader">
 		<h2 class="title">{{detail.Subject}}</h2>
-		From <b><span ng-repeat="sender in detail.Sender">{{ sender }}</span></b><br/>
-		<span>Received <b>{{ detail.Received }}</b></span>
+		<%= inboxDetailResource.getString("who") %> <b><span ng-repeat="sender in detail.Sender">{{ sender }}</span></b><br/>
+		<span><%= inboxDetailResource.getString("date") %> <b>{{ detail.Received }}</b></span>
 	</ion-header-bar>
 	
 	<ion-tabs class="tabs-positive tabs-icon-only"> 
@@ -55,7 +59,7 @@
 			icon-off="ion-social-buffer-outline"> 
 			<ion-view view-title="Attachments">
 	        <ion-content>
-	        	<h3>Attachments</h3>
+	        	<h3><%= mailDetailResource.getString("attachments") %></h3>
 	          <p ng-repeat="attachment in detail.Attachment">
 	          	<a class="button button-icon ion-android-attach" 
 	          			href="../rest/json/inbox/attachment/3887c26f-7f32-4557-8007-dc383149005a/0/{{attachment}}"> {{ attachment }}
