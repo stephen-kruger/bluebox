@@ -23,6 +23,16 @@ angular.module('ionicApp', ['ionic'])
 		console.log('listing detail for '+uid);
 		$http.get('../rest/json/inbox/detail/'+uid).success(function(res){
 			$scope.detail = res;
+			$scope.detail.AttachmentBlob = [$scope.detail.Attachment.length];
+			// fix up the attachment links
+			for (var i = 0; i < $scope.detail.Attachment.length; i++) {
+				var blob = {
+						href : "../rest/json/inbox/attachment/"+getParameter('Uid')+"/"+i+"/"+$scope.detail.Attachment[i],
+						name : $scope.detail.Attachment[i]
+				};
+				$scope.detail.AttachmentBlob[i] = blob;
+				console.log($scope.detail.AttachmentBlob[i]);
+			}
 			// now select html or text tab
 			if (res.HtmlBody.length>0)
 				$ionicTabsDelegate .select(1, false);

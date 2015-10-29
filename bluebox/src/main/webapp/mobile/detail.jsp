@@ -60,9 +60,9 @@
 			<ion-view view-title="Attachments">
 	        <ion-content>
 	        	<h3><%= mailDetailResource.getString("attachments") %></h3>
-	          <p ng-repeat="attachment in detail.Attachment">
+	          <p ng-repeat="attachmentHref in detail.AttachmentBlob">
 	          	<a class="button button-icon ion-android-attach" 
-	          			href="../rest/json/inbox/attachment/3887c26f-7f32-4557-8007-dc383149005a/0/{{attachment}}"> {{ attachment }}
+	          			href="{{attachmentHref.href}}"> {{attachmentHref.name}}
 	          	</a>
 	          </p>
 	        </ion-content>
@@ -73,3 +73,5 @@
 	
 </body>
 </html>
+http://ghvm352.lotus.com/bluebox/rest/json/inbox/attachment/3887c26f-7f32-4557-8007-dc383149005a/0/files.png
+http://ghvm352.lotus.com/bluebox/rest/json/inbox/attachment/820ab4e1-9af9-46da-bf54-b2ce4d952f38/1/files.png
