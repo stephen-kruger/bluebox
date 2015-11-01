@@ -23,9 +23,13 @@ angular.module('ionicApp', ['ionic'])
 		console.log('listing detail for '+uid);
 		$http.get('../rest/json/inbox/detail/'+uid).success(function(res){
 			$scope.detail = res;
-			$scope.detail.AttachmentBlob = [$scope.detail.Attachment.length];
+			var length = 0;
+			if ($scope.detail.Attachment) {
+				length = $scope.detail.Attachment;
+			}
+			$scope.detail.AttachmentBlob = [length];
 			// fix up the attachment links
-			for (var i = 0; i < $scope.detail.Attachment.length; i++) {
+			for (var i = 0; i < length; i++) {
 				var blob = {
 						href : "../rest/json/inbox/attachment/"+getParameter('Uid')+"/"+i+"/"+$scope.detail.Attachment[i],
 						name : $scope.detail.Attachment[i]
