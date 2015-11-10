@@ -150,7 +150,7 @@ public class Inbox implements SimpleMessageListener {
 	    StorageFactory.getInstance().stop();
 	}
 	catch (Exception e) {
-	    e.printStackTrace();
+	    //e.printStackTrace();
 	    log.error("Error stopping storage implementation",e);
 	}
 	log.info("Stopped inbox");
