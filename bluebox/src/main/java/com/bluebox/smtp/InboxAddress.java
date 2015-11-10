@@ -64,6 +64,7 @@ public class InboxAddress extends Object {
 		}
 		catch (Throwable e) {
 			log.debug("Error parsing {}",email);
+			e.printStackTrace();
 			try {
 				InternetAddress address = new InternetAddress(Utils.decodeRFC2407(email));
 				return address.getAddress();
@@ -75,6 +76,8 @@ public class InboxAddress extends Object {
 				}
 				catch (Throwable t2) {
 					log.error("Giving up trying to parse {}",email);
+					// ok this address is really not good. try replace spaces
+					return email.replaceAll(" ", "_");
 				}
 			}
 		}
