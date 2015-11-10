@@ -648,7 +648,7 @@ public class Inbox implements SimpleMessageListener {
 	public void deliver(String from, String recipient, MimeMessage mimeMessage, String spooledUid) throws Exception {
 		from = getFullAddress(from, mimeMessage.getFrom());
 		recipient = getFullAddress(recipient, mimeMessage.getAllRecipients());
-		log.info("Delivering mail for {} from {}",recipient,from);
+		log.debug("Delivering mail for {} from {}",recipient,from);
 
 		BlueboxMessage blueboxMessage = StorageFactory.getInstance().store( 
 				from,
