@@ -81,17 +81,19 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 			}
 		}
 		catch (Throwable t) {
-			t.printStackTrace();
+			//t.printStackTrace();
+		    log.error("Receieved null helo ({}) or address ({})",helo,address);
 		}
 		return false;
 	}
 
 	@Override
 	public MessageHandler create(MessageContext ctx) {
-		log.debug("Message from {} with address {}",ctx.getHelo(),ctx.getRemoteAddress().toString());
 		if (isBlackListed(ctx)) {
+			log.warn("Rejecting spam message from {} with address {}",ctx.getHelo(),ctx.getRemoteAddress().toString());
 			return new SpamMessageHandler(ctx);
 		}
+		log.info("Accepting message from {} with address {}",ctx.getHelo(),ctx.getRemoteAddress().toString());
 		return super.create(ctx);
 	}
 

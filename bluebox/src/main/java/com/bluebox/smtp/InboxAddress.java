@@ -63,7 +63,7 @@ public class InboxAddress extends Object {
 			return EmailAddress.getInternetAddress(email).getAddress();
 		}
 		catch (Throwable e) {
-			log.debug("Error parsing {}",email);
+			log.error("Error parsing {}",email);
 			e.printStackTrace();
 			try {
 				InternetAddress address = new InternetAddress(Utils.decodeRFC2407(email));
