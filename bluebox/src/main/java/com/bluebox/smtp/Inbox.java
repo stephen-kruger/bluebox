@@ -771,7 +771,7 @@ public class Inbox implements SimpleMessageListener {
     }
 
     public long getStatsGlobalCount() {
-	return StorageFactory.getInstance().getLongProperty(GLOBAL_COUNT_NODE,48755551);	
+	return StorageFactory.getInstance().getLongProperty(GLOBAL_COUNT_NODE,53857285);	
     }
 
     public void setStatsGlobalCount(long count) {
