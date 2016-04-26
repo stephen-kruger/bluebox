@@ -29,6 +29,7 @@ package com.bluebox.rest.json;
  */
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.servlet.http.HttpServletRequest;
@@ -41,21 +42,15 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.StorageFactory;
 
 public class JSONFolderHandler extends AbstractHandler {
 	private static final Logger log = LoggerFactory.getLogger(JSONFolderHandler.class);
 	public static final String JSON_ROOT = "rest/json/folder";
 
-	public void doGetFolder(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		setDefaultHeaders(resp);
-
-		// get the desired email
-		//		String uri = URLDecoder.decode(req.getRequestURI(),"UTF-8");
-		String uri = req.getRequestURI();
-		//		uri = uri.substring(uri.indexOf(JSON_ROOT)+JSON_ROOT.length());
+	public JSONObject doGetFolderJson(String emailStr, Locale locale) throws IOException {
 		try {
 			InboxAddress email=null;
-			String emailStr = extractEmail(extractFragment(uri,JSON_ROOT,0));
 			if (emailStr.trim().length()>0) {
 				if (emailStr.startsWith("*@")) {
 					emailStr="";
@@ -67,7 +62,7 @@ public class JSONFolderHandler extends AbstractHandler {
 			}
 
 			log.debug("Serving folder count for {}",emailStr);
-			ResourceBundle rb = ResourceBundle.getBundle("folderDetails",req.getLocale());
+			ResourceBundle rb = ResourceBundle.getBundle("folderDetails",locale);
 
 			JSONObject folders = new JSONObject();
 			folders.put("id", "Overview");
@@ -77,7 +72,7 @@ public class JSONFolderHandler extends AbstractHandler {
 
 			JSONObject normal = new JSONObject();
 			normal.put("id", rb.getString("inbox"));
-			long normalCount = inbox.getMailCount(email, BlueboxMessage.State.NORMAL);
+			long normalCount = StorageFactory.getInstance().getMailCount(email, BlueboxMessage.State.NORMAL);
 			normal.put("name", rb.getString("inbox")+" ("+normalCount+")");
 			normal.put("count", normalCount);
 			normal.put("email", emailStr);
@@ -87,7 +82,7 @@ public class JSONFolderHandler extends AbstractHandler {
 
 			JSONObject deleted = new JSONObject();
 			deleted.put("id", rb.getString("trash"));
-			long trashCount = inbox.getMailCount(email, BlueboxMessage.State.DELETED);
+			long trashCount = StorageFactory.getInstance().getMailCount(email, BlueboxMessage.State.DELETED);
 			deleted.put("name", rb.getString("trash")+" ("+trashCount+")");
 			deleted.put("count", trashCount);
 			deleted.put("email", emailStr);
@@ -97,7 +92,7 @@ public class JSONFolderHandler extends AbstractHandler {
 
 			JSONObject all = new JSONObject();
 			all.put("id", rb.getString("all"));
-			long allCount = inbox.getMailCount(email, BlueboxMessage.State.ANY);//normalCount+trashCount;
+			long allCount =StorageFactory.getInstance().getMailCount(email, BlueboxMessage.State.ANY);//normalCount+trashCount;
 			all.put("name", rb.getString("allDocuments")+" ("+allCount+")");
 			all.put("count", allCount);
 			all.put("email", emailStr);
@@ -105,8 +100,25 @@ public class JSONFolderHandler extends AbstractHandler {
 			all.put("style", "allFolder");
 			folders.put(BlueboxMessage.State.ANY.name(),all);
 
+			return folders;
+		}
+		catch (Throwable t) {
+			log.error(t.getMessage());
+			t.printStackTrace();
+			return null;
+		}
+
+	}
+	
+	public void doGetFolder(Inbox inbox, HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		setDefaultHeaders(resp);
+		String uri = req.getRequestURI();
+		String emailStr = extractEmail(extractFragment(uri,JSON_ROOT,0));
+		JSONObject folderJson = doGetFolderJson(emailStr, req.getLocale());
+		
+		try {
 			Writer writer = resp.getWriter();
-			writer.write(folders.toString(3));
+			writer.write(folderJson.toString(3));
 			writer.flush();
 		}
 		catch (Throwable t) {

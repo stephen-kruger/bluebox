@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
+		 http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+	version="3.1">
 
 	<display-name>bluebox</display-name>
 
@@ -71,6 +72,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
 			<role-name>admin</role-name>
 		</auth-constraint>
 	</security-constraint>
+
 	<login-config>
 		<auth-method>BASIC</auth-method>
 		<realm-name>BlueBox Administration</realm-name>
@@ -80,12 +82,12 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
 		<description>Only 'bluebox', 'manager' and 'admin' roles are allowed to access the admin interface</description>
 		<role-name>bluebox</role-name>
 	</security-role>
-	
+
 	<security-role>
 		<description>Only 'bluebox', 'manager' and 'admin' roles are allowed to access the admin interface</description>
 		<role-name>manager</role-name>
 	</security-role>
-	
+
 	<security-role>
 		<description>Only 'bluebox', 'manager' and 'admin' roles are allowed to access the admin interface</description>
 		<role-name>admin</role-name>
@@ -97,7 +99,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns
 	</welcome-file-list>
 
 	<error-page>
-	    <error-code>500</error-code>
+		<error-code>500</error-code>
 		<location>/app/error.jsp?code=0</location>
 	</error-page>
 

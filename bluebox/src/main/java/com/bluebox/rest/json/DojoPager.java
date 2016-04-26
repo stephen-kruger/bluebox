@@ -20,6 +20,7 @@ public class DojoPager {
 		// handle the form : /FooObject/?foo=value1&sortBy=+foo,-bar
 		// as per http://dojotoolkit.org/reference-guide/1.10/dojo/store/JsonRest.html
 		if (req.getParameter("sortBy")!=null) {
+			log.info("0:"+req.getParameter("sortBy"));
 			log.warning("This code has never been tested!");
 			String sortString = req.getParameter("sortBy");
 			StringTokenizer tok = new StringTokenizer(sortString,",");
@@ -32,12 +33,10 @@ public class DojoPager {
 				orderBy.add(sortString.substring(1));
 			}
 		}
-		// handle the form /FooObject/?foo=value1&sort(+foo,-bar)
 		else {
-			for (
-					@SuppressWarnings("unchecked")
-					Enumeration<String> names = req.getParameterNames(); names.hasMoreElements();) {
-				n = names.nextElement();
+			// this one happens only on Liberty
+			if (req.getParameterMap().size()==0) {
+				n = req.getQueryString()+"";
 				if (n.contains("sort")) {
 					String sortString = n.substring(n.indexOf('(')+1,n.indexOf(')'));
 					StringTokenizer tok = new StringTokenizer(sortString,",");
@@ -50,6 +49,27 @@ public class DojoPager {
 							ascending.add(true);
 						}
 						orderBy.add(sortString.substring(1));
+					}
+				}
+			}
+			else {
+				// handle the form /FooObject/?foo=value1&sort(+foo,-bar)
+				for (@SuppressWarnings("unchecked")
+				Enumeration<String> names = req.getParameterNames(); names.hasMoreElements();) {
+					n = names.nextElement();
+					if (n.contains("sort")) {
+						String sortString = n.substring(n.indexOf('(')+1,n.indexOf(')'));
+						StringTokenizer tok = new StringTokenizer(sortString,",");
+						while (tok.hasMoreTokens()) {
+							sortString = tok.nextToken();
+							if (sortString.startsWith("-")) {
+								ascending.add(false);
+							}
+							else {
+								ascending.add(true);
+							}
+							orderBy.add(sortString.substring(1));
+						}
 					}
 				}
 			}

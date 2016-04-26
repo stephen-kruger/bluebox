@@ -309,6 +309,7 @@ public class BlueboxMessage {
 	
 	protected MimeMessageParser getParser() throws Exception {
 		if (parser==null) {
+			// javax.mail.internet.MimeMultipart cannot be cast to javax.mail.Multipart
 			MimeMessageParser p = new MimeMessageParser(getBlueBoxMimeMessage());
 			parser = p.parse();
 		}
