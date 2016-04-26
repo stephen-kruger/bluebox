@@ -91,7 +91,12 @@ public class BlueboxMessage {
 		setProperty(RAWUID, rawId);
 		setProperty(RECIPIENT, StringEscapeUtils.escapeJava(recipient.getFullAddress()));
 		setProperty(INBOX, StringEscapeUtils.escapeJava(getInbox().getAddress()));
-		setProperty(SUBJECT, StringEscapeUtils.escapeJava(bbmm.getSubject()));
+		if (bbmm.getSubject()==null) {
+			setProperty(SUBJECT, "");
+		}
+		else {
+			setProperty(SUBJECT, StringEscapeUtils.escapeJava(bbmm.getSubject()));			
+		}
 		setLongProperty(RECEIVED, received.getTime());
 		setIntProperty(STATE, State.NORMAL.ordinal());
 		setLongProperty(SIZE, Utils.getSize(bbmm));
@@ -192,9 +197,9 @@ public class BlueboxMessage {
 		}
 	}
 
-//	public JSONObject toJSON() throws Exception {
-//		return toJSON(Locale.getDefault());
-//	}
+	//	public JSONObject toJSON() throws Exception {
+	//		return toJSON(Locale.getDefault());
+	//	}
 
 	public JSONObject toJSON() throws Exception {
 		JSONObject json;
@@ -306,10 +311,12 @@ public class BlueboxMessage {
 	public String getRawUid() {
 		return getProperty(RAWUID);
 	}
-	
+
 	protected MimeMessageParser getParser() throws Exception {
 		if (parser==null) {
 			// javax.mail.internet.MimeMultipart cannot be cast to javax.mail.Multipart
+			//			javax.mail.internet.MimeMultipart a;
+			//			javax.mail.Multipart b;
 			MimeMessageParser p = new MimeMessageParser(getBlueBoxMimeMessage());
 			parser = p.parse();
 		}

@@ -230,18 +230,11 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-email</artifactId>
 			<version>1.4</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>javax.mail</artifactId>
-					<groupId>com.sun.mail</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 			<version>1.10</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mortbay.jetty</groupId>
@@ -318,7 +311,7 @@
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
-			<version>1.5.0-b01</version>
+			<version>1.4.4</version>
 		</dependency>
 	</dependencies>
 
