@@ -16,7 +16,7 @@ gpgcheck=0
 The simply run "sudo yum install bluebox"
 
 ##Manually using war file
-Download the war file from here.
+Download the war file from here :https://github.com/stephen-kruger/bluebox/releases.
 
 Drop the war file into your favourite application server.
 This one requires no special setup, and uses an embedded Derby database.
