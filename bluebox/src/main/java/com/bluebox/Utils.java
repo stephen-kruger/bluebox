@@ -101,7 +101,7 @@ public class Utils {
 	}
 
 	public static String convertStreamToString(InputStream is) throws IOException {
-		String result = IOUtils.toString(is);
+		String result = IOUtils.toString(is,UTF8);
 		is.close();
 		return result;
 	}

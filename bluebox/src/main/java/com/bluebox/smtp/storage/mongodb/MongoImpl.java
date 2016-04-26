@@ -252,7 +252,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void logError(String title, InputStream content) {
 		try {
-			logError(title,IOUtils.toString(content));		
+			logError(title,IOUtils.toString(content,Utils.UTF8));		
 		}
 		catch (IOException ioe) {
 			log.error("Error saving log",ioe);
