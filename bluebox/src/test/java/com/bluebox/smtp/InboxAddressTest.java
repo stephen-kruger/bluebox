@@ -41,7 +41,7 @@ public class InboxAddressTest extends TestCase {
 	public void testSpace() throws AddressException {
 		InboxAddress a = new InboxAddress("sandy4 user3@ghvm352.lotus.com");
 		Log.info(a.getAddress());
-		assertEquals("invalid email address","sandy4 user3@ghvm352.lotus.com",a.getAddress());
+		assertEquals("invalid email address","user3@ghvm352.lotus.com",a.getAddress());
 	}
 	
 	@Test
