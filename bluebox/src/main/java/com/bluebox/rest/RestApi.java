@@ -33,7 +33,9 @@ public class RestApi extends Application {
 		log.info("Returning singletons");
 		Set<Object> singletons = new HashSet<Object>();
 		singletons.add(new AutoCompleteResource(Inbox.getInstance()));
+		singletons.add(new FolderResource(Inbox.getInstance()));
 		singletons.add(new InboxResource(Inbox.getInstance()));
+		singletons.add(new StatsResource(Inbox.getInstance()));
 		return singletons;
 	}
 }

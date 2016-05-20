@@ -164,6 +164,7 @@ public class Inbox implements SimpleMessageListener {
 			log.error("Error stopping storage implementation",e);
 		}
 		log.info("Stopped inbox");
+		inboxInstance = null;
 	}
 
 	public BlueboxMessage retrieve(String uid) throws Exception {
