@@ -424,7 +424,7 @@
 								action="<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/setsmtpblacklist">
 								<input id="setsmtpblacklist" type="text"
 									data-dojo-type="dijit/form/TextBox" name="setsmtpblacklist"
-									value="<%= Utils.toCSVString(new Inbox().getSMTPBlacklist()) %>" />
+									value="<%= Utils.toCSVString(Inbox.getInstance().getSMTPBlacklist()) %>" />
 							</form>
 						</td>
 						<td><button onclick="setSMTPBlacklist();"

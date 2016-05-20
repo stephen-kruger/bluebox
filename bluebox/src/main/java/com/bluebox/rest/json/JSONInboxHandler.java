@@ -50,9 +50,9 @@ public class JSONInboxHandler extends AbstractHandler {
 		log.debug("Served inbox contents for {} first={} last={} in {}ms",inboxAddress,pager.getFirst(),pager.getLast(),(new Date().getTime()-startTime));
 	}
 
-	private BlueboxMessage.State extractState(String uri, String jsonRoot) {
+	private static BlueboxMessage.State extractState(String uri, String jsonRoot) {
 		try {
-			return BlueboxMessage.State.values()[Integer.parseInt(extractFragment(uri,JSON_ROOT, 1))];
+			return BlueboxMessage.State.values()[Integer.parseInt(extractFragment(uri, jsonRoot, 1))];
 		}
 		catch (Throwable t) {
 			return BlueboxMessage.State.NORMAL;

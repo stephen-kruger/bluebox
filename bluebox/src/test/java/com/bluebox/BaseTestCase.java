@@ -18,8 +18,7 @@ public abstract class BaseTestCase extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		inbox = new Inbox();
-		inbox.start();
+		inbox = Inbox.getInstance();
 		smtpServer = new BlueBoxSMTPServer(bbmhf = new BlueboxMessageHandlerFactory(inbox));
 		smtpServer.start();
 		inbox.deleteAll();

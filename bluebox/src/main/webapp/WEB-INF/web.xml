@@ -56,8 +56,8 @@
 	<!-- specify manager role for the admin pages -->
 	<security-constraint>
 		<web-resource-collection>
-			<web-resource-name>BlueBoxAdmin</web-resource-name>
-			<description> accessible by authenticated users of the tomcat role</description>
+			<web-resource-name>bluebox</web-resource-name>
+			<description> accessible by authenticated users of the bluebox role</description>
 			<url-pattern>/app/admin.jsp</url-pattern>
 			<url-pattern>/rest/admin/*</url-pattern>
 			<http-method>GET</http-method>
@@ -68,29 +68,17 @@
 		<auth-constraint>
 			<description>These roles are allowed access</description>
 			<role-name>bluebox</role-name>
-			<role-name>manager</role-name>
-			<role-name>admin</role-name>
 		</auth-constraint>
 	</security-constraint>
 
 	<login-config>
 		<auth-method>BASIC</auth-method>
-		<realm-name>BlueBox Administration</realm-name>
+		<realm-name>bluebox</realm-name>
 	</login-config>
 
 	<security-role>
 		<description>Only 'bluebox', 'manager' and 'admin' roles are allowed to access the admin interface</description>
 		<role-name>bluebox</role-name>
-	</security-role>
-
-	<security-role>
-		<description>Only 'bluebox', 'manager' and 'admin' roles are allowed to access the admin interface</description>
-		<role-name>manager</role-name>
-	</security-role>
-
-	<security-role>
-		<description>Only 'bluebox', 'manager' and 'admin' roles are allowed to access the admin interface</description>
-		<role-name>admin</role-name>
 	</security-role>
 
 	<!-- Start page -->
