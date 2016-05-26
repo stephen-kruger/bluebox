@@ -21,7 +21,6 @@ import com.bluebox.rest.json.JSONChartHandler;
 import com.bluebox.rest.json.JSONErrorHandler;
 import com.bluebox.rest.json.JSONHeadersMessageHandler;
 import com.bluebox.rest.json.JSONInlineHandler;
-import com.bluebox.rest.json.JSONMessageHandler;
 import com.bluebox.rest.json.JSONMessageUtilHandler;
 import com.bluebox.rest.json.JSONRawMessageHandler;
 import com.bluebox.rest.json.JSONSPAMHandler;
@@ -80,11 +79,11 @@ public class BlueBoxServlet extends HttpServlet {
 		req.setCharacterEncoding("UTF-8");
 		String uri = req.getRequestURI(); 
 
-		if (uri.indexOf(JSONMessageHandler.JSON_ROOT)>=0){
-			log.debug("doGetMessageDetail");
-			new JSONMessageHandler().doGetMessageDetail(inbox,req,resp);
-			return;
-		}
+//		if (uri.indexOf(JSONMessageHandler.JSON_ROOT)>=0){
+//			log.debug("doGetMessageDetail");
+//			new JSONMessageHandler().doGetMessageDetail(inbox,req,resp);
+//			return;
+//		}
 //		if (uri.indexOf(JSONAutoCompleteHandler.JSON_ROOT)>=0){
 //			log.debug("JSONAutoCompleteHandler");
 //			new JSONAutoCompleteHandler().doAutoComplete(inbox, req, resp);
@@ -202,10 +201,10 @@ public class BlueBoxServlet extends HttpServlet {
 			throws ServletException, IOException {
 		req.setCharacterEncoding("UTF-8");
 		log.debug("doDelete :{}",req.getRequestURI());
-		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
-			new JSONMessageHandler().doDelete(inbox,req,resp);
-			return;
-		}
+//		if (req.getRequestURI().indexOf(JSONMessageHandler.JSON_ROOT)>=0){
+//			new JSONMessageHandler().doDelete(inbox,req,resp);
+//			return;
+//		}
 		if (req.getRequestURI().indexOf(JSONSPAMHandler.JSON_ROOT)>=0){
 			WorkerThread wt = new JSONSPAMHandler().doDelete(inbox,req,resp);
 
