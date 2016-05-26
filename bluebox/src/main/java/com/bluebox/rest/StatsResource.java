@@ -22,7 +22,13 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 @Path(StatsResource.PATH)
 public class StatsResource extends AbstractResource {
 	private static final Logger log = LoggerFactory.getLogger(StatsResource.class);
-
+	public static final String MPH_STAT = "stats_mph";
+	public static final String GLOBAL_STAT = "stats_global";
+	public static final String RECENT_STAT = "stats_recent";
+	public static final String ACTIVE_STAT = "stats_active";
+	public static final String SENDER_STAT = "stats_sender";
+	public static final String COMBINED_STAT = "stats_combined";
+	
 	public static final String PATH = "/stats";
 
 	public StatsResource(Inbox inbox) {

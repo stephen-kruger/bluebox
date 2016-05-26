@@ -6,12 +6,11 @@ import java.util.ResourceBundle;
 
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -37,13 +36,11 @@ public class FolderResource extends AbstractResource {
 	}
 
 	@GET
-	@Path("counts")
-	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Path("counts/{email: .*}")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response listInbox(
 			@Context HttpServletRequest request,
-			@DefaultValue("") @QueryParam(EMAIL) String emailStr) throws IOException {
-
+			@DefaultValue("") @PathParam(EMAIL) String emailStr) throws IOException {
 		try {
 			JSONObject result = doGetFolderJson(emailStr, request.getLocale());
 			return Response.ok(result.toString(), MediaType.APPLICATION_JSON).build();

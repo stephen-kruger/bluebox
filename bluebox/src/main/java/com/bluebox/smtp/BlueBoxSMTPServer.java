@@ -26,7 +26,7 @@ public class BlueBoxSMTPServer extends SMTPServer {
 		Config bbconfig = Config.getInstance();
 		setHostName(Utils.getHostName());
 		setPort(bbconfig.getInt(Config.BLUEBOX_PORT));
-		log.debug("Starting SMTP server on {} and port {}",Utils.getHostName(),bbconfig.getInt(Config.BLUEBOX_PORT));
+		log.info("Starting SMTP server on {} and port {}",Utils.getHostName(),bbconfig.getInt(Config.BLUEBOX_PORT));
 		setMaxConnections(bbconfig.getInt(Config.BLUEBOX_MAXCONNECTIONS));
 		setHideTLS(true);
 		setRequireTLS(false);

@@ -1,7 +1,6 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8" %>
 <%@ page import="com.bluebox.smtp.Inbox" language="java" %>
-<%@ page import="com.bluebox.rest.json.JSONAutoCompleteHandler" language="java" %>
-<%@ page import="com.bluebox.rest.json.JSONStatsHandler" language="java" %>
+<%@ page import="com.bluebox.rest.StatsResource" language="java" %>
 <%@ page import="java.util.ResourceBundle" language="java" %>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils" language="java" %>
 <% request.setCharacterEncoding("utf-8"); %>
@@ -55,7 +54,7 @@
 		try {
 			require(["dojox/data/QueryReadStore","dijit/form/ComboBox"], function (QueryReadStore,ComboBox) {
 	               var stateStore = new dojox.data.QueryReadStore({
-	                   url: "<%=request.getContextPath()%>/<%= JSONAutoCompleteHandler.JSON_ROOT %>"
+	                   url: "<%=request.getContextPath()%>/jaxrs/autocomplete/list"
 	               });
 	               new dijit.form.ComboBox({
 	                   id: "<%= Inbox.EMAIL %>",

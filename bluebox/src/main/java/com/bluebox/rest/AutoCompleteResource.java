@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.codehaus.jettison.json.JSONArray;
+import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,19 +32,39 @@ public class AutoCompleteResource extends AbstractResource {
 	}
 
 	@GET
-	@Path("inboxes")
+	@Path("list")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response listInbox(
-			@DefaultValue("") @QueryParam(EMAIL) String emailStr,
-			@DefaultValue("0") @QueryParam(START) int start,
-			@DefaultValue("10") @QueryParam(COUNT) int count) throws IOException {
-
+			@DefaultValue("") @QueryParam("label") String emailStr,
+			@QueryParam("start") String start,
+			@QueryParam("count") String count) throws IOException {
+//		log.info(">>>>>>>>>{} {} {}",emailStr,start,count);
 		long startTime = new Date().getTime();
+		long startI=0, countI=15;
+		try {
 			try {
-			JSONArray children = Inbox.getInstance().autoComplete(emailStr, start, count);
-			log.debug("Autocomplete returned {} first={} last={} in {}ms",emailStr,start,count,(new Date().getTime()-startTime));
-			return Response.ok(children.toString(), MediaType.APPLICATION_JSON).build();
+				startI = Long.parseLong(start);
+			}
+			catch (Throwable t) {
+				log.debug("Invalid type-ahead start value passed :{}",start);
+			}
+			
+			try {
+				countI = Long.parseLong(count);
+			}
+			catch (Throwable t) {
+				log.debug("Invalid type-ahead count value passed :{}",count);
+			}
+			
+			JSONArray children = Inbox.getInstance().autoComplete(emailStr, startI, countI);
+			JSONObject result = new JSONObject();
+			result.put("identifier","identifier");
+			result.put("label","name");			
+			result.put("items", children);
+			
+			log.info("Autocomplete returned {} first={} last={} in {}ms",emailStr,startI,countI,(new Date().getTime()-startTime));
+			return Response.ok(result.toString(), MediaType.APPLICATION_JSON).build();
 		}
 		catch (Throwable t) {
 			log.error("Problem listing inbox",t);

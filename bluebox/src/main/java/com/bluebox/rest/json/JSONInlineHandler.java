@@ -14,7 +14,7 @@ import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 
 public class JSONInlineHandler extends AbstractHandler {
-	private static final Logger log = LoggerFactory.getLogger(JSONInboxHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(JSONInlineHandler.class);
 	public static final String JSON_ROOT = "rest/json/inline";
 	
 	/*

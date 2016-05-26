@@ -1,5 +1,4 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
-<%@ page import="com.bluebox.rest.json.JSONFolderHandler"%>
 <%@ page language="java" import="java.util.ResourceBundle" %>
 <%@ page import="com.bluebox.smtp.Inbox"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
@@ -46,7 +45,7 @@
 
 		try {
 			require(["dojox/data/JsonRestStore"], function (JsonRestStore) {
-				var urlStr = "<%=request.getContextPath()%>/<%=JSONFolderHandler.JSON_ROOT%>/"+newEmail;
+				var urlStr = "<%=request.getContextPath()%>/jaxrs/folder/counts/"+newEmail;
 				var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:true});
 				var queryResults = jStore.fetch({}).results;
 				setInboxCount(queryResults.NORMAL.count);

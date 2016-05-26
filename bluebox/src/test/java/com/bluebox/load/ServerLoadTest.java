@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.bluebox.Utils;
-import com.bluebox.rest.json.JSONStatsHandler;
 import com.bluebox.servlet.BaseServletTest;
 
 
@@ -37,10 +36,10 @@ public class ServerLoadTest extends BaseServletTest {
 		// send some mail
 		Utils.generateNoThread(null, getInbox(), 10);
 		// get some stats
-		System.out.println(getURL("/"+JSONStatsHandler.JSON_ROOT+"/"+JSONStatsHandler.GLOBAL_STAT));
-		System.out.println(getURL("/"+JSONStatsHandler.JSON_ROOT+"/"+JSONStatsHandler.RECENT_STAT+"/"));
-		System.out.println(getURL("/"+JSONStatsHandler.JSON_ROOT+"/"+JSONStatsHandler.ACTIVE_STAT+"/"));
-		System.out.println(getURL("/"+JSONStatsHandler.JSON_ROOT+"/"+JSONStatsHandler.SENDER_STAT+"/"));
+		System.out.println(getResponse("/jaxrs","/stats/global"));
+		System.out.println(getResponse("/jaxrs","/stats/recent"));
+		System.out.println(getResponse("/jaxrs","/stats/active"));
+		System.out.println(getResponse("/jaxrs","/stats/sender"));
 
 		// autocomplete
 //		getInbox().autoComplete("*", 0, 100);

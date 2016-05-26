@@ -5,11 +5,9 @@
 <%@ page language="java"
 	import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page language="java" import="com.bluebox.smtp.Inbox"%>
-<%@ page language="java" import="com.bluebox.rest.json.JSONStatsHandler"%>
 <%@ page language="java" import="java.util.ResourceBundle"%>
 <%@ page language="java" import="com.bluebox.smtp.InboxAddress"%>
 <%@ page language="java" import="com.bluebox.Utils"%>
-<%@ page import="com.bluebox.rest.json.JSONAutoCompleteHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONSearchHandler"%>
 <%@ page import="com.bluebox.search.SearchUtils"%>
 <%

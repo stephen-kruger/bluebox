@@ -1,7 +1,6 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.Config"%>
-<%@ page import="com.bluebox.rest.json.JSONInboxHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONMessageHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONMessageUtilHandler"%>
 <%
@@ -73,7 +72,7 @@
 								<h3>List user emails</h3>
 								This method lists all the emails for a particular email address, of the specified state<br/>
 								<br/>
-								http://[hostname]/bluebox/<%=JSONInboxHandler.JSON_ROOT %>/[email]/[0=ANY, 1=NORMAL, 2=DELETED]/
+								http://[hostname]/bluebox/jaxrs/inbox/[email]/[0=ANY, 1=NORMAL, 2=DELETED]/
 								<br/><br/>
 								<pre class="json">
 								<code class="json">

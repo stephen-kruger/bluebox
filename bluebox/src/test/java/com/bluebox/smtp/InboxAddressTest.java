@@ -5,9 +5,11 @@ import javax.mail.internet.AddressException;
 import junit.framework.TestCase;
 
 import org.junit.Test;
-import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class InboxAddressTest extends TestCase {
+	private static final Logger log = LoggerFactory.getLogger(InboxAddressTest.class);
 
 	@Test
 	public void testNameRemoval() throws AddressException {
@@ -40,7 +42,7 @@ public class InboxAddressTest extends TestCase {
 	@Test
 	public void testSpace() throws AddressException {
 		InboxAddress a = new InboxAddress("sandy4 user3@ghvm352.lotus.com");
-		Log.info(a.getAddress());
+		log.info(a.getAddress());
 		assertEquals("invalid email address","user3@ghvm352.lotus.com",a.getAddress());
 	}
 	

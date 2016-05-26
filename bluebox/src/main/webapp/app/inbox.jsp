@@ -1,7 +1,7 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle" language="java" %>
 <%@ page import="com.bluebox.Config" language="java" %>
-<%@ page import="com.bluebox.rest.json.JSONStatsHandler" language="java"%>
+<%@ page import="com.bluebox.rest.StatsResource" language="java"%>
 <% request.setCharacterEncoding("utf-8"); %>
 
 <%
@@ -28,7 +28,7 @@
 		function updateMph(emailAddress) {
 			try {
 				require(["dojox/data/JsonRestStore"], function () {
-					var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.MPH_STAT %>/"+encodeURIComponent(emailAddress)+"/";
+					var urlStr = "<%=request.getContextPath()%>/jaxrs/stats/mph/"+encodeURIComponent(emailAddress)+"/";
 					console.log(urlStr);
 					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 					var queryResults = jStore.fetch({

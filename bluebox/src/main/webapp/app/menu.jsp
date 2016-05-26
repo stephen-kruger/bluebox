@@ -3,7 +3,6 @@
 <%@ page import="com.bluebox.Utils"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.smtp.Inbox"%>
-<%@ page import="com.bluebox.rest.json.JSONStatsHandler"%>
 <%@ page language="java" import="java.util.ResourceBundle" %>
 <%
 	Config bbconfig = Config.getInstance();
@@ -148,7 +147,7 @@
 			function loadGlobalMenu() {
 				try {
 					require(["dojox/data/JsonRestStore"], function () {
-						var urlStr = "<%=request.getContextPath()%>/<%=JSONStatsHandler.JSON_ROOT %>/<%=JSONStatsHandler.GLOBAL_STAT %>";
+						var urlStr = "<%=request.getContextPath()%>/jaxrs/stats/global";
 						var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 						jStore.fetch({
 							  onComplete : 

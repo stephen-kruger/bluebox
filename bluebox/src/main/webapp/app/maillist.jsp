@@ -7,7 +7,6 @@
 <%@ page import="com.bluebox.rest.json.JSONMessageHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONSPAMHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
-<%@ page import="com.bluebox.rest.json.JSONInboxHandler"%>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
 <%
 	ResourceBundle inboxDetailsResource = ResourceBundle.getBundle("inboxDetails", request.getLocale());
@@ -301,7 +300,7 @@
 		
 		function getStore(email, state) {
 			try {
-				var urlStr = "<%=request.getContextPath()%>/<%=JSONInboxHandler.JSON_ROOT%>/"+email+"/"+state;
+				var urlStr = "<%=request.getContextPath()%>/jaxrs/inbox/list/"+email+"/"+state;
 				 var store = new dojox.data.JsonRestStore({ 
 					    				target: urlStr, 
 					    				parameters: [{name: "state", type: "string", optional: true}]

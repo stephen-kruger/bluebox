@@ -17,19 +17,15 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.rest.json.JSONAdminHandler;
 import com.bluebox.rest.json.JSONAttachmentHandler;
-import com.bluebox.rest.json.JSONAutoCompleteHandler;
 import com.bluebox.rest.json.JSONChartHandler;
 import com.bluebox.rest.json.JSONErrorHandler;
-import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.rest.json.JSONHeadersMessageHandler;
-import com.bluebox.rest.json.JSONInboxHandler;
 import com.bluebox.rest.json.JSONInlineHandler;
 import com.bluebox.rest.json.JSONMessageHandler;
 import com.bluebox.rest.json.JSONMessageUtilHandler;
 import com.bluebox.rest.json.JSONRawMessageHandler;
 import com.bluebox.rest.json.JSONSPAMHandler;
 import com.bluebox.rest.json.JSONSearchHandler;
-import com.bluebox.rest.json.JSONStatsHandler;
 import com.bluebox.smtp.BlueBoxSMTPServer;
 import com.bluebox.smtp.BlueboxMessageHandlerFactory;
 import com.bluebox.smtp.Inbox;
@@ -89,11 +85,11 @@ public class BlueBoxServlet extends HttpServlet {
 			new JSONMessageHandler().doGetMessageDetail(inbox,req,resp);
 			return;
 		}
-		if (uri.indexOf(JSONAutoCompleteHandler.JSON_ROOT)>=0){
-			log.debug("JSONAutoCompleteHandler");
-			new JSONAutoCompleteHandler().doAutoComplete(inbox, req, resp);
-			return;
-		}	
+//		if (uri.indexOf(JSONAutoCompleteHandler.JSON_ROOT)>=0){
+//			log.debug("JSONAutoCompleteHandler");
+//			new JSONAutoCompleteHandler().doAutoComplete(inbox, req, resp);
+//			return;
+//		}	
 		if (uri.indexOf(JSONInlineHandler.JSON_ROOT)>=0){
 			log.debug("doGetInlineAttachment");
 			new JSONInlineHandler().doGetInlineAttachment(inbox,req,resp);
@@ -114,26 +110,26 @@ public class BlueBoxServlet extends HttpServlet {
 			new JSONHeadersMessageHandler().doGetHeadersDetail(inbox,req,resp);
 			return;
 		}	
-		if (uri.indexOf(JSONInboxHandler.JSON_ROOT)>=0){
-			log.debug("doGetInbox");
-			new JSONInboxHandler().doGetInbox(inbox,req,resp);
-			return;
-		}
+//		if (uri.indexOf(JSONInboxHandler.JSON_ROOT)>=0){
+//			log.debug("doGetInbox");
+//			new JSONInboxHandler().doGetInbox(inbox,req,resp);
+//			return;
+//		}
 		if (uri.indexOf(JSONSearchHandler.JSON_ROOT)>=0){
 			log.debug("doSearchInbox");
 			new JSONSearchHandler().doSearchInbox(inbox,req,resp);
 			return;
 		}
-		if (uri.indexOf(JSONFolderHandler.JSON_ROOT)>=0){
-			log.debug("doGetFolder");
-			new JSONFolderHandler().doGetFolder(inbox,req,resp);
-			return;
-		}
-		if (uri.indexOf(JSONStatsHandler.JSON_ROOT)>=0){
-			log.debug("doGetStats");
-			new JSONStatsHandler().doGet(inbox,req,resp);
-			return;
-		}
+//		if (uri.indexOf(JSONFolderHandler.JSON_ROOT)>=0){
+//			log.debug("doGetFolder");
+//			new JSONFolderHandler().doGetFolder(inbox,req,resp);
+//			return;
+//		}
+//		if (uri.indexOf(JSONStatsHandler.JSON_ROOT)>=0){
+//			log.debug("doGetStats");
+//			new JSONStatsHandler().doGet(inbox,req,resp);
+//			return;
+//		}
 		if (uri.indexOf(JSONErrorHandler.JSON_DETAIL_ROOT)>=0){
 			log.debug("doGetErrorDetail");
 			new JSONErrorHandler().doGetDetail(inbox,req,resp);

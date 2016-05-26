@@ -14,8 +14,10 @@ public class DojoPager {
 	private List<Boolean> ascending= new ArrayList<Boolean>();
 	private List<String> orderBy= new ArrayList<String>();
 	private int first,last;
+	private HttpServletRequest request;
 
 	public DojoPager(HttpServletRequest req, String defaultOrder) {
+		this.request = req;
 		String n;
 		// handle the form : /FooObject/?foo=value1&sortBy=+foo,-bar
 		// as per http://dojotoolkit.org/reference-guide/1.10/dojo/store/JsonRest.html
@@ -54,8 +56,7 @@ public class DojoPager {
 			}
 			else {
 				// handle the form /FooObject/?foo=value1&sort(+foo,-bar)
-				for (@SuppressWarnings("unchecked")
-				Enumeration<String> names = req.getParameterNames(); names.hasMoreElements();) {
+				for (Enumeration<String> names = req.getParameterNames(); names.hasMoreElements();) {
 					n = names.nextElement();
 					if (n.contains("sort")) {
 						String sortString = n.substring(n.indexOf('(')+1,n.indexOf(')'));
@@ -101,6 +102,12 @@ public class DojoPager {
 		return first;
 	}
 
+	public int getFirst(int defaultStart) {
+		if (request.getHeader("Range")!=null)
+			return first;
+		else
+			return defaultStart;
+	}
 
 	public void setFirst(int first) {
 		this.first = first;
@@ -118,6 +125,13 @@ public class DojoPager {
 
 	public int getCount() {
 		return getLast()-getFirst()+1;
+	}
+
+	public int getCount(int defaultCount) {
+		if (request.getHeader("Range")!=null)
+			return getCount();
+		else
+			return defaultCount;
 	}
 
 	private int getStart(String contentHeader) {
@@ -149,4 +163,5 @@ public class DojoPager {
 		}
 		return 250;//Integer.MAX_VALUE;
 	}
+
 }

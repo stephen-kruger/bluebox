@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.TestUtils;
-import com.bluebox.rest.json.JSONAutoCompleteHandler;
+import com.bluebox.rest.AutoCompleteResource;
 import com.bluebox.search.SearchFactory;
 
 public class SearchStressTest extends BaseServletTest {
@@ -27,7 +27,7 @@ public class SearchStressTest extends BaseServletTest {
 	}
 
 	public void testStressSearchHandler() throws IOException, Exception {
-		String url = "/"+JSONAutoCompleteHandler.JSON_ROOT+"?"+JSONAutoCompleteHandler.NAME+"=&start=0&count="+COUNT;
+		String url = "/"+AutoCompleteResource.PATH+"/list?"+"label=&start=0&count="+COUNT;
 		log.info("Stressing to "+STRESS_LEVEL);
 		for (int i = 0; i < STRESS_LEVEL;i++) {
 			JSONObject js = getRestJSON(url);

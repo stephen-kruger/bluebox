@@ -3,59 +3,74 @@ package com.bluebox.servlet;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+import javax.ws.rs.core.MediaType;
 
-import junit.framework.TestCase;
-
+import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.wink.client.ClientConfig;
+import org.apache.wink.client.ClientResponse;
+import org.apache.wink.client.Resource;
+import org.apache.wink.client.RestClient;
+import org.apache.wink.server.internal.servlet.RestServlet;
 import org.codehaus.jettison.json.JSONObject;
-import org.mortbay.jetty.servlet.ServletHolder;
-import org.mortbay.jetty.testing.HttpTester;
-import org.mortbay.jetty.testing.ServletTester;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.BlueBoxServlet;
 import com.bluebox.feed.FeedServlet;
 import com.bluebox.rest.json.JSONAdminHandler;
-import com.bluebox.rest.json.JSONFolderHandler;
 import com.bluebox.smtp.Inbox;
-import com.bluebox.smtp.storage.BlueboxMessage;
+
+import junit.framework.TestCase;
 
 public abstract class BaseServletTest extends TestCase {
 
-	private ServletTester tester;
+	private Server server;
 	private String baseURL;
 	private String contextPath = "/";
-	public ServletHolder bbs, feeds;
-//	private int retryCount=5;
+	public ServletHolder bbs, feeds, jaxrs;
+	private int retryCount=10;
 	private static final Logger log = LoggerFactory.getLogger(BaseServletTest.class);
 	public static final int COUNT = 5;
 	public static final String RECIPIENT = "user@there.com";
 
 	@Override
 	protected void setUp() throws Exception {
-		tester = new ServletTester();
-		tester.setContextPath(contextPath);
-		//ServletHolder jsp = tester.addServlet(org.apache.jasper.servlet.JspServlet.class, "*.jsp");
-		tester.setResourceBase("WebContent");
-		bbs = tester.addServlet(BlueBoxServlet.class, "/rest/*");
-		feeds = tester.addServlet(FeedServlet.class, "/feed/*");
+		server = new Server(8080);
 
-		baseURL = tester.createSocketConnector(false);
+		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+		context.setContextPath(contextPath);
+		context.setResourceBase("WebContent");
+		server.setHandler(context);
 
-		log.debug("Starting servlets at "+baseURL);
-		tester.start();
+		bbs = context.addServlet(BlueBoxServlet.class, "/rest/*");
+		feeds = context.addServlet(FeedServlet.class, "/feed/*");
+		jaxrs = context.addServlet(RestServlet.class, "/jaxrs/*");
+		jaxrs.setInitParameter(RestServlet.APPLICATION_INIT_PARAM, "com.bluebox.rest.RestApi");
 
-		while(!feeds.isRunning()||!bbs.isRunning()) {
-			log.info("Waiting for servlets to start");
+		baseURL = "http://0.0.0.0:8080";
+		log.info("Starting servlets at "+baseURL);
+		server.start();
+		while((!feeds.isRunning()||!bbs.isRunning()||!jaxrs.isRunning())&&(retryCount-->0)) {
+			log.info("Waiting for servlets to start feeds:{} bbs:{} root:{}",feeds.isRunning(),bbs.isRunning(),jaxrs.isRunning());
 			Thread.sleep(750);
 		}
-				
+
 		// clear mailboxes
 		clearMail();
 	}
 
 	public void clearMail() throws IOException, Exception {
-		getURL("/"+JSONAdminHandler.JSON_ROOT+"/clear");
+		getResponse("","/"+JSONAdminHandler.JSON_ROOT+"/clear");
 	}
 
 	@Override
@@ -63,12 +78,12 @@ public abstract class BaseServletTest extends TestCase {
 		super.tearDown();
 		log.info("Shutting down servlets");
 		// clear mailboxes
-		getURL("/"+JSONAdminHandler.JSON_ROOT+"/clear");
+		clearMail();
 
 		log.debug("Stopping servlet");
 
 		try {
-			tester.stop();
+			server.stop();
 		}
 		catch (Throwable t) {
 			t.printStackTrace();
@@ -85,7 +100,13 @@ public abstract class BaseServletTest extends TestCase {
 		catch (Throwable t) {
 			t.printStackTrace();
 		}
-		while(feeds.isRunning()||bbs.isRunning()) {
+		try {
+			jaxrs.doStop();
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
+		while(feeds.isRunning()||bbs.isRunning()||jaxrs.isRunning()) {
 			log.info("Waiting for servlets to stop");
 			Thread.sleep(750);
 		}
@@ -101,64 +122,52 @@ public abstract class BaseServletTest extends TestCase {
 		}
 	}
 
-	public int getMailCount(BlueboxMessage.State state) {
-		String url = "/"+JSONFolderHandler.JSON_ROOT;
-		try {
-			return getRestJSON(url).getJSONObject(state.name()).getInt("count");
-		}
-		catch (Throwable t) {
-			t.printStackTrace();
-			return 0;
-		}
-	}
-
 	public JSONObject getRestJSON(String url) throws IOException, Exception {
-		log.info("Invoking {}",url);
-		HttpTester request = new HttpTester();
-		request.setMethod("GET");
-		request.setHeader("HOST","127.0.0.1");
-		request.setURI(url);
-		request.setVersion("HTTP/1.0");
-
-		HttpTester response = new HttpTester();
-		response.parse(getTester().getResponses(request.generate()));
-
-		assertNull(response.getMethod());
-//		while ((response.getStatus()!=200)&&(retryCount-- > 0)) {
-//			log.info("Server not ready, rechecking url");
-//			return getRestJSON(url);
-//		}
-		assertEquals(200,response.getStatus());
-		String js = response.getContent();
+		ClientResponse response = getResponse("/jaxrs",url);
+		String js = response.getEntity(String.class);
 		JSONObject jo = new JSONObject(js);
 		return jo;
-
+	}
+	
+	public JSONArray getRestJSONArray(String url) throws IOException, Exception {
+		ClientResponse response = getResponse("/jaxrs",url);
+		String js = response.getEntity(String.class);
+		JSONArray jo = new JSONArray(js);
+		return jo;
 	}
 
-	public String getURL(String url) throws IOException, Exception {
-		HttpTester request = new HttpTester();
-		request.setMethod("GET");
-		request.setHeader("HOST","127.0.0.1");
-		request.setURI(url);
-		request.setVersion("HTTP/1.0");
+	public JSONObject getRestJSONHttpClient(String url) throws IOException, Exception {
+		CloseableHttpClient httpclient = HttpClients.createDefault();
+		RequestBuilder builder = RequestBuilder.get().setUri(baseURL+url)
+				.setHeader(HttpHeaders.ACCEPT,  MediaType.APPLICATION_JSON)
+				.setHeader(HttpHeaders.CONTENT_TYPE,  MediaType.APPLICATION_FORM_URLENCODED);
 
-		HttpTester response = new HttpTester();
-		response.parse(getTester().getResponses(request.generate()));
-//		while ((response.getStatus()!=200)&&(retryCount-- > 0)) {
-//			log.info("Server not ready, rechecking url");
-//			return getURL(url);
+//		if ((args!=null)&&(args.length>1)) {
+//			for (int i = 0; i < args.length; i+=2) {
+//				builder.addParameter(args[i], args[i+1]);
+//			}
 //		}
-		//assertNull(response.getMethod());
-		// delete gives 302 redirect, so don't check for 200
-		assertEquals(200,response.getStatus());
-		String js = response.getContent();
-		return js;
+
+		HttpUriRequest request = builder.build();
+
+		log.info("Calling {}",request.getRequestLine());
+		CloseableHttpResponse response = httpclient.execute(request);
+		log.info("Server status: {} with reason : {}",response.getStatusLine().getStatusCode(),response.getStatusLine().getReasonPhrase());
+		String resp = IOUtils.toString(response.getEntity().getContent(),"UTF-8");
+		httpclient.close();
+
+		JSONObject jo = new JSONObject(resp);
+		return jo;
 	}
 
-
-
-	public ServletTester getTester() {
-		return tester;
+	public ClientResponse getResponse(String base, String url) {
+		ClientConfig clientConfig = new ClientConfig();
+		RestClient client = new RestClient(clientConfig);
+		Resource resource = client.resource(baseURL+base+url);
+		log.info("Calling endpoint {}",baseURL+base+url);
+		ClientResponse response = resource.contentType(MediaType.APPLICATION_FORM_URLENCODED).accept(MediaType.APPLICATION_JSON).get();
+		assertEquals(200,response.getStatusCode());
+		return response;
 	}
 
 	public String getContextPath() {

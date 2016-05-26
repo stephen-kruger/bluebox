@@ -30,7 +30,6 @@ public class JSONSearchHandler extends AbstractHandler {
 		boolean ascending = true;
 		String n;
 		for (
-		@SuppressWarnings("unchecked")
 		Enumeration<String> names = req.getParameterNames(); names.hasMoreElements();) {
 			n = names.nextElement();
 			if (n.contains("-")) {
