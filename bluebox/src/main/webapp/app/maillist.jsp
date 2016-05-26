@@ -4,7 +4,7 @@
 <%@ page import="com.bluebox.smtp.Inbox"%>
 <%@ page import="com.bluebox.Config"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
-<%@ page import="com.bluebox.rest.json.JSONMessageHandler"%>
+<%@ page import="com.bluebox.rest.MessageResource"%>
 <%@ page import="com.bluebox.rest.json.JSONSPAMHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
@@ -242,7 +242,7 @@
 		function deleteMail(uidList) {
 			try {
 				if (currentUid) {
-					var delUrl = "<%=request.getContextPath()%>/<%=JSONMessageHandler.JSON_ROOT%>/"+uidList;
+					var delUrl = "<%=request.getContextPath()%><%=MessageResource.PATH%>/delete/"+uidList;
 					var xhrArgs = {
 							url: delUrl,
 							handleAs: "json",

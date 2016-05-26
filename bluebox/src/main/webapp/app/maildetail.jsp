@@ -3,7 +3,7 @@
 <%@ page import="com.bluebox.rest.json.JSONAttachmentHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONHeadersMessageHandler"%>
-<%@ page import="com.bluebox.rest.json.JSONMessageHandler"%>
+<%@ page import="com.bluebox.rest.MessageResource"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.Config"%>
 
@@ -297,7 +297,7 @@
 			clearDetail();
 			setDetailVisibility(true);
 			var xhrArgs = {
-					url: "<%=request.getContextPath()%>/<%=JSONMessageHandler.JSON_ROOT%>/"+uid,
+					url: "<%=request.getContextPath()%>/jaxrs<%=MessageResource.PATH%>/detail/"+uid,
 					handleAs: "json",
 					preventCache: false,
 					load: function(data) {
@@ -347,7 +347,7 @@
 						setBodyContent(
 								data.<%=BlueboxMessage.HTML_BODY%>,
 								data.<%=BlueboxMessage.TEXT_BODY%>,
-								data.<%=JSONMessageHandler.SECURITY%>,
+								data.<%=MessageResource.SECURITY%>,
 								"<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+uid,
 								"<%=request.getContextPath()%>/<%=JSONHeadersMessageHandler.JSON_ROOT%>/"+uid
 								);

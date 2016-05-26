@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
 import com.bluebox.rest.AutoCompleteResource;
+import com.bluebox.rest.MessageResource;
 import com.bluebox.rest.json.JSONInlineHandler;
-import com.bluebox.rest.json.JSONMessageHandler;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
@@ -99,10 +99,10 @@ public class RestTest extends BaseServletTest {
 	}
 
 	@Test
-	public void testJSONMessageHandler() throws IOException, Exception {
+	public void testMessageResource() throws IOException, Exception {
 		List<BlueboxMessage> messages = getInbox().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
-		for (BlueboxMessage message : messages) {
-			String url = "/"+JSONMessageHandler.JSON_ROOT+"/"+message.getIdentifier();
+		for (BlueboxMessage message : messages) {		
+			String url = MessageResource.PATH+"/detail/"+message.getIdentifier();
 			JSONObject js = getRestJSON(url);
 			
 			log.info(js.toString(3));

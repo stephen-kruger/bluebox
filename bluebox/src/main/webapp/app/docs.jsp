@@ -1,7 +1,7 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.Config"%>
-<%@ page import="com.bluebox.rest.json.JSONMessageHandler"%>
+<%@ page import="com.bluebox.rest.MessageResource"%>
 <%@ page import="com.bluebox.rest.json.JSONMessageUtilHandler"%>
 <%
 	Config bbconfig = Config.getInstance();
@@ -91,7 +91,7 @@
 								<h3>List email detail</h3>
 								This method lists the details of a particular email message specified by the UID<br/>
 								<br/>
-								http://[hostname]/bluebox/<%=JSONMessageHandler.JSON_ROOT %>/[Uid]
+								http://[hostname]/bluebox/jaxrs/<%=MessageResource.PATH %>/detail/[Uid]
 								<br/><br/>
 								<pre class="json">
 								<code class="json">

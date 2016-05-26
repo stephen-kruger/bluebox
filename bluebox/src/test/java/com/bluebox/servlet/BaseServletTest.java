@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.BlueBoxServlet;
+import com.bluebox.TestUtils;
 import com.bluebox.feed.FeedServlet;
 import com.bluebox.rest.json.JSONAdminHandler;
 import com.bluebox.smtp.Inbox;
@@ -65,8 +66,7 @@ public abstract class BaseServletTest extends TestCase {
 			Thread.sleep(750);
 		}
 
-		// clear mailboxes
-		clearMail();
+		TestUtils.addRandomNoThread(Inbox.getInstance(), 10);
 	}
 
 	public void clearMail() throws IOException, Exception {

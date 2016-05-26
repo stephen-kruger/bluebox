@@ -36,7 +36,7 @@ public class StatsResource extends AbstractResource {
 	}
 
 	@GET
-	@Path("mph")
+	@Path("mph/{email: .*}")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response mph(
