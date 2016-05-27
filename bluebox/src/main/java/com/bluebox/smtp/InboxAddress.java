@@ -49,6 +49,11 @@ public class InboxAddress extends Object {
 			}
 			email = Utils.decodeRFC2407(email);
 			email = StringEscapeUtils.unescapeJava(email);
+
+			// remove trailing slash if needed
+			if (email.endsWith("/")) {
+				email = email.substring(0, email.length()-1);
+			}
 			// check if it's a Notes address
 			if (Utils.isNotesAddress(email)) {
 				log.info("Converting Notes style address :{}",email);
@@ -66,7 +71,6 @@ public class InboxAddress extends Object {
 		}
 		catch (Throwable e) {
 			log.error("Error parsing {}",email);
-			//			e.printStackTrace();
 			try {
 				InternetAddress address = new InternetAddress(Utils.decodeRFC2407(email));
 				return address.getAddress();

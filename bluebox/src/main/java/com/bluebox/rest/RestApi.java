@@ -37,7 +37,9 @@ public class RestApi extends Application {
 		singletons.add(new ChartResource(Inbox.getInstance()));
 		singletons.add(new ErrorResource(Inbox.getInstance()));
 		singletons.add(new FolderResource(Inbox.getInstance()));
+		singletons.add(new HeaderResource(Inbox.getInstance()));
 		singletons.add(new InboxResource(Inbox.getInstance()));
+		singletons.add(new InlineResource(Inbox.getInstance()));
 		singletons.add(new StatsResource(Inbox.getInstance()));
 		singletons.add(new MessageResource(Inbox.getInstance()));
 		return singletons;

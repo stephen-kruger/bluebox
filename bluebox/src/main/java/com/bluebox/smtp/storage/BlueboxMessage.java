@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 //import com.bluebox.MimeMessageParser;
 import com.bluebox.Utils;
-import com.bluebox.rest.json.JSONInlineHandler;
+import com.bluebox.rest.InlineResource;
 import com.bluebox.search.SearchUtils;
 import com.bluebox.smtp.InboxAddress;
 
@@ -178,6 +178,7 @@ public class BlueboxMessage {
 		}
 	}
 
+	@Deprecated
 	public void writeInlineAttachment(String cid, HttpServletResponse resp) throws SQLException, IOException, MessagingException {
 		MimeMessage bbmm = getBlueBoxMimeMessage();
 		try {
@@ -189,6 +190,36 @@ public class BlueboxMessage {
 				ds = parser.findAttachmentByName(cid);
 			}
 			writeDataSource(ds,resp);
+		}
+		catch (Exception se) {
+			log.warn("Problem writing inline attachment :{}",se.getMessage());
+		}
+	}
+	
+	public void writeInlineAttachment(String cid, ResponseBuilder response) throws SQLException, IOException, MessagingException {
+		MimeMessage bbmm = getBlueBoxMimeMessage();
+		try {
+			MimeMessageParser parser = new MimeMessageParser(bbmm);
+			parser.parse();
+			DataSource ds = parser.findAttachmentByCid(cid);
+			if (ds==null) {
+				log.debug("Cid not found {}, trying by name",cid);
+				// try by attachment name
+				ds = parser.findAttachmentByName(cid);
+				if (ds==null) {
+					log.debug("Cid not found {}",cid);
+					throw new Exception("No attachment found with cid "+cid);
+				}
+				else {
+					log.debug("CID found by name {}",cid);
+				}
+			}
+			else {
+				log.debug("CID found by id {}",cid);
+			}
+			response.type(ds.getContentType());
+//			response.entity(ds.getInputStream());		
+			response.entity(ds);
 		}
 		catch (Exception se) {
 			log.warn("Problem writing inline attachment :{}",se.getMessage());
@@ -241,7 +272,7 @@ public class BlueboxMessage {
 
 	public static String convertCidLinks(HttpServletRequest request, String uid, String htmlString) {
 		try {
-			return htmlString.replaceAll("cid:", Utils.getServletBase(request)+"/"+JSONInlineHandler.JSON_ROOT+"/"+uid+"/");
+			return htmlString.replaceAll("cid:", Utils.getServletBase(request)+InlineResource.PATH+"/get/"+uid);
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();

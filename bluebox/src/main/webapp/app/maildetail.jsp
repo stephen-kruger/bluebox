@@ -2,7 +2,7 @@
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.rest.AttachmentResource"%>
 <%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
-<%@ page import="com.bluebox.rest.json.JSONHeadersMessageHandler"%>
+<%@ page import="com.bluebox.rest.HeaderResource"%>
 <%@ page import="com.bluebox.rest.MessageResource"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.Config"%>
@@ -349,12 +349,12 @@
 								data.<%=BlueboxMessage.TEXT_BODY%>,
 								data.<%=MessageResource.SECURITY%>,
 								"<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+uid,
-								"<%=request.getContextPath()%>/<%=JSONHeadersMessageHandler.JSON_ROOT%>/"+uid
+								"<%=request.getContextPath()%>/jaxrs<%=HeaderResource.PATH%>/detail/"+uid
 								);
 		
 					},
 					error: function (error) {
-						console.log("Something veeery bad happened :"+error);
+						console.log("Something very bad happened :"+error);
 					}
 			};
 		

@@ -684,7 +684,6 @@ public class Inbox implements SimpleMessageListener {
 			log.error(t.getMessage());
 			t.printStackTrace();
 		}
-		log.info("------------------>{}",this.getMailCount(State.ANY));
 	}
 
 	private List<String> getRecipients(String recipient) {
