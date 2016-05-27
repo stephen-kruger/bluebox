@@ -6,7 +6,7 @@ angular.module('ionicApp', ['ionic'])
 		console.log('searching for '+query);
 		$scope.data.items = [];
 		// call the autocomplete service
-		$http.get('../rest/json/autocomplete?start=0&count=150&label='+query).success(function(res){
+		$http.get('../jaxrs/autocomplete/list?start=0&count=150&label='+query).success(function(res){
 			console.log("Found "+res.items.length+" results");
 			  $scope.data.count += res.items.length;
 			  for (var i = 0; i < res.items.length; i++) {

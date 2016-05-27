@@ -18,7 +18,7 @@ angular.module('ionicApp', ['ionic'])
 		$scope.Inbox = decodeURI(email);
 		// state=1 for normal, state=2 for deleted
 		console.log('listing inbox for '+email+' state=1');
-		$http.get('../rest/json/inbox/'+email+'/1/').success(function(res){
+		$http.get('../jaxrs/inbox/list/'+email+'/1/').success(function(res){
 			console.log("Found "+res.length+" mails");
 			$scope.data = res;
 			}).error(function(failure) {
@@ -32,7 +32,7 @@ angular.module('ionicApp', ['ionic'])
 	$scope.listtrash = function(email) {
 		// state=1 for normal, state=2 for deleted
 		console.log('listing inbox for '+email+' state=2');
-		$http.get('../rest/json/inbox/'+email+'/2/').success(function(res){
+		$http.get('../jaxrs/inbox/list/'+email+'/2/').success(function(res){
 			console.log("Found "+res.length+" deleted mails");
 			$scope.deleted = res;
 			}).error(function(failure) {

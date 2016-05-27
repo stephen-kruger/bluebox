@@ -21,7 +21,7 @@ angular.module('ionicApp', ['ionic'])
 	$scope.getdetail = function(uid) {
 		// state=1 for normal, state=2 for deleted
 		console.log('listing detail for '+uid);
-		$http.get('../rest/json/inbox/detail/'+uid).success(function(res){
+		$http.get('../jaxrs/message/detail/'+uid).success(function(res){
 			$scope.detail = res;
 			var length = 0;
 			if ($scope.detail.Attachment) {
@@ -31,7 +31,7 @@ angular.module('ionicApp', ['ionic'])
 			// fix up the attachment links
 			for (var i = 0; i < length; i++) {
 				var blob = {
-						href : "../rest/json/inbox/attachment/"+getParameter('Uid')+"/"+i+"/"+$scope.detail.Attachment[i],
+						href : "../jaxrs/attachment/get/"+getParameter('Uid')+"/"+i+"/"+$scope.detail.Attachment[i],
 						name : $scope.detail.Attachment[i]
 				};
 				$scope.detail.AttachmentBlob[i] = blob;
