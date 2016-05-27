@@ -1,5 +1,6 @@
 package com.bluebox.rest;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +10,7 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 
 import javax.mail.Message.RecipientType;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletContext;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +25,10 @@ import javax.ws.rs.core.Response;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.owasp.validator.html.AntiSamy;
 import org.owasp.validator.html.CleanResults;
 import org.owasp.validator.html.Policy;
@@ -41,6 +47,7 @@ public class MessageResource extends AbstractResource {
 	public static final String PATH = "/message";
 	public static final String UID = "uid";
 	public static final String SECURITY = "Security";
+	public static final String LINKS = "links";
 
 	public MessageResource(Inbox inbox) {
 		super(inbox);
@@ -81,6 +88,26 @@ public class MessageResource extends AbstractResource {
 		}
 	}
 	
+	@GET
+	@Path("raw/{uid}")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response raw(
+			@Context HttpServletRequest request,
+			@PathParam(UID) String uid) throws IOException {
+		try {
+			log.debug("Serving raw message for {}",uid);
+			BlueboxMessage message = Inbox.getInstance().retrieve(uid);
+			MimeMessage bbm = message.getBlueBoxMimeMessage();
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			bbm.writeTo(bos);
+			return Response.ok(bos.toByteArray()).build();
+		}
+		catch (Throwable t) {
+			log.error("Problem retrieving raw message inbox",t);
+			return error(t.getMessage());
+		}
+	}
+	
 	@DELETE
 	@Path("delete/{uid}")
 	@Produces(MediaType.APPLICATION_JSON)
@@ -107,7 +134,46 @@ public class MessageResource extends AbstractResource {
 			return error(t.getMessage());
 		}
 	}
+	
+	@GET
+	@Path("links/{uid}")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response links(
+			@Context HttpServletRequest request,
+			@PathParam(UID) String uid) throws IOException {
+		try {
+			log.debug("Serving links for {}",uid);
+			BlueboxMessage message = Inbox.getInstance().retrieve(uid);
+			JSONArray links = getLinks(message.getHtml(request));
+			JSONObject result = new JSONObject();
+			result.put(LINKS, links);
+			return Response.ok(result.toString(), MediaType.APPLICATION_JSON).build();
+		}
+		catch (Throwable t) {
+			log.error("Problem listing message links",t);
+			return error(t.getMessage());
+		}
+	}
 
+	public JSONArray getLinks(String html) throws IOException {
+		JSONArray res = new JSONArray();
+		Document doc = Jsoup.parse(html);
+		Elements links = doc.select("a[href]");
+		for (Element link : links) {
+			try {
+				JSONObject currLink = new JSONObject();
+				currLink.put("text", link.text());
+				currLink.put("data", link.data());
+				currLink.put("href", link.attr("abs:href"));
+				res.put(currLink);
+			}
+			catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
+		return res;
+	}
+	
 	private JSONObject securityScan(HttpServletRequest request, BlueboxMessage message, JSONObject json) {
 		ResourceBundle mailDetailsResource = ResourceBundle.getBundle("mailDetails",request.getLocale());
 		ServletContext context = request.getSession().getServletContext();

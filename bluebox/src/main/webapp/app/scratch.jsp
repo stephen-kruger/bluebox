@@ -5,7 +5,6 @@
 <%@ page import="com.bluebox.Config"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.rest.MessageResource"%>
-<%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
 <%
 	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
 	ResourceBundle inboxDetailsResource = ResourceBundle.getBundle("inboxDetails", request.getLocale());

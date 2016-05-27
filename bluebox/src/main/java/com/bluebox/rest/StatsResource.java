@@ -15,6 +15,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bluebox.WorkerThread;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
@@ -139,6 +140,21 @@ public class StatsResource extends AbstractResource {
 		}
 		catch (Throwable t) {
 			log.error("Problem listing recent stats",t);
+			return error(t.getMessage());
+		}
+	}
+	
+	@GET
+	@Path("workerstatus")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response workerStatus() throws IOException {
+
+		try {
+			return Response.ok(WorkerThread.getWorkerStatus().toString(), MediaType.APPLICATION_JSON).build();
+		}
+		catch (Throwable t) {
+			log.error("Problem retrieving worker status",t);
 			return error(t.getMessage());
 		}
 	}

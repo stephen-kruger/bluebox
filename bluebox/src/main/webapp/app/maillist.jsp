@@ -7,7 +7,6 @@
 <%@ page import="com.bluebox.rest.InboxResource"%>
 <%@ page import="com.bluebox.rest.MessageResource"%>
 <%@ page import="com.bluebox.rest.json.JSONSPAMHandler"%>
-<%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
 <%
 	ResourceBundle inboxDetailsResource = ResourceBundle.getBundle("inboxDetails", request.getLocale());
@@ -291,7 +290,7 @@
 				console.log("<%=inboxDetailsResource.getString("error.noselection")%>");
 			}
 			else {
-				var load = window.open("<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+currentUid,'','scrollbars=yes,menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+				var load = window.open("<%=request.getContextPath()%>/jaxrs<%=MessageResource.PATH%>/raw/"+currentUid,'','scrollbars=yes,menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
 			}
 		}
 		

@@ -3,6 +3,7 @@
 <%@ page import="com.bluebox.Utils"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.smtp.Inbox"%>
+<%@ page import="com.bluebox.rest.InboxResource"%>
 <%@ page language="java" import="java.util.ResourceBundle" %>
 <%
 	Config bbconfig = Config.getInstance();
@@ -200,7 +201,7 @@
 			
 			function updateCheck() {
 				var xhrArgs = {
-						url: "<%=request.getContextPath()%>/rest/updateavailable",
+						url: "<%=request.getContextPath()%>/jaxrs<%=InboxResource.PATH %>/updateavailable",
 						handleAs: "json",
 						preventCache: false,
 						load: function(data) {

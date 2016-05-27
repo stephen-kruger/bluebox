@@ -1,5 +1,9 @@
 package com.bluebox.rest;
 
+import java.io.IOException;
+import java.util.ResourceBundle;
+
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -7,6 +11,7 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.bluebox.WorkerThread;
 import com.bluebox.smtp.Inbox;
 
 abstract class AbstractResource {
@@ -22,6 +27,13 @@ abstract class AbstractResource {
 
 	public AbstractResource(Inbox inbox) {
 		this.inbox = inbox;
+	}
+	
+	public static String startWorker(WorkerThread wt, HttpServletRequest req) throws IOException {
+		// check for running or expired works under this id
+		ResourceBundle rb = ResourceBundle.getBundle("admin",req.getLocale());
+		WorkerThread.startWorker(wt);
+		return (rb.getString("taskStarted")+":"+wt.getId());
 	}
 	
 	public Inbox getInbox() {

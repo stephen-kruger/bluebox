@@ -2,7 +2,6 @@
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.Config"%>
 <%@ page import="com.bluebox.rest.MessageResource"%>
-<%@ page import="com.bluebox.rest.json.JSONMessageUtilHandler"%>
 <%
 	Config bbconfig = Config.getInstance();
 %>
@@ -114,7 +113,7 @@
 								<h3>Get email html content links</h3>
 								This method parses the email html body (if it exists) and returns any links found<br/>
 								<br/>
-								http://[hostname]/bluebox/<%=JSONMessageUtilHandler.JSON_ROOT %>/[Uid]/links
+								http://[hostname]/bluebox/jaxrs<%=MessageResource.PATH %>/links/[Uid]
 								<br/><br/>
 								<pre class="json">
 								<code class="json">

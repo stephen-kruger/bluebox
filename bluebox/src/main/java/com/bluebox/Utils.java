@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -53,7 +54,6 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.bluebox.rest.json.AbstractHandler;
 import com.bluebox.search.SearchFactory;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
@@ -534,14 +534,63 @@ public class Utils {
 		//			notes = notes.replaceAll("%", ".");
 		//		else
 		//			notes = notes.replaceAll("%", "/");
-		String domain = AbstractHandler.extractFragment(notes, 2);
-		String subdomain = AbstractHandler.extractFragment(notes, 1);
-		String name = AbstractHandler.extractFragment(notes, 0);
+		String domain = extractFragment(notes, 2);
+		String subdomain = extractFragment(notes, 1);
+		String name = extractFragment(notes, 0);
 
 		name = name+" "+"<"+name.replace(' ', '_')+"@"+subdomain+"."+domain+">";
 		return name;
 	}
 
+	/*
+	 * This will extract the fragment following an expected root prefix
+	 */
+	public static String extractFragment(String uri, String root, int index) {
+		return extractFragment(uri.substring(uri.indexOf(root)+root.length()),index);
+	}
+
+	/*
+	 * This will extract the uri fragment at position index, where the last fragment is 0
+	 * So for /aaa/bbb/ccc/ddd
+	 * extractFragment(0) = aaa
+	 * extractFragment(1) = bbb
+	 * extractFragment(2) = ccc
+	 * extractFragment(3) = ddd etc
+	 * 
+	 * 	for /aaa/bbb/ccc/ddd/
+	 * extractFragment(0) = aaa
+	 * extractFragment(3) = ddd
+	 * extractFragment(3) = ""
+	 */
+	public static String extractFragment(String uri, int index) {
+		try {
+			StringTokenizer tok = new StringTokenizer(uri,"/",true);
+			List<String> list = new ArrayList<String>();
+			String token="", prevToken;
+			while (tok.hasMoreTokens()) {
+				prevToken = token;
+				token = tok.nextToken();
+				if ("/".equals(token)) {
+					// check for form xxx//zzz
+					if ("/".equals(prevToken))
+						list.add("");
+				}
+				else {
+					try {
+						list.add(URLDecoder.decode(token,Utils.UTF8));
+					} catch (UnsupportedEncodingException e) {
+						list.add(token);
+						e.printStackTrace();
+					}
+				}
+			}
+			return list.get(index);
+		}
+		catch (Throwable ex) {
+			// this happens for the form /aa/bb/cc/ when you get index 3
+			return "";
+		}
+	}
 
 	//	public static String decodeQuotedPrintable(String quoted) {
 	//		try {

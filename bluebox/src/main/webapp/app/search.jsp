@@ -5,10 +5,10 @@
 <%@ page language="java"
 	import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page language="java" import="com.bluebox.smtp.Inbox"%>
+<%@ page language="java" import="com.bluebox.rest.InboxResource"%>
 <%@ page language="java" import="java.util.ResourceBundle"%>
 <%@ page language="java" import="com.bluebox.smtp.InboxAddress"%>
 <%@ page language="java" import="com.bluebox.Utils"%>
-<%@ page import="com.bluebox.rest.json.JSONSearchHandler"%>
 <%@ page import="com.bluebox.search.SearchUtils"%>
 <%
 	Config bbconfig = Config.getInstance();
@@ -34,7 +34,7 @@
 			function searchInbox(searchString) {
 				try {
 					clearSelection();
-				    var urlStr = "<%=request.getContextPath()%>/<%=JSONSearchHandler.JSON_ROOT%>/"+searchScope+"/"+encodeURI(searchString);
+				    var urlStr = "<%=request.getContextPath()%>/jaxrs<%=InboxResource.PATH%>/search/"+searchScope+"/"+encodeURI(searchString);
 				    require(["dojox/data/JsonRestStore"], function () {
 					    var store = new dojox.data.JsonRestStore({ target: urlStr, parameters: [{name: "state", type: "string", optional: true}]});
 					    require(["dijit/registry"], function(registry){

@@ -8,9 +8,6 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.bluebox.rest.json.JSONAdminHandler;
-
-
 public abstract class WorkerThread implements Runnable {
 
 	private int progress = 0;
@@ -18,7 +15,7 @@ public abstract class WorkerThread implements Runnable {
 	private boolean stop = false;
 	private static Map<String,WorkerThread> workers = new HashMap<String,WorkerThread>();
 	private static Map<String,Thread> workerThreads = new HashMap<String,Thread>();
-	private static final Logger log = LoggerFactory.getLogger(JSONAdminHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(WorkerThread.class);
 
 	public WorkerThread(String id) throws Exception {
 		if (workers.containsKey(id)) {

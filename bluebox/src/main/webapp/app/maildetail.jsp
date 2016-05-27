@@ -1,7 +1,6 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.rest.AttachmentResource"%>
-<%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
 <%@ page import="com.bluebox.rest.HeaderResource"%>
 <%@ page import="com.bluebox.rest.MessageResource"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
@@ -348,7 +347,7 @@
 								data.<%=BlueboxMessage.HTML_BODY%>,
 								data.<%=BlueboxMessage.TEXT_BODY%>,
 								data.<%=MessageResource.SECURITY%>,
-								"<%=request.getContextPath()%>/<%=JSONRawMessageHandler.JSON_ROOT%>/"+uid,
+								"<%=request.getContextPath()%>/jaxrs<%=MessageResource.PATH%>/raw/"+uid,
 								"<%=request.getContextPath()%>/jaxrs<%=HeaderResource.PATH%>/detail/"+uid
 								);
 		

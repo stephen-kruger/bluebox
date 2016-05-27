@@ -4,7 +4,8 @@
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.smtp.storage.StorageIf"%>
 <%@ page import="com.bluebox.Config"%>
-<%@ page import="com.bluebox.rest.json.JSONAdminHandler"%>
+<%@ page import="com.bluebox.rest.AdminResource"%>
+<%@ page import="com.bluebox.rest.StatsResource"%>
 <%@ page import="com.bluebox.Utils"%>
 <%@ page import="com.bluebox.smtp.Inbox"%>
 <%
@@ -36,7 +37,7 @@
 		function updateWorkers() {
 			try {
 				require(["dojox/data/JsonRestStore"], function () {
-					var urlStr = "<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/workerstats";
+					var urlStr = "<%=request.getContextPath()%>/jaxrs<%=StatsResource.PATH%>/workerstatus";
 					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 					jStore.fetch({
 						  onComplete : 
@@ -93,75 +94,75 @@
 		
 		function generateEmails() {
 			console.log(dijit.byId("mailCountSlider").value);
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/generate?count="+dijit.byId("mailCountSlider").value,
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/generate/"+dijit.byId("mailCountSlider").value,
 					"Scheduled generation of "+dijit.byId("mailCountSlider").value+" emails");
 		}
 
 		function setBaseCount() {
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/setbasecount?count="+dijit.byId("setbasecount").value,
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/setbasecount/"+dijit.byId("setbasecount").value,
 					"<%=adminResource.getString("set_global_action")%>");
 		}
 		
 		function setSMTPBlacklist() {
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/setsmtpblacklist?value="+dijit.byId("setsmtpblacklist").value,
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/setsmtpblacklist/"+dijit.byId("setsmtpblacklist").value,
 					"<%=adminResource.getString("set_smtpblacklist_action")%>");
 		}
 		
 		function deleteAllMail() {
-			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/clear",
+			genericConfirmGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/clear",
 					"<%=adminResource.getString("delete_all_action")%>");
 		}
 		
 		function purgeDeletedMail() {
-			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/purge_deleted",
+			genericConfirmGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/purge",
 					"<%=adminResource.getString("purge_deleted_action")%>");
 		}
 		
 		function clearErrorLogs() {
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/errors",
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/clearerrors",
 					"<%=adminResource.getString("clear_errors_action")%>");
 		}
 		
 		function pruneMail() {
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/<%=Inbox.TRIM_WORKER%>",
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/trim",
 					"<%=adminResource.getString("prune_action")%>");
 		}
 		
 		function expireMail() {
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/<%=Inbox.EXPIRE_WORKER%>",
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/expire",
 					"<%=adminResource.getString("expire_action")%>");
 		}
 		
 		function rebuildSearchIndexes() {
-			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/rebuildsearchindexes",
+			genericConfirmGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/rebuildsearchindexes",
 					"<%=adminResource.getString("rebuild_search_action")%>",
 					"Started");
 		}
 		
 		function dbMaintenance() {
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/dbmaintenance",
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/maintenance",
 					"<%=adminResource.getString("db_maintenance_action")%>");
 		}
 		
 		function dbBackup() {
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/backup",
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/backup",
 					"<%=adminResource.getString("backup_action")%>");
 		}
 		
 		function dbRestore() {
-			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/restore",
+			genericConfirmGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/restore",
 					"<%=adminResource.getString("restore_action")%>",
 					"Server responded");
 		}
 		
 		function dbRawClean() {
-			genericGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/rawclean",
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/rawclean",
 					"<%=adminResource.getString("rawclean_action")%>",
 					"Server responded");
 		}
 		
 		function dbClean() {
-			genericConfirmGet("<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/clean",
+			genericConfirmGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/clean",
 					"<%=adminResource.getString("clear_backup_action")%>");
 		}
 		
@@ -319,8 +320,7 @@
 					<tr>
 						<td><label><%=adminResource.getString("set_global_action")%></label></td>
 						<td>
-							<form method="get"
-								action="<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/setbasecount">
+							<form method="get">
 								<input id="setbasecount" type="text"
 									data-dojo-type="dijit/form/NumberTextBox" name="setbasecount"
 									value="25000000"
@@ -421,7 +421,7 @@
 						<td><label><%=adminResource.getString("set_smtpblacklist_action")%></label></td>
 						<td>
 							<form method="get"
-								action="<%=request.getContextPath()%>/<%=JSONAdminHandler.JSON_ROOT%>/setsmtpblacklist">
+								action="<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/setsmtpblacklist">
 								<input id="setsmtpblacklist" type="text"
 									data-dojo-type="dijit/form/TextBox" name="setsmtpblacklist"
 									value="<%= Utils.toCSVString(Inbox.getInstance().getSMTPBlacklist()) %>" />
