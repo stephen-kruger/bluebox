@@ -20,6 +20,7 @@ import com.bluebox.Utils;
 import com.bluebox.rest.AutoCompleteResource;
 import com.bluebox.rest.InlineResource;
 import com.bluebox.rest.MessageResource;
+import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
@@ -44,7 +45,7 @@ public class RestTest extends BaseServletTest {
 		//			TestUtils.sendMailSMTP(Utils.getRandomAddress(), Utils.getRandomAddress(), null, null, "subject", "body");
 		//
 		//		// first we check directly
-		//		TestUtils.waitFor(getInbox(),COUNT);
+		//		TestUtils.waitFor(Inbox.getInstance(),COUNT);
 		//
 		//		assertEquals("Missing mails",COUNT,getMailCount(BlueboxMessage.State.NORMAL));
 		//
@@ -86,11 +87,11 @@ public class RestTest extends BaseServletTest {
 		// TODO - figure out why this sends a nasty exception
 		clearMail();
 		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"attachments.eml");
-		Utils.uploadEML(getInbox(),emlStream);
-		TestUtils.waitFor(getInbox(),1);
-		assertEquals("Mail was not delivered",1,getInbox().getMailCount(State.ANY));
+		Utils.uploadEML(Inbox.getInstance(),emlStream);
+		TestUtils.waitFor(Inbox.getInstance(),1);
+		assertEquals("Mail was not delivered",1,Inbox.getInstance().getMailCount(State.ANY));
 
-		List<BlueboxMessage> messages = getInbox().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
+		List<BlueboxMessage> messages = Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
 		BlueboxMessage msg = messages.get(0);
 
 		ClientResponse response = getResponse("/jaxrs",InlineResource.PATH+"/get/"+msg.getIdentifier()+"/DSC_3968.JPG",MediaType.APPLICATION_FORM_URLENCODED,"image/jpeg");
@@ -105,7 +106,7 @@ public class RestTest extends BaseServletTest {
 
 	@Test
 	public void testMessageResource() throws IOException, Exception {
-		List<BlueboxMessage> messages = getInbox().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
+		List<BlueboxMessage> messages = Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
 		for (BlueboxMessage message : messages) {		
 			String url = MessageResource.PATH+"/detail/"+message.getIdentifier();
 			JSONObject js = getRestJSON(url);

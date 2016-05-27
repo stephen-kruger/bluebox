@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.TestUtils;
 import com.bluebox.rest.AutoCompleteResource;
 import com.bluebox.search.SearchFactory;
+import com.bluebox.smtp.Inbox;
 
 public class SearchStressTest extends BaseServletTest {
 	private static final Logger log = LoggerFactory.getLogger(SearchStressTest.class);
@@ -16,8 +17,8 @@ public class SearchStressTest extends BaseServletTest {
 
 	public void setUp() throws Exception {
 		super.setUp();
-		TestUtils.addRandomNoThread(getInbox(), COUNT);
-		TestUtils.waitFor(getInbox(), COUNT);
+		TestUtils.addRandomNoThread(Inbox.getInstance(), COUNT);
+		TestUtils.waitFor(Inbox.getInstance(), COUNT);
 		SearchFactory.getInstance().commit(true);
 	}
 

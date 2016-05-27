@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 
 import com.bluebox.Utils;
 import com.bluebox.servlet.BaseServletTest;
+import com.bluebox.smtp.Inbox;
 
 
 
@@ -34,7 +35,7 @@ public class ServerLoadTest extends BaseServletTest {
 	@PerfTest(invocations = 10, threads = 2)
 	public void testLoad() throws Exception {
 		// send some mail
-		Utils.generateNoThread(null, getInbox(), 10);
+		Utils.generateNoThread(null, Inbox.getInstance(), 10);
 		// get some stats
 		System.out.println(getResponse("/jaxrs","/stats/global"));
 		System.out.println(getResponse("/jaxrs","/stats/recent"));
@@ -42,9 +43,9 @@ public class ServerLoadTest extends BaseServletTest {
 		System.out.println(getResponse("/jaxrs","/stats/sender"));
 
 		// autocomplete
-//		getInbox().autoComplete("*", 0, 100);
+//		Inbox.getInstance().autoComplete("*", 0, 100);
 		// list
-//		getInbox().listInbox(null, BlueboxMessage.State.ANY, 0, 100, BlueboxMessage.RECEIVED, true);
-//		Log.info("Mailcount:"+getInbox().getMailCount(BlueboxMessage.State.ANY));
+//		Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 100, BlueboxMessage.RECEIVED, true);
+//		Log.info("Mailcount:"+Inbox.getInstance().getMailCount(BlueboxMessage.State.ANY));
 	}
 }

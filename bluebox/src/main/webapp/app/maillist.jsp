@@ -6,7 +6,6 @@
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
 <%@ page import="com.bluebox.rest.InboxResource"%>
 <%@ page import="com.bluebox.rest.MessageResource"%>
-<%@ page import="com.bluebox.rest.json.JSONSPAMHandler"%>
 <%@ page import="org.apache.commons.lang.StringEscapeUtils" %>
 <%
 	ResourceBundle inboxDetailsResource = ResourceBundle.getBundle("inboxDetails", request.getLocale());
@@ -206,7 +205,7 @@
 		function spamMail(uidList) {
 			try {
 				if (currentUid) {
-					var delUrl = "<%=request.getContextPath()%>/<%=JSONSPAMHandler.JSON_ROOT%>/"+uidList;
+					var delUrl = "<%=request.getContextPath()%>/jaxrs<%=InboxResource.PATH%>/"+uidList;
 					var xhrArgs = {
 							url: delUrl,
 							handleAs: "text",

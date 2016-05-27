@@ -35,7 +35,7 @@ public class BlueBoxServletTest extends BaseServletTest {
 			fail("Mail to not blacklisted");
 		} 
 
-		Inbox inbox = getInbox();
+		Inbox inbox = Inbox.getInstance();
 		inbox.addToBlacklist("qwerty.com");
 
 		try {
@@ -54,7 +54,7 @@ public class BlueBoxServletTest extends BaseServletTest {
 
 	@Test
 	public void testBlacklistFrom() throws IOException, Exception {
-		Inbox inbox = getInbox();
+		Inbox inbox = Inbox.getInstance();
 		inbox.addFromBlacklist("qwerty.com");
 		assertTrue(inbox.isFromBlackListed(new InboxAddress("test@qwerty.com")));
 		assertFalse(inbox.isToBlackListed(new InboxAddress("test@qwerty.com")));
@@ -64,7 +64,7 @@ public class BlueBoxServletTest extends BaseServletTest {
 
 	@Test
 	public void testToWhitelist() throws IOException, Exception {
-		Inbox inbox = getInbox();
+		Inbox inbox = Inbox.getInstance();
 		inbox.addToWhiteList("qwerty.com");
 		assertTrue(inbox.isToWhiteListed(new InboxAddress("test@qwerty.com")));
 		assertFalse(inbox.isFromWhiteListed(new InboxAddress("test@qwerty.com")));

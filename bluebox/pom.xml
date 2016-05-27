@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.4.15</version>
+	<version>4.5.0</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
 	<properties>
@@ -12,12 +12,12 @@
 		<jsoup_version>1.9.2</jsoup_version>
 		<commons_io_version>2.5</commons_io_version>
 		<rome_version>1.6.0</rome_version>
-		<lucene_version>6.0.0</lucene_version>
-		<solr_version>6.0.0</solr_version>
+		<lucene_version>6.0.1</lucene_version>
+		<solr_version>6.0.1</solr_version>
 		<derby_version>10.12.1.1</derby_version>
 		<mongo_version>3.2.2</mongo_version>
 		<apache.wink>1.4</apache.wink>
-		<jetty_version>9.3.9.v20160517</jetty_version>
+		<jetty_version>9.3.10.M0</jetty_version>
 		<tomcat.webapp.dir>/var/lib/tomcat6/webapps</tomcat.webapp.dir>
 		<tomcat.script.dir>/etc/init.d</tomcat.script.dir>
 		<rpm.file.owner>tomcat</rpm.file.owner>
@@ -226,7 +226,7 @@
 		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>
-			<version>1.3.1</version>
+			<version>1.3.2</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>

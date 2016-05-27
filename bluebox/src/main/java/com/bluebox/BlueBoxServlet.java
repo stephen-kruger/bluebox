@@ -22,15 +22,13 @@ public class BlueBoxServlet extends HttpServlet {
 	private static final long serialVersionUID = 1015755960967873612L;
 	public static final String VERSION = Config.getInstance().getString(Config.BLUEBOX_VERSION);
 	private BlueBoxSMTPServer smtpServer;
-	private Inbox inbox;
 	private static Date started = new Date();
 
 	@Override
 	public void init() throws ServletException {
 		log.debug("Initialising BlueBox "+getServletContext().getContextPath());
 		log.debug("Starting SMTP server");
-		inbox = Inbox.getInstance();
-		smtpServer = new BlueBoxSMTPServer(new BlueboxMessageHandlerFactory(inbox));
+		smtpServer = new BlueBoxSMTPServer(new BlueboxMessageHandlerFactory(Inbox.getInstance()));
 		smtpServer.start();
 	}
 
@@ -45,7 +43,7 @@ public class BlueBoxServlet extends HttpServlet {
 		smtpServer.stop();
 
 		// shut down the inbox
-		inbox.stop();
+		Inbox.getInstance().stop();
 
 		try {
 			StorageFactory.getInstance().stop();
@@ -57,15 +55,9 @@ public class BlueBoxServlet extends HttpServlet {
 		log.info("Stopped");
 	}
 
-	public Inbox getInbox() {
-		return inbox;
-	}
-
 	@Override
 	protected void doGet(final HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		req.setCharacterEncoding("UTF-8");
-		String uri = req.getRequestURI(); 
-		log.warn("No handler for "+uri+" expected :"+req.getContextPath());
+		log.warn("Unimplemented doGet :"+req.getRequestURI());
 		super.doGet(req, resp);
 	}
 

@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.TestUtils;
+import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
@@ -23,7 +24,7 @@ public class FeedServletTest extends BaseServletTest {
 	public void setUp() throws Exception {
 		super.setUp();
 		TestUtils.addRandomDirect(StorageFactory.getInstance(), COUNT);
-		TestUtils.waitFor(getInbox(), COUNT);
+		TestUtils.waitFor(Inbox.getInstance(), COUNT);
 	}
 
 	public void testFeed() throws Exception {
@@ -57,7 +58,7 @@ public class FeedServletTest extends BaseServletTest {
 		String to = "junit@junit.com";
 		TestUtils.sendMailSMTP(new InternetAddress("bob@test.com"), new InternetAddress(to), null, null, "feed test", "body");
 
-		TestUtils.waitFor(getInbox(),1);
+		TestUtils.waitFor(Inbox.getInstance(),1);
 
 		String feedURL = getBaseURL()+"/feed/inbox?email="+to;
 		log.info("Checking URL:"+feedURL);

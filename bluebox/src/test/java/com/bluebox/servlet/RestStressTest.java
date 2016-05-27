@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.TestUtils;
+import com.bluebox.smtp.Inbox;
 
 public class RestStressTest extends BaseServletTest {
 	private static final Logger log = LoggerFactory.getLogger(RestStressTest.class);
@@ -24,7 +25,7 @@ public class RestStressTest extends BaseServletTest {
 	public void testStressStatsHandler() throws IOException, Exception {
 		String url = "/stats/global";
 		clearMail();
-		TestUtils.sendMailDirect(getInbox(), "bob@bob.com", "joe@joe.com");
+		TestUtils.sendMailDirect(Inbox.getInstance(), "bob@bob.com", "joe@joe.com");
 		log.info("Stressing to "+STRESS_LEVEl);
 		for (int i = 0; i < STRESS_LEVEl;i++) {
 			JSONObject js = getRestJSON(url);

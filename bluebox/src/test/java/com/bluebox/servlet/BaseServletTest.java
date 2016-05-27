@@ -2,7 +2,6 @@ package com.bluebox.servlet;
 
 import java.io.IOException;
 
-import javax.servlet.ServletException;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.io.IOUtils;
@@ -26,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.BlueBoxServlet;
-import com.bluebox.TestUtils;
 import com.bluebox.feed.FeedServlet;
 import com.bluebox.smtp.Inbox;
 
@@ -108,16 +106,6 @@ public abstract class BaseServletTest extends TestCase {
 		while(feeds.isRunning()||bbs.isRunning()||jaxrs.isRunning()) {
 			log.info("Waiting for servlets to stop");
 			Thread.sleep(750);
-		}
-	}
-
-	public Inbox getInbox() {
-		try {
-			return ((BlueBoxServlet)bbs.getServlet()).getInbox() ;
-		} 
-		catch (ServletException e) {
-			e.printStackTrace();
-			return null;
 		}
 	}
 

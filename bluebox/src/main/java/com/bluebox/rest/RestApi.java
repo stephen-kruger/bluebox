@@ -2,7 +2,6 @@ package com.bluebox.rest;
 import java.util.HashSet;
 import java.util.Set;
 
-//import javax.servlet.annotation.MultipartConfig;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
 

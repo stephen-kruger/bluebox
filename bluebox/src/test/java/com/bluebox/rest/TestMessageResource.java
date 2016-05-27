@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.TestUtils;
 import com.bluebox.rest.MessageResource;
 import com.bluebox.servlet.BaseServletTest;
+import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.StorageFactory;
@@ -34,7 +35,7 @@ public class TestMessageResource extends BaseServletTest {
 
 
 	public void testGetLinks() throws IOException, Exception {
-		List<LiteMessage> list = getInbox().listInboxLite(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true, Locale.getDefault());
+		List<LiteMessage> list = Inbox.getInstance().listInboxLite(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true, Locale.getDefault());
 		assertEquals("Missing mail",COUNT,list.size());
 		for (LiteMessage jo : list) {
 			String url = MessageResource.PATH+"/"+MessageResource.LINKS+"/"+jo.getIdentifier();
