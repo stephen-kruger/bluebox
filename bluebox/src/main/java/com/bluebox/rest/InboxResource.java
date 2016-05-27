@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
-import com.bluebox.rest.json.DojoPager;
 import com.bluebox.search.SearchUtils;
 import com.bluebox.search.SearchUtils.SearchFields;
 import com.bluebox.search.SearchUtils.SortFields;

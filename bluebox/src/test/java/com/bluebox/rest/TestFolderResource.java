@@ -1,4 +1,4 @@
-package com.bluebox.rest.json;
+package com.bluebox.rest;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.servlet.BaseServletTest;
 
-public class TestJSONFolderHandler extends BaseServletTest {
+public class TestFolderResource extends BaseServletTest {
 	private static final Logger log = LoggerFactory.getLogger(BaseServletTest.class);
 
 	@Test

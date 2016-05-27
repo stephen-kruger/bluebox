@@ -65,11 +65,10 @@ public abstract class BaseServletTest extends TestCase {
 			Thread.sleep(750);
 		}
 
-		TestUtils.addRandomNoThread(Inbox.getInstance(), 10);
+		//TestUtils.addRandomNoThread(Inbox.getInstance(), 10);
 	}
 
 	public void clearMail() throws IOException, Exception {
-		//getResponse("","/"+JSONAdminHandler.JSON_ROOT+"/clear");
 		Inbox.getInstance().deleteAll();
 	}
 

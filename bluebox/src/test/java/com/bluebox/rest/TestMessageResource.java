@@ -1,4 +1,4 @@
-package com.bluebox.rest.json;
+package com.bluebox.rest;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,8 +16,8 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.StorageFactory;
 
-public class TestJSONMessageUtilHandler extends BaseServletTest {
-	private static final Logger log = LoggerFactory.getLogger(TestJSONMessageUtilHandler.class);
+public class TestMessageResource extends BaseServletTest {
+	private static final Logger log = LoggerFactory.getLogger(TestMessageResource.class);
 
 
 	@Override
@@ -37,7 +37,7 @@ public class TestJSONMessageUtilHandler extends BaseServletTest {
 		List<LiteMessage> list = getInbox().listInboxLite(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true, Locale.getDefault());
 		assertEquals("Missing mail",COUNT,list.size());
 		for (LiteMessage jo : list) {
-			String url = MessageResource.PATH+"/"+MessageResource.LINKS+jo.getIdentifier();
+			String url = MessageResource.PATH+"/"+MessageResource.LINKS+"/"+jo.getIdentifier();
 			JSONObject js = getRestJSON(url);
 			JSONArray ja = js.getJSONArray(MessageResource.LINKS);
 			for (int i = 0; i < ja.length();i++) {
