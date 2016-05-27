@@ -1,6 +1,6 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle"%>
-<%@ page import="com.bluebox.rest.json.JSONAttachmentHandler"%>
+<%@ page import="com.bluebox.rest.AttachmentResource"%>
 <%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONHeadersMessageHandler"%>
 <%@ page import="com.bluebox.rest.MessageResource"%>
@@ -180,7 +180,7 @@
 		try {
 			if (attachmentArray!=null) {
 				var str = "";
-				var base = "<%=JSONAttachmentHandler.JSON_ROOT%>/"+uid+"/";
+				var base = "jaxrs<%=AttachmentResource.PATH%>/get/"+uid+"/";
 				for (var i=0; i < attachmentArray.length; i++ ) {
 					if (attachmentArray[i])
 						str += "&nbsp;<a class='attachmentsEmail' href=\"<%=request.getContextPath()%>/"+base+i+"/"+attachmentArray[i]+"\" target='_blank'><img class='attachmentIcon' src='"+getAttachmentIcon(attachmentArray[i])+"'/>"+attachmentArray[i]+"</a>&nbsp;";

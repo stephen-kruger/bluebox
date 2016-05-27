@@ -1,4 +1,4 @@
-package com.bluebox.rest.json;
+package com.bluebox.rest;
 
 import java.io.IOException;
 

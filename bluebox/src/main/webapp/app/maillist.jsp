@@ -4,6 +4,7 @@
 <%@ page import="com.bluebox.smtp.Inbox"%>
 <%@ page import="com.bluebox.Config"%>
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage"%>
+<%@ page import="com.bluebox.rest.InboxResource"%>
 <%@ page import="com.bluebox.rest.MessageResource"%>
 <%@ page import="com.bluebox.rest.json.JSONSPAMHandler"%>
 <%@ page import="com.bluebox.rest.json.JSONRawMessageHandler"%>
@@ -242,7 +243,7 @@
 		function deleteMail(uidList) {
 			try {
 				if (currentUid) {
-					var delUrl = "<%=request.getContextPath()%><%=MessageResource.PATH%>/delete/"+uidList;
+					var delUrl = "<%=request.getContextPath()%>/jaxrs<%=MessageResource.PATH%>/delete/"+uidList;
 					var xhrArgs = {
 							url: delUrl,
 							handleAs: "json",
@@ -300,7 +301,7 @@
 		
 		function getStore(email, state) {
 			try {
-				var urlStr = "<%=request.getContextPath()%>/jaxrs/inbox/list/"+email+"/"+state;
+				var urlStr = "<%=request.getContextPath()%>/jaxrs<%=InboxResource.PATH%>/list/"+email+"/"+state;
 				 var store = new dojox.data.JsonRestStore({ 
 					    				target: urlStr, 
 					    				parameters: [{name: "state", type: "string", optional: true}]

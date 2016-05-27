@@ -1,4 +1,4 @@
-package com.bluebox.rest.json;
+package com.bluebox.rest;
 
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.BaseTestCase;
 
-public class TestJSONAutoCompleteHandler extends BaseTestCase {
-	private static final Logger log = LoggerFactory.getLogger(TestJSONAutoCompleteHandler.class);
+public class TestAutoCompleteResource extends BaseTestCase {
+	private static final Logger log = LoggerFactory.getLogger(TestAutoCompleteResource.class);
 //	private JSONAutoCompleteHandler handler;
 
 	@Override

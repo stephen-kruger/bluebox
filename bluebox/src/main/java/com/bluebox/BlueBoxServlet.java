@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.rest.json.JSONAdminHandler;
-import com.bluebox.rest.json.JSONAttachmentHandler;
 import com.bluebox.rest.json.JSONChartHandler;
 import com.bluebox.rest.json.JSONErrorHandler;
 import com.bluebox.rest.json.JSONHeadersMessageHandler;
@@ -94,11 +93,11 @@ public class BlueBoxServlet extends HttpServlet {
 			new JSONInlineHandler().doGetInlineAttachment(inbox,req,resp);
 			return;
 		}		
-		if (uri.indexOf(JSONAttachmentHandler.JSON_ROOT)>=0){
-			log.debug("doGetMessageAttachment");
-			new JSONAttachmentHandler().doGetMessageAttachment(inbox,req,resp);
-			return;
-		}
+//		if (uri.indexOf(JSONAttachmentHandler.JSON_ROOT)>=0){
+//			log.debug("doGetMessageAttachment");
+//			new JSONAttachmentHandler().doGetMessageAttachment(inbox,req,resp);
+//			return;
+//		}
 		if (uri.indexOf(JSONRawMessageHandler.JSON_ROOT)>=0){
 			log.debug("doGetRawDetail");
 			new JSONRawMessageHandler().doGetRawDetail(inbox,req,resp);

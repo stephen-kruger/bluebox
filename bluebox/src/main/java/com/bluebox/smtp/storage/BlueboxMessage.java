@@ -14,6 +14,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -149,6 +150,21 @@ public class BlueboxMessage {
 		return properties.has(name);
 	}
 
+	public void writeAttachment(String index, ResponseBuilder response) throws SQLException, IOException, MessagingException {
+		MimeMessage bbmm = getBlueBoxMimeMessage();
+		try {
+			MimeMessageParser parser = new MimeMessageParser(bbmm);
+			parser.parse();
+			DataSource ds = parser.getAttachmentList().get(Integer.parseInt(index));
+			response.type(ds.getContentType());
+			response.entity(ds);
+		}
+		catch (Exception se) {
+			log.error("Problem writing attachment :{}",se.getMessage());
+		}		
+	}
+	
+	@Deprecated
 	public void writeAttachment(String index, HttpServletResponse resp) throws SQLException, IOException, MessagingException {
 		MimeMessage bbmm = getBlueBoxMimeMessage();
 		try {
@@ -367,4 +383,6 @@ public class BlueboxMessage {
 		// if no headers found, assume localhost
 		return "localhost";
 	}
+
+
 }
