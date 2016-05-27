@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.BaseTestCase;
 import com.bluebox.TestUtils;
 import com.bluebox.Utils;
-import com.bluebox.rest.json.JSONChartHandler;
+import com.bluebox.rest.ChartResource;
 import com.bluebox.smtp.storage.StorageFactory;
 
 public class ChartTest extends BaseTestCase {
@@ -94,6 +94,6 @@ public class ChartTest extends BaseTestCase {
 	public void testScratch() throws JSONException {
 		JSONObject jo = StorageFactory.getInstance().getCountByDayOfWeek();
 		log.info(jo.toString(3));		
-		log.info(JSONChartHandler.convertToArrayPie(jo).toString(3));		
+		log.info(ChartResource.convertToArrayPie(jo).toString(3));		
 	}
 }

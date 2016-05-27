@@ -1,7 +1,7 @@
 <%@ page language="java" pageEncoding="utf-8" contentType="text/html;charset=utf-8"%>
 <%@ page import="java.util.ResourceBundle"%>
 <%@ page import="com.bluebox.Config"%>
-<%@ page import="com.bluebox.rest.json.JSONErrorHandler"%>
+<%@ page import="com.bluebox.rest.ErrorResource"%>
 <%
 	Config bbconfig = Config.getInstance();
 	ResourceBundle headerResource = ResourceBundle.getBundle("header",request.getLocale());
@@ -47,7 +47,7 @@
 				};
 				
 		    	var restStore = new dojox.data.JsonRestStore({ 
-					target: "<%=request.getContextPath()%>/<%=JSONErrorHandler.JSON_ROOT%>/", 
+					target: "<%=request.getContextPath()%>/jaxrs<%=ErrorResource.PATH%>/list", 
 					parameters: [{}]
 				    });
 				var grid = new dojox.grid.EnhancedGrid({
@@ -84,7 +84,7 @@
 		
 		function loadError(uid) {
 			var xhrArgs = {
-					url: "<%=request.getContextPath()%>/<%=JSONErrorHandler.JSON_DETAIL_ROOT%>/"+uid,
+					url: "<%=request.getContextPath()%>/jaxrs<%=ErrorResource.PATH%>/detail/"+uid,
 					handleAs: "text",
 					preventCache: false,
 					load: function(data) {

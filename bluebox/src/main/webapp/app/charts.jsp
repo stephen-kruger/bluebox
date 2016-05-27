@@ -4,7 +4,7 @@
 <%@ page import="com.bluebox.smtp.storage.BlueboxMessage" language="java"%>
 <%@ page import="java.util.ResourceBundle" language="java"%>
 <%@ page import="com.bluebox.BlueBoxServlet" language="java"%>
-<%@ page import="com.bluebox.rest.json.JSONChartHandler"%>
+<%@ page import="com.bluebox.rest.ChartResource"%>
 
 <% 
 	Config bbconfig = Config.getInstance(); 
@@ -17,7 +17,7 @@ require(["dojox/charting/Chart", "dojox/charting/StoreSeries", "dojo/store/JsonR
 		  ready(function() {
 			// monthly chart
 			try {
-				var dataStore = new JsonRest({target:"<%=request.getContextPath()%>/<%=JSONChartHandler.JSON_ROOT%>/monthly"});
+				var dataStore = new JsonRest({target:"<%=request.getContextPath()%>/jaxrs<%=ChartResource.PATH%>/render/monthly"});
 				var monthlychart = new Chart("monthlychart");
 				monthlychart.setTheme(BlueDusk);
 				monthlychart.addPlot("default", {type: StackedAreas,tension: "X",stroke: { width: 1.5, color: "#CCD6EB" }});
@@ -37,7 +37,7 @@ require(["dojox/charting/Chart", "dojox/charting/StoreSeries", "dojo/store/JsonR
 		    
 		 // weekly chart            
 			try {		
-				var dataStore = new JsonRest({target:"<%=request.getContextPath()%>/<%=JSONChartHandler.JSON_ROOT%>/weekly"});
+				var dataStore = new JsonRest({target:"<%=request.getContextPath()%>/jaxrs<%=ChartResource.PATH%>/render/weekly"});
 			   	var results = dataStore.query("").then(function(data){
 			   			require(["dojox/charting/plot2d/Pie"],
 									    function(Pie){
@@ -56,7 +56,7 @@ require(["dojox/charting/Chart", "dojox/charting/StoreSeries", "dojo/store/JsonR
 		    
 		 	// hourly chart            
 			try {		
-				var hdataStore = new JsonRest({target:"<%=request.getContextPath()%>/<%=JSONChartHandler.JSON_ROOT%>/hourly"});
+				var hdataStore = new JsonRest({target:"<%=request.getContextPath()%>/jaxrs<%=ChartResource.PATH%>/render/hourly"});
 				var hourlychart = new Chart("hourlychart");
 				hourlychart.setTheme(BlueDusk);
 				hourlychart.addPlot("default", {type: StackedAreas,tension: "X",stroke: { width: 1.5, color: "#CCD6EB" }});

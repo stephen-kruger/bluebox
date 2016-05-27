@@ -16,8 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.rest.json.JSONAdminHandler;
-import com.bluebox.rest.json.JSONChartHandler;
-import com.bluebox.rest.json.JSONErrorHandler;
 import com.bluebox.rest.json.JSONHeadersMessageHandler;
 import com.bluebox.rest.json.JSONInlineHandler;
 import com.bluebox.rest.json.JSONMessageUtilHandler;
@@ -128,26 +126,26 @@ public class BlueBoxServlet extends HttpServlet {
 //			new JSONStatsHandler().doGet(inbox,req,resp);
 //			return;
 //		}
-		if (uri.indexOf(JSONErrorHandler.JSON_DETAIL_ROOT)>=0){
-			log.debug("doGetErrorDetail");
-			new JSONErrorHandler().doGetDetail(inbox,req,resp);
-			return;
-		}
-		if (uri.indexOf(JSONErrorHandler.JSON_ROOT)>=0){
-			log.debug("doGetErrors");
-			new JSONErrorHandler().doGet(inbox,req,resp);
-			return;
-		}
+//		if (uri.indexOf(JSONErrorHandler.JSON_DETAIL_ROOT)>=0){
+//			log.debug("doGetErrorDetail");
+//			new JSONErrorHandler().doGetDetail(inbox,req,resp);
+//			return;
+//		}
+//		if (uri.indexOf(JSONErrorHandler.JSON_ROOT)>=0){
+//			log.debug("doGetErrors");
+//			new JSONErrorHandler().doGet(inbox,req,resp);
+//			return;
+//		}
 		if (uri.indexOf(JSONMessageUtilHandler.JSON_ROOT)>=0){
 			log.debug("doGetMessageUtils");
 			new JSONMessageUtilHandler().doGet(inbox,req,resp);
 			return;
 		}
-		if (uri.indexOf(JSONChartHandler.JSON_ROOT)>=0){
-			log.debug("doGetCharts");
-			new JSONChartHandler().doGet(inbox,req,resp);
-			return;
-		}
+//		if (uri.indexOf(JSONChartHandler.JSON_ROOT)>=0){
+//			log.debug("doGetCharts");
+//			new JSONChartHandler().doGet(inbox,req,resp);
+//			return;
+//		}
 		if (uri.indexOf(JSONAdminHandler.JSON_ROOT)>=0){
 			log.debug("doGetAdmin");
 			new JSONAdminHandler().doGet(this,inbox,req,resp);

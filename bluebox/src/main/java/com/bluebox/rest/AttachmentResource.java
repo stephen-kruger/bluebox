@@ -48,7 +48,6 @@ public class AttachmentResource extends AbstractResource {
 			ResponseBuilder response = Response.ok();
 			message.writeAttachment(index, response);
 			Response built = response.build();
-			log.info(">>>Media type detected:{}",built.getMediaType());
 			return built;
 		}
 		catch (Throwable t) {
