@@ -557,9 +557,9 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public boolean isToBlackListed(InboxAddress recipientAddress) {
-		for (Object badDomain : getToBlacklist()) {
-			log.debug("{}<<<---- Comparing toBlackList---->>>{}",badDomain,recipientAddress);
-			if (recipientAddress.getDomain().endsWith(badDomain.toString())) {
+		for (String badDomain : getToBlacklist()) {
+			log.info("{}<<<---- Comparing toBlackList---->>>{}",badDomain,recipientAddress);
+			if (recipientAddress.getDomain().endsWith(badDomain)) {
 				log.warn("Rejecting mail to {} due to blacklisted TO:",recipientAddress,badDomain);
 				return true;
 			}
@@ -568,9 +568,9 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public boolean isFromBlackListed(InboxAddress fromAddress) {
-		for (Object badDomain : getFromBlacklist()) {
+		for (String badDomain : getFromBlacklist()) {
 			log.debug("{}<<<---- Comparing fromBlackList---->>>{}",badDomain,fromAddress);
-			if (fromAddress.getDomain().endsWith(badDomain.toString())) {
+			if (fromAddress.getDomain().endsWith(badDomain)) {
 				log.warn("Rejecting mail from {} due to blacklisted FROM {}",fromAddress,badDomain);
 				return true;
 			}
@@ -579,9 +579,9 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public boolean isToWhiteListed(InboxAddress recipientAddress) {
-		for (Object goodDomain : toWhiteList) {
+		for (String goodDomain : toWhiteList) {
 			log.debug("{}<<<---- Comparing toWhiteList---->>>{}",goodDomain,recipientAddress);
-			if (recipientAddress.getDomain().endsWith(goodDomain.toString())) {
+			if (recipientAddress.getDomain().endsWith(goodDomain)) {
 				return true;
 			}
 		}
@@ -590,9 +590,9 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	public boolean isFromWhiteListed(InboxAddress fromAddress) {
-		for (Object goodDomain : fromWhiteList) {
+		for (String goodDomain : fromWhiteList) {
 			log.debug(goodDomain.toString()+"<<<---- Comparing fromWhiteList---->>>{}",fromAddress);
-			if (fromAddress.getDomain().endsWith(goodDomain.toString())) {
+			if (fromAddress.getDomain().endsWith(goodDomain)) {
 				return true;
 			}
 		}
