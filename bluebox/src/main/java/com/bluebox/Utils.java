@@ -205,13 +205,17 @@ public class Utils {
 
 			@Override
 			public void run() {
+				log.info("Starting generation thread");
 				try {
 					int toC,ccC, bccC;
 					int totalCount = 0;
 					Random r = new Random();
 					if(count>0) {
 						do {
-							if (isStopped()) break;
+							if (isStopped()) {
+								log.info("Someone stopped our thread!");
+								break;
+							}
 							toC = r.nextInt(5);
 							ccC = r.nextInt(5);
 							bccC = r.nextInt(2);
@@ -237,6 +241,7 @@ public class Utils {
 				finally {
 					setProgress(100);
 					setStatus("Generated "+count+" messages");
+					log.info("Ended generation thread");
 				}
 			}
 

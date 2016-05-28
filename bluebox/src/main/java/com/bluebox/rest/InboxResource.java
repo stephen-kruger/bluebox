@@ -104,9 +104,8 @@ public class InboxResource extends AbstractResource {
 			}
 			log.debug("Marking {} mails as SPAM",uids.size());
 			WorkerThread wt = Inbox.getInstance().toggleSpam(uids);
-			startWorker(wt, request);
 			JSONObject result = new JSONObject();
-			result.put("message", "ok");
+			result.put("message", startWorker(wt, request));
 			return Response.ok(result.toString(), MediaType.APPLICATION_JSON).build();
 		}
 		catch (Throwable t) {
@@ -145,7 +144,8 @@ public class InboxResource extends AbstractResource {
 				searchScope = SearchUtils.SearchFields.ANY;
 			}
 			StringWriter writer = new StringWriter();
-			long totalCount = Inbox.getInstance().searchInbox(searchStr, writer, pager.getFirst(), pager.getCount(), searchScope , SortFields.valueOf(pager.getOrderBy().get(0)), pager.isAscending(0));
+			log.info("----->{} {}",searchScope,SortFields.getEnum(pager.getOrderBy().get(0)));
+			long totalCount = Inbox.getInstance().searchInbox(searchStr, writer, pager.getFirst(), pager.getCount(), searchScope , SortFields.getEnum(pager.getOrderBy().get(0)), pager.isAscending(0));
 			log.debug("Total result set was length {}",totalCount);
 			pager.setRange(response, totalCount);
 			return Response.ok(writer.toString(), MediaType.APPLICATION_JSON).build();

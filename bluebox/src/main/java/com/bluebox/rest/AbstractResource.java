@@ -33,7 +33,7 @@ abstract class AbstractResource {
 		// check for running or expired works under this id
 		ResourceBundle rb = ResourceBundle.getBundle("admin",req.getLocale());
 		WorkerThread.startWorker(wt);
-		return (rb.getString("taskStarted")+":"+wt.getId());
+		return (rb.getString("taskStarted")+" : "+wt.getId());
 	}
 	
 	public Inbox getInbox() {

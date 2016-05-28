@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.mail.internet.MimeMessage;
+import javax.servlet.annotation.WebInitParam;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,6 +40,12 @@ import com.rometools.rome.io.SyndFeedOutput;
  * @author Alejandro Abdelnur
  *
  */
+@WebServlet(
+		displayName="FeedServlet",
+		name="feedservlet", 
+		urlPatterns={"/feed/*"}, 
+		initParams={ @WebInitParam(name="default.feed.type", value="rss_2.0") }
+		)
 public class FeedServlet extends HttpServlet {
 
 	private static final Logger log = LoggerFactory.getLogger(FeedServlet.class);

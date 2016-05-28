@@ -1,12 +1,10 @@
 package com.bluebox;
 
-import java.io.IOException;
 import java.util.Date;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.slf4j.Logger;
@@ -17,6 +15,12 @@ import com.bluebox.smtp.BlueboxMessageHandlerFactory;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.StorageFactory;
 
+@WebServlet(
+		displayName="BlueBox",
+		name="bluebox", 
+		urlPatterns={"/bluebox/*"},
+		loadOnStartup=1
+		)
 public class BlueBoxServlet extends HttpServlet {
 	private static final Logger log = LoggerFactory.getLogger(BlueBoxServlet.class);
 	private static final long serialVersionUID = 1015755960967873612L;
@@ -53,27 +57,6 @@ public class BlueBoxServlet extends HttpServlet {
 		}
 
 		log.info("Stopped");
-	}
-
-	@Override
-	protected void doGet(final HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		log.warn("Unimplemented doGet :"+req.getRequestURI());
-		super.doGet(req, resp);
-	}
-
-
-	@Override
-	protected void doPut(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		log.warn("Unimplemented doPut :"+req.getRequestURI());
-		super.doPut(req, resp);
-	}
-
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-			throws ServletException, IOException {
-		log.warn("Unimplemented doPost :"+req.getRequestURI());
-		super.doPost(req, resp);
 	}
 
 	/*

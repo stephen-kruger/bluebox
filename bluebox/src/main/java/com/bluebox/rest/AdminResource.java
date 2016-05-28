@@ -3,6 +3,8 @@ package com.bluebox.rest;
 import java.io.File;
 import java.io.IOException;
 
+import javax.annotation.security.DeclareRoles;
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -25,6 +27,8 @@ import com.bluebox.WorkerThread;
 import com.bluebox.smtp.Inbox;
 
 @Path(AdminResource.PATH)
+@DeclareRoles({"bluebox"})
+@RolesAllowed({"bluebox"})
 public class AdminResource extends AbstractResource {
 	private static final Logger log = LoggerFactory.getLogger(AdminResource.class);
 	
@@ -41,11 +45,12 @@ public class AdminResource extends AbstractResource {
 	@Path("generate/{count}")
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.TEXT_PLAIN)
-	public Response mph(
+	public Response generate(
 			@Context HttpServletRequest request,
-			@DefaultValue("0") @QueryParam(COUNT) int count) throws IOException {
+			@PathParam(COUNT) int count) throws IOException {
 
 		try {
+			log.info("Generating {} test emails",count);
 			WorkerThread wt = Utils.generate(request.getSession().getServletContext(), Inbox.getInstance(), count);
 			return Response.ok(startWorker(wt, request)).build();
 		}
@@ -61,7 +66,7 @@ public class AdminResource extends AbstractResource {
 	@Produces(MediaType.TEXT_PLAIN)
 	public Response setbasecount(
 			@Context HttpServletRequest request,
-			@QueryParam(COUNT) int count) throws IOException {
+			@PathParam(COUNT) int count) throws IOException {
 
 		try {
 			Inbox.getInstance().setStatsGlobalCount(count);
@@ -82,8 +87,7 @@ public class AdminResource extends AbstractResource {
 
 		try {
 			WorkerThread wt = Inbox.getInstance().rebuildSearchIndexes();
-			startWorker(wt, request);
-			return Response.ok("Rebuilding search indexes").build();
+			return Response.ok(startWorker(wt, request)).build();
 		}
 		catch (Throwable t) {
 			log.error("Problem rebuilding indexes",t);
@@ -100,8 +104,7 @@ public class AdminResource extends AbstractResource {
 
 		try {
 			WorkerThread wt = Inbox.getInstance().trimThread();
-			startWorker(wt, request);
-			return Response.ok("Trimming mails").build();
+			return Response.ok(startWorker(wt, request)).build();
 		}
 		catch (Throwable t) {
 			log.error("Problem trimming mails",t);
@@ -118,8 +121,7 @@ public class AdminResource extends AbstractResource {
 
 		try {
 			WorkerThread wt = Inbox.getInstance().expireThread();
-			startWorker(wt, request);
-			return Response.ok("Expiring mails").build();
+			return Response.ok(startWorker(wt, request)).build();
 		}
 		catch (Throwable t) {
 			log.error("Problem expiring mails",t);
@@ -183,8 +185,7 @@ public class AdminResource extends AbstractResource {
 			@Context HttpServletRequest request) throws IOException {
 		try {
 			WorkerThread wt = Inbox.getInstance().runMaintenance();
-			startWorker(wt, request);
-			return Response.ok("Running maintenance").build();
+			return Response.ok(startWorker(wt, request)).build();
 		}
 		catch (Throwable t) {
 			log.error("Problem running maintenance",t);
@@ -200,8 +201,7 @@ public class AdminResource extends AbstractResource {
 			@Context HttpServletRequest request) throws IOException {
 		try {
 			WorkerThread wt = Inbox.getInstance().cleanOrphans();
-			startWorker(wt, request);
-			return Response.ok("Clearing raw orphancs").build();
+			return Response.ok(startWorker(wt, request)).build();
 		}
 		catch (Throwable t) {
 			log.error("Problem clearing raw orphans",t);
@@ -219,8 +219,7 @@ public class AdminResource extends AbstractResource {
 			File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
 			f.mkdir();
 			WorkerThread wt = Inbox.getInstance().backup(f);
-			startWorker(wt, request);
-			return Response.ok("Backing up mail").build();
+			return Response.ok(startWorker(wt, request)).build();
 		}
 		catch (Throwable t) {
 			log.error("Problem backing up mail",t);
@@ -237,8 +236,7 @@ public class AdminResource extends AbstractResource {
 		try {
 			File f = new File(System.getProperty("java.io.tmpdir")+File.separator+"bluebox.backup");
 			WorkerThread wt = Inbox.getInstance().restore(f);
-			startWorker(wt, request);
-			return Response.ok("Restoring up mail").build();
+			return Response.ok(startWorker(wt, request)).build();
 		}
 		catch (Throwable t) {
 			log.error("Problem restoring up mail",t);

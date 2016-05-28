@@ -4,62 +4,14 @@
 		 http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
 	version="3.1">
 
-	<display-name>bluebox</display-name>
-
-	<!-- the main UI interface -->
-	<servlet>
-		<description></description>
-		<display-name>bluebox</display-name>
-		<servlet-name>bluebox</servlet-name>
-		<servlet-class>com.bluebox.BlueBoxServlet</servlet-class>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>bluebox</servlet-name>
-		<url-pattern>/rest/*</url-pattern>
-	</servlet-mapping>
-
-	<!-- the RSS feed servlet -->
-	<servlet>
-		<servlet-name>FeedServlet</servlet-name>
-		<servlet-class>com.bluebox.feed.FeedServlet</servlet-class>
-		<init-param>
-			<param-name>default.feed.type</param-name>
-			<param-value>rss_2.0</param-value>
-		</init-param>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>FeedServlet</servlet-name>
-		<url-pattern>/feed/*</url-pattern>
-	</servlet-mapping>
-
-	<!-- the file upload servlets -->
-	<servlet>
-		<servlet-name>ProgressServlet</servlet-name>
-		<servlet-class>com.bluebox.ProgressServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>ProgressServlet</servlet-name>
-		<url-pattern>/progress</url-pattern>
-	</servlet-mapping>
-	<servlet>
-		<servlet-name>UploadServlet</servlet-name>
-		<servlet-class>com.bluebox.UploadServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>UploadServlet</servlet-name>
-		<url-pattern>/upload</url-pattern>
-	</servlet-mapping>
-
 	<!-- specify manager role for the admin pages -->
 	<security-constraint>
 		<web-resource-collection>
 			<web-resource-name>bluebox</web-resource-name>
-			<description> accessible by authenticated users of the bluebox role</description>
+			<description>
+				accessible by authenticated users of the bluebox role
+			</description>
 			<url-pattern>/app/admin.jsp</url-pattern>
-			<url-pattern>/rest/admin/*</url-pattern>
 			<http-method>GET</http-method>
 			<http-method>POST</http-method>
 			<http-method>PUT</http-method>
@@ -77,7 +29,7 @@
 	</login-config>
 
 	<security-role>
-		<description>Only 'bluebox', 'manager' and 'admin' roles are allowed to access the admin interface</description>
+		<description>Only 'bluebox' roles are allowed to access the admin interface</description>
 		<role-name>bluebox</role-name>
 	</security-role>
 

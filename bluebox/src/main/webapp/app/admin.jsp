@@ -93,7 +93,7 @@
 		}
 		
 		function generateEmails() {
-			console.log(dijit.byId("mailCountSlider").value);
+			console.log("Generating "+dijit.byId("mailCountSlider").value+" emails");
 			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/generate/"+dijit.byId("mailCountSlider").value,
 					"Scheduled generation of "+dijit.byId("mailCountSlider").value+" emails");
 		}
@@ -184,6 +184,7 @@
 	}
 
 	function genericGet(url, title) {
+		console.log("Executing "+url);
 		dojo.ready(function() {
 			// The parameters to pass to xhrGet, the url, how to handle it, and the callbacks.
 			var xhrArgs = {

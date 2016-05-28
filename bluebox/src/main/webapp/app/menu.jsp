@@ -189,7 +189,7 @@
 			}
 			
 			function showMessage(msg) {
-				showDelayedMessage(msg,5000);
+				showDelayedMessage(msg,6000);
 			}
 			
 			function showDelayedMessage(msg,delay) {

@@ -22,7 +22,15 @@ import com.bluebox.smtp.storage.BlueboxMessage;
 public class SearchUtils {
 	private static final Logger log = LoggerFactory.getLogger(SearchUtils.class);
 	public enum SearchFields {UID, INBOX, FROM, SUBJECT, RECEIVED, TEXT_BODY, HTML_BODY, SIZE, RECIPIENT, RECIPIENTS, ANY, BODY};
-	public enum SortFields {SORT_RECEIVED, SORT_SIZE};
+	public enum SortFields {
+		SORT_RECEIVED, SORT_SIZE;
+		 public static SortFields getEnum(String value) {
+		        for(SortFields v : values())
+		            if(value.toUpperCase().indexOf(v.name())>=0)
+		            	return v;
+		        return SORT_RECEIVED;
+		    }
+		};
 	public static final int MAX_COMMIT_INTERVAL = 20000; // ensure at least some time between unforced commits
 
 //	public static String substringQuery(String querystr) {

@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.mail.internet.MimeMessage;
 import javax.servlet.ServletContext;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,6 +22,11 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.smtp.storage.StorageFactory;
 
+@WebServlet(
+		displayName="UploadServlet",
+		name="uploadservlet", 
+		urlPatterns={"/upload/*"}
+		)
 public class UploadServlet extends HttpServlet {
 
 	private static final org.slf4j.Logger log = LoggerFactory.getLogger(UploadServlet.class);
