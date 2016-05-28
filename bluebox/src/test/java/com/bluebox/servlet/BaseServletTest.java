@@ -107,6 +107,7 @@ public abstract class BaseServletTest extends TestCase {
 			log.info("Waiting for servlets to stop");
 			Thread.sleep(750);
 		}
+		Inbox.getInstance().stop();
 	}
 
 	public JSONObject getRestJSON(String url) throws IOException, Exception {
