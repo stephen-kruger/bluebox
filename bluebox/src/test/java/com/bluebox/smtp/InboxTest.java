@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import javax.activation.DataHandler;
 import javax.mail.Message;
@@ -28,6 +27,8 @@ import javax.mail.internet.MimeMessage;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.bluebox.BaseTestCase;
 import com.bluebox.Config;
@@ -43,7 +44,7 @@ import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
 public class InboxTest extends BaseTestCase {
-	private static final Logger log = Logger.getAnonymousLogger();
+	private static final Logger log = LoggerFactory.getLogger(InboxTest.class);
 
 	@Test
 	public void testGlobalStats() throws AddressException, MessagingException, IOException, Exception {
@@ -233,7 +234,7 @@ public class InboxTest extends BaseTestCase {
 			log.info(s);
 		}
 		else {
-			log.severe("No data!");
+			log.error("No data!");
 		}
 	}
 
@@ -502,12 +503,11 @@ public class InboxTest extends BaseTestCase {
 	@Test
 	public void testSendSMTP() throws Exception {
 		String subject = "My country is dying";
-		String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
+		// using just \n and this test will fail. No idea why
+		//String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
+		String bodyWithCR = "\r\nKeep these pesky\r\n carriage returns\r\n";
 		TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", null, null, subject, bodyWithCR);
-
 		TestUtils.waitFor(getInbox(),1);
-
-
 		Inbox inbox = getInbox();
 		assertEquals("Sent message was not correctly recieved (Got "+inbox.getMailCount(BlueboxMessage.State.NORMAL)+")",1,inbox.getMailCount(BlueboxMessage.State.NORMAL));
 		List<BlueboxMessage> list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
@@ -515,9 +515,8 @@ public class InboxTest extends BaseTestCase {
 		BlueboxMessage email = (BlueboxMessage) emailIter.next();
 		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertEquals("Subject did not match",subject,mimeMessage.getSubject().toString());
-		// TODO - figure out why this does not work
-		//				assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
-		//		assertEquals("Body did not match",bodyWithCR,email.getText());
+		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
+		assertEquals("Body did not match",bodyWithCR,email.getText());
 	}
 
 	@Test
@@ -559,7 +558,7 @@ public class InboxTest extends BaseTestCase {
 		// add 100 emails
 		TestUtils.addRandomDirect(si, 100);
 		// call expire and trim
-//		inbox.expireThread().run();
+		//		inbox.expireThread().run();
 		inbox.trimThread().run();
 		// check value equals 50
 		assertEquals(50,inbox.getMailCount(State.ANY));
@@ -567,9 +566,9 @@ public class InboxTest extends BaseTestCase {
 
 	@Test
 	public void testBlobLinking() throws Exception {
-//		byte[] b = new byte[12];
-//		ObjectId id = new ObjectId(b);
-//		assertTrue(ObjectId.isValid(new String(b)));
+		//		byte[] b = new byte[12];
+		//		ObjectId id = new ObjectId(b);
+		//		assertTrue(ObjectId.isValid(new String(b)));
 		StorageIf si = StorageFactory.getInstance();
 		si.deleteAll();
 		assertEquals("No blobs expected",0,si.getSpoolCount());
@@ -579,15 +578,15 @@ public class InboxTest extends BaseTestCase {
 		}
 		assertEquals("Spool reuse expected",10,si.getSpoolCount());
 	}
-	
+
 	@Test
 	public void testFromParse() throws Exception {
 		String t = "\"PPAUser.20111201.120331 TestUser\" <no-reply@cckdlswservsvt1.zf.ma.yoyo.com>";
 		JSONArray k = new JSONArray();
 		k.put(t);
 		log.info(k.toString());
-//		JSONArray j = new JSONArray("["+t+"]");
-//		assertEquals("Invalid length",1,j.length());
+		//		JSONArray j = new JSONArray("["+t+"]");
+		//		assertEquals("Invalid length",1,j.length());
 		TestUtils.sendMailSMTP(t,t,t,t, "subject", "body");
 		Inbox inbox = getInbox();
 		TestUtils.waitFor(inbox, 3);
@@ -599,7 +598,7 @@ public class InboxTest extends BaseTestCase {
 		new File(dir.getCanonicalPath()+File.separator+"bluebox.zip").delete();
 		assertEquals("Bckup or restore failed",3,inbox.getMailCount(BlueboxMessage.State.ANY));
 	}
-	
+
 	@Test
 	public void testQuotedRecipient() throws Exception {
 		assertEquals("Should not be any mail yet",0,getInbox().getMailCount(BlueboxMessage.State.ANY));

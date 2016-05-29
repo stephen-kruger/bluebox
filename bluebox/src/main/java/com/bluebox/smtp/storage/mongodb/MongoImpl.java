@@ -55,11 +55,10 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	private static final String TABLE_NAME = "inbox"; // name of collection AND blob database
 	private static final String BLOB_DB_NAME = "blob";
 	private static final String PROPS_DB_NAME = "properties";
-	//	private static final String RAW_DB_NAME = "inbox";
 	private MongoClient mongoClient;
 	private MongoDatabase db;
 	private MongoCollection<Document> errorFS, propsFS, mailFS;
-	private GridFS blobFS;//, rawFS;
+	private GridFS blobFS;
 
 	@SuppressWarnings("deprecation")
 	@Override
@@ -73,7 +72,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		propsFS = db.getCollection(PROPS_DB_NAME);
 		mongoClient.getDatabase("");
 		blobFS = new GridFS(mongoClient.getDB(BLOB_DB_NAME),BLOB_DB_NAME);
-		//		rawFS = new GridFS(mongoClient.getDB(RAW_DB_NAME), BlueboxMessage.RAW);
 
 		log.debug("Started MongoDB connection");
 
@@ -118,7 +116,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	@Override
 	public void store(JSONObject props, String spooledUid) throws Exception {
 		props.put(BlueboxMessage.RAWUID, spooledUid);
-		//		store(props,getSpooledInputStream(spooledUid));
 		try {
 			Document bson = Document.parse( props.toString() );
 			// little hack for int getting converted to longs when going from JSON to BSON
@@ -137,25 +134,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
 	}
 
-	//	@Override
-	//	public void store(JSONObject props, InputStream content) throws Exception {
-	//		try {
-	//			Document bson = Document.parse( props.toString() );
-	//			// little hack for int getting converted to longs when going from JSON to BSON
-	//			bson.put(BlueboxMessage.SIZE, Long.parseLong(bson.get(BlueboxMessage.SIZE).toString()));
-	//			Date d = Utils.getUTCDate(getUTCTime(),props.getLong(StorageIf.Props.Received.name()));
-	//			bson.put(StorageIf.Props.Received.name(), d);
-	////			GridFSInputFile gfsFile = rawFS.createFile(content,true);
-	////			gfsFile.setFilename(props.getString(StorageIf.Props.Uid.name()));
-	////			gfsFile.save();
-	//			mailFS.insertOne(bson);
-	//		}
-	//		catch (Throwable t) {
-	//			log.error("Error storing message :{}",t.getMessage());
-	//			t.printStackTrace();
-	//		}
-	//	}
-
 	@Override
 	public BlueboxMessage retrieve(String uid) throws Exception {
 		FindIterable<Document> fi = mailFS.find(Filters.eq(StorageIf.Props.Uid.name(), uid));
@@ -168,21 +146,10 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		return mailFS.count(Filters.eq(StorageIf.Props.Uid.name(), uid))>0;
 	}
 
-	//	@Override
-	//	public void deleteAll(InboxAddress inbox) throws Exception {
-	//		mailFS.deleteMany(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
-	//	}
-
 	@Override
 	public void deleteAll() throws Exception {
 		mailFS.drop();
-		//		for (DBObject x : blobFS.getFileList()) {
-		//			blobFS.remove(x);
-		//		}
 		blobFS.getDB().dropDatabase();
-		//		rawFS.getDB().dropDatabase();
-		// TODO will be fixed in Mongo 3.1
-		//		rawFS = new GridFS(mongoClient.getDB(RAW_DB_NAME), BlueboxMessage.RAW);
 	}
 
 	@Override

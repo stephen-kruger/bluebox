@@ -36,7 +36,6 @@ public class InboxAddressTest extends TestCase {
 	public void testNoDomain() throws AddressException {
 		InboxAddress a = new InboxAddress("steve");
 		assertTrue("invalid email address",a.isValidAddress());
-//		assertEquals("Expected clean email address","Steve_Johnson@MA.XXX",a.getAddress());
 	}
 	
 	@Test

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -33,12 +34,14 @@ public class InlineResource extends AbstractResource {
 	}
 
 	@GET
-	@Path("get/{uid}/{name}")
+	@Path("get/{uid}/{name:.*}")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.WILDCARD)
-	public Response detail(
+	public Response get(
 			@Context HttpServletRequest request,
 			@PathParam(UID) String uid,
 			@PathParam(NAME) String name) throws IOException {
+		log.info("Serving inline resource uid={} name={}",uid,name);
 		try {
 			BlueboxMessage message = Inbox.getInstance().retrieve(uid);
 			ResponseBuilder response = Response.ok();

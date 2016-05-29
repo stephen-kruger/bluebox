@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.smtp.BlueBoxSMTPServer;
 import com.bluebox.smtp.BlueboxMessageHandlerFactory;
 import com.bluebox.smtp.Inbox;
-import com.bluebox.smtp.storage.StorageFactory;
 
 @WebServlet(
 		displayName="BlueBox",
@@ -40,6 +39,7 @@ public class BlueBoxServlet extends HttpServlet {
 	public void destroy() {
 		super.destroy();
 		log.debug("Stopping servlet");
+		
 		// shut down any worker threads
 		WorkerThread.stopWorkers();
 
@@ -48,13 +48,6 @@ public class BlueBoxServlet extends HttpServlet {
 
 		// shut down the inbox
 		Inbox.getInstance().stop();
-
-		try {
-			StorageFactory.getInstance().stop();
-		} 
-		catch (Exception e) {
-			e.printStackTrace();
-		}
 
 		log.info("Stopped");
 	}

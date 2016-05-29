@@ -84,7 +84,7 @@ public class RestTest extends BaseServletTest {
 
 	@Test
 	public void testInlineHandler() throws Exception {
-		// TODO - figure out why this sends a nasty exception
+		// This causes a nasty exception trace, but is limited to the Jetty server used for unit tests.
 		clearMail();
 		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"attachments.eml");
 		Utils.uploadEML(Inbox.getInstance(),emlStream);
@@ -94,12 +94,18 @@ public class RestTest extends BaseServletTest {
 		List<BlueboxMessage> messages = Inbox.getInstance().listInbox(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true);
 		BlueboxMessage msg = messages.get(0);
 
-		ClientResponse response = getResponse("/jaxrs",InlineResource.PATH+"/get/"+msg.getIdentifier()+"/DSC_3968.JPG",MediaType.APPLICATION_FORM_URLENCODED,"image/jpeg");
+		ClientResponse response = getJaxResponse(
+				InlineResource.PATH+"/get/"+msg.getIdentifier()+"/DSC_3968.JPG",
+				MediaType.APPLICATION_FORM_URLENCODED,
+				"image/jpeg");
 		response.consumeContent();
 		assertEquals(200,response.getStatusCode());
 
-		// now retrieve the attachment by uid
-		response = getResponse("/jaxrs",InlineResource.PATH+"/get/"+msg.getIdentifier()+"/ii_hxqkskb21_147462ce25a92ebf",MediaType.APPLICATION_FORM_URLENCODED,MediaType.MEDIA_TYPE_WILDCARD);
+//		// now retrieve the attachment by uid
+		response = getJaxResponse(
+				InlineResource.PATH+"/get/"+msg.getIdentifier()+"/ii_hxqkskb21_147462ce25a92ebf",
+				MediaType.APPLICATION_FORM_URLENCODED,
+				MediaType.MEDIA_TYPE_WILDCARD);
 		response.consumeContent();
 		assertEquals(200,response.getStatusCode());
 	}

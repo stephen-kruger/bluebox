@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.bluebox.BlueBoxServlet;
 import com.bluebox.feed.FeedServlet;
+import com.bluebox.rest.RestApi;
 import com.bluebox.smtp.Inbox;
 
 import junit.framework.TestCase;
@@ -148,6 +149,10 @@ public abstract class BaseServletTest extends TestCase {
 		return jo;
 	}
 
+	public ClientResponse getJaxResponse(String url, String acceptType, String mediaType) {
+		return getResponse(RestApi.APPLICATION_PATH,url,acceptType, mediaType);
+	}
+	
 	public ClientResponse getResponse(String base, String url) {
 		return getResponse(base,url,MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_JSON);
 	}
@@ -158,6 +163,7 @@ public abstract class BaseServletTest extends TestCase {
 		Resource resource = client.resource(baseURL+base+url);
 		log.info("Calling endpoint {}",baseURL+base+url);
 		ClientResponse response = resource.contentType(acceptType).accept(mediaType).get();
+		response.consumeContent();
 		assertEquals(200,response.getStatusCode());
 		return response;
 	}

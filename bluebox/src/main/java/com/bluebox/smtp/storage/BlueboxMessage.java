@@ -163,7 +163,7 @@ public class BlueboxMessage {
 			log.error("Problem writing attachment :{}",se.getMessage());
 		}		
 	}
-	
+
 	@Deprecated
 	public void writeAttachment(String index, HttpServletResponse resp) throws SQLException, IOException, MessagingException {
 		MimeMessage bbmm = getBlueBoxMimeMessage();
@@ -195,7 +195,7 @@ public class BlueboxMessage {
 			log.warn("Problem writing inline attachment :{}",se.getMessage());
 		}
 	}
-	
+
 	public void writeInlineAttachment(String cid, ResponseBuilder response) throws SQLException, IOException, MessagingException {
 		MimeMessage bbmm = getBlueBoxMimeMessage();
 		try {
@@ -217,11 +217,11 @@ public class BlueboxMessage {
 			else {
 				log.debug("CID found by id {}",cid);
 			}
-			response.type(ds.getContentType());
-//			response.entity(ds.getInputStream());		
+			if (ds.getContentType()!=null)
+				response.type(ds.getContentType());
 			response.entity(ds);
 		}
-		catch (Exception se) {
+		catch (Throwable se) {
 			log.warn("Problem writing inline attachment :{}",se.getMessage());
 		}
 	}
@@ -236,17 +236,12 @@ public class BlueboxMessage {
 		}
 		catch (Throwable t) {
 			log.error(t.getMessage());
-			//			t.printStackTrace();
 			resp.sendError(HttpStatus.SC_NOT_FOUND, t.getMessage());
 		}
 		finally {
 			resp.flushBuffer();
 		}
 	}
-
-	//	public JSONObject toJSON() throws Exception {
-	//		return toJSON(Locale.getDefault());
-	//	}
 
 	public JSONObject toJSON() throws Exception {
 		JSONObject json;

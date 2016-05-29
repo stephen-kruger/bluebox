@@ -558,7 +558,7 @@ public class Inbox implements SimpleMessageListener {
 
 	public boolean isToBlackListed(InboxAddress recipientAddress) {
 		for (String badDomain : getToBlacklist()) {
-			log.info("{}<<<---- Comparing toBlackList---->>>{}",badDomain,recipientAddress);
+			log.debug("{}<<<---- Comparing toBlackList---->>>{}",badDomain,recipientAddress);
 			if (recipientAddress.getDomain().endsWith(badDomain)) {
 				log.warn("Rejecting mail to {} due to blacklisted TO:",recipientAddress,badDomain);
 				return true;
