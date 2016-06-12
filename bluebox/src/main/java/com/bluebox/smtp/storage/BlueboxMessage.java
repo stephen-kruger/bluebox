@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import javax.activation.DataHandler;
 import javax.activation.DataSource;
 import javax.mail.Address;
 import javax.mail.MessagingException;
@@ -19,7 +20,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.mail.util.MimeMessageParser;
+//import org.apache.commons.mail.util.MimeMessageParser;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -59,7 +60,7 @@ public class BlueboxMessage {
 	private static final Logger log = LoggerFactory.getLogger(BlueboxMessage.class);
 	private JSONObject properties = new JSONObject();
 	private MimeMessage mmw;
-	private MimeMessageParser parser;
+	//	private MimeMessageParser parser;
 
 	public BlueboxMessage(String id) {
 		setProperty(UID,id);
@@ -153,8 +154,7 @@ public class BlueboxMessage {
 	public void writeAttachment(String index, ResponseBuilder response) throws SQLException, IOException, MessagingException {
 		MimeMessage bbmm = getBlueBoxMimeMessage();
 		try {
-			MimeMessageParser parser = new MimeMessageParser(bbmm);
-			parser.parse();
+			BlueBoxParser parser = new BlueBoxParser(bbmm);
 			DataSource ds = parser.getAttachmentList().get(Integer.parseInt(index));
 			response.type(ds.getContentType());
 			response.entity(ds);
@@ -168,8 +168,7 @@ public class BlueboxMessage {
 	public void writeAttachment(String index, HttpServletResponse resp) throws SQLException, IOException, MessagingException {
 		MimeMessage bbmm = getBlueBoxMimeMessage();
 		try {
-			MimeMessageParser parser = new MimeMessageParser(bbmm);
-			parser.parse();
+			BlueBoxParser parser = new BlueBoxParser(bbmm);
 			DataSource ds = parser.getAttachmentList().get(Integer.parseInt(index));
 			writeDataSource(ds,resp);
 		}
@@ -182,14 +181,16 @@ public class BlueboxMessage {
 	public void writeInlineAttachment(String cid, HttpServletResponse resp) throws SQLException, IOException, MessagingException {
 		MimeMessage bbmm = getBlueBoxMimeMessage();
 		try {
-			MimeMessageParser parser = new MimeMessageParser(bbmm);
-			parser.parse();
-			DataSource ds = parser.findAttachmentByCid(cid);
-			if (ds==null) {
+			BlueBoxParser parser = new BlueBoxParser(bbmm);
+			DataHandler dh = parser.findAttachmentByCid(cid);
+			if (dh==null) {
 				// try by attachment name
-				ds = parser.findAttachmentByName(cid);
+				DataHandler ds = parser.findAttachmentByName(cid);
+				writeDataSource(ds,resp);
 			}
-			writeDataSource(ds,resp);
+			else {
+				writeDataSource(dh,resp);
+			}
 		}
 		catch (Exception se) {
 			log.warn("Problem writing inline attachment :{}",se.getMessage());
@@ -199,34 +200,61 @@ public class BlueboxMessage {
 	public void writeInlineAttachment(String cid, ResponseBuilder response) throws SQLException, IOException, MessagingException {
 		MimeMessage bbmm = getBlueBoxMimeMessage();
 		try {
-			MimeMessageParser parser = new MimeMessageParser(bbmm);
-			parser.parse();
-			DataSource ds = parser.findAttachmentByCid(cid);
-			if (ds==null) {
-				log.debug("Cid not found {}, trying by name",cid);
-				// try by attachment name
-				ds = parser.findAttachmentByName(cid);
-				if (ds==null) {
-					log.debug("Cid not found {}",cid);
+			//			MimeMessageParser parser = new MimeMessageParser(bbmm);
+			//			parser.parse();
+			//			DataSource ds = parser.findAttachmentByCid(cid);
+			//			if (ds==null) {
+			//				log.debug("Cid not found {}, trying by name",cid);
+			//				// try by attachment name
+			//				ds = parser.findAttachmentByName(cid);
+			//				if (ds==null) {
+			//					log.debug("Cid not found {}",cid);
+			//					throw new Exception("No attachment found with cid "+cid);
+			//				}
+			//				else {
+			//					log.debug("CID found by name {}",cid);
+			//				}
+			//			}
+			//			else {
+			//				log.debug("CID found by id {}",cid);
+			//			}
+			//			if (ds.getContentType()!=null)
+			//				response.type(ds.getContentType());
+			//			response.entity(ds);
+			BlueBoxParser bbp = new BlueBoxParser(bbmm);
+			DataHandler attachment = bbp.findAttachmentByCid(cid);
+			if (attachment==null) {
+				attachment = bbp.findAttachmentByName(cid);
+				if (attachment==null) {
 					throw new Exception("No attachment found with cid "+cid);
 				}
-				else {
-					log.debug("CID found by name {}",cid);
-				}
 			}
-			else {
-				log.debug("CID found by id {}",cid);
-			}
-			if (ds.getContentType()!=null)
-				response.type(ds.getContentType());
-			response.entity(ds);
+			response.type(attachment.getContentType());
+			response.entity(attachment.getContent());
 		}
 		catch (Throwable se) {
-			log.warn("Problem writing inline attachment :{}",se.getMessage());
+			log.warn("Problem writing inline attachment",se);
 		}
 	}
 
 	private void writeDataSource(DataSource ds, HttpServletResponse resp) throws IOException {
+		try {
+			if (ds==null)
+				throw new Exception("No attachment found");
+			log.debug("Setting mime type to {}",ds.getContentType());
+			resp.setContentType(ds.getContentType());
+			IOUtils.copy(ds.getInputStream(),resp.getOutputStream());		
+		}
+		catch (Throwable t) {
+			log.error(t.getMessage());
+			resp.sendError(HttpStatus.SC_NOT_FOUND, t.getMessage());
+		}
+		finally {
+			resp.flushBuffer();
+		}
+	}
+
+	private void writeDataSource(DataHandler ds, HttpServletResponse resp) throws IOException {
 		try {
 			if (ds==null)
 				throw new Exception("No attachment found");
@@ -267,7 +295,9 @@ public class BlueboxMessage {
 
 	public static String convertCidLinks(HttpServletRequest request, String uid, String htmlString) {
 		try {
-			return htmlString.replaceAll("cid:", Utils.getServletBase(request)+InlineResource.PATH+"/get/"+uid);
+			String link = Utils.getServletBase(request)+InlineResource.PATH+"/get/"+uid+"/";
+			log.debug("Writing link {}",link);
+			return htmlString.replaceAll("cid:", link);
 		} 
 		catch (Throwable e) {
 			e.printStackTrace();
@@ -354,15 +384,16 @@ public class BlueboxMessage {
 		return getProperty(RAWUID);
 	}
 
-	protected MimeMessageParser getParser() throws Exception {
-		if (parser==null) {
-			// javax.mail.internet.MimeMultipart cannot be cast to javax.mail.Multipart
-			//			javax.mail.internet.MimeMultipart a;
-			//			javax.mail.Multipart b;
-			MimeMessageParser p = new MimeMessageParser(getBlueBoxMimeMessage());
-			parser = p.parse();
-		}
-		return parser;
+	protected BlueBoxParser getParser() throws Exception {
+		//		if (parser==null) {
+		//			// javax.mail.internet.MimeMultipart cannot be cast to javax.mail.Multipart
+		//			//			javax.mail.internet.MimeMultipart a;
+		//			//			javax.mail.Multipart b;
+		//			MimeMessageParser p = new MimeMessageParser(getBlueBoxMimeMessage());
+		//			// javax.mail.internet.MimeMultipart cannot be cast to javax.mail.Multipart
+		//			parser = p.parse();
+		//		}
+		return new BlueBoxParser(this.getBlueBoxMimeMessage());
 	}
 
 	public String getText() {

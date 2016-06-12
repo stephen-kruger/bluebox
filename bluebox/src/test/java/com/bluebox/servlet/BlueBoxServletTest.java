@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import javax.mail.internet.InternetAddress;
 
-import org.apache.commons.mail.EmailException;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,18 +26,17 @@ public class BlueBoxServletTest extends BaseServletTest {
 
 	@Test
 	public void testBlacklistTo() {
+		Inbox inbox = Inbox.getInstance();
+
 		try {
 			TestUtils.sendMailSMTP(new InternetAddress("test@here.com"), new InternetAddress("steve@blackdomain.com"), null, null, "subject", "body");
 			fail("Mail to not blacklisted");
 		} 
-		catch (EmailException e) {
-			log.info("Got expected exception");
-		}
 		catch (Exception e) {
-			fail("Mail to not blacklisted");
+//			fail("Mail to not blacklisted");
+			log.info("Got expected exception");
 		} 
 
-		Inbox inbox = Inbox.getInstance();
 		inbox.addToBlacklist("qwerty.com");
 
 		try {
@@ -46,11 +44,8 @@ public class BlueBoxServletTest extends BaseServletTest {
 
 			fail("Mail to not blacklisted");
 		} 
-		catch (EmailException e) {
-			log.info("Got expected exception");
-		}
 		catch (Exception e) {
-			fail("Mail to not blacklisted");
+			log.info("Got expected exception");
 		}
 		inbox.stop();
 	}

@@ -41,7 +41,7 @@ public class InlineResource extends AbstractResource {
 			@Context HttpServletRequest request,
 			@PathParam(UID) String uid,
 			@PathParam(NAME) String name) throws IOException {
-		log.info("Serving inline resource uid={} name={}",uid,name);
+		log.debug("Serving inline resource uid={} name={}",uid,name);
 		try {
 			BlueboxMessage message = Inbox.getInstance().retrieve(uid);
 			ResponseBuilder response = Response.ok();

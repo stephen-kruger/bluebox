@@ -20,7 +20,7 @@ public abstract class WorkerThread implements Runnable {
 	public WorkerThread(String id) throws Exception {
 		if (workers.containsKey(id)) {
 			if (workers.get(id).getProgress()<100)
-				throw new Exception("Task already started");
+				throw new Exception("Task already started ("+workers.get(id).getProgress()+"%)");
 			else {
 				log.debug("Removing stale task");
 				workers.remove(id);

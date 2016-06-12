@@ -1,10 +1,13 @@
 package com.bluebox;
 
+import java.io.IOException;
 import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.time.DurationFormatUtils;
 import org.slf4j.Logger;
@@ -34,6 +37,14 @@ public class BlueBoxServlet extends HttpServlet {
 		smtpServer = new BlueBoxSMTPServer(new BlueboxMessageHandlerFactory(Inbox.getInstance()));
 		smtpServer.start();
 	}
+
+	
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		log.info("BlueBoxServlet override {}",req.getRequestURI());
+		resp.sendRedirect("/app/index.jsp");
+	}
+
 
 	@Override
 	public void destroy() {

@@ -28,9 +28,9 @@ public class TestFolderResource extends BaseServletTest {
 //		uri = JSONFolderHandler.JSON_ROOT+"/bluemail%20team%20%3Cbluemail@us.xxx.com%3E";
 //		assertEquals("Email was not properly extracted","bluemail@us.xxx.com",JSONFolderHandler.extractEmail(JSONFolderHandler.extractFragment(uri,JSONFolderHandler.JSON_ROOT,0)));
 //
-//		uri = JSONFolderHandler.JSON_ROOT+"/"+URLEncoder.encode("Stephen_Johnson/Iceland/XXX",Utils.UTF8);
+//		uri = JSONFolderHandler.JSON_ROOT+"/"+URLEncoder.encode("Stephen_Johnson/Iceland/MyDomain",Utils.UTF8);
 //
-//		assertEquals("Email was not properly extracted","Stephen_Johnson@Iceland.XXX",JSONFolderHandler.extractEmail(JSONFolderHandler.extractFragment(uri,JSONFolderHandler.JSON_ROOT,0)));
+//		assertEquals("Email was not properly extracted","Stephen_Johnson@Iceland.MyDomain",JSONFolderHandler.extractEmail(JSONFolderHandler.extractFragment(uri,JSONFolderHandler.JSON_ROOT,0)));
 //
 //		uri = "/bluebox/"+JSONFolderHandler.JSON_ROOT+"/Sally%20Johnson%20%3Csally.johnson@somewhere.com%3E/";	
 //		assertEquals("Email was not properly extracted","sally.johnson@somewhere.com",JSONFolderHandler.extractEmail(JSONFolderHandler.extractFragment(uri,JSONFolderHandler.JSON_ROOT,0)));

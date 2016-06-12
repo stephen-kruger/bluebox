@@ -662,7 +662,13 @@ public class Utils {
 		String uri = request.getScheme() + "://" +
 				request.getServerName() + 
 				("http".equals(request.getScheme()) && request.getServerPort() == 80 || "https".equals(request.getScheme()) && request.getServerPort() == 443 ? "" : ":" + request.getServerPort() ) +
-				"/bluebox";
+				request.getContextPath()+"/jaxrs";
+//		log.info("1:{}",request.getPathTranslated());
+//		log.info("2:{}",request.getServletPath());
+//		log.info("3:{}",request.getRequestURL());
+//		log.info("4:{}",request.getPathInfo());
+//		log.info("5:{}",request.getPathTranslated());
+//		log.info("6:{}",request.getRequestURI());
 		return uri;
 	}
 

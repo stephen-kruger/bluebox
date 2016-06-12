@@ -63,7 +63,6 @@ public class Inbox implements SimpleMessageListener {
 	public static final String ORPHAN_WORKER = "orphan";
 	private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
 	private BlueboxMessageHandlerFactory blueboxMessageHandlerFactory;
-	//	private Thread migrationThread;
 
 	private static Timer timer = null;
 	private static TimerTask timerTask = null;

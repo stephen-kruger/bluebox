@@ -522,7 +522,7 @@ public class InboxTest extends BaseTestCase {
 	@Test
 	public void testSendHugeSMTP() throws Exception {
 		String subject = "My country is dying";
-		String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
+		String bodyWithCR = "\r\nKeep these pesky\r\n carriage returns\r\n";
 		List<File> attachments = new ArrayList<File>();
 		File attachment = new File("./src/test/resources/test-data/inlineattachments.eml");
 		// figure out how many attachments to add taking into account encoding etc
@@ -531,7 +531,7 @@ public class InboxTest extends BaseTestCase {
 		log.info("Sending mail with size="+(count*attachment.length()));
 		for (int i = 0; i < count; i++)
 			attachments.add(attachment);
-		TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", null, null, subject, bodyWithCR, attachments);
+		TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", null, null, subject, bodyWithCR, "text/plain", attachments);
 		log.info("Waiting for delivery");
 		TestUtils.waitFor(getInbox(),1);
 
@@ -543,9 +543,8 @@ public class InboxTest extends BaseTestCase {
 		BlueboxMessage email = (BlueboxMessage) emailIter.next();
 		MimeMessage mimeMessage = email.getBlueBoxMimeMessage();
 		assertEquals("Subject did not match",subject,mimeMessage.getSubject().toString());
-		// TODO - figure out why this does not work
-		//		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
-		//		assertEquals("Body did not match",bodyWithCR,email.getText());
+		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
+		assertEquals("Body did not match",bodyWithCR,email.getText());
 	}
 
 	@Test

@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.activation.DataSource;
+import javax.activation.DataHandler;
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
@@ -16,13 +16,10 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import junit.framework.TestCase;
-
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.util.MimeMessageParser;
-import org.apache.commons.mail.util.MimeMessageUtils;
-
 import com.bluebox.Utils;
+import com.bluebox.smtp.storage.BlueBoxParser;
+
+import junit.framework.TestCase;
 
 public class MessageTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -35,7 +32,7 @@ public class MessageTest extends TestCase {
 	protected void tearDown() throws Exception {
 	}
 
-	public void testProperties() throws AddressException, MessagingException, IOException, EmailException {
+	public void testProperties() throws AddressException, MessagingException, IOException {
 		log.info("Doing nothing");
 		MimeMessage message = Utils.createMessage(null,
 				Utils.getRandomAddress(), 
@@ -54,7 +51,7 @@ public class MessageTest extends TestCase {
 		assertTrue("Header was missing values",message.getHeader("name").length==3);
 	}
 
-	public void testBlueBoxMessage() throws AddressException, MessagingException, IOException, EmailException {
+	public void testBlueBoxMessage() throws AddressException, MessagingException, IOException {
 		String bodyStr = "\nThis is a body\n with line feeds";
 		String subjStr = "This is the subject";
 		MimeMessage message = Utils.createMessage(null,
@@ -78,8 +75,7 @@ public class MessageTest extends TestCase {
 	public void testAttachmentParsing() throws Exception {
 		InputStream is = new FileInputStream(new File("src/test/resources/test-data/m0017.txt"));
 		MimeMessage message = Utils.loadEML(is);
-		MimeMessageParser p = new MimeMessageParser(message);
-		p.parse();
+		BlueBoxParser p = new BlueBoxParser(message);
 		assertNotNull("Attachment not loaded correctly",p.findAttachmentByCid("938014623@17052000-0f9b"));
 	}
 
@@ -115,12 +111,11 @@ public class MessageTest extends TestCase {
 		InputStream is = new FileInputStream(new File("src/test/resources/test-data/bodybreaker.eml"));
 		MimeMessage message =Utils.loadEML(is);
 		is.close();
-		MimeMessageParser parser = new MimeMessageParser(message);
-		parser.parse();
+		BlueBoxParser parser = new BlueBoxParser(message);
 		log.info(message.getSubject());
-		log.info(parser.getSubject());
-//		log.info(parser.getPlainContent());
-//		log.info(parser.getHtmlContent());
+//		log.info(parser.getSubject());
+		log.info(parser.getPlainContent());
+		log.info(parser.getHtmlContent());
 	}
 
 	public List<String> listCids(MimeMessage mm) throws MessagingException {
@@ -140,11 +135,12 @@ public class MessageTest extends TestCase {
 	}
 
 	public void testCommonsAttachmentParsing() throws Exception {
-		MimeMessage mm = MimeMessageUtils.createMimeMessage(null, new File("src/test/resources/test-data/attachments.eml"));
-		MimeMessageParser parser = new MimeMessageParser(mm);
-		parser.parse();
-		for (String cid : parser.getContentIds()) {
-			DataSource ds = parser.findAttachmentByCid(cid);
+		InputStream is = new FileInputStream(new File("src/test/resources/test-data/attachments.eml"));
+		MimeMessage message =Utils.loadEML(is);
+		is.close();
+		BlueBoxParser parser = new BlueBoxParser(message);
+		for (String cid : parser.getInlineAttachments().keySet()) {
+			DataHandler ds = parser.findAttachmentByCid(cid);
 			assertNotNull(ds);
 			log.info(ds.getName()+"="+cid);	
 		}
@@ -165,8 +161,7 @@ public class MessageTest extends TestCase {
 		InputStream is = new FileInputStream(new File("src/test/resources/test-data/nobodyshown.eml"));
 		MimeMessage message =Utils.loadEML(is);
 		is.close();
-		MimeMessageParser parser = new MimeMessageParser(message);
-		parser.parse();
+		BlueBoxParser parser = new BlueBoxParser(message);
 		log.info(parser.getPlainContent());
 	}
 }
