@@ -4,25 +4,70 @@ Many teams develop software that rely heavily on sending emails (for sign-up, so
 Bluebox is a fully functional promiscuous, non-forwarding SMTP server and mailbox web interface to allow receiving of arbitrary emails for use in testing and development environments. Inspired by the very useful Mailinator service. Provides API for scripted use by test automation.
 
 #Installing
-##Via RPM
-You can set up RPM based installation by adding the following to bluebox.repo in your /etc/yum.repos.d directory :
-```
-[bluebox]
-name=Bluebox Repository
-baseurl=https://stephen-kruger.github.io/bluebox-repo/yum/noarch
-enabled=1
-gpgcheck=0
-```
-The simply run "sudo yum install bluebox"
+##Installing in Websphere Liberty
+Download and install the latest Liberty profile from https://developer.ibm.com/assets/wasdev/
 
-##Manually using war file
-Download the war file from here :https://github.com/stephen-kruger/bluebox/releases.
+Create a Liberty profile :
+```
+<wlp_root>/wlp/bin/server create bluebox
+```
 
-Drop the war file into your favourite application server.
-This one requires no special setup, and uses an embedded Derby database.
-If you want you can edit bluebox.properties and select the MongoDB driver instead - especially useful for larger mailboxes.
-You will require Java 7.
-access to the administration page requires user/password for role "tomcat", so edit your tomcat-users.conf file or whatever your app server uses
+Then navigate to the newly created profile (generally <wlp_root>/wlp/usr/servers/bluebox) and edit the server.xml.
+An example is given here for reference :
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<server description="bluebox server">
+
+    <!-- Enable features -->
+    <featureManager>
+        <feature>webProfile-7.0</feature>
+         <feature>localConnector-1.0</feature>
+        <feature>ssl-1.0</feature>
+        <feature>jaxrs-2.0</feature>
+        <feature>jaxws-2.2</feature>
+        <feature>jaxb-2.2</feature>
+        <feature>jsp-2.3</feature>
+        <feature>servlet-3.1</feature>
+        <feature>jaxrsClient-2.0</feature>
+        <feature>wsSecurity-1.1</feature>
+        <feature>appSecurity-2.0</feature>
+    </featureManager>
+
+        <basicRegistry id="defaultRegistry">
+                <group id="bluebox" name="bluebox">
+                        <member id="bluebox" name="bluebox"/>
+                </group>
+                <user id="bluebox" name="bluebox" password="changemeplease"/>
+        </basicRegistry>
+
+
+    <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
+    <httpEndpoint id="defaultHttpEndpoint"
+                host="*"
+                  httpPort="8080"
+                  httpsPort="8443" />
+
+    <!-- Automatically expand WAR files and EAR files -->
+    <applicationManager autoExpand="true"/>
+        <classloader delegation="parentLast" />
+    <webApplication id="bluebox" location="bluebox.war" context-root="/"
+        name="bluebox">
+        <application-bnd>
+                <classloader delegation="parentLast" />
+                <security-role name="bluebox" id="bluebox">
+                        <user name="bluebox" id="bluebox" access-id="bluebox"></user>
+                </security-role>
+        </application-bnd>
+    </webApplication>
+</server>
+```
+
+Download the war file from here :https://github.com/stephen-kruger/bluebox/releases and copy it to the <wlp_root>/wlp/user/servers/bluebox/apps directory
+
+You can then start the server by running the command <wlp_root>/wlp/bin/server start bluebox
+
+##Database options
+On startup, if Bluebox detects a running instance of MongoDB, it will automatically set up and use that. Otherwise it will use an embedded Derby database which is a little less performant than MongoDB.
 
 #FAQ
 ##How do I use it?
