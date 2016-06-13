@@ -25,6 +25,7 @@ public class RestApi extends Application {
 	 */
 	public RestApi() {
 		log.info("Instantiating REST api");
+		javax.xml.bind.annotation.XmlRootElement xxx;
 	}
 
 	@Override

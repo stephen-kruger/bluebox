@@ -39,39 +39,18 @@
 						<li style="list-style-type:none;">Please see the <a href="help.jsp">help and FAQ document</a></li>
 					</ol>
 					<h2>Installation</h2>
-					<h3>Using Yum for RPM based installation</h3>
-					Simply add the following to your /etc/yum.repos.d/bluebox.repo :<br/>
-					<br/>
+					For installation instructions please consult the <a href="https://github.com/stephen-kruger/bluebox">web</a> :
 					<code style="width:200px">
-					[bluebox]<br/>
-					name=Bluebox Repository<br/>
-					baseurl=https://stephen-kruger.github.io/bluebox-repo/yum/noarch<br/>
-					enabled=1<br/>
-					gpgcheck=0
+					https://github.com/stephen-kruger/bluebox
 					</code>
-					<br/><br/>
-					You can then install using command <i>sudo yum install bluebox</i>
-					<h3>Manually installing via war file</h3>
-					<ol>
-						<li style="list-style-type:none;">Download the web application archive from <a href="https://github.com/stephen-kruger/bluebox-repo/tree/gh-pages/yum/noarch">here</a> and drop into your application container. Well actually, it's a list of RPM's, but you can unzip them and get to the war file inside.</li>
-						<li style="list-style-type:none;">Optionally, install and start <a href="http://www.mongodb.org/">MongoDB</a>. Leaving out this step defaults to instanciating a <a href="http://db.apache.org/derby/">Derby</a> embedded instance.</li>
-						<li style="list-style-type:none;">Set up an IP table mapping to route SMTP port requests to the web app :<i>iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500</i></li>
-					</ol>
-					<h2>Upgrading</h2>
-					<ol>
-						<li style="list-style-type:none;">From the administration page, backup the mail content</li>
-						<li style="list-style-type:none;">Download the web application archive from <a href="https://drive.google.com/folderview?id=0B_idaoMmuNnyYW9FS1paTEhuSXc&usp=sharing=sharing">here</a> and drop into your application container</li>
-						<li style="list-style-type:none;">Restart the application server</li>
-						<li style="list-style-type:none;">From the administration page, rebuild search indexes</li>
-						<li style="list-style-type:none;">From the administration page, restore the mail content</li>
-					</ol>
+					
 					<h2>REST API</h2>
 					<ol>
 						<li style="list-style-type:none;">For direct integration with test automation, the following REST calls may be used to reduce dependancy on UI
 								<h3>List user emails</h3>
 								This method lists all the emails for a particular email address, of the specified state<br/>
 								<br/>
-								http://[hostname]/bluebox/jaxrs/inbox/[email]/[0=ANY, 1=NORMAL, 2=DELETED]/
+								http://[hostname]/[bluebox context]/jaxrs/inbox/list/[email]/[0=ANY, 1=NORMAL, 2=DELETED]/
 								<br/><br/>
 								<pre class="json">
 								<code class="json">
@@ -90,7 +69,7 @@
 								<h3>List email detail</h3>
 								This method lists the details of a particular email message specified by the UID<br/>
 								<br/>
-								http://[hostname]/bluebox/jaxrs/<%=MessageResource.PATH %>/detail/[Uid]
+								http://[hostname]/[bluebox context]/jaxrs/<%=MessageResource.PATH %>/detail/[Uid]
 								<br/><br/>
 								<pre class="json">
 								<code class="json">

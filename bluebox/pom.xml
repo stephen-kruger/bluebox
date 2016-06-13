@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.5.0</version>
+	<version>4.5.1</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
 	<properties>
@@ -19,11 +19,6 @@
 		<mongo_version>3.2.2</mongo_version>
 		<apache.wink>1.4</apache.wink>
 		<jetty_version>9.3.10.M0</jetty_version>
-		<tomcat.webapp.dir>/var/lib/tomcat6/webapps</tomcat.webapp.dir>
-		<tomcat.script.dir>/etc/init.d</tomcat.script.dir>
-		<rpm.file.owner>tomcat</rpm.file.owner>
-		<rpm.context.file.target>${tomcat.webapp.dir}</rpm.context.file.target>
-		<rpm.context.file.source>${project.build.directory}/bluebox.war</rpm.context.file.source>
 	</properties>
 
 	<repositories>
@@ -108,44 +103,6 @@
 						</webResources>
 					</configuration>
 				</plugin>
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>rpm-maven-plugin</artifactId>
-					<version>2.1.2</version>
-					<configuration>
-						<targetVendor>redhat</targetVendor>
-						<requires>
-							<require>tomcat6,mongodb-org</require>
-						</requires>
-						<sourceEncoding>UTF-8</sourceEncoding>
-						<group>bluebox</group>
-						<summary>Promiscuous SMTP server and webmail interface</summary>
-						<username>tomcat</username>
-						<groupname>tomcat</groupname>
-						<mappings>
-							<mapping>
-								<directory>${rpm.context.file.target}</directory>
-								<configuration>true</configuration>
-								<filemode>755</filemode>
-								<username>${rpm.file.owner}</username>
-								<groupname>${rpm.file.owner}</groupname>
-								<sources>
-									<source>
-										<location>${rpm.context.file.source}</location>
-									</source>
-								</sources>
-							</mapping>
-						</mappings>
-						<preinstallScriptlet>
-							<scriptFile>${project.build.directory}/../scripts/rpm_preinstall.sh</scriptFile>
-							<fileEncoding>utf-8</fileEncoding>
-						</preinstallScriptlet>
-						<postinstallScriptlet>
-							<scriptFile>${project.build.directory}/../scripts/rpm_postinstall.sh</scriptFile>
-							<fileEncoding>utf-8</fileEncoding>
-						</postinstallScriptlet>
-					</configuration>
-				</plugin>
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -201,7 +158,7 @@
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>javax.mail-api</artifactId>
-			<version>1.5.1</version>
+			<version>1.5.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>

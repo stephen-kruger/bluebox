@@ -93,7 +93,7 @@ public class BlueboxMessageHandlerFactory extends SimpleMessageListenerAdapter i
 			log.warn("Rejecting spam message from {} with address {}",ctx.getHelo(),ctx.getRemoteAddress().toString());
 			return new SpamMessageHandler(ctx);
 		}
-		log.info("Accepting message from {} with address {}",ctx.getHelo(),ctx.getRemoteAddress().toString());
+		log.debug("Accepting message from {} with address {}",ctx.getHelo(),ctx.getRemoteAddress().toString());
 		return super.create(ctx);
 	}
 
