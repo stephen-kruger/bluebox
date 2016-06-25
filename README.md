@@ -65,6 +65,18 @@ An example is given here for reference :
 Download the war file from here :https://github.com/stephen-kruger/bluebox/releases and copy it to
 ```<wlp_root>/wlp/user/servers/bluebox/apps directory```
 
+#SSL
+To create ssl key :
+Run the command
+```securityUtility createSSLCertificate --server=blueboxsso --password=XXX --validity=365 --subject=CN=IBM,O=SWG,C=Ireland```
+and add these lines to your server.xml
+```
+ <featureManager>
+        <feature>ssl-1.0</feature>
+    </featureManager>
+    <keyStore id="defaultKeyStore" password="{xor}PTMqOj0wJw==" />
+    ```
+
 You can then start the server by running the command ```<wlp_root>/wlp/bin/server start bluebox```
 
 ##Database options
