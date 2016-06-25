@@ -70,14 +70,19 @@ To create ssl key :
 Run the command
 ```securityUtility createSSLCertificate --server=blueboxsso --password=XXX --validity=365 --subject=CN=IBM,O=SWG,C=Ireland```
 and add these lines to your server.xml
-```
- <featureManager>
-        <feature>ssl-1.0</feature>
-    </featureManager>
-    <keyStore id="defaultKeyStore" password="{xor}PTMqOj0wJw==" />
-    ```
 
-You can then start the server by running the command ```<wlp_root>/wlp/bin/server start bluebox```
+```xml
+<featureManager>
+    <feature>ssl-1.0</feature>
+</featureManager>
+<keyStore id="defaultKeyStore" password="{xor}PTMqOj0wJw==" />
+```
+
+You can then start the server by running the command 
+
+```
+<wlp_root>/wlp/bin/server start bluebox
+```
 
 ##Database options
 On startup, if Bluebox detects a running instance of MongoDB, it will automatically set up and use that. Otherwise it will use an embedded Derby database which is a little less performant than MongoDB.
