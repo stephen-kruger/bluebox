@@ -606,4 +606,17 @@ public class InboxTest extends BaseTestCase {
 		Utils.sendMessageDirect(StorageFactory.getInstance(), message);
 		assertEquals("Mail not loaded",1,getInbox().getMailCount(BlueboxMessage.State.ANY));		
 	}
+
+	@Test
+	public void testBounce() throws Exception {
+		InputStream emlStream = new FileInputStream("src/test/resources"+File.separator+"test-data"+File.separator+"bounce.eml");
+		Utils.uploadEML(getInbox(),emlStream);
+		TestUtils.waitFor(getInbox(),1);
+		assertEquals("Mail was not delivered",1,getInbox().getMailCount(State.ANY));
+		List<BlueboxMessage> mail = getInbox().listInbox(null, BlueboxMessage.State.ANY, 0, 100, BlueboxMessage.SIZE, true);
+		log.info(">>>>>>>>>>>>>>>found {} mails",mail.size());
+		for (BlueboxMessage msg : mail) {
+			log.info(">>>>>>>>>>>>>>>>{}",msg.getFrom());
+		}
+	}
 }

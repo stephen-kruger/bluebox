@@ -36,17 +36,17 @@ public class BlueBoxParser {
 	private MimeMessage msg;
 	private Map<String,DataHandler> cidList, fileNameList;
 	private List<Object> parts;
-	
+
 	public BlueBoxParser(MimeMessage msg) throws IOException, MessagingException {
 		this.msg = msg;
 		cidList = new HashMap<String,DataHandler>();
 		fileNameList = new HashMap<String,DataHandler>();
 		parts = getPartsX(msg.getContent());
 	}
-	
+
 	private List<Object> getPartsX(Object content) throws IOException, MessagingException {
 		List<Object> parts = new ArrayList<Object>();
-//		Object content = msg.getContent();
+		//		Object content = msg.getContent();
 		int count = (int)invoke(content,"getCount",null,null,0);
 		log.debug("Found {} parts",count);
 		for (int i = 0; i < count; i++) {
@@ -68,11 +68,11 @@ public class BlueBoxParser {
 		}
 		return parts;
 	}
-	
+
 	public Map<String,DataHandler> getInlineAttachments() {
 		return cidList;
 	}
-	
+
 	public List<DataSource> getAttachmentList() throws IOException, MessagingException {
 		List<DataSource> attachments = new ArrayList<DataSource>();
 		for (Object part : parts) {
@@ -87,8 +87,19 @@ public class BlueBoxParser {
 	public String getPlainContent() throws MessagingException, IOException {
 		log.debug("getPlainContent getContentType={}",msg.getContentType());
 		if (msg.isMimeType(MediaType.TEXT_PLAIN)) {
-			log.debug("getPlainContent returning entire body");
-			return Utils.decodeQuotedPrintable(msg.getContent().toString());
+			String encoding = msg.getEncoding();
+			if (encoding==null) encoding = "";
+			if (encoding.toLowerCase().indexOf("quoted")>=0)
+				return Utils.decodeQuotedPrintable(msg.getContent().toString());
+			else
+				if (encoding.toLowerCase().indexOf("64")>=0) {
+					byte[] bytes = msg.getContent().toString().getBytes();
+					byte[] bytes64 = Base64.encodeBase64(bytes);
+					return Utils.decodeQuotedPrintable(new String(bytes64));
+				}
+				else {
+					return msg.getContent().toString();
+				}
 		}
 		else {
 			for (Object part : parts) {
@@ -162,12 +173,12 @@ public class BlueBoxParser {
 		}
 	}
 
-    private String stripContentId(final String contentId) {
-        if (contentId == null) {
-            return null;
-        }
-        return contentId.trim().replaceAll("[\\<\\>]", "");
-    }
+	private String stripContentId(final String contentId) {
+		if (contentId == null) {
+			return null;
+		}
+		return contentId.trim().replaceAll("[\\<\\>]", "");
+	}
 
 	public DataHandler findAttachmentByCid(String cid) {
 		// TODO Auto-generated method stub

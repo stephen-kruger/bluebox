@@ -1,0 +1,174 @@
+Received: from o1678970x118.outbound-mail.sendernet.org (o1678970x118.outbound-mail.sendernet.org [167.123.123.118])
+        by bluebox.xxx.yyy.com
+        with SMTP (BlueBox V4.4.6) id IPPJTDN4
+        for vesela@whatever.zxcvb.com;
+        Tue, 21 Jun 2016 09:30:50 -0500 (CDT)
+DKIM-Signature: v=1; a=rsa-sha1; c=relaxed; d=ACMEsbsds1.com; 
+	h=from:reply-to:to:subject:mime-version:content-type:content-transfer-encoding; 
+	s=s1; bh=5E5kVHlETi4+pAJe78+T1dGBZos=; b=Yt6E4Oy/9vqPxPSGRqKtc5Y
+	YLQrLt7ptO3Cnz1/crqpsmxWezzdskzphTfEs0y/V6ix5TGU4qMtIr/IBeIMGOo9
+	HuScierfXqFIIKbuEr606qC4VXP0akwd+XxiXAUQTolyIXduitQKYOvVKlhm7+91
+	uTqX6OF+fKwVXxqrlkzI=
+Received: by filter0144p1las1.sendernet.org with SMTP id filter0144p1las1.27921.57694F9852
+        2016-06-21 14:30:48.74417459 +0000 UTC
+Received: from sdr.ds1-6.sbs.cloudy.com (94.69.acb8.ip4.static.sl-reverse.com [123.172.105.112])
+	by ismtpd0001p1las1.sendernet.org (SG) with ESMTP id UA39TkWBR9mk2h5g0FIQJw
+	for <vesela@whatever.zxcvb.com>; Tue, 21 Jun 2016 14:30:47.390 +0000 (UTC)
+Received: from sdr.ds1-6.sbs.cloudy.com (localhost.localdomain [127.0.0.1])
+	by sdr.ds1-6.sbs.cloudy.com (8.14.4/8.14.4) with ESMTP id u5LEUmkR029465
+	for <vesela@whatever.zxcvb.com>; Tue, 21 Jun 2016 14:30:48 GMT
+Date: Tue, 21 Jun 2016 14:30:48 +0000 (GMT)
+From: ACME Cloud <support@lab.sbs.cloudy.com>
+Reply-To: ACME Cloud <support@lab.sbs.cloudy.com>
+To: Vesela Bluebox <vesela@whatever.zxcvb.com>
+Message-ID: <188569566.752.1466519448413.JavaMail.websphere@sdr.ds1-6.sbs.cloudy.com>
+Subject: Accept Invitation - ACME Planning Analytics Enterprise Modeler
+ Account
+MIME-Version: 1.0
+Content-Type: multipart/related; 
+	boundary="----=_Part_750_767401346.1466519448409"
+Content-Transfer-Encoding: 8bit
+X-SUBSCRIBERID: 501353543
+X-EMAILTEMPLATE: user_accept_invitation
+X-SG-EID: P+UwtXG4q6c0HaUNBXdlEzx9VFiTvqf8TFZ3zKRKsxPU5TmgSsmkd5X/rUK2KrNk+gqj0dYuTFkCvu
+ Ma4mEJ4i7heNXJI/1y6rMsCVGqDW6wz4uA24gHqXXnYFdZDW+VX5tZZftw7zUG4D+vB7K/Kxd3K5yM
+ Rdj3EHN1LGshmnSZdVL855S+3Ey0mKp+bFXFnOQqonIs304tcgdr54KPKe/49cZhzmz0V4R/nonz8w
+ w=
+
+------=_Part_750_767401346.1466519448409
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_751_-1519122822.1466519448409"
+content-transfer-encoding: quoted-printable
+
+------=_Part_751_-1519122822.1466519448409
+Content-Type: text/plain; charset=UTF-8
+content-transfer-encoding: quoted-printable
+
+Hi Vesela=0D
+=0D
+An administrator (qc3se_admin@yopmail.com) from the following account: FOPM=
+ preprod Quality Control 3, has invited you to their subscription to ACME Plan=
+ning Analytics Enterprise Modeler. This subscription gives you full access =
+to all the features of the service.=0D
+=0D
+Accept invitation in the next 28 days (by Jul 19, 2016)=0D
+https://apps.ACMEsbsds1.com/account/public/registration?token=3DdDpzzOc4q1HK=
+AnDi7QK3FOnU-L8%40&subscriberId=3D501353543&offeringId=3D500001815&acceptSu=
+bscriptionId=3D500697639&locale=3Den_US=0D
+=0D
+=0D
+This service is governed by the following Terms and Conditions.=0D
+https://www-03.ACME.com/software/sla/sladb.nsf/pdf/6227-03/$file/i126-6227-0=
+3_10-2015_en_US.pdf?Open=0D
+=0D
+For future reference, use these links:=0D
+Launch Service : https://preprod.planning-analytics.cloudy.com | Get Suppor=
+t: https://ACME-sandbox.gliders.com/ics/support/mylogin.asp?splash=3D1&dept=
+ID=3D5383&login=3D{login} | Learn About: http://www.ACME.com/planning =0D
+=0D
+Regards,=0D
+=0D
+ACME Cloud Services=0D
+=0D
+Tip: If the above "Accept Invitation" button does not work in your email cl=
+ient, copy this URL into your browser:=0D
+https://apps.ACMEsbsds1.com/account/public/registration?token=3DdDpzzOc4q1HK=
+AnDi7QK3FOnU-L8%40&subscriberId=3D501353543&offeringId=3D500001815&acceptSu=
+bscriptionId=3D500697639&locale=3Den_US
+
+------=_Part_751_-1519122822.1466519448409
+Content-Type: text/html; charset=UTF-8
+content-transfer-encoding: quoted-printable
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.=
+w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">=0D
+<html xmlns=3D"http://www.w3.org/1999/xhtml">=0D
+<head>=0D
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3DUTF-8" />=
+=0D
+</head>=0D
+<body>=0D
+<div>=0D
+<p>Hi Vesela</p>=0D
+=0D
+<p>An administrator (qc3se_admin@yopmail.com) from the following account: F=
+OPM preprod Quality Control 3, has invited you to their subscription to <b>IB=
+M Planning Analytics Enterprise Modeler.</b> This subscription gives you fu=
+ll access to all the features of the service.</p>=0D
+=0D
+<p>Accept invitation in the next 28 days (by Jul 19, 2016)</p>=0D
+=0D
+<table cellspacing=3D"0" cellpadding=3D"0" border=3D"0">=0D
+	<tr>=0D
+		<td align=3D"center" width=3D"200" height=3D"40" bgcolor=3D"#4178BE" styl=
+e=3D"border:1px solid #ffffff;border-radius: 4px;border-collapse:separate!i=
+mportant;color:#ffffff;display:block;">=0D
+			<a href=3D"http://smtp.ACMEsbsds1.com/wf/click?upn=3DM40Kf9Slwj7CAnsp9kun=
+9KW9rMenBBHWN-2Fh8-2BUsDPMkDSyABy8JOwfHhinr06oi5ZtB-2BkKpbu81OeebMmweL5rlyR=
+XN5vBb0cASYoQdLktycEG8dbpY-2FwtBOaqWYihpLQ-2BU6tdfw24ETZrnltumi64c9VF-2Bx6r=
+LpQ1Vg0nspm0HBT071LmOK-2F4h0o6L6BDjCp-2Fk4tGv00F9E-2F7dmgwVpIIGhM-2BQJ3Cfx1=
+g8aX04tG27Gf1iasAcqSkf2g7IcSEyQ_jh5b-2FpQr999j7SDkxlDn-2Bmub7IH2RbR3uKfxKxd=
+UPYIExnKEYdZf5PIQAx8m-2BPF6OB8H0E5IPEK1qpDTtUUjGmcuwMWd3Evi1hgmFNLK3Hq8zs9L=
+rLxtaNhAl6LNq2Fb26RT2OJTbfRygd53Gnm-2BENDY9uDrV5LG2-2BVsGyGTQ9sJOqqQzyuS0WI=
+WnDkri1Asp3qHr-2BNefW5siw-2FepH3uB5mWI6509QDGu9IESMAr6ig-3D" target=3D"_bla=
+nk" style=3D"font-size:12px;font-weight:bold;text-decoration:none;line-heig=
+ht:40px;width:100%;">=0D
+				<span style=3D"color: #FFFFFF">Accept Invitation</span>=0D
+			</a>=0D
+		</td>=0D
+	</tr>=0D
+</table> =0D
+<p>This service is governed by the following <a href=3D"http://smtp.ACMEsbsd=
+s1.com/wf/click?upn=3DM40Kf9Slwj7CAnsp9kun9HHMgoTAq62rDMCm21khd64Z8KArn24ox=
+WvhgzDMU6OyaysHVQgWintA72uxbEFeneJaSwQSUrNHZCSi5PmeV6W0A953URwMOjxI2mRORz9W=
+LhmVajm8f3Ll4sqBQzOtsA-3D-3D_jh5b-2FpQr999j7SDkxlDn-2Bmub7IH2RbR3uKfxKxdUPY=
+IExnKEYdZf5PIQAx8m-2BPF6OB8H0E5IPEK1qpDTtUUjGinEHA2-2FNBOi8lf1MhmlxpkNdM-2F=
+Qi-2FhY95dMa7JU5q9oArBYerpq0iidbfdO10tpLPew8fB78UXS1efj3l5zQ-2BNJYCamkNcLJ4=
+N1PVVFgkuilELRlxbX7xXxHnzNQ7otEh0pOyZN6J6gcnxin03OzKg-3D" style=3D"color:#4=
+178BE;text-decoration:none;direction:ltr; display:inline-block;">Terms and =
+Conditions</a>.</p>=0D
+<p>For future reference, use these links:<br/>=0D
+<a href=3D"http://smtp.ACMEsbsds1.com/wf/click?upn=3DM40Kf9Slwj7CAnsp9kun9Ho=
+j8Kvh-2FyGAyTYPP0xQkB8j5Fpvgooo-2FxkUmWvVPh32zHTsC8XvB-2FkyT-2B9MsrF5Zg-3D-=
+3D_jh5b-2FpQr999j7SDkxlDn-2Bmub7IH2RbR3uKfxKxdUPYIExnKEYdZf5PIQAx8m-2BPF6OB=
+8H0E5IPEK1qpDTtUUjGmxJ2e2w85S2At-2FVEH9SyOyJOWzXhx-2FSvVScUx4YHmpYIhrhMM0ss=
+GLtsubHtFWglAp-2B1UE9ai0PcGiqDWiJLShBJHRjfWatmmvcKp7wqd4UBJgRYWbFnNp-2BbMSS=
+IoxxBv5Gk-2FQUiIDv0xl2jUMPa3M-3D" style=3D"color:#4178BE;text-decoration:no=
+ne;">Launch Service</a> | <a href=3D"http://smtp.ACMEsbsds1.com/wf/click?upn=
+=3DM40Kf9Slwj7CAnsp9kun9P5ecM6KoO9fIm-2BFyNH-2FMS4og7AtI2qZE5upKLo1q8YM-2BQ=
+ZXhkrMKX187g8-2BpaBA-2FRrZGSIblzO01bNEp4FNrUa3I2a4Ld-2BJ7UO-2FBeihIj0CuyVdd=
+kxQPhfbDmWqbmW44g-3D-3D_jh5b-2FpQr999j7SDkxlDn-2Bmub7IH2RbR3uKfxKxdUPYIExnK=
+EYdZf5PIQAx8m-2BPF6OB8H0E5IPEK1qpDTtUUjGtYHPik4tUXDe-2BaFLzknn9S8uaNJ-2FJyT=
+JU8lwV4DfsfGZsxM6i6uOv2rw2H6Pw-2FZE8BB6dAHDoq74sj9f1Yta2-2Fj13xwZO3WQqBsuZ3=
+ATu9sXOmiRLwIcsNxgF-2FP7CJJhdxN-2Fo7-2FuVfdELLPCTofAy4-3D" style=3D"color:#=
+4178BE;text-decoration:none;">Get Support</a> | <a href=3D"http://smtp.ACMEs=
+bsds1.com/wf/click?upn=3DcIpfdMG7V8RMzvgcpSMXLwwinuWZCxE-2FZ50U5heoLR-2B-2B=
+wwo8FbwAlX9gdxkVRlXg_jh5b-2FpQr999j7SDkxlDn-2Bmub7IH2RbR3uKfxKxdUPYIExnKEYd=
+Zf5PIQAx8m-2BPF6OB8H0E5IPEK1qpDTtUUjGif7sTvhhqHgcvpv9jzCi-2BGd2RredFVz1GZZO=
+EspbJzLH7CFG5DkrwTPCe-2FzpfPwuNqcxzh5ceUFNDI1pw4shwBXJsGv8yNoHJU2sc7XyCOotS=
+J6exCVsaHmUSos-2BaNwZvBKXJ3DSdrSHS9JwlyuH0M-3D" style=3D"color:#4178BE;text=
+-decoration:none;">Learn About</a></p>=0D
+Regards, <br/>=0D
+ACME Cloud Services=0D
+<p>Tip: If the above &quot;Accept Invitation&quot; button does not work in =
+your email client, copy this URL into your browser:<br/>=0D
+https://apps.ACMEsbsds1.com/account/public/registration?token=3DdDpzzOc4q1HK=
+AnDi7QK3FOnU-L8%40&amp;subscriberId=3D501353543&amp;offeringId=3D500001815&=
+amp;acceptSubscriptionId=3D500697639&amp;locale=3Den_US</p>=0D
+</div>=0D
+
+<img src=3D"http://smtp.ACMEsbsds1.com/wf/open?upn=3Djh5b-2FpQr999j7SDkxlDn-=
+2Bmub7IH2RbR3uKfxKxdUPYIExnKEYdZf5PIQAx8m-2BPF6OB8H0E5IPEK1qpDTtUUjGq2HyjiP=
+aIdoj-2F8PQiUDMeCtIzHo29ysunWhlPxMjvpJZclsmaiKB5xD9BLYvC6hKRl6x-2BlSzgZVJM7=
+NKVJJLOb-2BbIZX5auYHd7sx0DM3wWsSUm-2FwZ94IzVa-2FYuvWqfrOAJ2Em4b6oZG55qoprla=
+5Jw-3D" alt=3D"" width=3D"1" height=3D"1" border=3D"0" style=3D"height:1px =
+!important;width:1px !important;border-width:0 !important;margin-top:0 !imp=
+ortant;margin-bottom:0 !important;margin-right:0 !important;margin-left:0 !=
+important;padding-top:0 !important;padding-bottom:0 !important;padding-righ=
+t:0 !important;padding-left:0 !important;"/>
+</body>=0D
+</html>
+
+------=_Part_751_-1519122822.1466519448409--
+
+------=_Part_750_767401346.1466519448409--

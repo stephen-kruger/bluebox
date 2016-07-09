@@ -49,4 +49,20 @@
 		<location>/app/error.jsp?code=403</location>
 	</error-page>
 
+<!-- 
+    <servlet>
+        <servlet-name>jaxrs</servlet-name>
+        <servlet-class>org.apache.wink.server.internal.servlet.RestServlet</servlet-class>
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>com.bluebox.rest.RestApi</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>jaxrs</servlet-name>
+        <url-pattern>/jaxrs/*</url-pattern>
+    </servlet-mapping>
+    
+ -->
 </web-app>

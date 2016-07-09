@@ -1,13 +1,12 @@
 package com.bluebox;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 //import java.util.prefs.Preferences;
-
 import java.util.StringTokenizer;
 
 import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
@@ -16,6 +15,10 @@ import org.slf4j.LoggerFactory;
 
 public class Config extends CompositeConfiguration {
 	private static final Logger log = LoggerFactory.getLogger(Config.class);
+	public static final String CONFIG_NAME = "bluebox.properties";
+	public static final String HCUSTOM_PROPERTIES   = "bluebox.home_custom_properties";
+	public static final String ECUSTOM_PROPERTIES   = "bluebox.env_custom_properties";
+	
 	private static Config configInstance;
 	public static final String BLUEBOX_VERSION 			= "bluebox_version";
 	public static final String BLUEBOX_PORT 			= "bluebox_port";
@@ -39,22 +42,72 @@ public class Config extends CompositeConfiguration {
 //	Preferences prefs = Preferences.systemNodeForPackage(Config.class);
 
 	private Config() {
-		addConfiguration(new SystemConfiguration());
+		setupSystem();
+		setupCustom();
+		setupBuiltin();
+	}
+
+	/**
+	 * Setup builtin.
+	 */
+	private void setupBuiltin() {
 		try {
+			log.info("Loading built-in config ({})",getClass().getResource("/"+CONFIG_NAME));
+			addConfiguration(new PropertiesConfiguration(getClass().getResource("/"+CONFIG_NAME)));
+		}
+		catch (Throwable t) {
+			log.warn("Problem loading built-in config :{}",t.getMessage());
+		}
+	}
+
+	/**
+	 * Setup custom.
+	 */
+	private void setupCustom() {
+		try {
+			PropertiesConfiguration builtin = new PropertiesConfiguration(getClass().getResource("/"+CONFIG_NAME));
 			PropertiesConfiguration pconfig;
-			pconfig = new PropertiesConfiguration("bluebox.properties");
+			String fileName = builtin.getString(HCUSTOM_PROPERTIES);
+			log.debug("Looking in {}",builtin.getString(HCUSTOM_PROPERTIES));
+			if (new File(fileName).exists()) {
+				log.info("Loading custom config from home ({})",builtin.getString(HCUSTOM_PROPERTIES));
+				pconfig = new PropertiesConfiguration(builtin.getString(HCUSTOM_PROPERTIES));
+			}
+			else {
+				log.info("No custom over-ride found in {}",fileName);
+				log.debug("Looking in {}",builtin.getString(ECUSTOM_PROPERTIES));
+				fileName = builtin.getString(ECUSTOM_PROPERTIES);
+				if (new File(fileName).exists()) {
+					log.info("Loading custom config from env ({})",builtin.getString(ECUSTOM_PROPERTIES));
+					pconfig = new PropertiesConfiguration(builtin.getString(ECUSTOM_PROPERTIES));
+				}
+				else {
+					log.info("No custom over-ride found in {}",fileName);
+					pconfig = new PropertiesConfiguration();
+				}
+			}
 			FileChangedReloadingStrategy strategy = new FileChangedReloadingStrategy();
 			strategy.setRefreshDelay(30000);
 			pconfig.setReloadingStrategy(strategy);
 			addConfiguration(pconfig);
 		} 
-		catch (ConfigurationException e) {
-			log.error("Problem loading configuration",e);
-			e.printStackTrace();
-		}
-
+		catch (Throwable e) {
+			log.error("Problem loading custom configuration {}",e);
+		}		
 	}
 
+	/**
+	 * Setup system.
+	 */
+	private void setupSystem() {
+		try {
+			log.debug("Loading system config");
+			addConfiguration(new SystemConfiguration());
+		}
+		catch (Throwable t) {
+			log.error("Problem loading system configuration {}",t.getMessage());			
+		}
+	}
 	public static Config getInstance() {
 		if (configInstance==null) {
 			log.info("Instanciating configuration");

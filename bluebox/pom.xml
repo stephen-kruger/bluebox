@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.5.1</version>
+	<version>4.5.3</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
 	<properties>
@@ -12,9 +12,9 @@
 		<slf4j_version>1.7.21</slf4j_version>
 		<jsoup_version>1.9.2</jsoup_version>
 		<commons_io_version>2.5</commons_io_version>
-		<rome_version>1.6.0</rome_version>
-		<lucene_version>6.0.1</lucene_version>
-		<solr_version>6.0.1</solr_version>
+		<rome_version>1.6.1</rome_version>
+		<lucene_version>6.1.0</lucene_version>
+		<solr_version>6.1.0</solr_version>
 		<derby_version>10.12.1.1</derby_version>
 		<mongo_version>3.2.2</mongo_version>
 		<apache.wink>1.4</apache.wink>
@@ -22,30 +22,16 @@
 	</properties>
 
 	<repositories>
-		<repository>
-			<id>maven-restlet</id>
-			<name>Public online Restlet repository</name>
-			<url>http://maven.restlet.com</url>
-		</repository>
-		<repository>
-			<id>maven-java-net</id>
-			<name>Maven Java Net</name>
-			<url>https://maven.java.net/content/repositories/releases/</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-		</repository>
+		<!-- <repository> <id>maven-restlet</id> <name>Public online Restlet repository</name> 
+			<url>http://maven.restlet.com</url> </repository> <repository> <id>maven-java-net</id> 
+			<name>Maven Java Net</name> <url>https://maven.java.net/content/repositories/releases/</url> 
+			<snapshots> <enabled>true</enabled> <updatePolicy>always</updatePolicy> </snapshots> 
+			</repository> <repository> <id>maven2-javanet</id> <name>Java.net</name> 
+			<url>http://download.java.net/maven/2/</url> </repository> -->
 		<repository>
 			<id>maven-org</id>
 			<name>Maven Repo</name>
 			<url>http://repo1.maven.org/maven2/</url>
-		</repository>
-
-		<repository>
-			<id>maven2-javanet</id>
-			<name>Java.net</name>
-			<url>http://download.java.net/maven/2/</url>
 		</repository>
 		<repository>
 			<id>maven-central</id>
@@ -82,6 +68,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
+					<version>2.6</version>
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
 						<webResources>
@@ -105,6 +92,13 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
+			</plugin>
+		</plugins>
 	</build>
 	<dependencies>
 		<dependency>
@@ -124,6 +118,12 @@
 			<groupId>org.apache.solr</groupId>
 			<version>${solr_version}</version>
 			<scope>compile</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>jdk.tools</artifactId>
+					<groupId>jdk.tools</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
@@ -189,13 +189,11 @@
 			<artifactId>commons-fileupload</artifactId>
 			<version>1.3.2</version>
 		</dependency>
-
 		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
 			<version>1.10</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
@@ -248,9 +246,6 @@
 			<artifactId>activation</artifactId>
 			<version>1.1.1</version>
 		</dependency>
-
-
-
 		<dependency>
 			<groupId>javax.annotation</groupId>
 			<artifactId>javax.annotation-api</artifactId>
@@ -310,7 +305,6 @@
 			<version>${apache.wink}</version>
 			<scope>test</scope>
 		</dependency>
-
 	</dependencies>
 
 	<scm>
