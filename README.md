@@ -87,6 +87,63 @@ You can then start the server by running the command
 ##Database options
 On startup, if Bluebox detects a running instance of MongoDB, it will automatically set up and use that. Otherwise it will use an embedded Derby database which is a little less performant than MongoDB.
 
+##Ensure SMTP server is running on correct port
+By default the SMTP server will start on port 2500, as running on port 25 (default for smtp protocol) means you need to run the application server as root, which is not a good idea.
+So you need to route traffic from port 25 to port 2500 like so :
+```iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500```
+
+Alternative, if you don't mind running as root, or you are a Windows machine you can easily set a properties override by placing a file bluebox.properties in the home directory with the following contents :
+
+```properties
+# SMTP server port
+bluebox_port=25
+```
+
+##Additional configuration options
+The following options can be adjusted to customise your environment, and are self-explanatory :
+```properties
+# set strict mode for incoming mail address verification
+# useful to block some Open Relay tests
+bluebox_strict=true
+
+# maximum mail size in bytes
+bluebox_mail_limit=100000000
+
+# how many server threads to handle incoming SMTP requests
+bluebox_maxconnections=500
+
+# and mails send by the following smtp servers will be rejected, comma separated list
+bluebox_smtp_blacklist=wallstreetads.org,193.104.41.200
+
+# and mails send by the following domains will be rejected, comma separated list
+bluebox_from_blacklist=blackdomain.com,wallstreetads.org
+
+# any mails with recipient ending in these domains will be rejected, comma separated list
+bluebox_to_blacklist=blackdomain.com,wallstreetads.org
+
+# comma separated domains for TO whitelist
+# specifying anything in here means ONLY mails to those domains will be accepted
+# unless they are in the blacklist
+bluebox_to_whitelist=
+
+# comma separated domains for FROM whitelist
+# specifying anything in here means ONLY mails from those domains will be accepted
+# unless they are in the blacklist
+bluebox_from_whitelist=
+
+# how many hours to keep trashed messages
+bluebox_trash_age=12
+
+# how many hours to keep messages (1344 = 8 weeks, 2688 = 16 weeks)
+bluebox_message_age=5376
+
+# trim messages (oldest first) to never exceed this limit
+bluebox_message_max=160000
+
+# frequency in minutes to run the expiry daemon
+bluebox_daemon_delay=60
+```
+
 #FAQ
 ##How do I use it?
 The easiest way : simply send an email to any address you like using the @bluebox.xxx.com domain For example send a test mail using your Notes client to test@bluebox.xxx.com or fake.mail@bluebox.xxx.com Then enter the email address into the form here at BlueBox? to show your inbox Another way : set your SMTP server to bluebox.xxx.com, you can send emails to any address and any domain (although they will all be delivered and available only on bluebox.xxx.com)
