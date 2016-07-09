@@ -306,7 +306,6 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
 	<scm>
 		<url>https://github.com/stephen-kruger/bluebox.git</url>
 	</scm>
