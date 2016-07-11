@@ -20,24 +20,17 @@ An example is given here for reference :
 
     <!-- Enable features -->
     <featureManager>
-        <feature>webProfile-7.0</feature>
-         <feature>localConnector-1.0</feature>
-        <feature>ssl-1.0</feature>
         <feature>jaxrs-2.0</feature>
         <feature>jaxws-2.2</feature>
-        <feature>jaxb-2.2</feature>
         <feature>jsp-2.3</feature>
         <feature>servlet-3.1</feature>
-        <feature>jaxrsClient-2.0</feature>
-        <feature>wsSecurity-1.1</feature>
-        <feature>appSecurity-2.0</feature>
     </featureManager>
 
         <basicRegistry id="defaultRegistry">
                 <group id="bluebox" name="bluebox">
                         <member id="bluebox" name="bluebox"/>
                 </group>
-                <user id="bluebox" name="bluebox" password="changemeplease"/>
+                <user id="bluebox" name="bluebox" password="{xor}PTMqOj0wJw=="/>
         </basicRegistry>
 
 
@@ -49,11 +42,10 @@ An example is given here for reference :
 
     <!-- Automatically expand WAR files and EAR files -->
     <applicationManager autoExpand="true"/>
-        <classloader delegation="parentLast" />
     <webApplication id="bluebox" location="bluebox.war" context-root="/"
         name="bluebox">
+        <classloader apiTypeVisibility="spec, ibm-api, api, third-party" />
         <application-bnd>
-                <classloader delegation="parentLast" />
                 <security-role name="bluebox" id="bluebox">
                         <user name="bluebox" id="bluebox" access-id="bluebox"></user>
                 </security-role>
