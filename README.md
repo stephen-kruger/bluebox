@@ -64,15 +64,23 @@ On startup, if Bluebox detects a running instance of MongoDB, it will automatica
 ##Check the SMTP server
 For security reasons the SMTP server will start on port 2500 instead of the expected port 25. So to recieve emails you need to either map port 25 to 2500, or change the config
 
-###Map the port
+###Option A: Map the port
 On Linux run this command
 ```iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500```
-###Change the config
+###Option B: Change the config
 On Windows systems, or if you don't mind starting the application server as root, you can change the config by placing a file bluebox.properties into the home directory of the user process running the WebSphere Liberty server, with the following contents :
 ```properties
 # SMTP server port
 bluebox_port=2500
 ```
+
+###Verify the smtp server is working
+You can test it using simple telnet :
+```
+telnet myhost.name 25
+220 myhost.name ESMTP BlueBox V4.5.2
+```
+
 ##Additional customisation
 The following properties may also be changed by adding them in to a bluebox.properties file in the user home directory :
 ```properties
