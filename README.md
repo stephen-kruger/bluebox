@@ -24,13 +24,14 @@ An example is given here for reference :
         <feature>jaxws-2.2</feature>
         <feature>jsp-2.3</feature>
         <feature>servlet-3.1</feature>
+        <feature>appSecurity-2.0</feature>
     </featureManager>
 
         <basicRegistry id="defaultRegistry">
                 <group id="bluebox" name="bluebox">
                         <member id="bluebox" name="bluebox"/>
                 </group>
-                <user id="bluebox" name="bluebox" password="{xor}PTMqOj0wJw=="/>
+                <user id="bluebox" name="bluebox" password="password"/>
         </basicRegistry>
 
 
