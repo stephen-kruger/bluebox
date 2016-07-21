@@ -95,6 +95,25 @@
 						</webResources>
 					</configuration>
 				</plugin>
+				<plugin>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.7</version>
+					<executions>
+						<execution>
+							<phase>process-resources</phase>
+							<configuration>
+								<tasks>
+									<copy todir="target">
+										<fileset dir="${basedir}/docker" includes="**/*" />
+									</copy>
+								</tasks>
+							</configuration>
+							<goals>
+								<goal>run</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 		<plugins>
@@ -105,53 +124,6 @@
 			</plugin>
 		</plugins>
 	</build>
-	<profiles>
-		<profile>
-			<id>deploy</id>
-			<dependencies>
-			</dependencies>
-			<build>
-				<defaultGoal>install</defaultGoal>
-				<finalName>bluebox</finalName>
-				<plugins>
-					<plugin>
-						<groupId>org.cloudfoundry</groupId>
-						<artifactId>cf-maven-plugin</artifactId>
-						<version>1.1.3</version>
-						<configuration>
-							<server>Bluemix</server>
-							<target>https://api.eu-gb.bluemix.net</target>
-							<url>bluebox.eu-gb.mybluemix.net</url>
-							<org>${org}</org>
-							<space>${space}</space>
-							<appname>bluebox</appname>
-							<memory>1024</memory>
-							<username>${username}</username>
-							<password>${password}</password>
-							<env>
-								<JBP_CONFIG_LIBERTY>app_archive: {features: [jaxrs-2.0,jaxws-2.2,jsp-2.3,servlet-3.1,appSecurity-2.0]}</JBP_CONFIG_LIBERTY>
-							</env>
-							<services>
-								<service>
-									<name>bluebox-cloudant</name>
-									<label>cloudantNoSQLDB</label>
-									<plan>Shared</plan>
-								</service>
-							</services>
-						</configuration>
-						<executions>
-							<execution>
-								<phase>install</phase>
-								<goals>
-									<goal>push</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
