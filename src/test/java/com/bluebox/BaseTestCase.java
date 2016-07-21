@@ -18,6 +18,8 @@ public abstract class BaseTestCase extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
+		Config config = Config.getInstance();
+		config.setProperty(Config.BLUEBOX_PORT, 2500);
 		inbox = Inbox.getInstance();
 		smtpServer = new BlueBoxSMTPServer(bbmhf = new BlueboxMessageHandlerFactory(inbox));
 		smtpServer.start();
@@ -47,7 +49,7 @@ public abstract class BaseTestCase extends TestCase {
 	public BlueboxMessageHandlerFactory getBlueboxMessageHandlerFactory() {
 		return bbmhf;	
 	}
-	
+
 	public SearchIf getSearchIndexer() throws Exception {
 		return SearchFactory.getInstance();
 	}
