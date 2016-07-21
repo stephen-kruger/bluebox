@@ -16,9 +16,8 @@ import org.slf4j.LoggerFactory;
 public class Config extends CompositeConfiguration {
 	private static final Logger log = LoggerFactory.getLogger(Config.class);
 	public static final String CONFIG_NAME = "bluebox.properties";
-	public static final String HCUSTOM_PROPERTIES   = "bluebox.home_custom_properties";
-	public static final String ECUSTOM_PROPERTIES   = "bluebox.env_custom_properties";
-	
+	public static final String HCUSTOM_PROPERTIES   = "bluebox.custom_properties";
+
 	private static Config configInstance;
 	public static final String BLUEBOX_VERSION 			= "bluebox_version";
 	public static final String BLUEBOX_PORT 			= "bluebox_port";
@@ -39,7 +38,7 @@ public class Config extends CompositeConfiguration {
 	public static final String BLUEBOX_STORAGE_CONFIG   = "bluebox_storage_config";
 	public static final String BLUEBOX_STRICT_CHECKING  = "bluebox_strict";
 
-//	Preferences prefs = Preferences.systemNodeForPackage(Config.class);
+	//	Preferences prefs = Preferences.systemNodeForPackage(Config.class);
 
 	private Config() {
 		setupSystem();
@@ -68,27 +67,19 @@ public class Config extends CompositeConfiguration {
 			PropertiesConfiguration builtin = new PropertiesConfiguration(getClass().getResource("/"+CONFIG_NAME));
 			PropertiesConfiguration pconfig;
 			String fileName = builtin.getString(HCUSTOM_PROPERTIES);
-			log.debug("Looking in {}",builtin.getString(HCUSTOM_PROPERTIES));
+			log.debug("Looking for custom config in {}",builtin.getString(HCUSTOM_PROPERTIES));
 			if (new File(fileName).exists()) {
 				log.info("Loading custom config from home ({})",builtin.getString(HCUSTOM_PROPERTIES));
 				pconfig = new PropertiesConfiguration(builtin.getString(HCUSTOM_PROPERTIES));
+				FileChangedReloadingStrategy strategy = new FileChangedReloadingStrategy();
+				strategy.setRefreshDelay(30000);
+				pconfig.setReloadingStrategy(strategy);
 			}
 			else {
 				log.info("No custom over-ride found in {}",fileName);
-				log.debug("Looking in {}",builtin.getString(ECUSTOM_PROPERTIES));
-				fileName = builtin.getString(ECUSTOM_PROPERTIES);
-				if (new File(fileName).exists()) {
-					log.info("Loading custom config from env ({})",builtin.getString(ECUSTOM_PROPERTIES));
-					pconfig = new PropertiesConfiguration(builtin.getString(ECUSTOM_PROPERTIES));
-				}
-				else {
-					log.info("No custom over-ride found in {}",fileName);
-					pconfig = new PropertiesConfiguration();
-				}
+				pconfig = new PropertiesConfiguration();
 			}
-			FileChangedReloadingStrategy strategy = new FileChangedReloadingStrategy();
-			strategy.setRefreshDelay(30000);
-			pconfig.setReloadingStrategy(strategy);
+
 			addConfiguration(pconfig);
 		} 
 		catch (Throwable e) {
@@ -115,7 +106,7 @@ public class Config extends CompositeConfiguration {
 		}
 		return configInstance;
 	}
-	
+
 	public List<String> getStringList(String key) {
 		List<Object> l = getList(key);
 		List<String> res = new ArrayList<String>();
@@ -125,7 +116,7 @@ public class Config extends CompositeConfiguration {
 		}
 		return res;
 	}
-	
+
 	public void setStringList(String key, List<String> list) {
 		StringBuffer s = new StringBuffer();
 		for (String entry : list) {
@@ -138,33 +129,33 @@ public class Config extends CompositeConfiguration {
 			setProperty(key,"");
 		}
 	}
-	
-//	public String getFlatList(String key) {
-//		StringBuffer list = new StringBuffer();
-//		for (String s : getStringList(key)) {
-//			list.append(s).append(',');
-//		}
-//		if (list.length()>0)
-//			return list.substring(0, list.length()-1).toString();
-//		return "";
-//	}
-	
+
+	//	public String getFlatList(String key) {
+	//		StringBuffer list = new StringBuffer();
+	//		for (String s : getStringList(key)) {
+	//			list.append(s).append(',');
+	//		}
+	//		if (list.length()>0)
+	//			return list.substring(0, list.length()-1).toString();
+	//		return "";
+	//	}
+
 	public String getString(String key) {
 		return super.getString(key);
 	}
-	
-//	public String getSavedString(String key) {
-//		// check for user saved value first
-//		if (StorageFactory.getInstance().hasProperty(key)) {
-//			return StorageFactory.getInstance().getProperty(key,"");
-//		}
-//		return getString(key);
-//	}
-	
+
+	//	public String getSavedString(String key) {
+	//		// check for user saved value first
+	//		if (StorageFactory.getInstance().hasProperty(key)) {
+	//			return StorageFactory.getInstance().getProperty(key,"");
+	//		}
+	//		return getString(key);
+	//	}
+
 	public void setString(String key, String value) {
 		super.setProperty(key, value);
 	}
-	
+
 	public static List<String> toList(String props) {
 		List<String> res = new ArrayList<String>();
 		StringTokenizer tok = new StringTokenizer(props,",");
