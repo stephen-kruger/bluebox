@@ -387,7 +387,7 @@ public class InboxTest extends BaseTestCase {
 		Inbox inbox = getInbox();
 		try {
 			String server = Config.getInstance().getString("bluebox_host");
-			String port = Config.getInstance().getString("bluebox_port");
+			int port = Config.getInstance().getInt(Config.BLUEBOX_PORT);
 			String From = "sender@here.com";
 			String Subject = "Test";
 			String body = "Test Body";
