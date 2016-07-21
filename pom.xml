@@ -96,21 +96,27 @@
 					</configuration>
 				</plugin>
 				<plugin>
-					<artifactId>maven-antrun-plugin</artifactId>
-					<version>1.7</version>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>2.7</version>
 					<executions>
 						<execution>
-							<phase>process-resources</phase>
-							<configuration>
-								<tasks>
-									<copy todir="target">
-										<fileset dir="${basedir}/docker" includes="**/*" />
-									</copy>
-								</tasks>
-							</configuration>
+							<id>copy-resource-one</id>
+							<phase>install</phase>
 							<goals>
-								<goal>run</goal>
+								<goal>copy-resources</goal>
 							</goals>
+
+							<configuration>
+								<outputDirectory>${project.build.directory}</outputDirectory>
+								<resources>
+									<resource>
+										<directory>${project.basedir}/src/main/docker</directory>
+										<includes>
+											<include>Dockerfile</include>
+										</includes>
+									</resource>
+								</resources>
+							</configuration>
 						</execution>
 					</executions>
 				</plugin>

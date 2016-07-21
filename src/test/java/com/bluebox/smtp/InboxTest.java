@@ -386,7 +386,7 @@ public class InboxTest extends BaseTestCase {
 	public void testSendTwoMsgsWithLogin() throws Exception {
 		Inbox inbox = getInbox();
 		try {
-			String server = Config.getInstance().getString("bluebox_host");
+			String server = "localhost";//Config.getInstance().getString("bluebox_host");
 			int port = Config.getInstance().getInt(Config.BLUEBOX_PORT);
 			String From = "sender@here.com";
 			String Subject = "Test";
