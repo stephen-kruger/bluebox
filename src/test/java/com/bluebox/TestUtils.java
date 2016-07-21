@@ -154,7 +154,7 @@ public class TestUtils extends TestCase {
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.starttls.enable", "true");
 		props.put("mail.smtp.host", host);
-		props.put("mail.smtp.port", Config.getInstance().getString(Config.BLUEBOX_PORT));
+		props.put("mail.smtp.port", Config.getInstance().getInt(Config.BLUEBOX_PORT));
 
 		// Get the Session object.
 //		Session session = Session.getInstance(props);

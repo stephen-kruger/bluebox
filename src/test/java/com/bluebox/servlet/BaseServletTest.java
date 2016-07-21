@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.BlueBoxServlet;
+import com.bluebox.Config;
 import com.bluebox.feed.FeedServlet;
 import com.bluebox.rest.RestApi;
 import com.bluebox.smtp.Inbox;
@@ -44,6 +45,8 @@ public abstract class BaseServletTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
+		Config config = Config.getInstance();
+		config.setProperty(Config.BLUEBOX_PORT, 2500);
 		server = new Server(8080);
 
 		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
