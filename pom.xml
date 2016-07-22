@@ -113,6 +113,7 @@
 										<directory>${project.basedir}/src/main/docker</directory>
 										<includes>
 											<include>Dockerfile</include>
+											<include>server.xml</include>
 										</includes>
 									</resource>
 								</resources>

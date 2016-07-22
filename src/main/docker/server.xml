@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<server description="bluebox server">
+
+    <!-- Enable features -->
+    <featureManager>
+        <feature>jaxrs-2.0</feature>
+        <feature>jaxws-2.2</feature>
+        <feature>jsp-2.3</feature>
+        <feature>servlet-3.1</feature>
+        <feature>appSecurity-2.0</feature>
+    </featureManager>
+
+        <basicRegistry id="defaultRegistry">
+                <group id="bluebox" name="bluebox">
+                        <member id="bluebox" name="bluebox"/>
+                </group>
+                <user id="bluebox" name="bluebox" password="password"/>
+        </basicRegistry>
+
+
+    <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
+    <httpEndpoint id="defaultHttpEndpoint"
+                host="*"
+                  httpPort="8080"
+                  httpsPort="8443" />
+
+    <!-- Automatically expand WAR files and EAR files -->
+    <applicationManager autoExpand="true"/>
+    <webApplication id="bluebox" location="bluebox.war" context-root="/"
+        name="bluebox">
+        <classloader apiTypeVisibility="spec, ibm-api, api, third-party" />
+        <application-bnd>
+                <security-role name="bluebox" id="bluebox">
+                        <user name="bluebox" id="bluebox" access-id="bluebox"></user>
+                </security-role>
+        </application-bnd>
+    </webApplication>
+</server>
