@@ -21,8 +21,8 @@
     <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
     <httpEndpoint id="defaultHttpEndpoint"
                 host="*"
-                  httpPort="8080"
-                  httpsPort="8443" />
+                  httpPort="80"
+                  httpsPort="443" />
 
     <!-- Automatically expand WAR files and EAR files -->
     <applicationManager autoExpand="true"/>
