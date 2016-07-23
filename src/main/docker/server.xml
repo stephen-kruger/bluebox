@@ -9,13 +9,13 @@
         <feature>servlet-3.1</feature>
         <feature>appSecurity-2.0</feature>
     </featureManager>
-
-        <basicRegistry id="defaultRegistry">
-                <group id="bluebox" name="bluebox">
-                        <member id="bluebox" name="bluebox"/>
-                </group>
-                <user id="bluebox" name="bluebox" password="password"/>
-        </basicRegistry>
+	<keyStore password="password" id="bluebox"></keyStore>
+    <basicRegistry id="defaultRegistry">
+        <group id="bluebox" name="bluebox">
+            <member id="bluebox" name="bluebox"/>
+		</group>
+        <user id="bluebox" name="bluebox" password="password"/>
+    </basicRegistry>
 
 
     <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
@@ -31,7 +31,7 @@
         <classloader apiTypeVisibility="spec, ibm-api, api, third-party" />
         <application-bnd>
                 <security-role name="bluebox" id="bluebox">
-                        <user name="bluebox" id="bluebox" access-id="bluebox"></user>
+					<user name="bluebox" id="bluebox" access-id="bluebox"></user>
                 </security-role>
         </application-bnd>
     </webApplication>
