@@ -404,7 +404,7 @@ public class Inbox implements SimpleMessageListener {
 						}
 					} 
 					setProgress(100);
-					log.info("Finished trimming {} messages with {} errors encouters", deleteCount,errors);
+					log.info("Finished trimming {} messages with {} errors encountered", deleteCount,errors);
 				}
 				catch (Throwable t) {
 					log.error("Problem trimming mailboxes",t);
