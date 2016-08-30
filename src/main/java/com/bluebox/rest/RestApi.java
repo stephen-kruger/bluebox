@@ -30,7 +30,7 @@ public class RestApi extends Application {
 
 	@Override
 	public Set<Object> getSingletons() {
-		log.info("Returning singletons");
+		log.debug("Returning singletons");
 		Set<Object> singletons = new HashSet<Object>();
 		singletons.add(new AdminResource(Inbox.getInstance()));
 		singletons.add(new AttachmentResource(Inbox.getInstance()));

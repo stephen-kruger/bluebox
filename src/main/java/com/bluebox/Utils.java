@@ -58,6 +58,8 @@ import com.bluebox.search.SearchFactory;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
+import com.bluebox.smtp.storage.BlueboxMessage.State;
+import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
@@ -372,7 +374,7 @@ public class Utils {
 		StorageIf si = StorageFactory.getInstance();
 		String spooledUid = spoolStream(si,msg);
 		sendMessageDirect(inbox,msg,spooledUid);
-//		si.removeSpooledStream(spooledUid);
+		//		si.removeSpooledStream(spooledUid);
 	}
 
 	public static void sendMessageDirect(StorageIf storage, MimeMessage msg) throws Exception {
@@ -384,7 +386,7 @@ public class Utils {
 			SearchFactory.getInstance().indexMail(bbm,false);
 		}
 		SearchFactory.getInstance().commit(true);
-//		storage.removeSpooledStream(spooledUid);
+		//		storage.removeSpooledStream(spooledUid);
 	}
 
 	public static MimeMessage createMessage(ServletContext session, String from, String to, String cc, String bcc, String subject, String body) throws MessagingException, IOException {
@@ -663,12 +665,12 @@ public class Utils {
 				request.getServerName() + 
 				("http".equals(request.getScheme()) && request.getServerPort() == 80 || "https".equals(request.getScheme()) && request.getServerPort() == 443 ? "" : ":" + request.getServerPort() ) +
 				request.getContextPath()+"/jaxrs";
-//		log.info("1:{}",request.getPathTranslated());
-//		log.info("2:{}",request.getServletPath());
-//		log.info("3:{}",request.getRequestURL());
-//		log.info("4:{}",request.getPathInfo());
-//		log.info("5:{}",request.getPathTranslated());
-//		log.info("6:{}",request.getRequestURI());
+		//		log.info("1:{}",request.getPathTranslated());
+		//		log.info("2:{}",request.getServletPath());
+		//		log.info("3:{}",request.getRequestURL());
+		//		log.info("4:{}",request.getPathInfo());
+		//		log.info("5:{}",request.getPathTranslated());
+		//		log.info("6:{}",request.getRequestURI());
 		return uri;
 	}
 
@@ -795,23 +797,39 @@ public class Utils {
 		return utct;
 	}
 
-	//	public static final void main(String[] args) {
-	//		StorageIf si = StorageFactory.getInstance();
-	//		File zipFile;
-	//		if (args.length>0)
-	//			zipFile = new File(args[0]);
-	//		else
-	//			zipFile = new File("bluebox-export.zip");
-	//		try {
-	//			WorkerThread thread = Inbox.backupTo(si, zipFile);
-	//			new Thread(thread).start();
-	//			while (thread.getProgress()<100) {
-	//				System.out.println("Export "+thread.getStatus()+" "+thread.getProgress()+"%");
-	//				Thread.sleep(2000);
-	//			}
-	//		} 
-	//		catch (Exception e) {
-	//			e.printStackTrace();
-	//		}
-	//	}
+	/*
+	 * clean compile assembly:single will generate an executable jar with this entry point
+	 */
+	public static final void main(String[] args) {
+		StorageIf si = StorageFactory.getInstance();
+		try {
+			long three_days = 3*24*60*60*1000;
+			Date when = new Date(new Date().getTime()-three_days);
+			long count = si.getMailCount(State.ANY);
+			log.info("Deleting mail older than {}. Total count is {}",when,count);
+			int pageSize = 500;
+			long completion = 0;
+			for (int i = 0; i < count; i+= pageSize) {
+				try {
+					log.info("Processing {}%",completion*100/count);
+					List<LiteMessage> mail = si.listMailLite(null, State.ANY, i, pageSize, BlueboxMessage.RECEIVED, true);
+					for (LiteMessage message : mail) {
+						if (message.getReceived().before(when)) {
+							si.delete(message.getIdentifier(), message.getRawIdentifier());
+						}
+					}
+					completion+=mail.size();
+				} 
+				catch (Exception e) {
+					log.error("Problem listing mail {}",e.getMessage());
+					e.printStackTrace();
+				}
+			}
+			log.info("Finished cleanup total count is now {}",si.getMailCount(State.ANY));
+		} 
+		catch (Exception e) {
+			log.error("Problem listing mail {}",e.getMessage());
+			e.printStackTrace();
+		}
+	}
 }

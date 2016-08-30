@@ -47,7 +47,7 @@ public class BlueBoxParser {
 	private List<Object> getPartsX(Object content) throws IOException, MessagingException {
 		List<Object> parts = new ArrayList<Object>();
 		//		Object content = msg.getContent();
-		int count = (int)invoke(content,"getCount",null,null,0);
+		int count = (Integer)invoke(content,"getCount",null,null,0);
 		log.debug("Found {} parts",count);
 		for (int i = 0; i < count; i++) {
 			Object part = invoke(content,"getBodyPart", new Class[]{int.class}, new Object[]{i},null);
@@ -103,7 +103,7 @@ public class BlueBoxParser {
 		}
 		else {
 			for (Object part : parts) {
-				if ((boolean)invoke(part,"isMimeType",new Class[]{String.class},new Object[]{MediaType.TEXT_PLAIN},null)) {
+				if ((Boolean)invoke(part,"isMimeType",new Class[]{String.class},new Object[]{MediaType.TEXT_PLAIN},null)) {
 					return decodeString((DataHandler)invoke(part,"getDataHandler",null,null,null),StandardCharsets.UTF_8.name());
 				}
 				else {
@@ -126,7 +126,7 @@ public class BlueBoxParser {
 				return decodeString(msg.getDataHandler(),StandardCharsets.UTF_8.name());
 			}			
 			for (Object part : parts) {
-				if ((boolean)invoke(part,"isMimeType",new Class[]{String.class},new Object[]{MediaType.TEXT_HTML},null)) {
+				if ((Boolean)invoke(part,"isMimeType",new Class[]{String.class},new Object[]{MediaType.TEXT_HTML},null)) {
 					log.debug("Found html part");
 					return decodeString((DataHandler)invoke(part,"getDataHandler",null,null,null),StandardCharsets.UTF_8.name());
 				}

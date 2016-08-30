@@ -4,7 +4,7 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.5.4</version>
+	<version>4.5.6</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
 	<properties>
@@ -117,6 +117,31 @@
 										</includes>
 									</resource>
 								</resources>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<!-- 
+				This plug creates the executable jar for fixing systems. Run it using :clean compile assembly:single  
+				-->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<executions>
+						<execution>
+							<goals>
+								<goal>attached</goal>
+							</goals>
+							<phase>package</phase>
+							<configuration>
+								<descriptorRefs>
+									<descriptorRef>jar-with-dependencies</descriptorRef>
+								</descriptorRefs>
+								<archive>
+									<manifest>
+										<mainClass>com.bluebox.Utils</mainClass>
+									</manifest>
+								</archive>
 							</configuration>
 						</execution>
 					</executions>

@@ -37,6 +37,9 @@ public class Config extends CompositeConfiguration {
 	public static final String BLUEBOX_STORAGE_HOME     = "bluebox_storage_home";
 	public static final String BLUEBOX_STORAGE_CONFIG   = "bluebox_storage_config";
 	public static final String BLUEBOX_STRICT_CHECKING  = "bluebox_strict";
+	public static final String BLUEBOX_HELPNAME  		= "bluebox_helpname";
+	public static final String BLUEBOX_HELPMAIL  		= "bluebox_helpmail";
+	public static final String BLUEBOX_HELPPHOTO  		= "bluebox_helpphoto";
 
 	//	Preferences prefs = Preferences.systemNodeForPackage(Config.class);
 

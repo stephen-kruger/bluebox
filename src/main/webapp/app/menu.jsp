@@ -25,19 +25,25 @@
 	}
 	
 	.menu1 {
-		width:33%;
+		width:30%;
 		display: table-cell;
 	    vertical-align: middle;
 	}
 	
 	.menu2 {
-		width:33%;
+		width:30%;
 		display: table-cell;
 	    vertical-align: middle;
 	}
 	
 	.menu3 {
-		width:33%;
+		width:30%;
+		display: table-cell;
+	    vertical-align: middle;
+	}
+	
+	.menu4 {
+		width:10%;
 		display: table-cell;
 	    vertical-align: middle;
 	}
@@ -130,6 +136,16 @@
 		inset-bottom; 5px;
 		text-align:center;
 		display:none;
+}
+.userpic {
+  	width: 25px;
+ 	height: 25px;
+  	border-radius: 50%;
+  	background-repeat: no-repeat;
+  	background-position: center center;
+  	background-size: cover;
+  	display: table-cell;
+	vertical-align: middle;
 }
 </style>
 
@@ -248,6 +264,9 @@
 		<a id="info" class="menulink" href="<%=request.getContextPath()%>/app/info.jsp"><%= menuResource.getString("info") %></a>
 		<a id="mobile" class="menulink" href="<%=request.getContextPath()%>/mobile/inboxes.jsp"><%= menuResource.getString("mobile") %></a>
 	</div>
+	<div class="menu4">
+		<a id="support" class="menulink" href="mailto:<%= bbconfig.getString(Config.BLUEBOX_HELPMAIL)%>"><div class="userpic" style="background-image:url('<%= bbconfig.getString(Config.BLUEBOX_HELPPHOTO)%>')"></div> <%= bbconfig.getString(Config.BLUEBOX_HELPNAME) %></a>
+	</div>
 	<div class="menu3">
 		<a id="docs" class="menulink" href="<%=request.getContextPath()%>/app/docs.jsp"><%= menuResource.getString("docs") %></a>
 		<a id="admin" class="menulink" href="<%=request.getContextPath()%>/app/admin.jsp"><%= menuResource.getString("admin") %></a>
@@ -255,5 +274,6 @@
 		<div class="dijitHidden"><span data-dojo-type="dijit.Tooltip" data-dojo-props="connectId:'help'"><%= menuResource.getString("help") %></span></div>
 		<span id="update" style="display:none;" class="menulink"><jsp:include page="update.jsp" /></span>
 	</div>
+
 </div>
 <div id="messageDiv" class="message">Loading</div>
