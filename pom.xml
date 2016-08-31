@@ -12,11 +12,11 @@
 		<slf4j_version>1.7.21</slf4j_version>
 		<jsoup_version>1.9.2</jsoup_version>
 		<commons_io_version>2.5</commons_io_version>
-		<rome_version>1.6.1</rome_version>
-		<lucene_version>6.1.0</lucene_version>
-		<solr_version>6.1.0</solr_version>
+		<rome_version>1.7.0</rome_version>
+		<lucene_version>6.2.0</lucene_version>
+		<solr_version>6.2.0</solr_version>
 		<derby_version>10.12.1.1</derby_version>
-		<mongo_version>3.2.2</mongo_version>
+		<mongo_version>3.3.0</mongo_version>
 		<apache.wink>1.4</apache.wink>
 		<jetty_version>9.3.10.M0</jetty_version>
 	</properties>
@@ -202,7 +202,7 @@
 		<dependency>
 			<groupId>org.codehaus.jettison</groupId>
 			<artifactId>jettison</artifactId>
-			<version>1.3.7</version>
+			<version>1.3.8</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -214,12 +214,12 @@
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>javax.mail-api</artifactId>
-			<version>1.5.5</version>
+			<version>1.5.6</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
-			<version>1.5.5</version>
+			<version>1.5.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

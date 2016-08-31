@@ -811,8 +811,8 @@ public class Utils {
 			long completion = 0;
 			for (int i = 0; i < count; i+= pageSize) {
 				try {
-					log.info("Processing {}%",completion*100/count);
-					List<LiteMessage> mail = si.listMailLite(null, State.ANY, i, pageSize, BlueboxMessage.RECEIVED, true);
+					log.info("Processing {}% {} of {}",completion*100/count,completion,count);
+					List<LiteMessage> mail = si.listMailLite(null, State.ANY, i, pageSize, BlueboxMessage.RECEIVED, false);
 					for (LiteMessage message : mail) {
 						if (message.getReceived().before(when)) {
 							si.delete(message.getIdentifier(), message.getRawIdentifier());
