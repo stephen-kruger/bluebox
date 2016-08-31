@@ -265,7 +265,12 @@
 		<a id="mobile" class="menulink" href="<%=request.getContextPath()%>/mobile/inboxes.jsp"><%= menuResource.getString("mobile") %></a>
 	</div>
 	<div class="menu4">
-		<a id="support" class="menulink" href="mailto:<%= bbconfig.getString(Config.BLUEBOX_HELPMAIL)%>"><div class="userpic" style="background-image:url('<%= bbconfig.getString(Config.BLUEBOX_HELPPHOTO)%>')"></div> <%= bbconfig.getString(Config.BLUEBOX_HELPNAME) %></a>
+		<a id="support" class="menulink" href="mailto:<%= bbconfig.getString(Config.BLUEBOX_HELPMAIL)%>">
+			<div class="userpic" style="background-image:url('<%= bbconfig.getString(Config.BLUEBOX_HELPPHOTO)%>')" onmouseover="dijit.Tooltip.defaultPosition=['below']"></div>
+				<div class="dijitHidden">
+					<span data-dojo-type="dijit.Tooltip" data-dojo-props="connectId:'support'"><%= bbconfig.getString(Config.BLUEBOX_HELPNAME) %></span>
+				</div>
+		</a>
 	</div>
 	<div class="menu3">
 		<a id="docs" class="menulink" href="<%=request.getContextPath()%>/app/docs.jsp"><%= menuResource.getString("docs") %></a>
