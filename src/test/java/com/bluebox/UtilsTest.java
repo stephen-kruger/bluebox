@@ -94,7 +94,6 @@ public class UtilsTest extends TestCase {
 		log.info(jo.toString());
 		assertNotNull(jo.getString("current_version"));
 		assertNotNull(jo.getString("available_version"));
-		assertNotNull(jo.getString("online_war"));
 		assertNotNull(jo.getString("update_available"));
 	}
 

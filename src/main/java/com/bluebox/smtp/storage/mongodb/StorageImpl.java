@@ -847,4 +847,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		return null;
 	}
 
+	@Override
+	public void delete(List<LiteMessage> bulkList) throws Exception {
+	    // TODO Auto-generated method stub
+	    
+	}
+
 }

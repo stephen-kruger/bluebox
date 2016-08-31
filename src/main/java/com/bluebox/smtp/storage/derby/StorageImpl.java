@@ -302,72 +302,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			return string.substring(0,i);
 		return string;
 	}
-
-	//	@Override
-	//	public void store(JSONObject props, InputStream blob) throws Exception {
-	//		Connection connection = getConnection();
-	//		try {
-	//			PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-	//			ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
-	//			ps.setString(2, props.getString(StorageIf.Props.RawUid.name())); // RAW UID
-	//			ps.setString(3, props.getString(StorageIf.Props.Inbox.name()));// INBOX
-	//			ps.setString(4, props.getString(StorageIf.Props.Recipient.name())); // RECIPIENT
-	//			ps.setString(5, props.getString(StorageIf.Props.Sender.name())); // FROM
-	//			ps.setString(6, props.getString(StorageIf.Props.Subject.name())); // SUBJECT
-	//			ps.setString(7, props.getString(BlueboxMessage.HTML_BODY)); // html body
-	//			ps.setString(8, props.getString(BlueboxMessage.TEXT_BODY)); // text body
-	//			Timestamp timestamp = new Timestamp(props.getLong(StorageIf.Props.Received.name()));
-	//			ps.setTimestamp(9, timestamp); // RECEIVED
-	//			ps.setInt(10, props.getInt(StorageIf.Props.State.name())); // STATE
-	//			ps.setLong(11, props.getLong(StorageIf.Props.Size.name())); // SIZE
-	////			ps.setBinaryStream(11, blob); // MIMEMESSAGE
-	//			ps.execute();
-	//			connection.commit();
-	//		}
-	//		catch (Throwable t) {
-	//			log.error("Error storing message :{}",t.getMessage());
-	//		}
-	//		finally {
-	//			connection.close();
-	//		}
-	//	}
-
-	//	public String add(String id, String from, InboxAddress recipient, String subject, Date date, State state, long size, InputStream blob) throws Exception {
-	//		Connection connection = getConnection();
-	//		PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-	//		ps.setString(1, id); // UID
-	//		ps.setString(2, recipient.getAddress());// INBOX
-	//		ps.setString(3, recipient.getFullAddress()); // RECIPIENT
-	//		ps.setString(4, from); // FROM
-	//		ps.setString(5, subject); // SUBJECT
-	//		ps.setTimestamp(6, new Timestamp(date.getTime())); // RECEIVED
-	//		ps.setInt(7, state.ordinal()); // STATE
-	//		ps.setLong(8, size); // SIZE
-	//		ps.setBinaryStream(9, blob); // MIMEMESSAGE
-	//		ps.execute();
-	//		connection.commit();
-	//		connection.close();
-	//
-	//		log.debug("Added mail entry "+recipient.getFullAddress());
-	//		return id;
-	//	}
-
-	//	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm) throws Exception {
-	//		String uid = UUID.randomUUID().toString();
-	//		BlueboxMessage message = new BlueboxMessage(uid,recipient);
-	//		message.setBlueBoxMimeMessage(from, recipient, received, bbmm);
-	////		add(uid, 
-	////				from,
-	////				recipient, 
-	////				bbmm.getSubject(),
-	////				received, 
-	////				State.NORMAL, 
-	////				Long.parseLong(message.getProperty(BlueboxMessage.SIZE)),
-	////				Utils.streamMimeMessage(bbmm));
-	//		store(message.toJSON(),Utils.streamMimeMessage(bbmm));
-	//		return message;
-	//	}
-
+	
 	@Override
 	public void delete(String id, String rawid) throws Exception {
 		Connection connection = getConnection();
@@ -384,6 +319,24 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 		connection.close();
 	}
+	
+	@Override
+	public void delete(List<LiteMessage> bulkList) throws Exception {
+	    // TODO - improve this using bulk methods
+	    for (LiteMessage m : bulkList) {
+		delete(m.getIdentifier(),m.getRawIdentifier());
+	    }	    
+	}
+
+//	@Override
+//	public void delete(List<String> uidList, List<String> rawIdList)
+//		throws Exception {
+//	    Iterator<String> rawId = rawIdList.iterator();
+//	    for (String uid : uidList) {
+//		delete(uid,rawId.next());
+//	    }
+//	    
+//	}
 
 	@Override
 	public BlueboxMessage retrieve(String uid) throws Exception {

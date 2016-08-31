@@ -33,17 +33,10 @@ public interface StorageIf {
 	 * Implementations must ensure all the fields in the Props object are persisted.
 	 */
 	public void store(JSONObject props, String spooledUid) throws Exception;
-	
-	/*
-	 * This method is only ever used when loading out of a zip file from backup restore.
-	 */
-//	public void store(JSONObject props, InputStream content) throws Exception;
 
 	public BlueboxMessage retrieve(String uid) throws Exception;
 	
 	public boolean contains(String uid);
-
-	//public void deleteAll(InboxAddress inbox) throws Exception;
 
 	public void deleteAll() throws Exception;
 
@@ -102,8 +95,9 @@ public interface StorageIf {
 	 */
 	public JSONObject getMostActiveSender();
 		
-
 	public void delete(String uid, String rawId) throws Exception;
+	
+	public void delete(List<LiteMessage> bulkList) throws Exception;
 	
 	/*
 	 * Called to perform housekeep tasks on the underlying storage, such as rebuilding indexes.
