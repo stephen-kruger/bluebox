@@ -352,18 +352,24 @@ public class Inbox implements SimpleMessageListener {
 		    log.info("Cleaning messages received before {}",messageExpireDate);
 		    LiteMessage msg;
 		    int count = 0;
+		    StorageIf si = StorageFactory.getInstance();
 		    LiteMessageIterator mi = new LiteMessageIterator(null, BlueboxMessage.State.ANY);
+		    List<LiteMessage> bulkList = new ArrayList<LiteMessage>();
 		    while (mi.hasNext()) {
 			setProgress(mi.getProgress());
 			msg = mi.next();
 			try {
 			    if (isExpired(msg.getReceived(),messageExpireDate)) {
-				delete(msg.getIdentifier(), msg.getRawIdentifier());
+				bulkList.add(msg);
 				count++;
 			    }
 			}
 			catch (Throwable t) {
 			    log.warn("Problem cleaning up message {} {}",msg.getIdentifier(),t.getMessage());
+			}
+			if (bulkList.size()>500) {
+			    si.delete(bulkList);
+			    bulkList.clear();
 			}
 		    }
 		    log.info("Cleaned up {} messages",count);
