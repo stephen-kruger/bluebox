@@ -79,6 +79,13 @@
 		<div style="text-align:left;">
 			<table>
 				<tr>
+					<td class="infoLabel"><label><%=infoResource.getString("smtpport")%></label></td>
+					<td class="infoValue">
+						<%= bbconfig.getString(Config.BLUEBOX_PORT) %>
+					</td>
+				</tr>
+				
+				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("messageage")%></label></td>
 					<td class="infoValue">
 						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_AGE) %>
