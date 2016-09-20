@@ -348,6 +348,7 @@ public class Inbox implements SimpleMessageListener {
 	    @Override
 	    public void run() {
 		try {
+		    Date started = new Date();
 		    Date messageExpireDate = new Date(new Date().getTime()-(Config.getInstance().getLong(Config.BLUEBOX_MESSAGE_AGE)*60*60*1000));
 		    log.info("Cleaning messages received before {}",messageExpireDate);
 		    LiteMessage msg;
@@ -355,7 +356,7 @@ public class Inbox implements SimpleMessageListener {
 		    StorageIf si = StorageFactory.getInstance();
 		    LiteMessageIterator mi = new LiteMessageIterator(null, BlueboxMessage.State.ANY);
 		    List<LiteMessage> bulkList = new ArrayList<LiteMessage>();
-		    while (mi.hasNext()) {
+		    while ((!euthanase(started))&&(mi.hasNext())) {
 			setProgress(mi.getProgress());
 			msg = mi.next();
 			try {
@@ -371,6 +372,9 @@ public class Inbox implements SimpleMessageListener {
 			    si.delete(bulkList);
 			    bulkList.clear();
 			}
+		    }
+		    if (euthanase(started)) {
+			log.info("Cleanup thread was euthanased before it could complete");
 		    }
 		    log.info("Cleaned up {} messages",count);
 		}
@@ -401,8 +405,9 @@ public class Inbox implements SimpleMessageListener {
 		    final long count = si.getMailCount(BlueboxMessage.State.ANY);
 		    final long deleteCount = count-max;
 		    long deletedCount=0;
+		    Date started = new Date();
 		    List<LiteMessage> bulkList = new ArrayList<LiteMessage>();
-		    while ((deleteCount>0)&&(si.getMailCount(BlueboxMessage.State.ANY)>max)&&(deletedCount<deleteCount)) {
+		    while ((!euthanase(started))&&(deleteCount>0)&&(si.getMailCount(BlueboxMessage.State.ANY)>max)&&(deletedCount<deleteCount)) {
 			log.info("Trimming {} of total {} mailboxes to limit of {} entries",deleteCount,count,max);
 			bulkList.clear();
 			List<LiteMessage> list = si.listMailLite(null, BlueboxMessage.State.ANY, 0, 500, BlueboxMessage.RECEIVED, true);
@@ -427,6 +432,9 @@ public class Inbox implements SimpleMessageListener {
 		    } 
 		    setProgress(100);
 		    log.info("Finished trimming {} messages with {} errors encountered", deleteCount,errors);
+		    if (euthanase(started)) {
+			log.info("Trim thread was euthansed before it could complete");
+		    }
 		}
 		catch (Throwable t) {
 		    log.error("Problem trimming mailboxes",t);
@@ -1209,4 +1217,11 @@ public class Inbox implements SimpleMessageListener {
     //		return false;
     //	}
 
+    /*
+     * Return true of the started date is longer than 45 minutes ago
+     */
+    private boolean euthanase(Date started) {
+	Date now = new Date();
+	return (now.getTime()-started.getTime())>(45*60*1000);
+    }
 }
