@@ -7,6 +7,7 @@ RUN yum -y install mongodb-server; yum clean all
 RUN mkdir -p /data/db
 EXPOSE 27017
 ENTRYPOINT ["/usr/bin/mongod"]
+RUN /etc/init.d/mongod start
 
 #FROM registry.eu-gb.bluemix.net/ibmliberty
 FROM registry.ng.bluemix.net/ibmliberty
