@@ -11,15 +11,14 @@
     </featureManager>
 	<!--
 	<keyStore password="password" id="bluebox"></keyStore>
-
+	-->
     <basicRegistry id="defaultRegistry">
         <group id="bluebox" name="bluebox">
             <member id="bluebox" name="bluebox"/>
 		</group>
         <user id="bluebox" name="bluebox" password="password"/>
     </basicRegistry>
-	-->
-
+	
     <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
     <httpEndpoint id="defaultHttpEndpoint"
                 host="*"
@@ -30,12 +29,10 @@
     <applicationManager autoExpand="true"/>
     <webApplication id="bluebox" location="bluebox.war" context-root="/" name="bluebox">
         <classloader apiTypeVisibility="spec, ibm-api, api, third-party" />
-		 <!--
         <application-bnd>
                 <security-role name="bluebox" id="bluebox">
 					<user name="bluebox" id="bluebox" access-id="bluebox"></user>
                 </security-role>
         </application-bnd>
-		-->
     </webApplication>
 </server>
