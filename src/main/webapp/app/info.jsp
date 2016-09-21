@@ -84,14 +84,24 @@
 						<%= bbconfig.getString(Config.BLUEBOX_PORT) %>
 					</td>
 				</tr>
-				
+				<tr>
+					<td><br/></td>
+				</tr>
+				<tr>
+					<td class="infoLabel"><label><%=infoResource.getString("storageimpl")%></label></td>
+					<td class="infoValue">
+						<%= StorageFactory.getInstance().getClass().getName() %>
+					</td>
+				</tr>
+				<tr>
+					<td><br/></td>
+				</tr>
 				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("messageage")%></label></td>
 					<td class="infoValue">
 						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_AGE) %>
 					</td>
-				</tr>
-				
+				</tr>				
 				<tr>
 					<td><br/></td>
 				</tr>
