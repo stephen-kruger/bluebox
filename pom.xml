@@ -18,7 +18,7 @@
 		<derby_version>10.12.1.1</derby_version>
 		<mongo_version>3.3.0</mongo_version>
 		<apache.wink>1.4</apache.wink>
-		<jetty_version>9.4.0.M1</jetty_version>
+		<jetty_version>9.3.8.v20160314</jetty_version>
 	</properties>
 	<distributionManagement>
 		<repository>
@@ -121,9 +121,8 @@
 						</execution>
 					</executions>
 				</plugin>
-				<!-- 
-				This plug creates the executable jar for fixing systems. Run it using :clean compile assembly:single  
-				-->
+				<!-- This plug creates the executable jar for fixing systems. Run it 
+					using :clean compile assembly:single -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
@@ -361,6 +360,12 @@
 			<version>${apache.wink}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>1.4.192</version>
+		</dependency>
+
 	</dependencies>
 	<scm>
 		<url>https://github.com/stephen-kruger/bluebox.git</url>

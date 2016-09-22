@@ -27,7 +27,7 @@ import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public abstract class AbstractStorage implements StorageIf {
-	public static final String DB_NAME = "bluebox401";
+	public static final String DB_NAME = "~/bluebox_h2_db";
 	//	public static long MAX_SPOOL_SIZE = 100;
 	private static final Logger log = LoggerFactory.getLogger(AbstractStorage.class);
 

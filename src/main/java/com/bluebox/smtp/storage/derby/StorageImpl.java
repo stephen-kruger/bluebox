@@ -328,16 +328,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    }	    
 	}
 
-//	@Override
-//	public void delete(List<String> uidList, List<String> rawIdList)
-//		throws Exception {
-//	    Iterator<String> rawId = rawIdList.iterator();
-//	    for (String uid : uidList) {
-//		delete(uid,rawId.next());
-//	    }
-//	    
-//	}
-
 	@Override
 	public BlueboxMessage retrieve(String uid) throws Exception {
 		Connection connection = getConnection();
@@ -439,31 +429,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		}
 	}
 
-	//	@Override
-	//	public void deleteAll(InboxAddress inbox) throws Exception {
-	//		log.debug("Deleting inbox "+inbox);
-	//		Connection connection = getConnection();
-	//		PreparedStatement ps = connection.prepareStatement("DELETE FROM "+INBOX_TABLE+" WHERE "+BlueboxMessage.INBOX+"=?");
-	//		ps.setString(1, inbox.getAddress());
-	//		ps.execute();
-	//		ps.close();
-	//		connection.close();
-	//	}
-
 	@Override
 	public void deleteAll() throws Exception {
-		//		log.debug("Deleting all inboxes");
-		//		Connection connection = getConnection();
-		//		Statement s;
-		//		s = connection.createStatement();
-		//		s.execute("delete from "+INBOX_TABLE);
-		//		s.close();
-		//
-		//		log.debug("Deleting all properties");
-		//		s = connection.createStatement();
-		//		s.execute("delete from "+PROPS_TABLE);
-		//		s.close();
-		//		connection.close();
 		dropTables();
 		setupTables();
 	}
