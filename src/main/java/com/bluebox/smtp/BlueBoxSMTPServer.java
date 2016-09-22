@@ -11,9 +11,10 @@ import com.bluebox.Utils;
 
 public class BlueBoxSMTPServer extends SMTPServer {
 	private static final Logger log = LoggerFactory.getLogger(BlueBoxSMTPServer.class);
+	private static BlueBoxSMTPServer instance;
 //	private SSLContext sslContext;
 
-	public BlueBoxSMTPServer(BlueboxMessageHandlerFactory mhf) {
+	private BlueBoxSMTPServer(BlueboxMessageHandlerFactory mhf) {
 		super(mhf);
 		// set up TLS
 //		try {
@@ -41,8 +42,22 @@ public class BlueBoxSMTPServer extends SMTPServer {
 	}
 
 	@Override
+	public synchronized void start() {
+		super.start();
+		log.info("Started the SMTP server");
+	}
+	
+	@Override
 	public synchronized void stop() {
 		super.stop();
+		log.info("Stopped the SMTP server (running={})",super.isRunning());
+	}
+
+	public static BlueBoxSMTPServer getInstance(BlueboxMessageHandlerFactory blueboxMessageHandlerFactory) {
+	    if (instance==null) {
+		instance = new BlueBoxSMTPServer(blueboxMessageHandlerFactory);
+	    }
+	    return instance;
 	}
 
 //	@Override

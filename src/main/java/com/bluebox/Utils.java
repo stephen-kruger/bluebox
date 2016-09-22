@@ -800,39 +800,81 @@ public class Utils {
      * clean compile assembly:single will generate an executable jar with this entry point
      */
     public static final void main(String[] args) {
-	StorageIf si = StorageFactory.getInstance();
-	try {
-	    long three_days = 3*24*60*60*1000;
-	    Date when = new Date(new Date().getTime()-three_days);
-	    long count = si.getMailCount(State.ANY);
-	    log.info("Deleting mail older than {}. Total count is {}",when,count);
-	    int pageSize = 500;
-	    long completion = 0;
-	    for (int i = 0; i < count; i+= pageSize) {
-		try {
-		    log.info("Processing {}% {} of {}",completion*100/count,completion,count);
-		    List<LiteMessage> mail = si.listMailLite(null, State.ANY, i, pageSize, BlueboxMessage.RECEIVED, false);
-		    List<LiteMessage> bulkList = new ArrayList<LiteMessage>();
-		    for (LiteMessage message : mail) {
-			if (message.getReceived().before(when)) {
+	if (args.length<2) {
+	    log.info("usage : java -jar bluebox-utils.jar age 3    - delete mail older than three days");
+	    log.info("        java -jar bluebox-utils.jar max 160  - trim size to 160K");
+	}
+	if ("age".equals(args[0])) {
+	    StorageIf si = StorageFactory.getInstance();
+	    try {
+		long three_days = Integer.valueOf(args[1])*24*60*60*1000;
+		Date when = new Date(new Date().getTime()-three_days);
+		long count = si.getMailCount(State.ANY);
+		log.info("Deleting mail older than {}. Total count is {}",when,count);
+		int pageSize = 500;
+		long completion = 0;
+		for (int i = 0; i < count; i+= pageSize) {
+		    try {
+			log.info("Processing {}% {} of {}",completion*100/count,completion,count);
+			List<LiteMessage> mail = si.listMailLite(null, State.ANY, i, pageSize, BlueboxMessage.RECEIVED, false);
+			List<LiteMessage> bulkList = new ArrayList<LiteMessage>();
+			for (LiteMessage message : mail) {
+			    if (message.getReceived().before(when)) {
+				//si.delete(message.getIdentifier(), message.getRawIdentifier());
+				bulkList.add(message);
+			    }
+			}
+			// remove the page in bulk
+			si.delete(bulkList);
+			completion+=mail.size();
+		    } 
+		    catch (Exception e) {
+			log.error("Problem listing mail {}",e.getMessage());
+			e.printStackTrace();
+		    }
+		}
+		log.info("Finished cleanup total count is now {}",si.getMailCount(State.ANY));
+	    } 
+	    catch (Exception e) {
+		log.error("Problem listing mail {}",e.getMessage());
+		e.printStackTrace();
+	    }
+	    return;
+	}
+	if ("max".equals(args[0])) {
+	    StorageIf si = StorageFactory.getInstance();
+	    try {
+		long count = Integer.valueOf(args[1])*1000;
+		log.info("Trimming mail down to {}",count);
+		int pageSize = 500;
+		long completion = 0;
+		do {
+		    try {
+			log.info("Processing {}% {} of {}",completion*100/count,completion,count);
+			List<LiteMessage> mail = si.listMailLite(null, State.ANY, 0, pageSize, BlueboxMessage.RECEIVED, false);
+			List<LiteMessage> bulkList = new ArrayList<LiteMessage>();
+			for (LiteMessage message : mail) {
 			    //si.delete(message.getIdentifier(), message.getRawIdentifier());
 			    bulkList.add(message);
 			}
+			// remove the page in bulk
+			si.delete(bulkList);
+			completion+=mail.size();
+		    } 
+		    catch (Exception e) {
+			log.error("Problem listing mail {}",e.getMessage());
+			e.printStackTrace();
 		    }
-		    // remove the page in bulk
-		    si.delete(bulkList);
-		    completion+=mail.size();
-		} 
-		catch (Exception e) {
-		    log.error("Problem listing mail {}",e.getMessage());
-		    e.printStackTrace();
-		}
+		} while (si.getMailCount(State.ANY)>count);
+		log.info("Finished cleanup total count is now {}",si.getMailCount(State.ANY));
+	    } 
+	    catch (Exception e) {
+		log.error("Problem listing mail {}",e.getMessage());
+		e.printStackTrace();
 	    }
-	    log.info("Finished cleanup total count is now {}",si.getMailCount(State.ANY));
-	} 
-	catch (Exception e) {
-	    log.error("Problem listing mail {}",e.getMessage());
-	    e.printStackTrace();
+	    return;
 	}
+	for (int i = 0; i < args.length; i++)
+	    log.error("Unknown argument {}",args[i]);
     }
 }

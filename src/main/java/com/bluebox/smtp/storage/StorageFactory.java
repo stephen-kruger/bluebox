@@ -35,7 +35,7 @@ public class StorageFactory {
 					storageInstance = new com.bluebox.smtp.storage.mongodb.MongoImpl();
 				} 
 				else {
-					storageInstance = new com.bluebox.smtp.storage.derby.StorageImpl();
+					storageInstance = new com.bluebox.smtp.storage.h2.StorageImpl();
 				}
 			}
 			try {

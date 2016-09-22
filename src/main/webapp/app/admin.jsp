@@ -6,6 +6,7 @@
 <%@ page import="com.bluebox.Config"%>
 <%@ page import="com.bluebox.rest.AdminResource"%>
 <%@ page import="com.bluebox.rest.StatsResource"%>
+<%@ page import="com.bluebox.smtp.BlueBoxSMTPServer"%>
 <%@ page import="com.bluebox.Utils"%>
 <%@ page import="com.bluebox.smtp.Inbox"%>
 <%
@@ -144,6 +145,16 @@
 					"<%=adminResource.getString("db_maintenance_action")%>");
 		}
 		
+		function startSMTP() {
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/startsmtp",
+					"<%=adminResource.getString("start_smtp_action")%>");
+		}
+		
+		function stopSMTP() {
+			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/stopsmtp",
+					"<%=adminResource.getString("stop_smtp_action")%>");
+		}
+		
 		function dbBackup() {
 			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/backup",
 					"<%=adminResource.getString("backup_action")%>");
@@ -256,6 +267,24 @@
 						<td align="right"><label data-dojo-id="generatelabel"
 							id="generateLabel"></label></td>
 					</tr>
+					<tr>
+						<td><br /></td>
+					</tr>
+					<% if (BlueBoxSMTPServer.getInstance(null).isRunning())  {%>
+					<tr>
+						<td><label><%=adminResource.getString("stop_smtp_action")%></label></td>
+						<td></td>
+						<td><button onclick="stopSMTP()"
+								data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
+					</tr>
+					<% } else { %>
+					<tr>
+						<td><label><%=adminResource.getString("start_smtp_action")%></label></td>
+						<td></td>
+						<td><button onclick="startSMTP()"
+								data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
+					</tr>
+					<% } %>
 					<tr>
 						<td><br /></td>
 					</tr>

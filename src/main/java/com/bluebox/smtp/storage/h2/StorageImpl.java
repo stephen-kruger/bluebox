@@ -142,9 +142,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    StorageFactory.getInstance().start();
 	    return ((StorageImpl)StorageFactory.getInstance()).getConnection();
 	}
-	String url = "jdbc:h2:"+DB_NAME+";create=true";
+	String url = "jdbc:h2:"+getDbName()+";create=true";
 	Connection conn = DriverManager.getConnection(url);
 	return conn;
+    }
+
+    private String getDbName() {
+	// TODO Auto-generated method stub
+	return "~/"+DB_NAME+"_h2";
     }
 
     public void clear() {
@@ -1001,7 +1006,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    //String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received.name()+") > TIMESTAMP('" + new Timestamp(lastHour.getTime()) + "')"+emailBit;
 	    String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where "+StorageIf.Props.Received.name()+" > '" + new Timestamp(lastHour.getTime()) + "'"+emailBit;
 	    PreparedStatement ps;
-	    log.info(">>>>{}",sql);
 	    ps = connection.prepareStatement(sql);
 	    if ((inbox!=null)&&(inbox.getFullAddress().trim().length()>0)) {
 		ps.setString(1, inbox.getAddress()); 

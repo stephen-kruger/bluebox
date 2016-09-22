@@ -21,7 +21,7 @@ public abstract class BaseTestCase extends TestCase {
 		Config config = Config.getInstance();
 		config.setProperty(Config.BLUEBOX_PORT, 2500);
 		inbox = Inbox.getInstance();
-		smtpServer = new BlueBoxSMTPServer(bbmhf = new BlueboxMessageHandlerFactory(inbox));
+		smtpServer = BlueBoxSMTPServer.getInstance(bbmhf = new BlueboxMessageHandlerFactory(inbox));
 		smtpServer.start();
 		inbox.deleteAll();
 	}
