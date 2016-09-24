@@ -51,6 +51,7 @@ public class BlueBoxSMTPServer extends SMTPServer {
 	public synchronized void stop() {
 		super.stop();
 		log.info("Stopped the SMTP server (running={})",super.isRunning());
+		instance = null;
 	}
 
 	public static BlueBoxSMTPServer getInstance(BlueboxMessageHandlerFactory blueboxMessageHandlerFactory) {

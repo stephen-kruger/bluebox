@@ -23,6 +23,7 @@ import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
 import com.bluebox.search.SearchFactory;
 import com.bluebox.search.SearchIf;
+import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
 
@@ -149,7 +150,7 @@ public abstract class AbstractStorage implements StorageIf {
 
 	@Override
 	public WorkerThread runMaintenance() throws Exception {
-		WorkerThread wt = new WorkerThread(StorageIf.WT_NAME) {
+		WorkerThread wt = new WorkerThread(Inbox.DBMAINTENANCE_WORKER) {
 
 			@Override
 			public void run() {

@@ -44,6 +44,7 @@ import javax.mail.util.ByteArrayDataSource;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.apache.commons.fileupload.util.mime.MimeUtility;
 import org.apache.commons.io.IOUtils;
@@ -67,7 +68,6 @@ public class Utils {
     public static final String UTF8 = "UTF-8";
     private static final Logger log = LoggerFactory.getLogger(Utils.class);
     private static int counter=0;
-    //	private static PriorityQueue<File>tempFiles = new PriorityQueue<File>(20,new FileDateComparator());
     private static MimetypesFileTypeMap ftm;
 
     static {
@@ -203,11 +203,12 @@ public class Utils {
     }
 
     public static WorkerThread generate(final ServletContext session, final Inbox inbox, final int count) throws Exception {
-	WorkerThread wt = new WorkerThread("generate") {
+	WorkerThread wt = new WorkerThread(Inbox.GENERATE_WORKER) {
 
 	    @Override
 	    public void run() {
-		log.info("Starting generation thread");
+		log.debug("Starting generation thread");
+		Date now = new Date();
 		try {
 		    int toC,ccC, bccC;
 		    int totalCount = 0;
@@ -234,6 +235,10 @@ public class Utils {
 			    sendMessageDirect(inbox,msg);
 			    totalCount += toC+ccC+bccC;
 			    setProgress((totalCount*100)/count);
+			    if ((totalCount % 100)==0) {
+				int elapsedSeconds = (int)(new Date().getTime()-now.getTime())/1000;
+				log.info("{}% complete at {} mails/second",getProgress(),(totalCount/elapsedSeconds));
+			    }
 			} while (totalCount<count);
 		    }
 		}
@@ -447,7 +452,7 @@ public class Utils {
 
 		// create the html part
 		MimeBodyPart htmlBodyPart = new MimeBodyPart();
-		//			htmlBodyPart.setContent("<html><head><script>alert('gotcha!');</script></head><body><font color=\"red\">"+textBody.replaceAll("\n", "</br>")+"</font></body></html>","text/html; charset=\""+UTF8+"\"");
+		htmlBodyPart.setContent("<html><head><!--<script>alert('gotcha!');</script>--></head><body><font color=\"red\">"+textBody.replaceAll("\n", "</br>")+"</font></body></html>","text/html; charset=\""+UTF8+"\"");
 		htmlBodyPart.setContent(htmlBody,"text/html; charset=\""+UTF8+"\"");
 		multipart.addBodyPart(htmlBodyPart);
 	    }
@@ -631,6 +636,10 @@ public class Utils {
 	    }				
 	}
 	return res.toString();
+    }
+    
+    public static String encodeQuotedPrintable(String original) throws DecoderException {
+	return new String(QuotedPrintableCodec.decodeQuotedPrintable(original.getBytes()));
     }
 
     //	public static InputStream streamMimeMessage(MimeMessage msg) throws IOException, MessagingException {

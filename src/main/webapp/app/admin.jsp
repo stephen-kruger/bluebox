@@ -44,37 +44,37 @@
 						  onComplete : 
 							  	function(queryResults, request) {
 								  try {
-									  if (queryResults.backup) {
-											backup.set({value: queryResults.backup});
-											document.getElementById("backupLabel").innerHTML = queryResults.backup_status;
+									  if (queryResults.<%=Inbox.BACKUP_WORKER%>) {
+											backup.set({value: queryResults.<%=Inbox.BACKUP_WORKER%>});
+											document.getElementById("<%=Inbox.BACKUP_WORKER%>Label").innerHTML = queryResults.<%=Inbox.BACKUP_WORKER%>_status;
 									  }
-									  if (queryResults.restore) {
-											restore.set({value: queryResults.restore});
-											document.getElementById("restoreLabel").innerHTML = queryResults.restore_status;
+									  if (queryResults.<%=Inbox.RESTORE_WORKER%>) {
+											restore.set({value: queryResults.<%=Inbox.RESTORE_WORKER%>});
+											document.getElementById("<%=Inbox.RESTORE_WORKER%>Label").innerHTML = queryResults.<%=Inbox.RESTORE_WORKER%>_status;
 									  }
-									  if (queryResults.rawclean) {
-											rawclean.set({value: queryResults.rawclean});
-											document.getElementById("rawcleanLabel").innerHTML = queryResults.rawclean_status;
+									  if (queryResults.<%=StorageIf.RAWCLEAN%>) {
+											rawclean.set({value: queryResults.<%=StorageIf.RAWCLEAN%>});
+											document.getElementById("<%=StorageIf.RAWCLEAN%>Label").innerHTML = queryResults.<%=StorageIf.RAWCLEAN%>_status;
 									  }
-									  if (queryResults.reindex) {
-											reindex.set({value: queryResults.reindex});
-											document.getElementById("reindexLabel").innerHTML = queryResults.reindex_status;
+									  if (queryResults.<%=Inbox.REINDEX_WORKER%>) {
+											reindex.set({value: queryResults.<%=Inbox.REINDEX_WORKER%>});
+											document.getElementById("<%=Inbox.REINDEX_WORKER%>Label").innerHTML = queryResults.<%=Inbox.REINDEX_WORKER%>_status;
 									  }
-									  if (queryResults.dbmaintenance) {
-										  dbmaintenance.set({value: queryResults.dbmaintenance});
-										  document.getElementById("dbmaintenanceLabel").innerHTML = queryResults.dbmaintenance_status;
+									  if (queryResults.<%=Inbox.DBMAINTENANCE_WORKER%>) {
+										  dbmaintenance.set({value: queryResults.<%=Inbox.DBMAINTENANCE_WORKER%>});
+										  document.getElementById("<%=Inbox.DBMAINTENANCE_WORKER%>Label").innerHTML = queryResults.<%=Inbox.DBMAINTENANCE_WORKER%>_status;
 									  }
 									  if (queryResults.<%=Inbox.TRIM_WORKER%>) {
-										  <%=Inbox.TRIM_WORKER%>.set({value: queryResults.<%=Inbox.TRIM_WORKER%>});
-										  document.getElementById("pruneLabel").innerHTML = queryResults.<%=Inbox.TRIM_WORKER%>_status;
+										  trim.set({value: queryResults.<%=Inbox.TRIM_WORKER%>});
+										  document.getElementById("<%=Inbox.TRIM_WORKER%>Label").innerHTML = queryResults.<%=Inbox.TRIM_WORKER%>_status;
 									  }
 									  if (queryResults.<%=Inbox.EXPIRE_WORKER%>) {
-										  <%=Inbox.EXPIRE_WORKER%>.set({value: queryResults.<%=Inbox.EXPIRE_WORKER%>});
-										  document.getElementById("expireLabel").innerHTML = queryResults.<%=Inbox.EXPIRE_WORKER%>_status;
+										  expire.set({value: queryResults.<%=Inbox.EXPIRE_WORKER%>});
+										  document.getElementById("<%=Inbox.EXPIRE_WORKER%>Label").innerHTML = queryResults.<%=Inbox.EXPIRE_WORKER%>_status;
 									  }
-									  if (queryResults.generate) {
-										  generate.set({value: queryResults.generate});
-										  document.getElementById("generateLabel").innerHTML = queryResults.generate_status;
+									  if (queryResults.<%=Inbox.GENERATE_WORKER%>) {
+										  generate.set({value: queryResults.<%=Inbox.GENERATE_WORKER%>});
+										  document.getElementById("<%=Inbox.GENERATE_WORKER%>Label").innerHTML = queryResults.<%=Inbox.GENERATE_WORKER%>_status;
 									  }
 								  }
 								  catch (err) {
@@ -124,7 +124,7 @@
 					"<%=adminResource.getString("clear_errors_action")%>");
 		}
 		
-		function pruneMail() {
+		function trimMail() {
 			genericGet("<%=request.getContextPath()%>/jaxrs<%=AdminResource.PATH%>/trim",
 					"<%=adminResource.getString("prune_action")%>");
 		}
@@ -241,8 +241,8 @@
 								data-dojo-type="dijit/form/HorizontalSlider"
 								data-dojo-props="value:100,
 						    minimum: 0,
-						    maximum:5000,
-						    discreteValues:501,
+						    maximum:50000,
+						    discreteValues:1001,
 						    value:100,
 						    intermediateChanges:false,
 						    showButtons:false">
@@ -251,10 +251,10 @@
 									container="bottomDecoration"
 									style="height: 1em; font-size: 75%; color: gray;">
 									<li>0</li>
-									<li>1250</li>
-									<li>2500</li>
-									<li>3800</li>
-									<li>5000</li>
+									<li>12500</li>
+									<li>25000</li>
+									<li>38000</li>
+									<li>50000</li>
 								</ol>
 							</div>
 						</td>
@@ -264,8 +264,8 @@
 								style="width: 100%" data-dojo-id="generate"
 								id="generateProgress" data-dojo-props="maximum:100"></div></td>
 						<td></td>
-						<td align="right"><label data-dojo-id="generatelabel"
-							id="generateLabel"></label></td>
+						<td align="right"><label data-dojo-id="<%=Inbox.GENERATE_WORKER%>label"
+							id="<%=Inbox.GENERATE_WORKER%>Label"></label></td>
 					</tr>
 					<tr>
 						<td><br /></td>
@@ -318,11 +318,13 @@
 					<tr>
 						<td><label><%=adminResource.getString("prune_action")%></label></td>
 						<td></td>
-						<td><button onclick="pruneMail()"
+						<td><button onclick="trimMail()"
 								data-dojo-type="dijit/form/Button" type="button"><%=adminResource.getString("execute")%></button></td>
-						<td><div data-dojo-type="dijit/ProgressBar"
+						<td>
+							<div data-dojo-type="dijit/ProgressBar"
 								style="width: 100%" data-dojo-id="<%=Inbox.TRIM_WORKER%>" id="<%=Inbox.TRIM_WORKER%>Progress"
-								data-dojo-props="maximum:100"></div></td>
+								data-dojo-props="maximum:100"></div>
+						</td>
 						<td></td>
 						<td align="right"><label data-dojo-id="<%=Inbox.TRIM_WORKER%>label" id="<%=Inbox.TRIM_WORKER%>Label"></label></td>
 					</tr>
@@ -338,8 +340,9 @@
 								style="width: 100%" data-dojo-id="expire" id="expireProgress"
 								data-dojo-props="maximum:100"></div></td>
 						<td></td>
-						<td align="right"><label data-dojo-id="expirelabel"
-							id="expireLabel"></label></td>
+						<td align="right">
+							<label data-dojo-id="<%=Inbox.EXPIRE_WORKER%>label"	id="<%=Inbox.EXPIRE_WORKER%>Label"></label>
+						</td>
 					</tr>
 					<tr>
 						<td><br /></td>
@@ -372,8 +375,8 @@
 								style="width: 100%" data-dojo-id="reindex" id="reindexProgress"
 								data-dojo-props="maximum:100"></div></td>
 						<td></td>
-						<td align="right"><label data-dojo-id="reindexlabel"
-							id="reindexLabel"></label></td>
+						<td align="right"><label data-dojo-id="<%=Inbox.REINDEX_WORKER%>label"
+							id="<%=Inbox.REINDEX_WORKER%>Label"></label></td>
 					</tr>
 					<tr>
 						<td><br /></td>

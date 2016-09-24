@@ -51,16 +51,20 @@ import com.bluebox.smtp.storage.mongodb.MongoImpl;
 
 public class Inbox implements SimpleMessageListener {
     private static final String GLOBAL_COUNT_NODE = "global_message_count";
-    private static final String BACKUP_WORKER = "backup";
     private JSONObject recentStats = new JSONObject();
 
     public static final String EMAIL = "Email";
 
     private static final Logger log = LoggerFactory.getLogger(Inbox.class);
     public static final long MAX_MAIL_BYTES = Config.getInstance().getLong(Config.BLUEBOX_MAIL_LIMIT);
+    public static final String BACKUP_WORKER = "backup";
+    public static final String RESTORE_WORKER = "restore";
     public static final String EXPIRE_WORKER = "expire";
     public static final String TRIM_WORKER = "trim";
     public static final String ORPHAN_WORKER = "orphan";
+    public static final String GENERATE_WORKER = "generate";
+    public static final String DBMAINTENANCE_WORKER = "dbmaintenance";
+    public static final String REINDEX_WORKER = "reindex";
     private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
     private BlueboxMessageHandlerFactory blueboxMessageHandlerFactory;
 
@@ -711,7 +715,6 @@ public class Inbox implements SimpleMessageListener {
 	}
 	catch (Throwable t) {
 	    log.error(t.getMessage());
-	    t.printStackTrace();
 	}
     }
 
@@ -840,7 +843,7 @@ public class Inbox implements SimpleMessageListener {
 
     public WorkerThread rebuildSearchIndexes() throws Exception {
 
-	WorkerThread wt = new WorkerThread("reindex") {
+	WorkerThread wt = new WorkerThread(Inbox.REINDEX_WORKER) {
 
 	    @Override
 	    public void run() {
@@ -1093,7 +1096,7 @@ public class Inbox implements SimpleMessageListener {
 
     public WorkerThread restoreTo(final File zipFile) throws Exception {
 	log.info("Restoring mail from {}",zipFile.getCanonicalPath());
-	WorkerThread wt = new WorkerThread("restore") {
+	WorkerThread wt = new WorkerThread(RESTORE_WORKER) {
 
 	    @Override
 	    public void run() {

@@ -8,51 +8,50 @@ import org.slf4j.LoggerFactory;
 import com.bluebox.Config;
 
 public class StorageFactory {
-	private static final Logger log = LoggerFactory.getLogger(StorageFactory.class);
-	private static StorageIf storageInstance;
+    private static final Logger log = LoggerFactory.getLogger(StorageFactory.class);
+    private static StorageIf storageInstance;
 
-	public static StorageIf getInstance() {
-		if (storageInstance==null) {
-			Config config = Config.getInstance();
-			if (config.containsKey(Config.BLUEBOX_STORAGE)) {
-				log.info("Using config specified storage :{}",config.getString(Config.BLUEBOX_STORAGE));
-				// use whatever config specifies
-				String storageClassName = config.getString(Config.BLUEBOX_STORAGE);
-				log.info("Allocating storage instance for class {}",storageClassName);
-				try {
-					storageInstance = (StorageIf) Class.forName(storageClassName).newInstance();
-				} 
-				catch (Throwable e) {
-					log.error(e.getMessage());
-					e.printStackTrace();
-				}
-			}
-			else {
-				// try mongodb, if it fails use derby
-				if (com.bluebox.smtp.storage.AbstractStorage.mongoDetected()) {
-//					storageInstance = new com.bluebox.smtp.storage.mongodb.StorageImpl();
-					log.info("Using MongoImpl storage driver");
-					storageInstance = new com.bluebox.smtp.storage.mongodb.MongoImpl();
-				} 
-				else {
-					storageInstance = new com.bluebox.smtp.storage.h2.StorageImpl();
-				}
-			}
-			try {
-				log.debug("Starting Storage");
-				storageInstance.start();
-			} 
-			catch (Exception e) {
-				log.error("Problem starting storage instance",e);
-			}
+    public static StorageIf getInstance() {
+	if (storageInstance==null) {
+	    Config config = Config.getInstance();
+	    if (config.containsKey(Config.BLUEBOX_STORAGE)) {
+		log.info("Using config specified storage :{}",config.getString(Config.BLUEBOX_STORAGE));
+		// use whatever config specifies
+		String storageClassName = config.getString(Config.BLUEBOX_STORAGE);
+		log.info("Allocating storage instance for class {}",storageClassName);
+		try {
+		    storageInstance = (StorageIf) Class.forName(storageClassName).newInstance();
+		} 
+		catch (Throwable e) {
+		    log.error(e.getMessage());
+		    e.printStackTrace();
 		}
-
-		return storageInstance;
+	    }
+	    else {
+		// try mongodb, if it fails use derby
+		if (com.bluebox.smtp.storage.AbstractStorage.mongoDetected()) {
+		    log.info("Using MongoImpl storage driver");
+		    storageInstance = new com.bluebox.smtp.storage.mongodb.MongoImpl();
+		} 
+		else {
+		    storageInstance = new com.bluebox.smtp.storage.h2.StorageImpl();
+		}
+	    }
+	    try {
+		log.debug("Starting Storage");
+		storageInstance.start();
+	    } 
+	    catch (Exception e) {
+		log.error("Problem starting storage instance",e);
+	    }
 	}
 
-	public static void clearInstance() {
-		log.info("Clearing storage instance");
-		storageInstance=null;
-	}
+	return storageInstance;
+    }
+
+    public static void clearInstance() {
+	log.info("Clearing storage instance");
+	storageInstance=null;
+    }
 
 }

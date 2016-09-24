@@ -11,7 +11,7 @@ public class TestAutoCompleteResource extends BaseTestCase {
 //	private JSONAutoCompleteHandler handler;
 
 	@Override
-	protected void setUp() throws Exception {
+	protected void setUp() {
 		super.setUp();
 		log.info("Deprecated");
 //		handler = new JSONAutoCompleteHandler();

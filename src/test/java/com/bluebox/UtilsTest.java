@@ -6,14 +6,14 @@ import java.util.logging.Logger;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
-import junit.framework.TestCase;
-
+import org.apache.commons.codec.DecoderException;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.junit.Test;
-import org.subethamail.smtp.util.Base64;
 
 import com.bluebox.smtp.InboxAddress;
+
+import junit.framework.TestCase;
 
 public class UtilsTest extends TestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
@@ -27,14 +27,15 @@ public class UtilsTest extends TestCase {
 	}
 
 	@Test
-	public void testUTF8Decode() throws UnsupportedEncodingException {
+	public void testUTF8Decode() throws UnsupportedEncodingException, DecoderException {
 		//		String src = "è¿™æ˜¯ä¸€ä¸ªä¸»é¢˜";//6L+Z5piv5LiA5Liq5Li76aKY
-		String src2 = "这是一个主题";
-		String encodedStr = "=?UTF-8?B?6L+Z5piv5LiA5Liq5Li76aKY?=";
-		String encodedStr2 = "6L+Z5piv5LiA5Liq5Li76aKY";
-		log.info(new String(Base64.decode(encodedStr2)));
-		log.info(Utils.decodeQuotedPrintable(encodedStr));
-		assertEquals("UTF-8 was not correctly  decoded",src2,Utils.decodeQuotedPrintable(encodedStr));
+		String original = "这是一个主题";
+		//String encodedStr = "=?UTF-8?B?6L+Z5piv5LiA5Liq5Li76aKY?=";
+		//String encodedStr2 = "6L+Z5piv5LiA5Liq5Li76aKY";
+		//log.info(new String(Base64.decode(encodedStr2)));
+		//log.info(Utils.decodeQuotedPrintable(encodedStr));
+		log.info(Utils.encodeQuotedPrintable(original));
+		assertEquals("UTF-8 was not correctly  decoded",original,Utils.decodeQuotedPrintable(Utils.encodeQuotedPrintable(original)));
 	}
 
 	@Test

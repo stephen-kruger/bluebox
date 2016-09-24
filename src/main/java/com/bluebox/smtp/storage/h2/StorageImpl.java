@@ -128,10 +128,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 	StorageFactory.clearInstance();
 	log.info("Stopped H2 repository");
-
-	// force gc to unload the H2 classes
-	//http://db.apache.org/derby/docs/10.3/devguide/tdevdvlp20349.html
-	System.gc();
+	
 	started = false;
     }
 

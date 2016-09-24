@@ -23,6 +23,7 @@ import com.bluebox.Config;
 import com.bluebox.Utils;
 import com.bluebox.WorkerThread;
 import com.bluebox.smtp.BlueBoxSMTPServer;
+import com.bluebox.smtp.BlueboxMessageHandlerFactory;
 import com.bluebox.smtp.Inbox;
 
 @Path(AdminResource.PATH)
@@ -54,7 +55,7 @@ public class AdminResource extends AbstractResource {
 	    return Response.ok(startWorker(wt, request)).build();
 	}
 	catch (Throwable t) {
-	    log.error("Problem listing mails per hour",t);
+	    log.error("Problem generating mails",t);
 	    return error(t.getMessage());
 	}
     }
@@ -119,7 +120,7 @@ public class AdminResource extends AbstractResource {
 	    @Context HttpServletRequest request) throws IOException {
 	try {
 	    log.info("Starting smtp...");
-	    BlueBoxSMTPServer.getInstance(null).start();
+	    BlueBoxSMTPServer.getInstance( new BlueboxMessageHandlerFactory(Inbox.getInstance())).start();
 	    return Response.ok("Started").build();
 	}
 	catch (Throwable t) {

@@ -11,10 +11,15 @@ public class IteratorTest extends BaseTestCase {
 
 
 	@Override
-	protected void setUp() throws Exception {
+	protected void setUp() {
 		super.setUp();
 		log.info("Populating testdata");
-		TestUtils.addRandomDirect(StorageFactory.getInstance(), SIZE);
+		try {
+		    TestUtils.addRandomDirect(StorageFactory.getInstance(), SIZE);
+		} 
+		catch (Exception e) {
+		    e.printStackTrace();
+		}
 	}
 
 	public void testStepThroughAll() throws Exception {
