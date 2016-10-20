@@ -363,6 +363,18 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	    log.warn("Nothing deleted for uid {}",uid);
 	}
     }
+    
+    @Override
+    public void delete(String uid, String rawId) throws Exception {
+	delete(uid);
+	if (spoolReferenced(rawId)) {
+	    log.debug("Leaving still referenced spooled message {}",rawId);						
+	}
+	else {
+	    log.debug("Deleting last instance of spooled message {}",rawId);
+	    removeSpooledStream(rawId);
+	}
+    }
 
     @Override
     public void delete(List<LiteMessage> bulkList) throws Exception {
@@ -383,46 +395,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	}
 	removeSpooledStream(rawList);
     }
-
-    /*
-     * Delete only the JSON portion of the mail entry
-     */
-    //    public void delete(List<String> uidList) throws Exception {
-    //	DeleteResult res = mailFS.deleteMany(Filters.all(StorageIf.Props.Uid.name(), uidList));
-    //	if (res.getDeletedCount()<=0) {
-    //	    log.warn("Nothing deleted for uid list fo size {}",res.getDeletedCount());
-    //	}
-    //    }
-
-    @Override
-    public void delete(String uid, String rawId) throws Exception {
-	delete(uid);
-	// remove the RAW blob too if there are no more references to it
-	//		rawFS.remove(rawFS.findOne(uid));
-	if (spoolReferenced(rawId)) {
-	    log.debug("Leaving still referenced spooled message {}",rawId);						
-	}
-	else {
-	    log.debug("Deleting last instance of spooled message {}",rawId);
-	    removeSpooledStream(rawId);
-	}
-    }
-
-    //    @Override
-    //    public void delete(List<String> uidList, List<String> rawIdList) throws Exception {
-    //	delete(uidList);
-    //	// remove the RAW blob too if there are no more references to it
-    //	//		rawFS.remove(rawFS.findOne(uid));
-    //	for (String rawId : rawIdList) {
-    //	    if (spoolReferenced(rawId)) {
-    //		log.debug("Leaving still referenced spooled message {}",rawId);						
-    //	    }
-    //	    else {
-    //		log.debug("Deleting last instance of spooled message {}",rawId);
-    //		removeSpooledStream(rawId);
-    //	    }
-    //	}
-    //    }
 
     @Override
     public JSONObject getCountByDay() {
@@ -652,7 +624,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
     public void removeSpooledStream(String spooledUid) throws Exception {
 	log.debug("Removing spool {}",spooledUid);
 	try {
-	    blobFS.remove(spooledUid);	
+	    blobFS.remove(spooledUid);
 	}
 	catch (Throwable t){
 	    log.error("Could not delete specified spooled stream {}",spooledUid);
@@ -751,33 +723,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	return wt;
     }
 
-    public WorkerThread cleanOrphanSpoolsOld() throws Exception {
-	log.info("Cleaning unreferenced spooled mails");
-
-	WorkerThread wt = new WorkerThread(Inbox.ORPHAN_WORKER) {
-
-	    @Override
-	    public void run() {
-		long count = 0;
-		for (DBObject f : blobFS.getFileList()) {
-		    List<GridFSDBFile> blobs = blobFS.find(f);
-		    for (GridFSDBFile blob : blobs)
-			if (!spoolReferenced(blob.getFilename())) {
-			    count++;
-			    log.info("Found unreferenced mail spool (total={})",count);
-			    try {
-				removeSpooledStream(blob.getFilename());
-			    } 
-			    catch (Exception e) {
-				e.printStackTrace();
-			    }
-			}
-		}
-	    }
-	};
-	return wt;
-    }
-
     /*
      * Return true if there are mail entries referencing this blob, else return false;
      */
@@ -846,7 +791,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 		return doc.getString(key);
 	}
 	catch (Throwable t) {
-	    log.warn("Problem getting key {}",key, t);
+	    log.warn("Problem getting key {}",key);
 	}
 	return def;
     }

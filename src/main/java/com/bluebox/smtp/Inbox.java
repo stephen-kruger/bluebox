@@ -41,13 +41,11 @@ import com.bluebox.search.SearchFactory;
 import com.bluebox.search.SearchIf;
 import com.bluebox.search.SearchUtils;
 import com.bluebox.smtp.storage.BlueboxMessage;
-import com.bluebox.smtp.storage.BlueboxMessage.State;
 import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.LiteMessageIterator;
 import com.bluebox.smtp.storage.MessageIterator;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
-import com.bluebox.smtp.storage.mongodb.MongoImpl;
 
 public class Inbox implements SimpleMessageListener {
     private static final String GLOBAL_COUNT_NODE = "global_message_count";
@@ -61,15 +59,15 @@ public class Inbox implements SimpleMessageListener {
     public static final String RESTORE_WORKER = "restore";
     public static final String EXPIRE_WORKER = "expire";
     public static final String TRIM_WORKER = "trim";
-    public static final String ORPHAN_WORKER = "orphan";
+//    public static final String ORPHAN_WORKER = "orphan";
     public static final String GENERATE_WORKER = "generate";
     public static final String DBMAINTENANCE_WORKER = "dbmaintenance";
     public static final String REINDEX_WORKER = "reindex";
     private List<String> fromBlackList, toBlackList, toWhiteList, fromWhiteList;
     private BlueboxMessageHandlerFactory blueboxMessageHandlerFactory;
 
-    private static Timer timer = null;
-    private static TimerTask timerTask = null;
+    private static Timer expireTimer = null, purgeTimer = null, orphanTimer = null;
+    private static TimerTask expireTimerTask = null, purgeTimerTask=null, orphanTimerTask = null;
     private static Inbox inboxInstance;
 
     private Inbox() {
@@ -100,16 +98,15 @@ public class Inbox implements SimpleMessageListener {
 	    log.error("Error starting search instance",ioe);
 	}
 
+	long frequency = Config.getInstance().getLong(Config.BLUEBOX_DAEMON_DELAY);
+	long period = frequency*60*1000;  // repeat every hour.
 	// now start a background timer for the mail expiration
-	// only one per jvm instance
-	if (timer == null) {
-	    log.debug("Scheduling cleanup timer");
-	    long frequency = Config.getInstance().getLong(Config.BLUEBOX_DAEMON_DELAY);
-	    timer = new Timer();
-	    long period = frequency*60*1000;  // repeat every hour.
-	    long delay = period;   // delay for same amount of time before first run.
-	    timer = new Timer();
-	    timer.scheduleAtFixedRate(timerTask = new TimerTask() {
+	if (expireTimer == null) {
+	    expireTimer = new Timer();
+	    long delay = period/3;   // delay for same amount of time before first run.
+	    log.info("Scheduling cleanup timer to start in {} minutes",delay);
+	    expireTimer = new Timer();
+	    expireTimer.scheduleAtFixedRate(expireTimerTask = new TimerTask() {
 
 		@Override
 		public void run() {
@@ -119,44 +116,87 @@ public class Inbox implements SimpleMessageListener {
 		    } 
 		    catch (Exception e) {
 			log.error("Error running expire cleanup {}",e.getMessage());
-			e.printStackTrace();
 		    }
+		}
+	    }, delay, period);
+	}
+
+	// now start a background timer for the mail purge
+	if (purgeTimer == null) {
+	    purgeTimer = new Timer();
+	    long delay = period;   // delay for same amount of time before first run.
+	    log.info("Scheduling purge timer to start in {} minutes",delay);
+	    purgeTimer = new Timer();
+	    purgeTimer.scheduleAtFixedRate(purgeTimerTask = new TimerTask() {
+
+		@Override
+		public void run() {
+		    log.info("Purge timer activated");
 		    try {
 			WorkerThread.startWorker(trimThread());
 		    } 
 		    catch (Exception e) {
 			log.error("Error running trim cleanup {}",e.getMessage());
-			e.printStackTrace();
 		    }
+		}
+	    }, delay, period);
+	}
+	// now start a background timer for the orphan cleanup
+	if (orphanTimer == null) {
+	    orphanTimer = new Timer();
+	    long delay = period/2;   // delay for same amount of time before first run.
+	    log.info("Scheduling orphan timer to start in {} minutes",delay);
+	    orphanTimer = new Timer();
+	    orphanTimer.scheduleAtFixedRate(orphanTimerTask = new TimerTask() {
+
+		@Override
+		public void run() {
+		    log.info("Orphan timer activated");
 		    try {
 			WorkerThread.startWorker(orphanThread());
 		    } 
 		    catch (Exception e) {
 			log.error("Error running orphan cleanup {}",e.getMessage());
-			e.printStackTrace();
 		    }
 		}
 	    }, delay, period);
 	}
+
 	log.info("Started inbox");
-	try {
-	    migrate();
-	} 
-	catch (Exception e) {
-	    log.error("Error migrating data",e);
-	    e.printStackTrace();
-	}
+	//	try {
+	//	    migrate();
+	//	} 
+	//	catch (Exception e) {
+	//	    log.error("Error migrating data",e);
+	//	    e.printStackTrace();
+	//	}
     }
 
     public void stop() {
-	log.debug("Stopping cleanup timer");
-	if (timer != null) {
-	    timer.cancel();
-	    timer = null;
+	log.debug("Stopping cleanup timers");
+	if (expireTimer != null) {
+	    expireTimer.cancel();
+	    expireTimer = null;
 	}
-	if (timerTask != null) {
-	    timerTask.cancel();
-	    timerTask = null;
+	if (expireTimerTask != null) {
+	    expireTimerTask.cancel();
+	    expireTimerTask = null;
+	}
+	if (purgeTimer != null) {
+	    purgeTimer.cancel();
+	    purgeTimer = null;
+	}
+	if (purgeTimerTask != null) {
+	    purgeTimerTask.cancel();
+	    purgeTimerTask = null;
+	}
+	if (orphanTimer != null) {
+	    orphanTimer.cancel();
+	    orphanTimer = null;
+	}
+	if (orphanTimerTask != null) {
+	    orphanTimerTask.cancel();
+	    orphanTimerTask = null;
 	}
 
 	// stopping migration thread
@@ -381,14 +421,14 @@ public class Inbox implements SimpleMessageListener {
 			log.info("Cleanup thread was euthanased before it could complete");
 		    }
 		    log.info("Cleaned up {} messages",count);
+		    setStatus("Complete");
 		}
 		catch (Throwable t) {
-		    t.printStackTrace();
 		    log.error("Problem expiring mail",t);
+		    setStatus("Error:"+t.getMessage());
 		}
 		finally {
 		    setProgress(100);
-		    setStatus("Complete");
 		}
 	    }
 
@@ -438,10 +478,16 @@ public class Inbox implements SimpleMessageListener {
 		    log.info("Finished trimming {} messages with {} errors encountered", deleteCount,errors);
 		    if (euthanase(started)) {
 			log.info("Trim thread was euthansed before it could complete");
+			setStatus("Euthanased");
 		    }
+		    setStatus("Complete");
 		}
 		catch (Throwable t) {
 		    log.error("Problem trimming mailboxes",t);
+		    setStatus("Error:"+t.getMessage());
+		}
+		finally {
+		    setProgress(100);
 		}
 	    }
 	};
@@ -679,14 +725,6 @@ public class Inbox implements SimpleMessageListener {
 	catch (Exception ioe) {
 	    ioe.printStackTrace();
 	}
-	//		finally {
-	//			try {
-	//				si.removeSpooledStream(spooledUid);
-	//			} 
-	//			catch (Exception e) {
-	//				e.printStackTrace();
-	//			}
-	//		}
     }
 
     public void deliver(String from, String recipient, MimeMessage mimeMessage, String spooledUid) throws Exception {
@@ -1020,75 +1058,75 @@ public class Inbox implements SimpleMessageListener {
 	return wt;
     }
 
-    public void migrate() throws Exception {
-	WorkerThread wt = new WorkerThread("migrate") {
-
-	    @Override
-	    public void run() {
-		// backup old inbox
-		StorageIf si = StorageFactory.getInstance();
-		if (si instanceof MongoImpl) {
-		    log.info("Checking for migration triggers");
-		    @SuppressWarnings("deprecation")
-		    StorageIf oldStorage = new com.bluebox.smtp.storage.mongodb.StorageImpl();
-		    try {
-			oldStorage.start();
-			if (oldStorage.getMailCount(State.ANY)>0) {
-			    log.info("Preparing to migrate");
-			    File backupFile = File.createTempFile("migration", "zip");
-			    backupFile.deleteOnExit();
-			    WorkerThread backupThread = backupTo(oldStorage, backupFile);
-			    Thread t = WorkerThread.startWorker(backupThread);
-			    while (t.isAlive()) {
-				Thread.sleep(5000);
-				log.info("Migrating data (export) {}% complete",backupThread.getProgress());
-			    }
-			    /// restore to new inbox
-			    log.info("Restoring migrated data");
-			    WorkerThread restoreThread = restoreTo(backupFile);
-			    t = WorkerThread.startWorker(restoreThread);
-			    while (t.isAlive()) {
-				Thread.sleep(5000);
-				log.info("Migrating data (import) {}% complete",restoreThread.getProgress());
-			    }
-
-			    log.info("Migration complete, cleaning up data");
-
-			    // delete backup file
-			    backupFile.delete();
-
-			    // delete the old data
-			    oldStorage.deleteAll();
-
-			    // stop old storage
-			    oldStorage.stop();
-			    log.info("Migration completed, old data deleted from database");
-			}
-			else {
-			    log.info("No migration needed - old storage was empty");
-			}
-		    }
-		    catch (Throwable t) {
-			t.printStackTrace();
-		    }
-		    finally {
-			try {
-			    log.info("Shutting down old storage driver");
-			    oldStorage.stop();
-			} 
-			catch (Exception e) {
-			    e.printStackTrace();
-			}
-		    }
-		}		
-		else {
-		    log.info("No migration needed for current driver");
-		}
-	    }
-
-	};
-	WorkerThread.startWorker(wt);
-    }
+    //    public void migrate() throws Exception {
+    //	WorkerThread wt = new WorkerThread("migrate") {
+    //
+    //	    @Override
+    //	    public void run() {
+    //		// backup old inbox
+    //		StorageIf si = StorageFactory.getInstance();
+    //		if (si instanceof MongoImpl) {
+    //		    log.info("Checking for migration triggers");
+    //		    @SuppressWarnings("deprecation")
+    //		    StorageIf oldStorage = new com.bluebox.smtp.storage.mongodb.StorageImpl();
+    //		    try {
+    //			oldStorage.start();
+    //			if (oldStorage.getMailCount(State.ANY)>0) {
+    //			    log.info("Preparing to migrate");
+    //			    File backupFile = File.createTempFile("migration", "zip");
+    //			    backupFile.deleteOnExit();
+    //			    WorkerThread backupThread = backupTo(oldStorage, backupFile);
+    //			    Thread t = WorkerThread.startWorker(backupThread);
+    //			    while (t.isAlive()) {
+    //				Thread.sleep(5000);
+    //				log.info("Migrating data (export) {}% complete",backupThread.getProgress());
+    //			    }
+    //			    /// restore to new inbox
+    //			    log.info("Restoring migrated data");
+    //			    WorkerThread restoreThread = restoreTo(backupFile);
+    //			    t = WorkerThread.startWorker(restoreThread);
+    //			    while (t.isAlive()) {
+    //				Thread.sleep(5000);
+    //				log.info("Migrating data (import) {}% complete",restoreThread.getProgress());
+    //			    }
+    //
+    //			    log.info("Migration complete, cleaning up data");
+    //
+    //			    // delete backup file
+    //			    backupFile.delete();
+    //
+    //			    // delete the old data
+    //			    oldStorage.deleteAll();
+    //
+    //			    // stop old storage
+    //			    oldStorage.stop();
+    //			    log.info("Migration completed, old data deleted from database");
+    //			}
+    //			else {
+    //			    log.info("No migration needed - old storage was empty");
+    //			}
+    //		    }
+    //		    catch (Throwable t) {
+    //			t.printStackTrace();
+    //		    }
+    //		    finally {
+    //			try {
+    //			    log.info("Shutting down old storage driver");
+    //			    oldStorage.stop();
+    //			} 
+    //			catch (Exception e) {
+    //			    e.printStackTrace();
+    //			}
+    //		    }
+    //		}		
+    //		else {
+    //		    log.info("No migration needed for current driver");
+    //		}
+    //	    }
+    //
+    //	};
+    //	WorkerThread.startWorker(wt);
+    //    }
 
     public WorkerThread restore(final File dir) throws Exception {
 	return restoreTo(new File(dir.getCanonicalPath()+File.separator+"bluebox.zip"));
@@ -1188,37 +1226,6 @@ public class Inbox implements SimpleMessageListener {
     public WorkerThread cleanOrphans() throws Exception {
 	return StorageFactory.getInstance().cleanOrphans();
     }
-
-    //	/**
-    //	 * This method parses the Received header to see if the sending SMTP server is on our from blacklist.
-    //	 * @param message
-    //	 * @return false if not a blacklisted sender
-    //	 * @throws MessagingException
-    //	 */
-    //	public boolean isSameSMTPSender(BlueboxMessage message, String smtpDomain) throws MessagingException {
-    //		//		from wallstreetads.org ([193.104.41.200])
-    //		//        by bluebox.xxx.yyy.com
-    //		//        with SMTP (BlueBox) id I2IKBO4B
-    //		//        for jan.schumacher@yahoo.de;
-    //		//        Fri, 14 Nov 2014 23:57:26 -0600 (CST)
-    //		try {
-    //			String[] header = message.getBlueBoxMimeMessage().getHeader("Received");
-    //			if ((header!=null)&&(header.length>0)) {
-    //				StringTokenizer toks = new StringTokenizer(header[0]);
-    //				toks.nextToken();// discard the "from
-    //				String domain = toks.nextToken();
-    //				// check from blacklist
-    //
-    //				if (domain.indexOf(smtpDomain.toString())>=0) {
-    //					return true;
-    //				}
-    //			}
-    //		}
-    //		catch (Throwable t) {
-    //			log.info("Error checking received header :"+t.getMessage());
-    //		}
-    //		return false;
-    //	}
 
     /*
      * Return true of the started date is longer than 45 minutes ago

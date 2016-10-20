@@ -1056,6 +1056,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	    @Override
 	    public void run() {
+		setStatus("Running");
 		try {
 		    int issues = 0;
 		    long totalCount = getSpoolCount()+getMailCount(BlueboxMessage.State.ANY);
@@ -1098,13 +1099,14 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			    log.info("Deleting orphaned mail entry ({})",issues);
 			}
 		    }
+		    setStatus("Completed");
 		}
 		catch (Throwable t) {
 		    log.error("Error cleaning orphans",t);
+		    setStatus("Error :"+t.getMessage());
 		}
 		finally {				
 		    setProgress(100);
-		    setStatus("Completed");
 		}
 	    }
 

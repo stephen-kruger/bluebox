@@ -207,6 +207,7 @@ public class Utils {
 
 	    @Override
 	    public void run() {
+		setStatus("Running");
 		log.debug("Starting generation thread");
 		Date now = new Date();
 		try {
@@ -241,13 +242,14 @@ public class Utils {
 			    }
 			} while (totalCount<count);
 		    }
+		    setStatus("Generated "+count+" messages");
 		}
 		catch (Throwable t) {
-		    t.printStackTrace();
+		    log.error("Problem generating mail",t);
+		    setStatus("Error :"+t.getMessage());
 		}
 		finally {
 		    setProgress(100);
-		    setStatus("Generated "+count+" messages");
 		    log.info("Ended generation thread");
 		}
 	    }
