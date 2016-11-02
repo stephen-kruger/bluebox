@@ -58,6 +58,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
     private boolean started = false;
 
 
+    public StorageImpl() {
+	log.info("Forcing mail limit to 60K for H2 driver");
+	// we know this driver cannot handle more than about 60K mails
+	Config.getInstance().setProperty(Config.BLUEBOX_MAIL_LIMIT, 60000);
+    }
+    
     @Override
     public void start() throws Exception {
 	if (started) {

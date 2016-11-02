@@ -4,18 +4,18 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.5.11</version>
+	<version>4.5.12</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
 	<properties>
 		<subethasmtp_version>3.1.7</subethasmtp_version>
 		<slf4j_version>1.7.21</slf4j_version>
-		<jsoup_version>1.9.2</jsoup_version>
+		<jsoup_version>1.10.1</jsoup_version>
 		<commons_io_version>2.5</commons_io_version>
 		<rome_version>1.7.0</rome_version>
 		<lucene_version>6.2.1</lucene_version>
 		<solr_version>6.2.1</solr_version>
-		<derby_version>10.12.1.1</derby_version>
+		<derby_version>10.13.1.1</derby_version>
 		<mongo_version>3.3.0</mongo_version>
 		<apache.wink>1.4</apache.wink>
 		<jetty_version>9.3.8.v20160314</jetty_version>
