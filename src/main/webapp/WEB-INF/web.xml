@@ -13,6 +13,12 @@
 				accessible by authenticated users of the bluebox role
 			</description>
 			<url-pattern>/app/admin.jsp</url-pattern>
+			<!-- this is for internal IBM builds where everything is locked down
+			<url-pattern>/app/inbox.jsp</url-pattern>
+			<url-pattern>/app/index.jsp</url-pattern>
+			<url-pattern>/index.jsp</url-pattern>
+			<url-pattern>/</url-pattern>
+			 -->
 			<http-method>GET</http-method>
 			<http-method>POST</http-method>
 			<http-method>PUT</http-method>
@@ -50,20 +56,4 @@
 		<location>/app/error.jsp?code=403</location>
 	</error-page>
 
-<!-- 
-    <servlet>
-        <servlet-name>jaxrs</servlet-name>
-        <servlet-class>org.apache.wink.server.internal.servlet.RestServlet</servlet-class>
-        <init-param>
-            <param-name>javax.ws.rs.Application</param-name>
-            <param-value>com.bluebox.rest.RestApi</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>jaxrs</servlet-name>
-        <url-pattern>/jaxrs/*</url-pattern>
-    </servlet-mapping>
-    
- -->
 </web-app>

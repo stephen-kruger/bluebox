@@ -262,7 +262,7 @@
 		<a id="errors" class="menulink" href="<%=request.getContextPath()%>/app/errors.jsp"><%= menuResource.getString("errors") %><span id="statsMenuErrorCount" class="badge">?</span></a>
 		<a id="upload" class="menulink" href="<%=request.getContextPath()%>/app/upload.jsp"><%= menuResource.getString("upload") %></a>
 		<a id="info" class="menulink" href="<%=request.getContextPath()%>/app/info.jsp"><%= menuResource.getString("info") %></a>
-		<a id="mobile" class="menulink" href="<%=request.getContextPath()%>/mobile/inboxes.jsp"><%= menuResource.getString("mobile") %></a>
+		<!-- <a id="mobile" class="menulink" href="<%=request.getContextPath()%>/mobile/inboxes.jsp"><%= menuResource.getString("mobile") %></a>  -->
 	</div>
 	<div class="menu4">
 		<a id="support" class="menulink" href="mailto:<%= bbconfig.getString(Config.BLUEBOX_HELPMAIL)%>">

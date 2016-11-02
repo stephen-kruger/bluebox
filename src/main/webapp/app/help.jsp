@@ -36,7 +36,7 @@
 					<h2>What is it?</h2>
 					<ol>
 						<li style="list-style-type:none;">Many teams within our company develop software that rely heavily on sending emails (for sign-up, social software notifications etc).</li>
-						<li style="list-style-type:none;">Properly testing this software requires multiple "fake" email addesses to allow testing of the capabili style="list-style-type:none;"ties of the software from various points of view and roles</li>
+						<li style="list-style-type:none;">Properly testing this software requires multiple "fake" email addesses to allow testing of the capabilities of the software from various points of view and roles</li>
 						<li style="list-style-type:none;">Traditionally we either used Google Mail (which allowed random prefixes to be added to email addresses), or other services such as <a href="http://mailinator.com">Mailinator</a></li>
 						<li style="list-style-type:none;">However sending such emails from unreleased proucts, potentially containing trade secrets, non-public product information and other private information to the public internet is not feasible, and an internal service was needed.</li>
 					</ol>
