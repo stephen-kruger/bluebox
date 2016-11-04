@@ -135,12 +135,9 @@
 				placeholder="<%= inboxResource.getString("searchPlaceholder") %>"
 				id="blueboxSearchText" name="blueboxSearchText"
 				class="lotusText lotusInactive" type="text" title="Search" /></td>
-			<td><span> <input onclick="search()" width="18"
-					height="18" type="image"
-					alt="<%= inboxDetailsResource.getString("upload") %>"
-					title="<%= inboxDetailsResource.getString("upload") %>"
-					src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/inboxSearch.png" />
-			</span></td>
+			<td>
+				<i style="cursor: pointer; cursor: hand;" alt="<%= inboxDetailsResource.getString("search") %>" title="<%= inboxDetailsResource.getString("search") %>" onclick="search()" class="material-icons" style="vertical-align:middle">search</i>
+			</td>
 		<tr>
 	</table>
 </form>

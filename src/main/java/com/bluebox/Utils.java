@@ -614,8 +614,11 @@ public class Utils {
     //		}
     //		return quoted;
     //	}
-
     public static String decodeQuotedPrintable(String quoted) {
+	return decodeQuotedPrintable(quoted,UTF8);
+    }
+    
+    public static String decodeQuotedPrintable(String quoted, String encoding) {
 	StringTokenizer st = new StringTokenizer(quoted,"\r\n",false);
 	StringBuffer res = new StringBuffer();
 	while (st.hasMoreTokens()) {
@@ -628,13 +631,13 @@ public class Utils {
 		    s = s.substring(0,s.lastIndexOf('='));
 		}
 
-		s = new String(QuotedPrintableCodec.decodeQuotedPrintable(s.getBytes(Charset.forName(UTF8))),UTF8);
+		s = new String(QuotedPrintableCodec.decodeQuotedPrintable(s.getBytes(Charset.forName(encoding))),encoding);
 		res.append(s);
 	    } 
 	    catch (Throwable e) {
 		res.append(s);
 		//e.printStackTrace();
-		log.debug("Error decoding quoted-printable",e);
+		log.error("Error decoding quoted-printable",e);
 	    }				
 	}
 	return res.toString();

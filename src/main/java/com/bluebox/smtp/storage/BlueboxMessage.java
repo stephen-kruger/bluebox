@@ -418,7 +418,7 @@ public class BlueboxMessage {
 			return convertCidLinks(request,getIdentifier(),html);
 		} 
 		catch (Throwable e) {
-			log.error("Problem getting html content {}",e);
+			log.debug("Problem getting html content {}",e);
 		}
 		return "";
 	}

@@ -56,7 +56,9 @@ function dialog(title, content) {
 <link type="text/css" href='https://fonts.googleapis.com/css?family=Roboto:700,400&subset=latin,cyrillic-ext,greek-ext,greek,vietnamese,latin-ext,cyrillic' rel='stylesheet'>
 <link type="text/css" href="<%=request.getContextPath()%>/app/index.css" rel="stylesheet" />
 <link type="text/css" href="<%=request.getContextPath()%>/app/<%=bbconfig.getString("bluebox_theme")%>/theme.css" rel="stylesheet" />
-
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css"/>
+<link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons"/>
+	
 <script type="text/javascript" charset="utf-8">
 
 	function getParamRaw(name){
@@ -71,3 +73,6 @@ function dialog(title, content) {
 		return p;
 	}
 </script>
+<style>
+	font-family: noto;
+</style>

@@ -237,11 +237,14 @@
 				dojo.xhrGet(xhrArgs);
 			}
 			
-			require(["dojo/domReady!"], function() {
-				// will not be called until DOM is ready
-				loadGlobalMenu();
-				startTimer();
-				updateCheck();
+			require(["dojo/ready", "dijit/registry", "dojo/parser"],
+					function(ready, registry){
+					  ready(function(){
+							// will not be called until DOM is ready
+							loadGlobalMenu();
+							startTimer();
+							updateCheck();
+					  });
 			});
 </script>
 	    	    

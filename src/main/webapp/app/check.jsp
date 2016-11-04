@@ -77,10 +77,13 @@
 		}
     }
 	
-	require(["dojo/domReady!"], function(domready){
-		  // will not be called until DOM is ready
-			initTypeAhead();
+	require(["dojo/ready", "dijit/registry", "dojo/parser"],
+			function(ready, registry){
+			  ready(function(){
+				  initTypeAhead();
+			  });
 	});
+
 </script>
 
 <div class="checkboxContent">

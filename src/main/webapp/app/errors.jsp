@@ -103,10 +103,13 @@
 
 			var deferred = dojo.xhrGet(xhrArgs);
 		}
-				
-		require(["dojo/domReady!","dojox/data/JsonRestStore"], function() {
+			
+		require(["dojo/ready", "dijit/registry", "dojo/parser"],
+				function(ready, registry){
+				  ready(function(){
 					selectMenu("errors");
 					setupTable();
+				  });
 		});
 		
 	</script>

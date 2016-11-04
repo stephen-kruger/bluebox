@@ -12,8 +12,11 @@
 	<title>Documentation</title>
 	<jsp:include page="dojo.jsp" />	
 	<script>
-		require(["dojo/domReady!"], function(){
-			selectMenu("docs");
+		require(["dojo/ready", "dijit/registry", "dojo/parser"],
+				function(ready, registry){
+				  ready(function(){
+					  selectMenu("docs");
+				  });
 		});
 	</script>
 	<style type="text/css">

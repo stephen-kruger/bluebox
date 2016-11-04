@@ -93,8 +93,11 @@
 		loadCombined();
 	}
 	
-	require(["dojo/domReady!"], function() {
-		loadStats();
+	require(["dojo/ready", "dijit/registry", "dojo/parser"],
+			function(ready, registry){
+			  ready(function(){
+				  loadStats();
+			  });
 	});
 </script>
 
@@ -127,4 +130,5 @@
 	<span class="greyText"><%= footerResource.getString("title") %>V<%= BlueBoxServlet.VERSION %></span>
 	<br/><br/>
 	<span class="greyText"><%= statsResource.getString("uptime") %> <%= BlueBoxServlet.getUptime("dd'd 'HH'h 'mm'm 'ss's'") %></span>
+
 </div>

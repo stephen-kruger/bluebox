@@ -20,8 +20,11 @@
 	<jsp:include page="dojo.jsp" />
 	
 	<script type="text/javascript" charset="utf-8">
-		require(["dojo/domReady!","dijit/form/Button",  "dojox/form/Uploader", "dojox/form/uploader/FileList"], function(domReady,Button,Uploader,FileList){
-			selectMenu("info");
+		require(["dojo/ready", "dijit/registry", "dojo/parser"],
+				function(ready, registry){
+				  ready(function(){
+						selectMenu("info");
+				  });
 		});
 	</script>
 	

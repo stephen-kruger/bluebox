@@ -16,9 +16,6 @@
 	<title><%=headerResource.getString("welcome")%></title>
 	<jsp:include page="dojo.jsp" />
 	<script type="text/javascript" charset="utf-8">
-		require(["dojo/domReady!"], function(domReady){
-			selectMenu("inbox");
-		});
 		require([
 		         "dojo/_base/kernel",
 		         "dojo/parser",
@@ -28,12 +25,13 @@
 		function updateMph(emailAddress) {
 			try {
 				require(["dojox/data/JsonRestStore"], function () {
-					var urlStr = "<%=request.getContextPath()%>/jaxrs/stats/mph/"+encodeURIComponent(emailAddress)+"/";
+					var urlStr = "<%=request.getContextPath()%>/jaxrs/stats/mph/"+encodeURIComponent(emailAddress);
 					console.log(urlStr);
 					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 					var queryResults = jStore.fetch({
 						  onComplete : 
 							  	function(queryResults, request) {
+							  		console.log("Got result");
 									if (document.getElementById("mphGauge")) {
 										require(["dijit/registry"], function(registry){
 										    var mphGauge = registry.byId("mphGauge");
@@ -48,8 +46,14 @@
 										    	mphGauge.set('value', queryResults.mph);
 										    	mphGauge.refreshRendering();
 										    }
+										    else {
+										    	console.log("no dijit gauge found");
+										    }
 									    });
-									}	
+									}
+									else {
+										console.log("no gauge found");
+									}
 								}
 					});
 				});
@@ -63,24 +67,29 @@
 			try {
 				// start the refresh timer
 				require(["dojox/timing"], function(registry){
-					var t = new dojox.timing.Timer(10000);
+					var t = new dojox.timing.Timer(45000);
 					t.onTick = function() {
+						console.log("requesting mph now");
 						updateMph(folderEmail);
 					}
 					t.start();
 				});
 			}
 			catch (err) {
-				console.log("menu3:"+err);
+				console.log("startGaugeTimer error:"+err);
 			}
 		}
 		
-		require(["dojo/domReady!"], function() {
-			updateMph(folderEmail);
-			console.log("starting gauge timer");
-			// will not be called until DOM is ready
-			startGaugeTimer();
+		require(["dojo/ready", "dijit/registry", "dojo/parser"],
+				function(ready, registry){
+				  ready(function(){
+						selectMenu("inbox");
+						console.log("starting gauge timer");
+						// will not be called until DOM is ready
+						startGaugeTimer();
+				  });
 		});
+		
 	</script>
 	<style type="text/css">
 		
@@ -107,7 +116,7 @@
 				<div class="seperator"></div>
 				<h2>Mails per hour</h2>
 				<div style="display: block;margin-left: auto;margin-right: auto ">
-					<div id="mphGauge" data-dojo-type="dojox/dgauges/components/default/CircularLinearGauge" value="0" minimum="0" maximum="600" style="width:120px; height:120px"></div>
+					<div id="mphGauge" data-dojo-type="dojox/dgauges/components/default/CircularLinearGauge" value="0" minimum="0" maximum="5000" style="width:100px; height:100px"></div>
 				</div>
 
 			</div>

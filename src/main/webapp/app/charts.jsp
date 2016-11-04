@@ -48,7 +48,6 @@ require(["dojox/charting/Chart", "dojox/charting/StoreSeries", "dojo/store/JsonR
 												    monthlychart.render();
 							    		 });
 					    });
-					    console.log(results);
 		    }
 		    catch (err) {
 		    	alert(err);
@@ -78,8 +77,8 @@ require(["dojox/charting/Chart", "dojox/charting/StoreSeries", "dojo/store/JsonR
 </script>
 
 	<h2><%= chartResource.getString("charts_daily_title") %></h2>
-		<div id="monthlychart" style="width: 250px; height: 150px;"></div>
+		<div id="monthlychart" style="width: 150px; height: 100px;"></div>
 	<h2><%= chartResource.getString("charts_weekly_title") %></h2>
-		<div id="weeklychart" style="width: 250px; height: 150px;"></div>
+		<div id="weeklychart" style="width: 150px; height: 100px;"></div>
 	<h2><%= chartResource.getString("charts_hourly_title") %></h2>
-		<div id="hourlychart" style="width: 250px; height: 150px;"></div>
+		<div id="hourlychart" style="width: 150px; height: 100px;"></div>

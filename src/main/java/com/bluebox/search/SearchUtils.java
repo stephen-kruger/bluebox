@@ -159,10 +159,10 @@ public class SearchUtils {
 		if (html!=null) {
 			if (html.length()>0) {
 				try {
-					new ParserDelegator().parse(new StringReader(html), parserCallback, false);
+					new ParserDelegator().parse(new StringReader(html), parserCallback, true);
 				}
 				catch (Throwable t) {
-					log.warn("Could not parse html content - indexing all ({})",t.getMessage());
+					log.warn("Could not parse html content for searching",t);
 					sb.append(html);
 				}
 			}

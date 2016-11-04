@@ -217,10 +217,14 @@
 		});
 	}
 
-	require([ "dojo/domReady!" ], function() {
-		selectMenu("admin");
-		updateWorkers();
+	require(["dojo/ready", "dijit/registry", "dojo/parser"],
+			function(ready, registry){
+			  ready(function(){
+				  selectMenu("admin");
+					updateWorkers();
+			  });
 	});
+
 </script>
 </head>
 <body class="<%=bbconfig.getString("dojo_style")%>">

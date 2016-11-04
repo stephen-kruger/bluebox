@@ -387,29 +387,41 @@
 		<div class="inboxView">
 			<div class="navcontainer">
 				<ul>
-					<li><a href="javascript:;" onclick="loadAll()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbAll.png"
-							alt="<%=inboxDetailsResource.getString("allTooltip")%>" /><%=inboxDetailsResource.getString("all")%>
-					</a></li>
-					<li><a href="javascript:;" onclick="loadRaw()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbDownload.png"
-							alt="<%=inboxDetailsResource.getString("downloadTooltip")%>" /><%=inboxDetailsResource.getString("download")%></a>
+					<li>
+						<a href="javascript:;" onclick="loadAll()"> 
+							<i class="fa fa-lg fa-envelope-o" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("allTooltip")%>"></i>
+							<%=inboxDetailsResource.getString("all")%>
+						</a>
 					</li>
-					<li><a href="javascript:;" onclick="refresh()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbRefresh.png"
-							alt="<%=inboxDetailsResource.getString("refreshTooltip")%>" /><%=inboxDetailsResource.getString("refresh")%></a>
+					<li>
+						<a href="javascript:;" onclick="loadRaw()"> 
+							<i class="fa fa-lg fa-save" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("downloadTooltip")%>"></i>
+							<%=inboxDetailsResource.getString("download")%>
+						</a>
 					</li>
-					<li><a href="javascript:;" onclick="rssFeed()"> <img
-							class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbRss.png"
-							alt="<%=inboxDetailsResource.getString("rssTooltip")%>" /><%=inboxDetailsResource.getString("rss")%></a>
+					<li>
+						<a href="javascript:;" onclick="refresh()"> 
+							<i class="fa fa-lg fa-refresh" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("refreshTooltip")%>"></i>
+							<%=inboxDetailsResource.getString("refresh")%>
+						</a>
 					</li>
-					<li><a href="javascript:;" onclick="deleteSelectedRows()">
-							<img class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbDelete.png"
-							alt="<%=inboxDetailsResource.getString("deleteTooltip")%>" /><%=inboxDetailsResource.getString("delete")%></a>
+					<li>
+						<a href="javascript:;" onclick="rssFeed()">
+							<i class="fa fa-lg fa-rss" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("rssTooltip")%>"></i>
+							<%=inboxDetailsResource.getString("rss")%>
+						</a>
 					</li>
-					<li><a href="javascript:;" onclick="spamSelectedRows()">
-							<img class="sixteenIcon" src="<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/tbSpam.png"
-							alt="<%=inboxDetailsResource.getString("spamTooltip")%>" /><%=inboxDetailsResource.getString("spam")%></a>
+					<li>
+						<a href="javascript:;" onclick="deleteSelectedRows()">
+							<i class="fa fa-lg fa-trash-o" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("deleteTooltip")%>"></i>
+							<%=inboxDetailsResource.getString("delete")%>
+						</a>
+					</li>
+					<li>
+						<a href="javascript:;" onclick="spamSelectedRows()">
+							<i class="fa fa-lg fa-ban" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("spamTooltip")%>"></i>
+							<%=inboxDetailsResource.getString("spam")%>
+						</a>
 					</li>
 				</ul>
 			</div>

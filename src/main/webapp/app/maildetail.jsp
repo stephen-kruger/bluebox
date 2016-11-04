@@ -94,85 +94,85 @@
 </style>
 <script type="text/javascript" charset="utf-8">
 
-	function getAttachmentIcon(attachmentName) {
-		if (attachmentName)
-			attachmentName = attachmentName.toLowerCase();
-		else
-			attachmentName = "";
-		
-		if (attachmentName.indexOf(".pdf")>0) {
-			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftPdf16.png";
-		}
-		if ((attachmentName.indexOf(".ppt")>0)||
-				(attachmentName.indexOf(".pps")>0)||
-				(attachmentName.indexOf(".pot")>0)||
-				(attachmentName.indexOf(".odp")>0)) {
-			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftPresentation16.png";
-		}
-		if ((attachmentName.indexOf(".doc")>0)||
-				(attachmentName.indexOf(".dot")>0)||
-				(attachmentName.indexOf(".rtf")>0)||
-				(attachmentName.indexOf(".wps")>0)||
-				(attachmentName.indexOf(".wpd")>0)||
-				(attachmentName.indexOf(".odt")>0)) {
-			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftWordProcessing16.png";
-		}
-		if ((attachmentName.indexOf(".avi")>0)||
-				(attachmentName.indexOf(".mpg")>0)||
-				(attachmentName.indexOf(".mp4")>0)||
-				(attachmentName.indexOf(".mpeg")>0)||
-				(attachmentName.indexOf(".mov")>0)||
-				(attachmentName.indexOf(".flv")>0)||
-				(attachmentName.indexOf(".swf")>0)||
-				(attachmentName.indexOf(".mkv")>0)||
-				(attachmentName.indexOf(".wmv")>0)) {
-			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftVideo16.png";
-		}
-		if ((attachmentName.indexOf(".csv")>0)||
-				(attachmentName.indexOf(".xls")>0)||
-				(attachmentName.indexOf(".csv")>0)||
-				(attachmentName.indexOf(".xlr")>0)||
-				(attachmentName.indexOf(".ods")>0)||
-				(attachmentName.indexOf(".dat")>0)||
-				(attachmentName.indexOf(".xml")>0)) {
-			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftData16.png";
-		}				
-		if ((attachmentName.indexOf(".zip")>0)||
-				(attachmentName.indexOf(".7z")>0)||
-				(attachmentName.indexOf(".gz")>0)||
-				(attachmentName.indexOf(".rar")>0)||
-				(attachmentName.indexOf(".arc")>0)||
-				(attachmentName.indexOf(".tgz")>0)||
-				(attachmentName.indexOf(".tar")>0)) {
-			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftCompressed16.png";
-		}
-		if ((attachmentName.indexOf(".txt")>0)||
-				(attachmentName.indexOf(".text")>0)||
-				(attachmentName.indexOf(".readme")>0)) {
-			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftText16.png";
-		}
-		if ((attachmentName.indexOf(".wav")>0)||
-				(attachmentName.indexOf(".aac")>0)||
-				(attachmentName.indexOf(".aif")>0)||
-				(attachmentName.indexOf(".wma")>0)||
-				(attachmentName.indexOf(".m3u")>0)||
-				(attachmentName.indexOf(".mid")>0)||
-				(attachmentName.indexOf(".mp3")>0)) {
-			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftAudio16.png";
-		}
-		if ((attachmentName.indexOf(".jpg")>0)||
-				(attachmentName.indexOf(".gif")>0)||
-				(attachmentName.indexOf(".tif")>0)||
-				(attachmentName.indexOf(".jpeg")>0)||
-				(attachmentName.indexOf(".bmp")>0)||
-				(attachmentName.indexOf(".pcx")>0)||
-				(attachmentName.indexOf(".pgm")>0)||
-				(attachmentName.indexOf(".eps")>0)||
-				(attachmentName.indexOf(".png")>0)) {
-			return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftGraphic16.png";
-		}
-		return "<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/ftDefault16.png";
+function getAttachmentClass(attachmentName) {
+	if (attachmentName)
+		attachmentName = attachmentName.toLowerCase();
+	else
+		attachmentName = "";
+	
+	if (attachmentName.indexOf(".pdf")>0) {
+		return "fa fa-file-pdf-o";
 	}
+	if ((attachmentName.indexOf(".ppt")>0)||
+			(attachmentName.indexOf(".pps")>0)||
+			(attachmentName.indexOf(".pot")>0)||
+			(attachmentName.indexOf(".odp")>0)) {
+		return "fa fa-file-powerpoint-o";
+	}
+	if ((attachmentName.indexOf(".doc")>0)||
+			(attachmentName.indexOf(".dot")>0)||
+			(attachmentName.indexOf(".rtf")>0)||
+			(attachmentName.indexOf(".wps")>0)||
+			(attachmentName.indexOf(".wpd")>0)||
+			(attachmentName.indexOf(".odt")>0)) {
+		return "fa fa-file-word-o";
+	}
+	if ((attachmentName.indexOf(".avi")>0)||
+			(attachmentName.indexOf(".mpg")>0)||
+			(attachmentName.indexOf(".mp4")>0)||
+			(attachmentName.indexOf(".mpeg")>0)||
+			(attachmentName.indexOf(".mov")>0)||
+			(attachmentName.indexOf(".flv")>0)||
+			(attachmentName.indexOf(".swf")>0)||
+			(attachmentName.indexOf(".mkv")>0)||
+			(attachmentName.indexOf(".wmv")>0)) {
+		return "fa fa-file-video-o";
+	}
+	if ((attachmentName.indexOf(".csv")>0)||
+			(attachmentName.indexOf(".xls")>0)||
+			(attachmentName.indexOf(".csv")>0)||
+			(attachmentName.indexOf(".xlr")>0)||
+			(attachmentName.indexOf(".ods")>0)||
+			(attachmentName.indexOf(".dat")>0)||
+			(attachmentName.indexOf(".xml")>0)) {
+		return "fa fa-file-excel-o";
+	}				
+	if ((attachmentName.indexOf(".zip")>0)||
+			(attachmentName.indexOf(".7z")>0)||
+			(attachmentName.indexOf(".gz")>0)||
+			(attachmentName.indexOf(".rar")>0)||
+			(attachmentName.indexOf(".arc")>0)||
+			(attachmentName.indexOf(".tgz")>0)||
+			(attachmentName.indexOf(".tar")>0)) {
+		return "fa fa-file-archive-o";
+	}
+	if ((attachmentName.indexOf(".txt")>0)||
+			(attachmentName.indexOf(".text")>0)||
+			(attachmentName.indexOf(".readme")>0)) {
+		return "fa fa-file-text-o";
+	}
+	if ((attachmentName.indexOf(".wav")>0)||
+			(attachmentName.indexOf(".aac")>0)||
+			(attachmentName.indexOf(".aif")>0)||
+			(attachmentName.indexOf(".wma")>0)||
+			(attachmentName.indexOf(".m3u")>0)||
+			(attachmentName.indexOf(".mid")>0)||
+			(attachmentName.indexOf(".mp3")>0)) {
+		return "fa fa-file-audio-o";
+	}
+	if ((attachmentName.indexOf(".jpg")>0)||
+			(attachmentName.indexOf(".gif")>0)||
+			(attachmentName.indexOf(".tif")>0)||
+			(attachmentName.indexOf(".jpeg")>0)||
+			(attachmentName.indexOf(".bmp")>0)||
+			(attachmentName.indexOf(".pcx")>0)||
+			(attachmentName.indexOf(".pgm")>0)||
+			(attachmentName.indexOf(".eps")>0)||
+			(attachmentName.indexOf(".png")>0)) {
+		return "fa fa-file-image-o";
+	}
+	return "fa fa-file-o";
+}
 	
 	// create a link to rest service using */uid/attachment_index/filename
 	function displayAttachments(uid, id, attachmentArray) {
@@ -181,8 +181,9 @@
 				var str = "";
 				var base = "jaxrs<%=AttachmentResource.PATH%>/get/"+uid+"/";
 				for (var i=0; i < attachmentArray.length; i++ ) {
-					if (attachmentArray[i])
-						str += "&nbsp;<a class='attachmentsEmail' href=\"<%=request.getContextPath()%>/"+base+i+"/"+attachmentArray[i]+"\" target='_blank'><img class='attachmentIcon' src='"+getAttachmentIcon(attachmentArray[i])+"'/>"+attachmentArray[i]+"</a>&nbsp;";
+					if (attachmentArray[i]) {
+						str += "<a class='attachmentsEmail' href=\"<%=request.getContextPath()%>/"+base+i+"/"+attachmentArray[i]+"\" target='_blank'><i class='"+getAttachmentClass(attachmentArray[i])+"'/> "+attachmentArray[i]+"</a>";
+					}
 				}
 				attachmenDiv = document.getElementById(id);
 				if (attachmenDiv) {
@@ -238,15 +239,14 @@
 				      		}
 				   		}
 				)();
-				var image = document.createElement("img");
-				image.setAttribute("class","mailIcon");
-				image.setAttribute("src",'<%=request.getContextPath()%>/app/<%=Config.getInstance().getString("bluebox_theme")%>/mailSmall.png');
-				//----
+				
+				var image = document.createElement("i");
+				image.setAttribute("class","fa fa-envelope-o");
 				var span = document.createElement("span");
 				var attClass = document.createAttribute('class');
 				attClass.value = classname;
 				span.setAttributeNode(attClass);
-				var text = document.createTextNode(array[i]);
+				var text = document.createTextNode(" "+array[i]);
 				span.appendChild(image);
 				span.appendChild(text);
 				emailButton.appendChild(span);
@@ -537,22 +537,13 @@
 		
 	}
 	
-	// force parse - IE requires this, force dojo parse
-	require(["dojo/parser", "dojo/dom", "dijit/registry", "dijit/form/TextBox", "dojo/domReady!"],
-			  function(parser, dom, registry) {
-				try {
-						setupPage();
-						require(["dojo/has", "dojo/_base/sniff"], function(has){
-							  if(has("ie")) {
-								  //parser.parse();
-							  }
-			
-							});
-				}
-				catch (err) {
-					console.log("maildetail10:"+err)
-				}
-			});
+	require(["dojo/ready", "dijit/registry", "dojo/parser"],
+			function(ready, registry){
+			  ready(function(){
+				  setupPage();
+			  });
+	});
+	
 </script>
 
 <div id="mailHeaderBlock" style="display:none;" class="headerBox">
