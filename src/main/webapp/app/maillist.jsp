@@ -71,6 +71,11 @@
 			color: #000;
 		}
 		
+		.tbButton:hover {
+			background:#E8F4F4;
+			border-radius: 1em;
+		}
+		
 </style>
 	<script type="text/javascript" charset="utf-8">
 		
@@ -90,7 +95,7 @@
 		
 		function loadInbox(email, state) {
 			currentState = state;
-			console.log("loadInbox2:"+email+" >"+state+"<");
+			//console.log("loadInbox2:"+email+" >"+state+"<");
 			try {
 				require(["dijit/registry"], function(registry){
 				    grid = registry.byId("grid");
@@ -387,37 +392,37 @@
 		<div class="inboxView">
 			<div class="navcontainer">
 				<ul>
-					<li>
+					<li class="tbButton">
 						<a href="javascript:;" onclick="loadAll()"> 
 							<i class="fa fa-lg fa-envelope-o" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("allTooltip")%>"></i>
 							<%=inboxDetailsResource.getString("all")%>
 						</a>
 					</li>
-					<li>
+					<li class="tbButton">
 						<a href="javascript:;" onclick="loadRaw()"> 
 							<i class="fa fa-lg fa-save" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("downloadTooltip")%>"></i>
 							<%=inboxDetailsResource.getString("download")%>
 						</a>
 					</li>
-					<li>
+					<li class="tbButton">
 						<a href="javascript:;" onclick="refresh()"> 
 							<i class="fa fa-lg fa-refresh" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("refreshTooltip")%>"></i>
 							<%=inboxDetailsResource.getString("refresh")%>
 						</a>
 					</li>
-					<li>
+					<li class="tbButton">
 						<a href="javascript:;" onclick="rssFeed()">
 							<i class="fa fa-lg fa-rss" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("rssTooltip")%>"></i>
 							<%=inboxDetailsResource.getString("rss")%>
 						</a>
 					</li>
-					<li>
+					<li class="tbButton">
 						<a href="javascript:;" onclick="deleteSelectedRows()">
 							<i class="fa fa-lg fa-trash-o" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("deleteTooltip")%>"></i>
 							<%=inboxDetailsResource.getString("delete")%>
 						</a>
 					</li>
-					<li>
+					<li class="tbButton">
 						<a href="javascript:;" onclick="spamSelectedRows()">
 							<i class="fa fa-lg fa-ban" style="vertical-align:middle" title="<%=inboxDetailsResource.getString("spamTooltip")%>"></i>
 							<%=inboxDetailsResource.getString("spam")%>

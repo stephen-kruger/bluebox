@@ -40,6 +40,7 @@ public class BlueBoxParser {
 	cidList = new HashMap<String,DataHandler>();
 	fileNameList = new HashMap<String,DataHandler>();
 	parts = getPartsX(msg.getContent());
+	System.setProperty("mail.mime.decodetext.strict", "false");
     }
 
     private List<Object> getPartsX(Object content) throws IOException, MessagingException {
@@ -89,7 +90,7 @@ public class BlueBoxParser {
 	    String encoding = msg.getEncoding();
 	    if (encoding==null) encoding = "";
 	    if (encoding.toLowerCase().indexOf("quoted")>=0) {
-//		log.info("Not doing anything");
+		//		log.info("Not doing anything");
 		return Utils.decodeQuotedPrintable(msg.getContent().toString());
 	    }
 	    else {
@@ -101,26 +102,26 @@ public class BlueBoxParser {
 		//						else {
 		//							return msg.getContent().toString();
 		//						}
-//		log.info("1Decoding text {} {}",msg.getContentType(),msg.getEncoding());
+		//		log.info("1Decoding text {} {}",msg.getContentType(),msg.getEncoding());
 		return decodeString(msg.getDataHandler(),msg.getContentType(),msg.getEncoding());
 	    }
 	}
 	else {
+	    StringBuffer sb = new StringBuffer();
 	    for (Object part : parts) {
 		if ((Boolean)invoke(part,"isMimeType",new Class[]{String.class},new Object[]{MediaType.TEXT_PLAIN},null)) {
 		    DataHandler dh = (DataHandler)invoke(part,"getDataHandler",null,null,null);
 		    String contentType = dh.getContentType();
 		    String contentEncoding = (String)invoke(part,"getEncoding",null,null,null);
 		    log.debug("2Decoding text {} {}",msg.getContentType(),msg.getEncoding());
-		    return decodeString(dh,contentType,contentEncoding);
+		    sb.append(decodeString(dh,contentType,contentEncoding));
 		}
 		else {
 		    log.debug("getPlainContent:Ignoring part with mime type {}",invoke(part,"getContentType",null,null,null));
 		}
 	    }
+	    return sb.toString();
 	}
-	log.debug("No text body found");
-	return null;
     }
 
     public String getHtmlContent() throws IOException, MessagingException {
@@ -132,21 +133,21 @@ public class BlueBoxParser {
 	    if (msg.isMimeType(MediaType.TEXT_HTML)) {
 		log.debug("getHtmlContent returning entire body",msg.getDataHandler().getContentType());
 		return decodeString(msg.getDataHandler(),msg.getContentID(),msg.getEncoding());
-	    }			
+	    }		
+	    StringBuffer sb = new StringBuffer();
 	    for (Object part : parts) {
 		if ((Boolean)invoke(part,"isMimeType",new Class[]{String.class},new Object[]{MediaType.TEXT_HTML},null)) {
 		    DataHandler dh = (DataHandler)invoke(part,"getDataHandler",null,null,null);
 		    String contentType = dh.getContentType();
 		    String contentEncoding = (String)invoke(part,"getEncoding",null,null,null);
-		    return decodeString(dh,contentType,contentEncoding);
+		    sb.append(decodeString(dh,contentType,contentEncoding));
 		}
 		else {
 		    log.debug("getHtmlContent ignoring part with mime type {} {}",invoke(part,"getContentType",null,null,null),part.getClass().getName());
 		}
 	    }
+	    return sb.toString();
 	}
-	log.debug("No html body found");
-	return null;
     }
 
     public Object invoke(Object obj, String methodName, Class<?>[] sig, Object[] params, Object defaultResult) {
@@ -166,11 +167,11 @@ public class BlueBoxParser {
 	if (encoding==null)
 	    encoding = Utils.UTF8;
 	if (encoding.indexOf("64")>=0) {
-//	    byte[] bytes = IOUtils.toByteArray(dataHandler.getInputStream());
-//	    byte[] bytes64 = Base64.decodeBase64(bytes);
+	    //	    byte[] bytes = IOUtils.toByteArray(dataHandler.getInputStream());
+	    //	    byte[] bytes64 = Base64.decodeBase64(bytes);
 	    //return new String(bytes64,Utils.UTF8);
-	   // return MimeUtility.decodeText(new String(bytes64,Utils.UTF8));
-//	    return Utils.decodeQuotedPrintable(new String(bytes64),Utils.UTF8);
+	    // return MimeUtility.decodeText(new String(bytes64,Utils.UTF8));
+	    //	    return Utils.decodeQuotedPrintable(new String(bytes64),Utils.UTF8);
 	    return MimeUtility.decodeText(IOUtils.toString(dataHandler.getInputStream(),Utils.UTF8));
 	}
 	else {
@@ -179,29 +180,29 @@ public class BlueBoxParser {
 	}
     }
 
-//    private static String decodeStringx(DataHandler dataHandler, String encoding) throws IOException, MessagingException {
-//	if (encoding.indexOf("64")>=0) {
-//	    log.debug("Decoding Base64 {}",encoding);
-//	    byte[] bytes = IOUtils.toByteArray(dataHandler.getInputStream());
-//	    byte[] bytes64 = Base64.decodeBase64(bytes);
-//	    //return Utils.decodeQuotedPrintable(new String(bytes64));
-//	    return new String(bytes64);
-//	}
-//	else {
-//	    log.debug("Decoding {}",encoding);
-//	    return Utils.decodeQuotedPrintable(IOUtils.toString(dataHandler.getInputStream(),getEncoding(encoding)));
-//	}
-//    }
+    //    private static String decodeStringx(DataHandler dataHandler, String encoding) throws IOException, MessagingException {
+    //	if (encoding.indexOf("64")>=0) {
+    //	    log.debug("Decoding Base64 {}",encoding);
+    //	    byte[] bytes = IOUtils.toByteArray(dataHandler.getInputStream());
+    //	    byte[] bytes64 = Base64.decodeBase64(bytes);
+    //	    //return Utils.decodeQuotedPrintable(new String(bytes64));
+    //	    return new String(bytes64);
+    //	}
+    //	else {
+    //	    log.debug("Decoding {}",encoding);
+    //	    return Utils.decodeQuotedPrintable(IOUtils.toString(dataHandler.getInputStream(),getEncoding(encoding)));
+    //	}
+    //    }
 
-//    private static Charset getEncoding(String encoding) {
-//	try {
-//	    return Charset.forName(encoding);
-//	}
-//	catch (Throwable t) {
-//	    log.error("Invalid encoding specified :{}",encoding,t);
-//	    return StandardCharsets.UTF_8;
-//	}
-//    }
+    //    private static Charset getEncoding(String encoding) {
+    //	try {
+    //	    return Charset.forName(encoding);
+    //	}
+    //	catch (Throwable t) {
+    //	    log.error("Invalid encoding specified :{}",encoding,t);
+    //	    return StandardCharsets.UTF_8;
+    //	}
+    //    }
 
     private String stripContentId(final String contentId) {
 	if (contentId == null) {
@@ -211,7 +212,6 @@ public class BlueBoxParser {
     }
 
     public DataHandler findAttachmentByCid(String cid) {
-	// TODO Auto-generated method stub
 	return cidList.get(cid);
     }
 

@@ -13,6 +13,12 @@
 	background:#ffffff;
 	padding:5px;
 }
+
+.unselectedFolder:hover {
+	background:#E8F4F4;
+	padding:5px;
+	border-radius: 1em;
+}
 	
 .selectedFolder {
 	background:#CCD6EB;

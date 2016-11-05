@@ -36,13 +36,13 @@
 	}
 	
 	function loadInboxAndFolder(email, state) {
-		console.log("loadInboxAndFolder "+email+" "+state);
+		//console.log("loadInboxAndFolder "+email+" "+state);
 		loadInbox(email, state);
 		loadFolder(email);
 	} 
 	
 	function loadFolder(newEmail) {
-		console.log("loadFolder:"+newEmail);
+		//console.log("loadFolder:"+newEmail);
 		try {
 			require(["dojox/data/JsonRestStore"], function (JsonRestStore) {
 				var urlStr = "<%=request.getContextPath()%>/jaxrs<%=FolderResource.PATH%>/counts/"+newEmail;

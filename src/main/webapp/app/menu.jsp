@@ -52,8 +52,17 @@
 		text-decoration: none;
 		color:white;
 		font-size: 1.1em;
-		padding: 0.75em;
+		padding: 0.5em;
 	}
+
+	.menulink:hover { 
+		-moz-box-shadow:    inset 0 0 10px #45BBED;
+	   -webkit-box-shadow: inset 0 0 10px #45BBED;
+	   	box-shadow:         inset 0 0 10px #45BBED;
+	   	border-radius: 1em;
+		color: white;
+		padding: 0.5em;
+	}	
 	
 	.menuselected {
 		-moz-box-shadow:    inset 0 0 10px #cfcfcf;

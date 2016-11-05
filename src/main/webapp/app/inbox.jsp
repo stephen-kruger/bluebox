@@ -26,12 +26,10 @@
 			try {
 				require(["dojox/data/JsonRestStore"], function () {
 					var urlStr = "<%=request.getContextPath()%>/jaxrs/stats/mph/"+encodeURIComponent(emailAddress);
-					console.log(urlStr);
 					var jStore = new dojox.data.JsonRestStore({target:urlStr,syncMode:false});
 					var queryResults = jStore.fetch({
 						  onComplete : 
 							  	function(queryResults, request) {
-							  		console.log("Got result");
 									if (document.getElementById("mphGauge")) {
 										require(["dijit/registry"], function(registry){
 										    var mphGauge = registry.byId("mphGauge");
@@ -69,7 +67,6 @@
 				require(["dojox/timing"], function(registry){
 					var t = new dojox.timing.Timer(45000);
 					t.onTick = function() {
-						console.log("requesting mph now");
 						updateMph(folderEmail);
 					}
 					t.start();
@@ -84,7 +81,6 @@
 				function(ready, registry){
 				  ready(function(){
 						selectMenu("inbox");
-						console.log("starting gauge timer");
 						// will not be called until DOM is ready
 						startGaugeTimer();
 				  });

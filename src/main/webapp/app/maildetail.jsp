@@ -200,7 +200,7 @@ function getAttachmentClass(attachmentName) {
 	
 	function createEmailButton(parentId, labelStr) {
 		try {
-			require(["dijit/form/Button", "dojo/dom", "dojo/domReady!"], function(Button, dom){
+			require(["dijit/form/Button"], function(Button){
 				new dijit.form.Button({
 					id :parentId+labelStr,
 			        label: labelStr,
@@ -485,7 +485,7 @@ function getAttachmentClass(attachmentName) {
 	
 	function setupPage() {
 		try {
-			require(["dijit/layout/TabContainer", "dijit/layout/ContentPane", "dijit/form/Textarea", "dojo/domReady!"], function(TabContainer, ContentPane, Textarea, domReady){
+			require(["dijit/layout/TabContainer", "dijit/layout/ContentPane", "dijit/form/Textarea"], function(TabContainer, ContentPane, Textarea){
 			    var tc = new TabContainer({
 			        tabPosition:"right-h",
 			        doLayout:"false"
