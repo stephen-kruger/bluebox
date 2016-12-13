@@ -232,7 +232,7 @@ public class StorageTest extends BaseTestCase {
 		mails = getBlueBoxStorageIf().listMail(inbox2, BlueboxMessage.State.NORMAL, 0,-1,BlueboxMessage.RECEIVED, true);
 		assertEquals("Should not find any mails for "+inbox2,0,mails.size());
 	}
-
+	
 	@Test
 	public void testListInbox() throws Exception {
 		int count = SIZE;

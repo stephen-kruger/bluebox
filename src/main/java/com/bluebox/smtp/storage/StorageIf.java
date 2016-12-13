@@ -26,7 +26,7 @@ public interface StorageIf {
 	
 	public BlueboxMessage store(String from, InboxAddress recipient, Date received, MimeMessage bbmm, String spooledUid) throws Exception;
 	
-	public enum Props {Uid,RawUid,Inbox,Recipient,Sender,Subject,Received,State,Size};
+	public enum Props {Uid,RawUid,Inbox,Recipient,Sender,Subject,Received,State,Size,Hideme};
 	
 	/*
 	 * Implementations must ensure all the fields in the Props object are persisted.

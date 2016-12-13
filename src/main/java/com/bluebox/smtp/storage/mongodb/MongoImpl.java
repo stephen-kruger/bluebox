@@ -745,8 +745,13 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	BasicDBObject query = new BasicDBObject();
 	if (state != BlueboxMessage.State.ANY)
 	    query.append(StorageIf.Props.State.name(), state.ordinal());
-	if ((inbox!=null)&&(inbox.getFullAddress().length()>0))
+	if ((inbox!=null)&&(inbox.getFullAddress().length()>0)) {
 	    query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
+	}
+	else {
+	    // we are doing a wildcard search, so don't show the hidden mails
+	    query.append(BlueboxMessage.HIDEME,new BasicDBObject("$not",new BasicDBObject("$eq","true")));
+	}
 	int sortBit;
 	if (ascending) sortBit = 1; else sortBit = -1;
 	// limit search results t0 5000 entries

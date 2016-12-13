@@ -54,6 +54,7 @@ public class BlueboxMessage {
     public static final String RECIPIENT = StorageIf.Props.Recipient.name();
     public static final String RAWUID = StorageIf.Props.RawUid.name();
     public static final String COUNT = "Count";
+    public static final String HIDEME = StorageIf.Props.Hideme.name();
 
     public enum State {ANY, NORMAL, DELETED};
 
@@ -93,6 +94,14 @@ public class BlueboxMessage {
 	setProperty(RAWUID, rawId);
 	setProperty(RECIPIENT, StringEscapeUtils.escapeJava(recipient.getFullAddress()));
 	setProperty(INBOX, StringEscapeUtils.escapeJava(getInbox().getAddress()));
+	if (getProperty(INBOX).toLowerCase().indexOf(HIDEME.toLowerCase())>=0) {
+//	    log.info(">>>>>>>>>>>>Setting HIDEME true {}",getProperty(INBOX));
+	    setProperty(HIDEME,"true");
+	}
+	else {
+//	    log.info(">>>>>>>>>>>>NOT Setting HIDEME true {}",getProperty(INBOX));
+	    setProperty(HIDEME,"false");
+	}
 	if (bbmm.getSubject()==null) {
 	    setProperty(SUBJECT, "");
 	}

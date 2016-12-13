@@ -518,6 +518,21 @@ public class InboxTest extends BaseTestCase {
 		assertEquals("Body did not match",bodyWithCR.length(),email.getText().length());
 		assertEquals("Body did not match",bodyWithCR,email.getText());
 	}
+	
+	@Test
+	public void testSendHidden() throws Exception {
+		String subject = "My country is dying";
+		// using just \n and this test will fail. No idea why
+		//String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
+		String bodyWithCR = "\r\nKeep these pesky\r\n carriage returns\r\n";
+		TestUtils.sendMailSMTP("steve@here.com", BlueboxMessage.HIDEME+"bob@zim.com", null, null, subject, bodyWithCR);
+		Thread.sleep(1000);
+		Inbox inbox = getInbox();
+		List<BlueboxMessage> list = inbox.listInbox(new InboxAddress(BlueboxMessage.HIDEME+"bob@zim.com"), BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
+		assertEquals("Did not find the sent hidden email",1,list.size());
+		list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
+		assertEquals("Did not expect the sent hidden email",list.size(),0);
+	}
 
 	@Test
 	public void testSendHugeSMTP() throws Exception {

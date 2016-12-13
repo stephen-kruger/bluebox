@@ -219,7 +219,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		    BlueboxMessage.TEXT_BODY+" VARCHAR(2048), "+
 		    StorageIf.Props.Received.name()+" TIMESTAMP, "+
 		    StorageIf.Props.State.name()+" INTEGER, "+
-		    StorageIf.Props.Size.name()+" BIGINT "+")");
+		    StorageIf.Props.Size.name()+" BIGINT, "+
+		    StorageIf.Props.Hideme.name()+" BOOLEAN "+")");
 	}
 	catch (Throwable t) {
 	    log.debug(t.getMessage());
@@ -274,7 +275,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
     public void store(JSONObject props, String spooledUid) throws Exception {
 	Connection connection = getConnection();
 	try {
-	    PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	    PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)");
 	    ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
 	    ps.setString(2, props.getString(StorageIf.Props.RawUid.name())); // RAW UID
 	    ps.setString(3, props.getString(StorageIf.Props.Inbox.name()));// INBOX
@@ -287,6 +288,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    ps.setTimestamp(9, timestamp); // RECEIVED
 	    ps.setInt(10, props.getInt(StorageIf.Props.State.name())); // STATE
 	    ps.setLong(11, props.getLong(StorageIf.Props.Size.name())); // SIZE
+	    ps.setBoolean(12, props.getBoolean(StorageIf.Props.Hideme.name())); // HIDEME
 	    //			ps.setBinaryStream(11, blob); // MIMEMESSAGE
 	    ps.execute();
 	    connection.commit();
@@ -505,19 +507,23 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    orderStr = " ASC";
 	else
 	    orderStr = " DESC";
-	if (email!=null)
-	    if (email.getAddress().length()==0)
+	if (email!=null) {
+	    if (email.getAddress().length()==0) {
 		email=null;
+	    }
+	}
 	Statement s = connection.createStatement();
 	PreparedStatement ps;
 
 	if (email==null) {
 	    if (state==State.ANY) {
-		ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+		ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.HIDEME+"!=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+		ps.setBoolean(1, true);
 	    }
 	    else {
-		ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.STATE+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
-		ps.setInt(1, state.ordinal());
+		ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.HIDEME+"!=?) AND ("+BlueboxMessage.STATE+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+		ps.setBoolean(1, true);
+		ps.setInt(2, state.ordinal());
 	    }
 	}
 	else {
