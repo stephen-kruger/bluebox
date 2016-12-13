@@ -397,6 +397,18 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    return def;
 	}
     }
+    
+    @Override
+    public boolean getDBOBoolean(Object dbo, String key, boolean def) {
+	ResultSet mo = (ResultSet)dbo;
+	try {
+	    return mo.getBoolean(key);
+	} 
+	catch (SQLException e) {
+	    e.printStackTrace();
+	    return def;
+	}
+    }
 
     @Override
     public long getDBOLong(Object dbo, String key, long def) {

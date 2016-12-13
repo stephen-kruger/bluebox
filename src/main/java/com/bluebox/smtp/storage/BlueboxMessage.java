@@ -95,12 +95,10 @@ public class BlueboxMessage {
 	setProperty(RECIPIENT, StringEscapeUtils.escapeJava(recipient.getFullAddress()));
 	setProperty(INBOX, StringEscapeUtils.escapeJava(getInbox().getAddress()));
 	if (getProperty(INBOX).toLowerCase().indexOf(HIDEME.toLowerCase())>=0) {
-//	    log.info(">>>>>>>>>>>>Setting HIDEME true {}",getProperty(INBOX));
-	    setProperty(HIDEME,"true");
+	    setBooleanProperty(HIDEME,true);
 	}
 	else {
-//	    log.info(">>>>>>>>>>>>NOT Setting HIDEME true {}",getProperty(INBOX));
-	    setProperty(HIDEME,"false");
+	    setBooleanProperty(HIDEME,false);
 	}
 	if (bbmm.getSubject()==null) {
 	    setProperty(SUBJECT, "");
@@ -323,6 +321,15 @@ public class BlueboxMessage {
 	}
     }
 
+    private void setBooleanProperty(String name, boolean value) {
+	try {
+	    properties.put(name, value);
+	} 
+	catch (JSONException e) {
+	    e.printStackTrace();
+	}
+    }
+    
     private void setLongProperty(String name, long value) {
 	try {
 	    properties.put(name, value);

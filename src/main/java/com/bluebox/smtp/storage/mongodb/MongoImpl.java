@@ -70,7 +70,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	createIndexes();
 	errorFS = db.getCollection(DB_ERR_NAME);
 	propsFS = db.getCollection(PROPS_DB_NAME);
-	mongoClient.getDatabase("");
 	blobFS = new GridFS(mongoClient.getDB(BLOB_DB_NAME),BLOB_DB_NAME);
 
 	log.debug("Started MongoDB connection");
@@ -816,6 +815,12 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	Document doc = (Document)dbo;
 	return doc.getInteger(key, def);
     }
+    
+    @Override
+    public boolean getDBOBoolean(Object dbo, String key, boolean def) {
+	Document doc = (Document)dbo;
+	return doc.getBoolean(key, def);
+    }
 
     @Override
     public long getDBOLong(Object dbo, String key, long def) {
@@ -838,18 +843,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	    return doc.getDate(key);
 	return def;
     }
-
-    //	@Override
-    //	public InputStream getDBORaw(Object dbo, String uid) {
-    //		try {
-    //			GridFSDBFile imageForOutput = rawFS.findOne(uid);
-    //			return imageForOutput.getInputStream();
-    //		}
-    //		catch (Throwable t) {
-    //			log.error("Error loading raw object for uid="+uid,t);
-    //			return null;
-    //		}
-    //	}
 
     @Override
     public Object[] search(String querystr, SearchFields fields, int start,	int count, SortFields orderBy, boolean ascending) {

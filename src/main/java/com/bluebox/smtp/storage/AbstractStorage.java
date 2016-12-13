@@ -68,6 +68,7 @@ public abstract class AbstractStorage implements StorageIf {
 	public abstract String getDBOString(Object dbo, String key, String def);
 	public abstract int getDBOInt(Object dbo, String key, int def);
 	public abstract long getDBOLong(Object dbo, String key, long def);
+	public abstract boolean getDBOBoolean(Object dbo, String key, boolean def);
 	public abstract Date getDBODate(Object dbo, String key, Date def);
 	public abstract List<String> getDBOArray(Object dbo, String key);
 	//	public abstract InputStream getDBORaw(Object dbo, String key);
@@ -109,7 +110,7 @@ public abstract class AbstractStorage implements StorageIf {
 		message.put(BlueboxMessage.STATE,getDBOInt(dbo,BlueboxMessage.STATE,BlueboxMessage.State.NORMAL.ordinal()));
 		message.put(BlueboxMessage.INBOX,getDBOString(dbo,BlueboxMessage.INBOX,"bluebox@bluebox.com"));
 		message.put(BlueboxMessage.SIZE,getDBOLong(dbo,BlueboxMessage.SIZE,0));
-		message.put(BlueboxMessage.HIDEME,getDBOString(dbo,BlueboxMessage.HIDEME,"false"));
+		message.put(BlueboxMessage.HIDEME,getDBOBoolean(dbo,BlueboxMessage.HIDEME,false));
 		return message;
 	}
 

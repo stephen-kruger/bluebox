@@ -138,9 +138,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
     public Connection getConnection() throws Exception {
 	if (!started) {
-	    //			Exception e = new Exception("Storage instance not started");
-	    //			e.printStackTrace();
-	    //			throw e;
 	    log.error("Storage instance not started, trying to recover");
 	    StorageFactory.clearInstance();
 	    StorageFactory.getInstance().start();
@@ -216,7 +213,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		    BlueboxMessage.TEXT_BODY+" VARCHAR(2048), "+
 		    StorageIf.Props.Received.name()+" TIMESTAMP, "+
 		    StorageIf.Props.State.name()+" INTEGER, "+
-		    StorageIf.Props.Size.name()+" BIGINT "+")");
+		    StorageIf.Props.Size.name()+" BIGINT, "+
+		    StorageIf.Props.Hideme.name()+" BOOLEAN "+")");
 	}
 	catch (Throwable t) {
 	    log.debug(t.getMessage());
@@ -239,7 +237,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	connection.close();
 
 	//		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED,DOW};
-	String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.RAWUID,BlueboxMessage.INBOX,BlueboxMessage.RECIPIENT,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.HTML_BODY,BlueboxMessage.TEXT_BODY,BlueboxMessage.RECEIVED,BlueboxMessage.STATE,BlueboxMessage.SIZE};
+	String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.RAWUID,BlueboxMessage.INBOX,BlueboxMessage.RECIPIENT,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.HTML_BODY,BlueboxMessage.TEXT_BODY,BlueboxMessage.RECEIVED,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.HIDEME};
 	createIndexes(INBOX_TABLE,indexes);
 
 	indexes = new String[]{KEY,VALUE};
@@ -271,7 +269,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
     public void store(JSONObject props, String spooledUid) throws Exception {
 	Connection connection = getConnection();
 	try {
-	    PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	    PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
 	    ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
 	    ps.setString(2, props.getString(StorageIf.Props.RawUid.name())); // RAW UID
 	    ps.setString(3, props.getString(StorageIf.Props.Inbox.name()));// INBOX
@@ -284,7 +282,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    ps.setTimestamp(9, timestamp); // RECEIVED
 	    ps.setInt(10, props.getInt(StorageIf.Props.State.name())); // STATE
 	    ps.setLong(11, props.getLong(StorageIf.Props.Size.name())); // SIZE
-	    //			ps.setBinaryStream(11, blob); // MIMEMESSAGE
+	    ps.setBoolean(12, props.getBoolean(StorageIf.Props.Hideme.name())); // HIDEME
 	    ps.execute();
 	    connection.commit();
 	}
@@ -386,6 +384,18 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	ResultSet mo = (ResultSet)dbo;
 	try {
 	    return mo.getInt(key);
+	} 
+	catch (SQLException e) {
+	    e.printStackTrace();
+	    return def;
+	}
+    }
+    
+    @Override
+    public boolean getDBOBoolean(Object dbo, String key, boolean def) {
+	ResultSet mo = (ResultSet)dbo;
+	try {
+	    return mo.getBoolean(key);
 	} 
 	catch (SQLException e) {
 	    e.printStackTrace();
@@ -1425,6 +1435,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    d.put(BlueboxMessage.RECIPIENT, result.getString(BlueboxMessage.RECIPIENT));
 	    d.put(BlueboxMessage.RECEIVED, result.getString(BlueboxMessage.RECEIVED));
 	    d.put(BlueboxMessage.SIZE, result.getString(BlueboxMessage.SIZE));
+	    d.put(BlueboxMessage.HIDEME, result.getString(BlueboxMessage.HIDEME));
 	    res.add(d);
 	}
 	result.close();
@@ -1442,7 +1453,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		StorageIf.Props.Subject.name()+", "+
 		StorageIf.Props.Received.name()+", "+
 		StorageIf.Props.State.name()+", "+
-		StorageIf.Props.Size.name();
+		StorageIf.Props.Size.name()+", "+
+		StorageIf.Props.Hideme.name();
     }
 
     @Override

@@ -35,7 +35,6 @@ public class StorageTest extends BaseTestCase {
 		StorageIf si = getBlueBoxStorageIf();
 		JSONObject mph = si.getMPH(null);
 		assertEquals("MPH was wrong",100,mph.getInt("mph"));
-		//		assertEquals("MPH24 was wrong",4,mph.getInt("mph24"));
 		log.info(mph.toString());
 	}
 
