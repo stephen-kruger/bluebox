@@ -749,7 +749,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	}
 	else {
 	    // we are doing a wildcard search, so don't show the hidden mails
-	    query.append(BlueboxMessage.HIDEME,new BasicDBObject("$not",new BasicDBObject("$eq","true")));
+	    query.append(BlueboxMessage.HIDEME,new BasicDBObject("$not",new BasicDBObject("$eq",true)));
 	}
 	int sortBit;
 	if (ascending) sortBit = 1; else sortBit = -1;
