@@ -526,12 +526,26 @@ public class InboxTest extends BaseTestCase {
 		//String bodyWithCR = "\nKeep these pesky\n carriage returns\n";
 		String bodyWithCR = "\r\nKeep these pesky\r\n carriage returns\r\n";
 		TestUtils.sendMailSMTP("steve@here.com", BlueboxMessage.HIDEME+"bob@zim.com", null, null, subject, bodyWithCR);
+		TestUtils.sendMailSMTP("steve@here.com", "bob@zim.com", null, null, subject, bodyWithCR);
 		Thread.sleep(1000);
 		Inbox inbox = getInbox();
 		List<BlueboxMessage> list = inbox.listInbox(new InboxAddress(BlueboxMessage.HIDEME+"bob@zim.com"), BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
 		assertEquals("Did not find the sent hidden email",1,list.size());
+//		for (BlueboxMessage bbm : list) {
+//		    log.info("not hidden>>>>>>>>>>>>>>{}",bbm.getInbox());
+//		}
 		list = inbox.listInbox(null, BlueboxMessage.State.NORMAL, 0, -1, BlueboxMessage.RECEIVED, true);
-		assertEquals("Did not expect the sent hidden email",list.size(),0);
+//		for (BlueboxMessage bbm : list) {
+//		    log.info("hidden>>>>>>>>>>>>>>{}",bbm.getInbox());
+//		}
+		assertEquals("Did not expect the sent hidden email",list.size(),1);
+		
+		// ensure autocomplete doesn't surface hidden mails either
+		JSONArray ja = inbox.autoComplete("", 0, 10);
+		assertEquals("Should not find the hidden mails in the typeahead",1,ja.length());
+		for (int i = 0; i < ja.length(); i++) {
+		    log.info(">>>>{}",ja.get(i).toString());
+		}
 	}
 
 	@Test

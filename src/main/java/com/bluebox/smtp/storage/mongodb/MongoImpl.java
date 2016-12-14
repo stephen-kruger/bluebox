@@ -362,7 +362,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	    log.warn("Nothing deleted for uid {}",uid);
 	}
     }
-    
+
     @Override
     public void delete(String uid, String rawId) throws Exception {
 	delete(uid);
@@ -385,7 +385,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	if (res.getDeletedCount()!=uidList.size()) {
 	    log.warn("Bulk deleted only removed {} of expected {} documents", res.getDeletedCount(), uidList.size());
 	}
-	
+
 	List<String> rawList = new ArrayList<String>(bulkList.size());
 	for (LiteMessage m : bulkList) {
 	    if (!spoolReferenced(m.getRawIdentifier())) {
@@ -756,6 +756,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	// limit search results t0 5000 entries
 	if ((count<0)||(count>5000))
 	    count = 5000;
+	log.info("listMailCommon query {}",query);
 	return mailFS.find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
     }
 
@@ -815,7 +816,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	Document doc = (Document)dbo;
 	return doc.getInteger(key, def);
     }
-    
+
     @Override
     public boolean getDBOBoolean(Object dbo, String key, boolean def) {
 	Document doc = (Document)dbo;
@@ -854,7 +855,8 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	case INBOX :
 	    query = Filters.and(
 		    Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
-		    Filters.regex(BlueboxMessage.INBOX, querystr)
+		    Filters.regex(BlueboxMessage.INBOX, querystr),
+		    Filters.ne(BlueboxMessage.HIDEME, false)
 		    );
 	    break;
 	case SUBJECT :
@@ -890,19 +892,22 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	case RECIPIENT :
 	    query = Filters.and(
 		    Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
-		    Filters.regex(BlueboxMessage.RECIPIENT, Pattern.compile(querystr , Pattern.CASE_INSENSITIVE))
+		    Filters.regex(BlueboxMessage.RECIPIENT, Pattern.compile(querystr , Pattern.CASE_INSENSITIVE)),
+		    Filters.ne(BlueboxMessage.HIDEME, false)
 		    );					
 	    break;
 	case RECIPIENTS :
 	    query = Filters.and(
 		    Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
-		    Filters.regex(BlueboxMessage.RECIPIENT, Pattern.compile(querystr , Pattern.CASE_INSENSITIVE))
+		    Filters.regex(BlueboxMessage.RECIPIENT, Pattern.compile(querystr , Pattern.CASE_INSENSITIVE)),
+		    Filters.ne(BlueboxMessage.HIDEME, false)
 		    );					
 	    break;
 	case ANY :
 	default :
 	    query = Filters.and(
 		    Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
+		    Filters.ne(BlueboxMessage.HIDEME, false),
 		    Filters.or(
 			    Filters.regex(BlueboxMessage.INBOX, querystr),
 			    Filters.regex(BlueboxMessage.SUBJECT,Pattern.compile(querystr , Pattern.CASE_INSENSITIVE)),

@@ -94,10 +94,12 @@ public class BlueboxMessage {
 	setProperty(RAWUID, rawId);
 	setProperty(RECIPIENT, StringEscapeUtils.escapeJava(recipient.getFullAddress()));
 	setProperty(INBOX, StringEscapeUtils.escapeJava(getInbox().getAddress()));
-	if (getProperty(INBOX).toLowerCase().indexOf(HIDEME.toLowerCase())>=0) {
+	if (getInbox().getFullAddress().toLowerCase().indexOf(HIDEME.toLowerCase())>=0) {
+	    log.info("Processing hidden mail {}",getInbox().getFullAddress());
 	    setBooleanProperty(HIDEME,true);
 	}
 	else {
+	    log.info("Processing regular mail {}",getInbox().getFullAddress());
 	    setBooleanProperty(HIDEME,false);
 	}
 	if (bbmm.getSubject()==null) {
