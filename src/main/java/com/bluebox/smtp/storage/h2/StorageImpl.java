@@ -1374,9 +1374,10 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	switch (fields) {
 	case INBOX :
-	    ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.INBOX+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+	    ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.INBOX+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) AND ("+BlueboxMessage.HIDEME+"!=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 	    ps.setString(1, "%"+querystr+"%");
 	    ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());
+	    ps.setBoolean(3, false);
 	    break;
 	case SUBJECT :
 	    ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.SUBJECT+") LIKE ? AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
@@ -1406,14 +1407,16 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    break;
 	case RECIPIENT :
 	    //			ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
-	    ps = connection.prepareStatement("SELECT DISTINCT "+getFields()+" FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+	    ps = connection.prepareStatement("SELECT DISTINCT "+getFields()+" FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) AND ("+BlueboxMessage.HIDEME+"!=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 	    ps.setString(1, "%"+querystr+"%");
 	    ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());	
+	    ps.setBoolean(3, false);
 	    break;
 	case RECIPIENTS :
-	    ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+	    ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) AND ("+BlueboxMessage.HIDEME+"!=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 	    ps.setString(1, "%"+querystr+"%");
 	    ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());					
+	    ps.setBoolean(3, false);
 	    break;
 	case ANY :
 	default :
