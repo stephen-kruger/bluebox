@@ -277,7 +277,7 @@
 		<!-- <a id="mobile" class="menulink" href="<%=request.getContextPath()%>/mobile/inboxes.jsp"><%= menuResource.getString("mobile") %></a>  -->
 	</div>
 	<div class="menu4">
-		<a id="support" class="menulink" href="mailto:<%= bbconfig.getString(Config.BLUEBOX_HELPMAIL)%>">
+		<a id="support" class="menulink" href="<%= bbconfig.getString(Config.BLUEBOX_HELPLINK)%>">
 			<div class="userpic" style="background-image:url('<%= bbconfig.getString(Config.BLUEBOX_HELPPHOTO)%>')" onmouseover="dijit.Tooltip.defaultPosition=['below']"></div>
 				<div class="dijitHidden">
 					<span data-dojo-type="dijit.Tooltip" data-dojo-props="connectId:'support'"><%= bbconfig.getString(Config.BLUEBOX_HELPNAME) %></span>
