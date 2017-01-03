@@ -756,7 +756,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	// limit search results t0 5000 entries
 	if ((count<0)||(count>5000))
 	    count = 5000;
-	log.info("listMailCommon query {}",query);
+	log.debug("listMailCommon query {}",query);
 	return mailFS.find(query).sort( new BasicDBObject( orderBy , sortBit )).skip(start).limit(count);
     }
 

@@ -61,9 +61,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
     public StorageImpl() {
 	log.info("Forcing mail limit to 60K for H2 driver");
 	// we know this driver cannot handle more than about 60K mails
-	Config.getInstance().setProperty(Config.BLUEBOX_MAIL_LIMIT, 60000);
+	Config config = Config.getInstance();
+	if (config.getInt(Config.BLUEBOX_MESSAGE_MAX)>60000) {
+	    config.clearProperty(Config.BLUEBOX_MESSAGE_MAX);
+	    config.setProperty(Config.BLUEBOX_MESSAGE_MAX, 60000);
+	}
     }
-    
+
     @Override
     public void start() throws Exception {
 	if (started) {
@@ -134,7 +138,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	}
 	StorageFactory.clearInstance();
 	log.info("Stopped H2 repository");
-	
+
 	started = false;
     }
 
@@ -397,7 +401,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    return def;
 	}
     }
-    
+
     @Override
     public boolean getDBOBoolean(Object dbo, String key, boolean def) {
 	ResultSet mo = (ResultSet)dbo;
@@ -922,52 +926,52 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
     }
 
     public void deleteFunction() throws Exception {
-//	String method = "drop alias app.dayOfWeek";	
-//	Connection connection = getConnection();
-//	try {
-//	    Statement s = connection.createStatement();
-//	    PreparedStatement ps;
-//	    ps = connection.prepareStatement(method);
-//	    ps.execute();
-//	    ResultSet result = ps.getResultSet();
-//	    log.info(result.toString());
-//	    result.close();
-//	    ps.close();
-//	    s.close();
-//	}
-//	catch (Throwable t) {
-//	    //t.printStackTrace();
-//	}
-//	finally {
-//	    connection.close();
-//	}
+	//	String method = "drop alias app.dayOfWeek";	
+	//	Connection connection = getConnection();
+	//	try {
+	//	    Statement s = connection.createStatement();
+	//	    PreparedStatement ps;
+	//	    ps = connection.prepareStatement(method);
+	//	    ps.execute();
+	//	    ResultSet result = ps.getResultSet();
+	//	    log.info(result.toString());
+	//	    result.close();
+	//	    ps.close();
+	//	    s.close();
+	//	}
+	//	catch (Throwable t) {
+	//	    //t.printStackTrace();
+	//	}
+	//	finally {
+	//	    connection.close();
+	//	}
     }
 
     public void createFunction() throws Exception {
-//	String method = "create alias dayOfWeek( dateValue timestamp )\n"+ 
-//		"returns int\n"+ //"returns varchar( 8 )\n"+ 
-//		"parameter style java\n"+ 
-//		"no sql\n"+ 
-//		"language java\n"+ 
-//		"EXTERNAL NAME 'com.bluebox.smtp.storage.h2.H2Functions.dayOfWeek'\n";	
-//	Connection connection = getConnection();
-//	try {
-//	    Statement s = connection.createStatement();
-//	    PreparedStatement ps;
-//	    ps = connection.prepareStatement(method);
-//	    ps.execute();
-//	    ResultSet result = ps.getResultSet();
-//	    log.info(result.toString());
-//	    result.close();
-//	    ps.close();
-//	    s.close();
-//	}
-//	catch (Throwable t) {
-//	    log.error("Problem creating function",t);
-//	}
-//	finally {
-//	    connection.close();
-//	}
+	//	String method = "create alias dayOfWeek( dateValue timestamp )\n"+ 
+	//		"returns int\n"+ //"returns varchar( 8 )\n"+ 
+	//		"parameter style java\n"+ 
+	//		"no sql\n"+ 
+	//		"language java\n"+ 
+	//		"EXTERNAL NAME 'com.bluebox.smtp.storage.h2.H2Functions.dayOfWeek'\n";	
+	//	Connection connection = getConnection();
+	//	try {
+	//	    Statement s = connection.createStatement();
+	//	    PreparedStatement ps;
+	//	    ps = connection.prepareStatement(method);
+	//	    ps.execute();
+	//	    ResultSet result = ps.getResultSet();
+	//	    log.info(result.toString());
+	//	    result.close();
+	//	    ps.close();
+	//	    s.close();
+	//	}
+	//	catch (Throwable t) {
+	//	    log.error("Problem creating function",t);
+	//	}
+	//	finally {
+	//	    connection.close();
+	//	}
     }
 
     @Override

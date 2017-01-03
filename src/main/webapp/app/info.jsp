@@ -102,7 +102,7 @@
 				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("messageage")%></label></td>
 					<td class="infoValue">
-						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_AGE) %>
+						<%= bbconfig.getInt(Config.BLUEBOX_MESSAGE_AGE) %>
 					</td>
 				</tr>				
 				<tr>
@@ -111,7 +111,7 @@
 				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("trashage")%></label></td>
 					<td class="infoValue">
-						<%= bbconfig.getString(Config.BLUEBOX_TRASH_AGE) %>
+						<%= bbconfig.getInt(Config.BLUEBOX_TRASH_AGE) %>
 					</td>
 				</tr>
 				
@@ -121,7 +121,7 @@
 				<tr>
 					<td class="infoLabel"><label><%=infoResource.getString("messagemax")%></label></td>
 					<td class="infoValue">
-						<%= bbconfig.getString(Config.BLUEBOX_MESSAGE_MAX) %>
+						<%= bbconfig.getInt(Config.BLUEBOX_MESSAGE_MAX) %>
 					</td>
 				</tr>
 				
