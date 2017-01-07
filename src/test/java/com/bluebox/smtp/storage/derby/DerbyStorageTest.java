@@ -8,16 +8,16 @@ import com.bluebox.TestUtils;
 import com.bluebox.smtp.InboxAddress;
 import com.bluebox.smtp.storage.BlueboxMessage;
 import com.bluebox.smtp.storage.BlueboxMessage.State;
-import com.bluebox.smtp.storage.derby.StorageImpl;
+import com.bluebox.smtp.storage.derby.DerbyImpl;
 
-public class StorageTest extends TestCase {
-	private StorageImpl si;
+public class DerbyStorageTest extends TestCase {
+	private DerbyImpl si;
 //	private byte[] blob = new  String("123456").getBytes();
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		si = new StorageImpl();
+		si = new DerbyImpl();
 		si.start();
 		si.clear();
 	}

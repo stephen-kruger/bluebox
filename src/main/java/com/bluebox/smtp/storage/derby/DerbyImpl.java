@@ -1,4 +1,4 @@
-package com.bluebox.smtp.storage.h2;
+package com.bluebox.smtp.storage.derby;
 
 import java.io.InputStream;
 import java.security.DigestInputStream;
@@ -43,8 +43,8 @@ import com.bluebox.smtp.storage.LiteMessage;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.bluebox.smtp.storage.StorageIf;
 
-public class StorageImpl extends AbstractStorage implements StorageIf {
-    private static final Logger log = LoggerFactory.getLogger(StorageImpl.class);
+public class DerbyImpl extends AbstractStorage implements StorageIf {
+    private static final Logger log = LoggerFactory.getLogger(DerbyImpl.class);
     private static final String INBOX_TABLE = "INBOX";
     private static final String PROPS_TABLE = "PROPERTIES";
     private static final String BLOB_TABLE = "BLOB";
@@ -58,35 +58,24 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
     private boolean started = false;
 
 
-    public StorageImpl() {
-	log.info("Forcing mail limit to 60K for H2 driver");
-	// we know this driver cannot handle more than about 60K mails
-	Config config = Config.getInstance();
-	if (config.getInt(Config.BLUEBOX_MESSAGE_MAX)>60000) {
-	    config.clearProperty(Config.BLUEBOX_MESSAGE_MAX);
-	    config.setProperty(Config.BLUEBOX_MESSAGE_MAX, 60000);
-	}
-    }
-
     @Override
     public void start() throws Exception {
 	if (started) {
-	    throw new Exception("H2  Storage instance already started");
+	    throw new Exception("Storage instance already started");
 	}
-	log.debug("Starting H2 repository");
-	Class.forName("org.h2.Driver").newInstance();
+	log.debug("Starting Derby repository");
+	Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
 	int count = 10;
 	while (count-- > 0) {
 	    try {
 		started = true;
 		setupTables();
-		log.info("Started H2 repository.");
+		log.info("Started Derby repository.");
 		log.debug("Adding custom defined functions");
 		try {
 		    createFunction();
-		} 
-		catch (Exception e) {
-		    log.error("Problem adding custom functions",e);
+		} catch (Exception e) {
+		    e.printStackTrace();
 		}
 		count = 0;
 	    }
@@ -127,18 +116,23 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    deleteFunction();
 	} 
 	catch (Exception e) {
+	    e.printStackTrace();
 	    log.debug(e.getMessage());
 	}
-	log.info("Stopping H2 repository");
+	log.info("Stopping Derby repository");
 	try {
-	    DriverManager.getConnection("jdbc:h2:;shutdown=true");
+	    //StorageFactory.clearInstance();
+	    DriverManager.getConnection("jdbc:derby:;shutdown=true");
 	}
 	catch (Throwable t) {
 	    log.debug(t.getMessage());
 	}
 	StorageFactory.clearInstance();
-	log.info("Stopped H2 repository");
+	log.info("Stopped Derby repository");
 
+	// force gc to unload the derby classes
+	//http://db.apache.org/derby/docs/10.3/devguide/tdevdvlp20349.html
+	System.gc();
 	started = false;
     }
 
@@ -147,16 +141,12 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    log.error("Storage instance not started, trying to recover");
 	    StorageFactory.clearInstance();
 	    StorageFactory.getInstance().start();
-	    return ((StorageImpl)StorageFactory.getInstance()).getConnection();
+	    return ((DerbyImpl)StorageFactory.getInstance()).getConnection();
 	}
-	String url = "jdbc:h2:"+getDbName()+";create=true";
+	System.setProperty("derby.language.logQueryPlan", "false");
+	String url = "jdbc:derby:"+DB_NAME+";create=true";
 	Connection conn = DriverManager.getConnection(url);
 	return conn;
-    }
-
-    private String getDbName() {
-	// TODO Auto-generated method stub
-	return "~/"+DB_NAME+"_h2";
     }
 
     public void clear() {
@@ -247,7 +237,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	connection.close();
 
 	//		String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.INBOX,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.RECEIVED,DOW};
-	String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.RAWUID,BlueboxMessage.INBOX,BlueboxMessage.RECIPIENT,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.HTML_BODY,BlueboxMessage.TEXT_BODY,BlueboxMessage.RECEIVED,BlueboxMessage.STATE,BlueboxMessage.SIZE};
+	String[] indexes = new String[]{BlueboxMessage.UID,BlueboxMessage.RAWUID,BlueboxMessage.INBOX,BlueboxMessage.RECIPIENT,BlueboxMessage.FROM,BlueboxMessage.SUBJECT,BlueboxMessage.HTML_BODY,BlueboxMessage.TEXT_BODY,BlueboxMessage.RECEIVED,BlueboxMessage.STATE,BlueboxMessage.SIZE,BlueboxMessage.HIDEME};
 	createIndexes(INBOX_TABLE,indexes);
 
 	indexes = new String[]{KEY,VALUE};
@@ -279,7 +269,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
     public void store(JSONObject props, String spooledUid) throws Exception {
 	Connection connection = getConnection();
 	try {
-	    PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)");
+	    PreparedStatement ps = connection.prepareStatement("INSERT INTO "+INBOX_TABLE+" VALUES (?,?,?,?,?,?,?,?,?,?,?,?)");
 	    ps.setString(1, props.getString(StorageIf.Props.Uid.name())); // UID
 	    ps.setString(2, props.getString(StorageIf.Props.RawUid.name())); // RAW UID
 	    ps.setString(3, props.getString(StorageIf.Props.Inbox.name()));// INBOX
@@ -293,7 +283,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    ps.setInt(10, props.getInt(StorageIf.Props.State.name())); // STATE
 	    ps.setLong(11, props.getLong(StorageIf.Props.Size.name())); // SIZE
 	    ps.setBoolean(12, props.getBoolean(StorageIf.Props.Hideme.name())); // HIDEME
-	    //			ps.setBinaryStream(11, blob); // MIMEMESSAGE
 	    ps.execute();
 	    connection.commit();
 	}
@@ -401,7 +390,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    return def;
 	}
     }
-
+    
     @Override
     public boolean getDBOBoolean(Object dbo, String key, boolean def) {
 	ResultSet mo = (ResultSet)dbo;
@@ -523,23 +512,21 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    orderStr = " ASC";
 	else
 	    orderStr = " DESC";
-	if (email!=null) {
-	    if (email.getAddress().length()==0) {
+	if (email!=null)
+	    if (email.getAddress().length()==0)
 		email=null;
-	    }
-	}
 	Statement s = connection.createStatement();
 	PreparedStatement ps;
-
+	
 	if (email==null) {
 	    if (state==State.ANY) {
 		ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.HIDEME+"!=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 		ps.setBoolean(1, true);
 	    }
 	    else {
-		ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.HIDEME+"!=?) AND ("+BlueboxMessage.STATE+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
-		ps.setBoolean(1, true);
-		ps.setInt(2, state.ordinal());
+		ps = connection.prepareStatement("SELECT "+cols+" FROM "+INBOX_TABLE+" WHERE ("+BlueboxMessage.STATE+"=?) AND ("+BlueboxMessage.HIDEME+"=?) ORDER BY "+orderBy+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
+		ps.setInt(1, state.ordinal());
+		ps.setBoolean(2, false);
 	    }
 	}
 	else {
@@ -926,52 +913,53 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
     }
 
     public void deleteFunction() throws Exception {
-	//	String method = "drop alias app.dayOfWeek";	
-	//	Connection connection = getConnection();
-	//	try {
-	//	    Statement s = connection.createStatement();
-	//	    PreparedStatement ps;
-	//	    ps = connection.prepareStatement(method);
-	//	    ps.execute();
-	//	    ResultSet result = ps.getResultSet();
-	//	    log.info(result.toString());
-	//	    result.close();
-	//	    ps.close();
-	//	    s.close();
-	//	}
-	//	catch (Throwable t) {
-	//	    //t.printStackTrace();
-	//	}
-	//	finally {
-	//	    connection.close();
-	//	}
+	String method = "drop function app.dayOfWeek";	
+	Connection connection = getConnection();
+	try {
+	    Statement s = connection.createStatement();
+	    PreparedStatement ps;
+	    ps = connection.prepareStatement(method);
+	    ps.execute();
+	    ResultSet result = ps.getResultSet();
+	    log.info(result.toString());
+	    result.close();
+	    ps.close();
+	    s.close();
+	}
+	catch (Throwable t) {
+	    //t.printStackTrace();
+	}
+	finally {
+	    connection.close();
+	}
     }
 
     public void createFunction() throws Exception {
-	//	String method = "create alias dayOfWeek( dateValue timestamp )\n"+ 
-	//		"returns int\n"+ //"returns varchar( 8 )\n"+ 
-	//		"parameter style java\n"+ 
-	//		"no sql\n"+ 
-	//		"language java\n"+ 
-	//		"EXTERNAL NAME 'com.bluebox.smtp.storage.h2.H2Functions.dayOfWeek'\n";	
-	//	Connection connection = getConnection();
-	//	try {
-	//	    Statement s = connection.createStatement();
-	//	    PreparedStatement ps;
-	//	    ps = connection.prepareStatement(method);
-	//	    ps.execute();
-	//	    ResultSet result = ps.getResultSet();
-	//	    log.info(result.toString());
-	//	    result.close();
-	//	    ps.close();
-	//	    s.close();
-	//	}
-	//	catch (Throwable t) {
-	//	    log.error("Problem creating function",t);
-	//	}
-	//	finally {
-	//	    connection.close();
-	//	}
+	String method = "create function dayOfWeek\n"+ 
+		"( dateValue timestamp )\n"+ 
+		"returns int\n"+ //"returns varchar( 8 )\n"+ 
+		"parameter style java\n"+ 
+		"no sql\n"+ 
+		"language java\n"+ 
+		"EXTERNAL NAME 'com.bluebox.smtp.storage.derby.DerbyFunctions.dayOfWeek'\n";	
+	Connection connection = getConnection();
+	try {
+	    Statement s = connection.createStatement();
+	    PreparedStatement ps;
+	    ps = connection.prepareStatement(method);
+	    ps.execute();
+	    ResultSet result = ps.getResultSet();
+	    log.info(result.toString());
+	    result.close();
+	    ps.close();
+	    s.close();
+	}
+	catch (Throwable t) {
+	    //t.printStackTrace();
+	}
+	finally {
+	    connection.close();
+	}
     }
 
     @Override
@@ -984,7 +972,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    }
 	}
 	catch (Throwable t) {
-	    log.error("Problem getting count by Day Of Week",t);
+	    t.printStackTrace();
 	}
 
 	//		String sql = "select "+DOW+", count("+StorageIf.Props.Uid.name()+") as cnt from "+INBOX_TABLE+" group by "+DOW+"";
@@ -1008,7 +996,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    connection.close();
 	}
 	catch (Throwable t) {
-	    log.error("Problem getting weekly stats",t);
+	    t.printStackTrace();
+	    log.warn("Seems no weekly stats are available");
 	}
 
 
@@ -1028,8 +1017,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    }
 	    Connection connection = getConnection();
 	    Date lastHour = Utils.getUTCDate(getUTCTime(),getUTCTime().getTime()-60*60*1000);// one hour ago
-	    //String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received.name()+") > TIMESTAMP('" + new Timestamp(lastHour.getTime()) + "')"+emailBit;
-	    String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where "+StorageIf.Props.Received.name()+" > '" + new Timestamp(lastHour.getTime()) + "'"+emailBit;
+	    String sql = "select count ("+StorageIf.Props.Uid.name()+") from "+INBOX_TABLE+" where TIMESTAMP("+StorageIf.Props.Received.name()+") > TIMESTAMP('" + new Timestamp(lastHour.getTime()) + "')"+emailBit;
 	    PreparedStatement ps;
 	    ps = connection.prepareStatement(sql);
 	    if ((inbox!=null)&&(inbox.getFullAddress().trim().length()>0)) {
@@ -1045,11 +1033,11 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    connection.close();
 	}
 	catch (Throwable t) {
-	    log.warn("Seems no mph stats are available",t);
+	    t.printStackTrace();
+	    log.warn("Seems no mph stats are available");
 	    try {
 		resultJ.put("mph", 0);
-	    } 
-	    catch (JSONException e) {
+	    } catch (JSONException e) {
 		e.printStackTrace();
 	    }
 	}
@@ -1084,7 +1072,6 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 
 	    @Override
 	    public void run() {
-		setStatus("Running");
 		try {
 		    int issues = 0;
 		    long totalCount = getSpoolCount()+getMailCount(BlueboxMessage.State.ANY);
@@ -1127,14 +1114,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 			    log.info("Deleting orphaned mail entry ({})",issues);
 			}
 		    }
-		    setStatus("Completed");
 		}
 		catch (Throwable t) {
-		    log.error("Error cleaning orphans",t);
-		    setStatus("Error :"+t.getMessage());
+		    t.printStackTrace();
 		}
 		finally {				
 		    setProgress(100);
+		    setStatus("Completed");
 		}
 	    }
 
@@ -1253,7 +1239,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    }
 	}
 	catch (Throwable t) {
-	    log.error("Problem getting spooled stream",t);
+	    t.printStackTrace();
 	}
 	finally {
 	    connection.close();
@@ -1318,7 +1304,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    //			is.close();
 	}
 	catch (Throwable t) {
-	    log.error("Problem getting spooled stream size",t);
+	    t.printStackTrace();
 	}
 	finally {
 	    connection.close();			
@@ -1343,7 +1329,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    dateToReturn = (Date)dateFormat.parse(utcTime);
 	}
 	catch (ParseException e) {
-	    log.error("Problem getting utc time",e);
+	    e.printStackTrace();
 	}
 
 	return dateToReturn;
@@ -1381,7 +1367,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.INBOX+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) AND ("+BlueboxMessage.HIDEME+"!=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 	    ps.setString(1, "%"+querystr+"%");
 	    ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());
-	    ps.setBoolean(3, false);
+	    ps.setBoolean(3, true);	
 	    break;
 	case SUBJECT :
 	    ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.SUBJECT+") LIKE ? AND "+BlueboxMessage.STATE+"=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
@@ -1414,13 +1400,13 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    ps = connection.prepareStatement("SELECT DISTINCT "+getFields()+" FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) AND ("+BlueboxMessage.HIDEME+"!=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 	    ps.setString(1, "%"+querystr+"%");
 	    ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());	
-	    ps.setBoolean(3, false);
+	    ps.setBoolean(3, true);	
 	    break;
 	case RECIPIENTS :
 	    ps = connection.prepareStatement("SELECT * FROM "+INBOX_TABLE+" WHERE (LOWER("+BlueboxMessage.RECIPIENT+") LIKE LOWER(?) AND "+BlueboxMessage.STATE+"=?) AND ("+BlueboxMessage.HIDEME+"!=?) ORDER BY "+sortKey+orderStr+" OFFSET "+start+" ROWS FETCH NEXT "+count+" ROWS ONLY");
 	    ps.setString(1, "%"+querystr+"%");
 	    ps.setInt(2, BlueboxMessage.State.NORMAL.ordinal());					
-	    ps.setBoolean(3, false);
+	    ps.setBoolean(3, true);	
 	    break;
 	case ANY :
 	default :
@@ -1452,6 +1438,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 	    d.put(BlueboxMessage.RECIPIENT, result.getString(BlueboxMessage.RECIPIENT));
 	    d.put(BlueboxMessage.RECEIVED, result.getString(BlueboxMessage.RECEIVED));
 	    d.put(BlueboxMessage.SIZE, result.getString(BlueboxMessage.SIZE));
+	    d.put(BlueboxMessage.HIDEME, result.getString(BlueboxMessage.HIDEME));
 	    res.add(d);
 	}
 	result.close();
@@ -1469,7 +1456,8 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		StorageIf.Props.Subject.name()+", "+
 		StorageIf.Props.Received.name()+", "+
 		StorageIf.Props.State.name()+", "+
-		StorageIf.Props.Size.name();
+		StorageIf.Props.Size.name()+", "+
+		StorageIf.Props.Hideme.name();
     }
 
     @Override
@@ -1481,7 +1469,7 @@ public class StorageImpl extends AbstractStorage implements StorageIf {
 		l.add(j.get(i).toString());
 	} 
 	catch (JSONException e) {
-	    log.error("Problem getting dbo array",e);
+	    e.printStackTrace();
 	}
 	return l;
     }

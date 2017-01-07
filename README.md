@@ -60,19 +60,30 @@ Download the war file from here :https://github.com/stephen-kruger/bluebox/relea
 You can then start the server by running the command <wlp_root>/wlp/bin/server start bluebox
 
 ##Database options
-On startup, if Bluebox detects a running instance of MongoDB, it will automatically set up and use that. Otherwise it will use an embedded Derby database which is a little less performant than MongoDB.
+On startup, if Bluebox detects a running instance of MongoDB, it will automatically set up and use that. Otherwise it will use an embedded H2 database which is a little less performant than MongoDB.
 
 ##Check the SMTP server
-For security reasons the SMTP server will start on port 2500 instead of the expected port 25. So to recieve emails you need to either map port 25 to 2500, or change the config
+For security reasons the SMTP server will start on port 2500 instead of the expected port 25. So to recieve emails you need to either map port 25 to 2500, or change the config (see Additional Customisation section below)
 
 ###Option A: Map the port
 On Linux run this command
 ```iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500```
 ###Option B: Change the config
-On Windows systems, or if you don't mind starting the application server as root, you can change the config by placing a file bluebox.properties into the home directory of the user process running the WebSphere Liberty server, with the following contents :
+On Windows systems, or if you don't mind starting the application server as root, you can change the default settings overriding them in bluebox.properties This file will be checked for in the Websphere Liberty server directory (e.g. <wlp>/usr/server/defaultServer/bluebox.properties).
+Some commonly used properties are :
 ```properties
 # SMTP server port
 bluebox_port=2500
+# maximum mail size in bytes
+bluebox_mail_limit=100000000
+# how many hours to keep trashed messages
+bluebox_trash_age=12
+# how many hours to keep messages (1344 = 8 weeks, 2688 = 16 weeks)
+bluebox_message_age=5376
+# trim messages (oldest first) to never exceed this limit
+bluebox_message_max=160000
+# frequency in minutes to run the expiry daemon
+bluebox_daemon_delay=60
 ```
 
 ###Verify the smtp server is working
@@ -83,7 +94,7 @@ telnet myhost.name 25
 ```
 
 ##Additional customisation
-The following properties may also be changed by adding them in to a bluebox.properties file in the user home directory :
+The following properties may also be changed by adding them in to a bluebox.properties:
 ```properties
 # set strict mode for incoming mail address verification
 # useful to block some Open Relay tests
