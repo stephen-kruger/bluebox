@@ -69,7 +69,7 @@ For security reasons the SMTP server will start on port 2500 instead of the expe
 On Linux run this command
 ```iptables -t nat -A PREROUTING -i eth0 -p tcp -m tcp --dport 25 -j REDIRECT --to-ports 2500```
 ###Option B: Change the config
-On Windows systems, or if you don't mind starting the application server as root, you can change the default settings overriding them in bluebox.properties This file will be checked for in the Websphere Liberty server directory (e.g. <wlp>/usr/server/defaultServer/bluebox.properties).
+On Windows systems, or if you don't mind starting the application server as root, you can change the default settings overriding them in bluebox.properties This file will be checked for in the Websphere Liberty server directory (e.g. [wlp dir]/usr/server/defaultServer/bluebox.properties).
 Some commonly used properties are :
 ```properties
 # SMTP server port
@@ -87,55 +87,10 @@ bluebox_daemon_delay=60
 ```
 
 ###Verify the smtp server is working
-You can test it using simple telnet :
+You can test it using simple telnet to see if the SMTP server responds on the default SMTP port:
 ```
 telnet myhost.name 25
 220 myhost.name ESMTP BlueBox V4.5.2
-```
-
-##Additional customisation
-The following properties may also be changed by adding them in to a bluebox.properties:
-```properties
-# set strict mode for incoming mail address verification
-# useful to block some Open Relay tests
-bluebox_strict=true
-
-# maximum mail size in bytes
-bluebox_mail_limit=100000000
-
-# how many server threads to handle incoming SMTP requests
-bluebox_maxconnections=500
-
-# and mails send by the following smtp servers will be rejected, comma separated list
-bluebox_smtp_blacklist=wallstreetads.org,193.104.41.200
-
-# and mails send by the following domains will be rejected, comma separated list
-bluebox_from_blacklist=blackdomain.com,wallstreetads.org
-
-# any mails with recipient ending in these domains will be rejected, comma separated list
-bluebox_to_blacklist=blackdomain.com,wallstreetads.org
-
-# comma separated domains for TO whitelist
-# specifying anything in here means ONLY mails to those domains will be accepted
-# unless they are in the blacklist
-bluebox_to_whitelist=
-
-# comma separated domains for FROM whitelist
-# specifying anything in here means ONLY mails from those domains will be accepted
-# unless they are in the blacklist
-bluebox_from_whitelist=
-
-# how many hours to keep trashed messages
-bluebox_trash_age=12
-
-# how many hours to keep messages (1344 = 8 weeks, 2688 = 16 weeks)
-bluebox_message_age=5376
-
-# trim messages (oldest first) to never exceed this limit
-bluebox_message_max=160000
-
-# frequency in minutes to run the expiry daemon
-bluebox_daemon_delay=60
 ```
 
 #FAQ
