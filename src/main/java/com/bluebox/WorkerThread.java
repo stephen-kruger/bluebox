@@ -91,7 +91,7 @@ public abstract class WorkerThread implements Runnable {
 	    tw.stop();
 	}
 	else {
-	    log.error("Unknown thread []",name);
+	    log.error("Unknown thread {}",name);
 	}
     }
 

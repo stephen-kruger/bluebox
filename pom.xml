@@ -4,19 +4,19 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.5.15</version>
+	<version>4.5.16</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
 	<properties>
 		<subethasmtp_version>3.1.7</subethasmtp_version>
-		<slf4j_version>1.7.22</slf4j_version>
+		<slf4j_version>1.7.25</slf4j_version>
 		<jsoup_version>1.10.2</jsoup_version>
 		<commons_io_version>2.5</commons_io_version>
-		<rome_version>1.7.0</rome_version>
-		<lucene_version>6.3.0</lucene_version>
-		<solr_version>6.3.0</solr_version>
+		<rome_version>1.7.1</rome_version>
+		<lucene_version>6.4.2</lucene_version>
+		<solr_version>6.4.2</solr_version>
 		<derby_version>10.13.1.1</derby_version>
-		<mongo_version>3.4.1</mongo_version>
+		<mongo_version>3.4.2</mongo_version>
 		<apache.wink>1.4</apache.wink>
 		<jetty_version>9.3.8.v20160314</jetty_version>
 	</properties>
@@ -274,7 +274,7 @@
 		<dependency>
 			<groupId>org.owasp.antisamy</groupId>
 			<artifactId>antisamy</artifactId>
-			<version>1.5.3</version>
+			<version>1.5.5</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>
@@ -358,13 +358,13 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.4.193</version>
+			<version>1.4.194</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.2</version>
+			<version>4.5.3</version>
 		</dependency>
 	</dependencies>
 	<scm>

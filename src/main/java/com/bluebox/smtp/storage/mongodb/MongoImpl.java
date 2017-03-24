@@ -341,12 +341,14 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	while (output.hasNext()) {
 	    try {
 		Document result = output.next();
-		jo.put(StorageIf.Props.Sender.name(),new JSONArray(result.get("_id").toString()).get(0));
-		jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
-		break;// only care about first result
+		if (result.containsKey("_id")) {
+		    jo.put(StorageIf.Props.Sender.name(),new JSONArray(result.get("_id").toString()).get(0));
+		    jo.put(BlueboxMessage.COUNT,result.get(BlueboxMessage.COUNT));
+		    break;// only care about first result
+		}
 	    } 
 	    catch (JSONException e) {
-		e.printStackTrace();
+		log.debug("Looking for stats");
 	    }
 	}
 	output.close();
@@ -856,7 +858,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	    query = Filters.and(
 		    Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
 		    Filters.regex(BlueboxMessage.INBOX, querystr),
-		    Filters.ne(BlueboxMessage.HIDEME, false)
+		    Filters.ne(BlueboxMessage.HIDEME, true)
 		    );
 	    break;
 	case SUBJECT :
@@ -893,21 +895,21 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	    query = Filters.and(
 		    Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
 		    Filters.regex(BlueboxMessage.RECIPIENT, Pattern.compile(querystr , Pattern.CASE_INSENSITIVE)),
-		    Filters.ne(BlueboxMessage.HIDEME, false)
+		    Filters.ne(BlueboxMessage.HIDEME, true)
 		    );					
 	    break;
 	case RECIPIENTS :
 	    query = Filters.and(
 		    Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
 		    Filters.regex(BlueboxMessage.RECIPIENT, Pattern.compile(querystr , Pattern.CASE_INSENSITIVE)),
-		    Filters.ne(BlueboxMessage.HIDEME, false)
+		    Filters.ne(BlueboxMessage.HIDEME, true)
 		    );					
 	    break;
 	case ANY :
 	default :
 	    query = Filters.and(
 		    Filters.eq(BlueboxMessage.STATE, BlueboxMessage.State.NORMAL.ordinal()),
-		    Filters.ne(BlueboxMessage.HIDEME, false),
+		    Filters.ne(BlueboxMessage.HIDEME, true),
 		    Filters.or(
 			    Filters.regex(BlueboxMessage.INBOX, querystr),
 			    Filters.regex(BlueboxMessage.SUBJECT,Pattern.compile(querystr , Pattern.CASE_INSENSITIVE)),
