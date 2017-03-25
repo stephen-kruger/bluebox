@@ -6,7 +6,6 @@ Bluebox is a fully functional promiscuous, non-forwarding SMTP server and mailbo
 # Installing
 ## Downloading the war file
 Download the Bluebox war file from the [latest releases](https://github.com/stephen-kruger/bluebox/releases)
-
 ## Installing in Websphere Liberty
 Download and install the latest Liberty profile from [here](https://developer.ibm.com/assets/wasdev/)
 
