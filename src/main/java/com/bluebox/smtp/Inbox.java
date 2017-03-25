@@ -700,6 +700,12 @@ public class Inbox implements SimpleMessageListener {
 	    if (si.getSpooledStreamSize(spooledUid)<MAX_MAIL_BYTES) {
 		try {
 		    MimeMessage mimeMessage = si.getSpooledStream(spooledUid);
+		    try {
+			from = mimeMessage.getFrom()[0].toString();
+		    }
+		    catch (Throwable t) {
+			log.warn("Problem detecting FROM field",t);
+		    }
 		    // now send the message to each recipient
 		    for (String nrec : recipients) {
 			try {
