@@ -105,11 +105,14 @@ Messages will be automatically deleted after 48 hours Mails in the Trash folder 
 ## SMTP Open Relay Test scans are complaining Bluebox is an open relay
 These scans generally test if an SMTP server accepts email from arbitrary domains. By design, Bluebox IS very forgiving, and will accept any messages unless otherwise configured via blacklist or whitelist However no mails, regardless of recipient, are EVER forwarded on to other systems. So any scan which implies Bluebox is an open relay is not correctly implemented, as they would need to validate that a test email is actually delivered to a different MX domain - but generally these tests are lazily written, and only go as far as testing that the SMTP server performs the "accept" handshake. It is possible to defend against some of these poorly written relay scans by intelligently configuring the bluebox_to_blacklist or bluebox_from_blacklist in bluebox.properties: Run the offending scan program, and check the app server logs to detect what email is being used to run the test (e.g. test@microsoft.com), and then add that domain to the bluebox_to_blacklist, which will cause rejection of any messages from that domain, hopefully fooling the simple-minded Open Relay scan.
 
+## Can I hide certain emails?
+Yes, if you include the string "hideme" anywhere in the recipients email address, that email will only be visible if you navigate directly to the inbox for the user, and those emails will not show up in the type-ahead or search results.
+
 ## Can I send mails to other domains?
-BlueBox? itself does not do any mail forwarding, only incoming mail is accepted It's not very scrupulous about destination addresses, so if you have set bluebox as your smtp server, you can send to any hostnames that you like. Such as stephen@yahoo.com, steve@xxx.com, or any other domain you might want
+BlueBox itself does not do any mail forwarding, only incoming mail is accepted It's not very scrupulous about destination addresses, so if you have set bluebox as your smtp server, you can send to any hostnames that you like. Such as stephen@yahoo.com, steve@xxx.com, or any other domain you might want, but no mails will ever be sent from your bluebox server outwards.
 
 # Terms and conditions of usage
-Please do not use BlueBox for any business critical applications Please respect others may be using the system - don't delete mails which are not yours This software is provided as is. Availability and support is limited to the goodwill of the author, or patches you may wish to submit
+Please do not use BlueBox for any business critical applications Please respect others may be using the system - don't delete mails which are not yours This software is provided as is. Availability and support is limited to the goodwill of the author, or patches you may wish to submit. Bear in mind that everyone will be able to view your emails, and it is your responsability to ensure secure use of this utility.
 
 # License
 Copyright 2016 Stephen Kruger
