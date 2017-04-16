@@ -161,7 +161,7 @@ public class Inbox implements SimpleMessageListener {
 		}
 	    }, delay, period);
 	}
-
+	StorageFactory.getInstance().logError("Error subsystem", "Started and ready");
 	log.info("Started inbox");
 	//	try {
 	//	    migrate();
@@ -1234,7 +1234,7 @@ public class Inbox implements SimpleMessageListener {
     }
 
     /*
-     * Return true of the started date is longer than 45 minutes ago
+     * Return true if the started date is longer than 45 minutes ago
      */
     private boolean euthanase(Date started) {
 	Date now = new Date();

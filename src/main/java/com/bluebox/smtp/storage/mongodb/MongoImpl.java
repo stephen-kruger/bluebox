@@ -2,10 +2,13 @@ package com.bluebox.smtp.storage.mongodb;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -247,15 +250,15 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
     @Override
     public JSONArray logErrorList(int start, int count) {
 	FindIterable<Document> errors = errorFS.find(Filters.exists("uid"));
-
+	errors.skip(start);
+	errors.limit(count);
 	try {
 	    JSONArray result = new JSONArray();
 	    JSONObject logError;
 	    for (Document error : errors) {
 		logError = new JSONObject();
 		logError.put("title", error.getString("title"));
-		logError.put("date", error.getDate("date").getTime());
-		logError.put("id", error.getString("uid"));
+		logError.put("date", error.getDate("date").toString());
 		logError.put("id", error.getString("uid"));
 		result.put(logError);
 	    }
@@ -263,7 +266,6 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	}
 	catch (Throwable t) {
 	    log.error("Problem getting errors",t);
-	    t.printStackTrace();
 	}
 	return null;
     }
@@ -739,7 +741,23 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
     @Override
     public Date getUTCTime() {
-	return Utils.getUTCCalendar().getTime();
+	//return Utils.getUTCCalendar().getTime();
+	final String DATEFORMAT = "yyyy-MM-dd HH:mm:ss";
+	final SimpleDateFormat sdf = new SimpleDateFormat(DATEFORMAT);
+	sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+	final String utcTime = sdf.format(new Date());
+
+	Date dateToReturn = null;
+	SimpleDateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
+
+	try {
+	    dateToReturn = (Date)dateFormat.parse(utcTime);
+	}
+	catch (ParseException e) {
+	    log.error("Problem getting utc time",e);
+	}
+
+	return dateToReturn;
     }
 
     private FindIterable<Document> listMailCommon(InboxAddress inbox, BlueboxMessage.State state, int start, int count, String orderBy, boolean ascending) throws Exception {
