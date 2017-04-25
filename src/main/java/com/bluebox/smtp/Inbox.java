@@ -163,13 +163,6 @@ public class Inbox implements SimpleMessageListener {
 	}
 	StorageFactory.getInstance().logError("Error subsystem", "Started and ready");
 	log.info("Started inbox");
-	//	try {
-	//	    migrate();
-	//	} 
-	//	catch (Exception e) {
-	//	    log.error("Error migrating data",e);
-	//	    e.printStackTrace();
-	//	}
     }
 
     public void stop() {

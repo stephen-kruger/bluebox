@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +48,17 @@ public class TestMessageResource extends BaseServletTest {
 			}
 			log.info(js.toString(3));
 		}
+	}
+	
+	@Test
+	public void testTextLinks() {
+	    JSONArray res = MessageResource.getTextLinks("This is some test https://test.com and ftp://www.there.com and http://steve.com for unit test purposes");
+	    log.info("Found {} links {}",res.length(),res);
+	    assertEquals("Links not detected",3,res.length());
+	    res = MessageResource.getTextLinks(null);
+	    assertEquals("Links detected",0,res.length());
+	    res = MessageResource.getTextLinks("");
+	    assertEquals("Links detected",0,res.length());
 	}
 
 }

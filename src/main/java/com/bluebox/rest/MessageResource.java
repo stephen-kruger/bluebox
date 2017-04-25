@@ -8,6 +8,8 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.Message.RecipientType;
 import javax.mail.internet.MimeMessage;
@@ -43,7 +45,11 @@ import com.bluebox.smtp.storage.LiteMessage;
 @MultipartConfig
 public class MessageResource extends AbstractResource {
     private static final Logger log = LoggerFactory.getLogger(MessageResource.class);
-
+    private static Pattern urlPattern = Pattern.compile(
+	    "(?:^|[\\W])((ht|f)tp(s?):\\/\\/|www\\.)"+
+		    "(([\\w\\-]+\\.){1,}?([\\w\\-.~]+\\/?)*"+
+		    "[\\p{Alnum}.,%_=?&#\\-+()\\[\\]\\*$~@!:/{};']*)",
+		    Pattern.CASE_INSENSITIVE | Pattern.MULTILINE | Pattern.DOTALL);
     public static final String PATH = "/message";
     public static final String UID = "uid";
     public static final String SECURITY = "Security";
@@ -144,9 +150,12 @@ public class MessageResource extends AbstractResource {
 	try {
 	    log.debug("Serving links for {}",uid);
 	    BlueboxMessage message = Inbox.getInstance().retrieve(uid);
-	    JSONArray links = getLinks(message.getHtml(request));
+	    JSONArray textLinks = getTextLinks(message.getText());
+	    JSONArray htmlLinks = getHtmlLinks(message.getHtml(request));
+	    for (int i = 0; i < textLinks.length(); i++)
+		htmlLinks.put(textLinks.get(i));
 	    JSONObject result = new JSONObject();
-	    result.put(LINKS, links);
+	    result.put(LINKS, htmlLinks);
 	    return Response.ok(result.toString(), MediaType.APPLICATION_JSON).build();
 	}
 	catch (Throwable t) {
@@ -155,7 +164,29 @@ public class MessageResource extends AbstractResource {
 	}
     }
 
-    public JSONArray getLinks(String html) throws IOException {
+    public static JSONArray getTextLinks(String body) {
+	// Pattern for recognizing a URL, based off RFC 3986
+	JSONArray res = new JSONArray();
+	if ((body!=null)&&(body.length()>0)) {
+	    Matcher matcher = urlPattern.matcher(body);
+	    while (matcher.find()) {
+		try {
+		    int matchStart = matcher.start(1);
+		    int matchEnd = matcher.end();
+		    String link = body.substring(matchStart, matchEnd);
+		    JSONObject currLink = new JSONObject();
+		    currLink.put("href", link);
+		    res.put(currLink);
+		}
+		catch (Throwable t) {
+		    log.error("Problem detecting text links",t);
+		}
+	    }
+	}
+	return res;
+    }
+
+    public static JSONArray getHtmlLinks(String html) throws IOException {
 	JSONArray res = new JSONArray();
 	Document doc = Jsoup.parse(html);
 	Elements links = doc.select("a[href]");
