@@ -13,7 +13,7 @@
 		<jsoup_version>1.10.2</jsoup_version>
 		<commons_io_version>2.5</commons_io_version>
 		<rome_version>1.7.1</rome_version>
-		<lucene_version>6.4.2</lucene_version>
+		<lucene_version>8.2.0</lucene_version>
 		<solr_version>8.2.0</solr_version>
 		<derby_version>10.13.1.1</derby_version>
 		<mongo_version>3.4.2</mongo_version>
