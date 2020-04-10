@@ -26,9 +26,10 @@ import com.bluebox.smtp.storage.BlueboxMessage.State;
 
 public class RestTest extends BaseServletTest {
 	private static final Logger log = LoggerFactory.getLogger(RestTest.class);
-
+	
 	@Test
 	public void testAutocomplete() throws IOException, Exception {
+		setUp();
 		String url = "/"+AutoCompleteResource.PATH+"/list?start=0&count=10&name=*";
 		JSONObject js = getRestJSON(url);
 		JSONArray ja = js.getJSONArray("items");

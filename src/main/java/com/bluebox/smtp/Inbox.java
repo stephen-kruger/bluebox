@@ -193,7 +193,7 @@ public class Inbox implements SimpleMessageListener {
 	}
 
 	// stopping migration thread
-	WorkerThread.stopWorker("migrate");
+	//WorkerThread.stopWorker("migrate");
 
 	log.debug("Stopping search engine");
 	try {

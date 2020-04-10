@@ -198,8 +198,8 @@ public class LuceneIndexer implements SearchIf {
 			}
 			// if count is 0, then return only total number of hits, without sending all the data.
 			// used to calculate number of search results
-
-			TopFieldCollector collector = TopFieldCollector.create(sort, start+count, true, true, true);
+			TopFieldCollector collector = TopFieldCollector.create(sort, start+count, start+count);
+			//TopFieldCollector collector = TopFieldCollector.create(sort, start+count, true, true, true);
 			getSearcher().search(queryParser.parse(querystr),collector);
 			ScoreDoc[] hits = collector.topDocs(start,count).scoreDocs;
 			Document[] docs = new Document[hits.length];
@@ -383,7 +383,7 @@ public class LuceneIndexer implements SearchIf {
 	public boolean containsUid(String uid) {
 		try {
 			Query q = new TermQuery(new Term(SearchUtils.SearchFields.UID.name(), uid));
-			return (getSearcher().search(q, 10).totalHits>0);
+			return (getSearcher().search(q, 10).totalHits.value>0);
 		}
 		catch (Throwable t) {
 			t.printStackTrace();

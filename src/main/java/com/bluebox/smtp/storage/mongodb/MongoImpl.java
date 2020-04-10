@@ -145,7 +145,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
     @Override
     public boolean contains(String uid) {
-	return mailFS.count(Filters.eq(StorageIf.Props.Uid.name(), uid))>0;
+	return mailFS.countDocuments(Filters.eq(StorageIf.Props.Uid.name(), uid))>0;
     }
 
     @Override
@@ -157,27 +157,27 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
     @Override
     public long getMailCount(State state) throws Exception {
 	if (state == BlueboxMessage.State.ANY) {
-	    return mailFS.count();
+	    return mailFS.countDocuments();
 	}
-	return mailFS.count(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
+	return mailFS.countDocuments(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
     }
 
     @Override
     public long getMailCount(InboxAddress inbox, State state) throws Exception {
 	if (state == BlueboxMessage.State.ANY) {
 	    if (inbox==null) {
-		return mailFS.count();
+		return mailFS.countDocuments();
 	    }
 	    else {
-		return mailFS.count(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
+		return mailFS.countDocuments(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()));
 	    }
 	}
 	else {
 	    if (inbox==null) {
-		return mailFS.count(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
+		return mailFS.countDocuments(Filters.eq(StorageIf.Props.State.name(), state.ordinal()));
 	    }
 	    else {
-		return mailFS.count(Filters.and(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()),
+		return mailFS.countDocuments(Filters.and(Filters.eq(StorageIf.Props.Inbox.name(), inbox.getAddress()),
 			Filters.eq(StorageIf.Props.State.name(), state.ordinal())));
 	    }
 	}
@@ -239,7 +239,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 
     @Override
     public int logErrorCount() {
-	return (int) errorFS.count();
+	return (int) errorFS.countDocuments();
     }
 
     @Override
@@ -529,7 +529,7 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	    query.append(StorageIf.Props.Inbox.name(), inbox.getAddress());
 
 	}
-	mph = (int) mailFS.count(query);
+	mph = (int) mailFS.countDocuments(query);
 
 	try {
 	    resultJ.put("mph", mph);
@@ -565,7 +565,8 @@ public class MongoImpl extends AbstractStorage implements StorageIf {
 	return defaultValue;
     }
 
-    @Override
+    @SuppressWarnings("deprecation")
+	@Override
     public String spoolStream(InputStream blob) throws Exception {
 	boolean enableSpoolReuse = true;
 	try {

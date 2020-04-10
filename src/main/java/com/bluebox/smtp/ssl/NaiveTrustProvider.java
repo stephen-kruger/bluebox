@@ -32,7 +32,7 @@ public class NaiveTrustProvider extends Provider {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public NaiveTrustProvider () {
 		super ( TRUST_PROVIDER_ID,
-				(double) 0.1,
+				"0.1",
 		"NaiveTrustProvider (provides all secure socket factories by ignoring problems in the chain of certificate trust)" );
 
 		AccessController.doPrivileged ( 

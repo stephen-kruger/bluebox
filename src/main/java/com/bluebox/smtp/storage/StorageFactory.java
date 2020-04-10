@@ -20,7 +20,7 @@ public class StorageFactory {
 		String storageClassName = config.getString(Config.BLUEBOX_STORAGE);
 		log.info("Allocating storage instance for class {}",storageClassName);
 		try {
-		    storageInstance = (StorageIf) Class.forName(storageClassName).newInstance();
+		    storageInstance = (StorageIf) Class.forName(storageClassName).getDeclaredConstructor().newInstance();
 		} 
 		catch (Throwable e) {
 		    log.error(e.getMessage());
@@ -28,13 +28,12 @@ public class StorageFactory {
 		}
 	    }
 	    else {
-		// try mongodb, if it fails use derby
+		// try mongodb, if it fails use H2
 		if (com.bluebox.smtp.storage.AbstractStorage.mongoDetected()) {
 		    log.info("Using MongoImpl storage driver");
 		    storageInstance = new com.bluebox.smtp.storage.mongodb.MongoImpl();
 		} 
 		else {
-//		    storageInstance = new com.bluebox.smtp.storage.derby.DerbyImpl();
 		    storageInstance = new com.bluebox.smtp.storage.h2.H2Impl();
 		}
 	    }

@@ -18,8 +18,8 @@ import org.apache.wink.client.RestClient;
 import org.apache.wink.server.internal.servlet.RestServlet;
 import org.codehaus.jettison.json.JSONObject;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.webapp.WebAppContext;
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +37,7 @@ public abstract class BaseServletTest extends TestCase {
 	private Server server;
 	private String baseURL;
 	private String contextPath = "/";
+	private int PORT = 8090;
 	public ServletHolder bbs, feeds, jaxrs;
 	private int retryCount=10;
 	private static final Logger log = LoggerFactory.getLogger(BaseServletTest.class);
@@ -45,29 +46,45 @@ public abstract class BaseServletTest extends TestCase {
 
 	@Override
 	protected void setUp() throws Exception {
-		Config config = Config.getInstance();
-		config.setProperty(Config.BLUEBOX_PORT, 2500);
-		server = new Server(8080);
+		log.info("setUp");
 
-		ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
-		context.setContextPath(contextPath);
-		context.setResourceBase("WebContent");
-		server.setHandler(context);
+		try {
+			WebAppContext webAppContext = new WebAppContext();
+			webAppContext.setParentLoaderPriority(true); 
+			Config config = Config.getInstance();
+			config.setProperty(Config.BLUEBOX_PORT, 2500);
+			server = new Server(PORT);
+			//ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+			webAppContext.setContextPath(contextPath);
+			//context.setContextPath(contextPath);
+			//context.setResourceBase("WebContent");
+			webAppContext.setResourceBase("WebContent");
+			server.setHandler(webAppContext);
 
-		bbs = context.addServlet(BlueBoxServlet.class, "/rest/*");
-		feeds = context.addServlet(FeedServlet.class, "/feed/*");
-		jaxrs = context.addServlet(RestServlet.class, "/jaxrs/*");
-		jaxrs.setInitParameter(RestServlet.APPLICATION_INIT_PARAM, "com.bluebox.rest.RestApi");
+			//bbs = context.addServlet(BlueBoxServlet.class, "/rest/*");
+//			feeds = context.addServlet(FeedServlet.class, "/feed/*");
+//			jaxrs = context.addServlet(RestServlet.class, "/jaxrs/*");
+			bbs = webAppContext.addServlet(BlueBoxServlet.class, "/rest/*");
+			feeds = webAppContext.addServlet(FeedServlet.class, "/feed/*");
+			log.info("Before");
+			jaxrs = webAppContext.addServlet(RestServlet.class, "/jaxrs/*");
+			log.info("After");
+			
+			jaxrs.setInitParameter(RestServlet.APPLICATION_INIT_PARAM, "com.bluebox.rest.RestApi");
 
-		baseURL = "http://0.0.0.0:8080";
-		log.info("Starting servlets at "+baseURL);
-		server.start();
-		while((!feeds.isRunning()||!bbs.isRunning()||!jaxrs.isRunning())&&(retryCount-->0)) {
-			log.info("Waiting for servlets to start feeds:{} bbs:{} root:{}",feeds.isRunning(),bbs.isRunning(),jaxrs.isRunning());
-			Thread.sleep(750);
+			baseURL = "http://localhost:"+PORT;
+			log.info("Starting servlets at "+baseURL);
+			server.start();
+			while((!feeds.isRunning()||!bbs.isRunning()||!jaxrs.isRunning())&&(retryCount-->0)) {
+				log.info("Waiting for servlets to start feeds:{} bbs:{} root:{}",feeds.isRunning(),bbs.isRunning(),jaxrs.isRunning());
+				Thread.sleep(750);
+			}
+
+			//TestUtils.addRandomNoThread(Inbox.getInstance(), 10);
 		}
-
-		//TestUtils.addRandomNoThread(Inbox.getInstance(), 10);
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
 	}
 
 	public void clearMail() throws IOException, Exception {
@@ -120,7 +137,7 @@ public abstract class BaseServletTest extends TestCase {
 		JSONObject jo = new JSONObject(js);
 		return jo;
 	}
-	
+
 	public JSONArray getRestJSONArray(String url) throws IOException, Exception {
 		ClientResponse response = getResponse("/jaxrs",url);
 		String js = response.getEntity(String.class);
@@ -134,11 +151,11 @@ public abstract class BaseServletTest extends TestCase {
 				.setHeader(HttpHeaders.ACCEPT,  MediaType.APPLICATION_JSON)
 				.setHeader(HttpHeaders.CONTENT_TYPE,  MediaType.APPLICATION_FORM_URLENCODED);
 
-//		if ((args!=null)&&(args.length>1)) {
-//			for (int i = 0; i < args.length; i+=2) {
-//				builder.addParameter(args[i], args[i+1]);
-//			}
-//		}
+		//		if ((args!=null)&&(args.length>1)) {
+		//			for (int i = 0; i < args.length; i+=2) {
+		//				builder.addParameter(args[i], args[i+1]);
+		//			}
+		//		}
 
 		HttpUriRequest request = builder.build();
 
@@ -155,11 +172,11 @@ public abstract class BaseServletTest extends TestCase {
 	public ClientResponse getJaxResponse(String url, String acceptType, String mediaType) {
 		return getResponse(RestApi.APPLICATION_PATH,url,acceptType, mediaType);
 	}
-	
+
 	public ClientResponse getResponse(String base, String url) {
 		return getResponse(base,url,MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_JSON);
 	}
-	
+
 	public ClientResponse getResponse(String base, String url, String acceptType, String mediaType) {
 		ClientConfig clientConfig = new ClientConfig();
 		RestClient client = new RestClient(clientConfig);

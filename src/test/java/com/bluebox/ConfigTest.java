@@ -3,8 +3,6 @@ package com.bluebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.bluebox.Config;
-
 import junit.framework.TestCase;
 
 public class ConfigTest extends TestCase {

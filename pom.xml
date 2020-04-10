@@ -1,24 +1,39 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.5.17</version>
+	<version>4.6.0</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
 	<properties>
 		<subethasmtp_version>3.1.7</subethasmtp_version>
-		<slf4j_version>1.7.25</slf4j_version>
-		<jsoup_version>1.10.2</jsoup_version>
-		<commons_io_version>2.5</commons_io_version>
-		<rome_version>1.7.1</rome_version>
-		<lucene_version>6.4.2</lucene_version>
-		<solr_version>8.2.0</solr_version>
-		<derby_version>10.13.1.1</derby_version>
-		<mongo_version>3.4.2</mongo_version>
-		<apache.wink>1.4</apache.wink>
-		<jetty_version>9.3.8.v20160314</jetty_version>
+		<slf4j_version>1.7.30</slf4j_version>
+		<jsoup_version>1.13.1</jsoup_version>
+		<commons_io_version>2.6</commons_io_version>
+		<rome_version>1.12.2</rome_version>
+		<lucene_version>8.5.0</lucene_version>
+		<solr_version>8.5.0</solr_version>
+		<mongo_version>3.12.3</mongo_version>
+		<apache_wink>1.4</apache_wink>
+		<jetty_version>9.4.27.v20200227</jetty_version>
+		<apache_httpclient>4.5.12</apache_httpclient>
+		<h2_database>1.4.200</h2_database>
+		<javax_mail>1.6.2</javax_mail>
+		<commons_codec>1.14</commons_codec>
+		<antisamy_version>1.5.9</antisamy_version>
+		<commons_config>1.10</commons_config>
+		<commons_lang>2.6</commons_lang>
+		<file_upload>1.4</file_upload>
+		<junit_version>4.13</junit_version>
+		<codehaus_jettison>1.4.1</codehaus_jettison>
+		<sun_javax_mail>1.6.2</sun_javax_mail>
+		<javaee_version>7.0</javaee_version>
+		<javax_ws_rs_api>2.0</javax_ws_rs_api>
+		<annotation_version>1.3.2</annotation_version>
+		<servlet_api_version>4.0.1</servlet_api_version>
 	</properties>
 	<distributionManagement>
 		<repository>
@@ -123,30 +138,12 @@
 					</executions>
 				</plugin>
 				<!-- This plug creates the executable jar for fixing systems. Run it 
-					using :clean compile assembly:single 
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-assembly-plugin</artifactId>
-					<executions>
-						<execution>
-							<goals>
-								<goal>attached</goal>
-							</goals>
-							<phase>package</phase>
-							<configuration>
-								<descriptorRefs>
-									<descriptorRef>jar-with-dependencies</descriptorRef>
-								</descriptorRefs>
-								<archive>
-									<manifest>
-										<mainClass>com.bluebox.Utils</mainClass>
-									</manifest>
-								</archive>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-				-->
+					using :clean compile assembly:single <plugin> <groupId>org.apache.maven.plugins</groupId> 
+					<artifactId>maven-assembly-plugin</artifactId> <executions> <execution> <goals> 
+					<goal>attached</goal> </goals> <phase>package</phase> <configuration> <descriptorRefs> 
+					<descriptorRef>jar-with-dependencies</descriptorRef> </descriptorRefs> <archive> 
+					<manifest> <mainClass>com.bluebox.Utils</mainClass> </manifest> </archive> 
+					</configuration> </execution> </executions> </plugin> -->
 			</plugins>
 		</pluginManagement>
 	</build>
@@ -154,7 +151,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.12</version>
+			<version>${junit_version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -196,7 +193,7 @@
 		<dependency>
 			<groupId>org.codehaus.jettison</groupId>
 			<artifactId>jettison</artifactId>
-			<version>1.3.8</version>
+			<version>${codehaus_jettison}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -208,20 +205,16 @@
 		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>javax.mail-api</artifactId>
-			<version>1.5.6</version>
+			<version>${javax_mail}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
-			<version>1.5.6</version>
+			<version>${sun_javax_mail}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j_version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
-		</dependency>
+		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-log4j12</artifactId> 
+			<version>${slf4j_version}</version> <type>jar</type> <scope>compile</scope> 
+			</dependency> -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -237,12 +230,12 @@
 		<dependency>
 			<groupId>commons-fileupload</groupId>
 			<artifactId>commons-fileupload</artifactId>
-			<version>1.3.3</version>
+			<version>${file_upload}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-configuration</groupId>
 			<artifactId>commons-configuration</artifactId>
-			<version>1.10</version>
+			<version>${commons_config}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
@@ -251,30 +244,14 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.databene</groupId>
-			<artifactId>contiperf</artifactId>
-			<version>2.3.4</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongo-java-driver</artifactId>
 			<version>${mongo_version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derby</artifactId>
-			<version>${derby_version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.derby</groupId>
-			<artifactId>derbyclient</artifactId>
-			<version>${derby_version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.owasp.antisamy</groupId>
 			<artifactId>antisamy</artifactId>
-			<version>1.5.7</version>
+			<version>${antisamy_version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>
@@ -284,7 +261,7 @@
 		<dependency>
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
-			<version>2.6</version>
+			<version>${commons_lang}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
@@ -299,72 +276,76 @@
 		<dependency>
 			<groupId>javax.annotation</groupId>
 			<artifactId>javax.annotation-api</artifactId>
-			<version>1.3</version>
+			<version>${annotation_version}</version>
 			<scope>provided</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>javax.ws.rs-api</artifactId>
-			<version>2.0.1</version>
+			<version>${javax_ws_rs_api}</version>
 			<scope>provided</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
+			<version>${servlet_api_version}</version>
 			<scope>provided</scope>
 		</dependency>
+		<!--  
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-web-api</artifactId>
-			<version>7.0</version>
+			<version>${javaee_version}</version>
 			<scope>provided</scope>
 		</dependency>
+		-->
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>1.10</version>
+			<version>${commons_codec}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.wink</groupId>
 			<artifactId>wink-client</artifactId>
-			<version>${apache.wink}</version>
+			<version>${apache_wink}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.wink</groupId>
 			<artifactId>wink-server</artifactId>
-			<version>${apache.wink}</version>
+			<version>${apache_wink}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.wink</groupId>
 			<artifactId>wink-common</artifactId>
-			<version>${apache.wink}</version>
+			<version>${apache_wink}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.wink</groupId>
 			<artifactId>wink-json-provider</artifactId>
-			<version>${apache.wink}</version>
+			<version>${apache_wink}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.wink</groupId>
 			<artifactId>wink-component-test-support</artifactId>
-			<version>${apache.wink}</version>
+			<version>${apache_wink}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>1.4.194</version>
+			<version>${h2_database}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.3</version>
+			<version>${apache_httpclient}</version>
 		</dependency>
 	</dependencies>
 	<scm>

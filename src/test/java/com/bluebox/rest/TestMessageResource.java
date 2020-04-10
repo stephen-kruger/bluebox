@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.bluebox.TestUtils;
-import com.bluebox.rest.MessageResource;
 import com.bluebox.servlet.BaseServletTest;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.BlueboxMessage;

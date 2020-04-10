@@ -7,7 +7,7 @@ import com.bluebox.TestUtils;
 
 public class IteratorTest extends BaseTestCase {
 	private static final Logger log = Logger.getAnonymousLogger();
-	private int SIZE = 1100;
+	private int SIZE = 100;
 
 
 	@Override
