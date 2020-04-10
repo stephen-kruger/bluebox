@@ -64,7 +64,7 @@ public class BlueBoxServlet extends HttpServlet {
 	}
 
 	/*
-	 * hOW MUCH TIME HAS ELAPSED SINCE THE SERVLET WAS STARTED
+	 * HOW MUCH TIME HAS ELAPSED SINCE THE SERVLET WAS STARTED
 	 */
 	public static String getUptime(String format) {
 		long duration = new Date().getTime()-started.getTime();
