@@ -15,7 +15,7 @@
 		<commons_io_version>2.6</commons_io_version>
 		<rome_version>1.12.2</rome_version>
 		<lucene_version>8.5.0</lucene_version>
-		<solr_version>8.5.0</solr_version>
+		<solr_version>8.8.2</solr_version>
 		<mongo_version>3.12.3</mongo_version>
 		<apache_wink>1.4</apache_wink>
 		<jetty_version>9.4.27.v20200227</jetty_version>
