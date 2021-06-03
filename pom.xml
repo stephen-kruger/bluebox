@@ -19,7 +19,7 @@
 		<mongo_version>3.12.3</mongo_version>
 		<apache_wink>1.4</apache_wink>
 		<jetty_version>9.4.27.v20200227</jetty_version>
-		<apache_httpclient>4.5.12</apache_httpclient>
+		<apache_httpclient>4.5.13</apache_httpclient>
 		<h2_database>1.4.200</h2_database>
 		<javax_mail>1.6.2</javax_mail>
 		<commons_codec>1.14</commons_codec>
