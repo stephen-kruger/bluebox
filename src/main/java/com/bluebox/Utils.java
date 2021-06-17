@@ -751,7 +751,7 @@ public class Utils {
 		Properties props = getOnlinePropsCached();
 		jo.put("update_available", isVersionNewer(props.getProperty(Config.BLUEBOX_VERSION),Config.getInstance().getString(Config.BLUEBOX_VERSION)));
 		jo.put("current_version", Config.getInstance().getString(Config.BLUEBOX_VERSION));
-		jo.put("available_version", props.getProperty(Config.BLUEBOX_VERSION));
+		jo.put("available_version", props.getProperty(Config.BLUEBOX_VERSION,"4.6.0"));
 		return jo;
 	}
 
