@@ -64,10 +64,10 @@ public abstract class BaseServletTest extends TestCase {
 			//bbs = context.addServlet(BlueBoxServlet.class, "/rest/*");
 //			feeds = context.addServlet(FeedServlet.class, "/feed/*");
 //			jaxrs = context.addServlet(RestServlet.class, "/jaxrs/*");
-			bbs = webAppContext.addServlet(BlueBoxServlet.class, "/rest/*");
-			feeds = webAppContext.addServlet(FeedServlet.class, "/feed/*");
+			bbs = webAppContext.addServlet(BlueBoxServlet.class.getCanonicalName(), "/rest/*");
+			feeds = webAppContext.addServlet(FeedServlet.class.getCanonicalName(), "/feed/*");
 			log.info("Before");
-			jaxrs = webAppContext.addServlet(RestServlet.class, "/jaxrs/*");
+			jaxrs = webAppContext.addServlet(RestServlet.class.getCanonicalName(), "/jaxrs/*");
 			log.info("After");
 			
 			jaxrs.setInitParameter(RestServlet.APPLICATION_INIT_PARAM, "com.bluebox.rest.RestApi");
