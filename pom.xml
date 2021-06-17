@@ -8,6 +8,7 @@
 	<version>4.6.0</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
+
 	<properties>
 		<subethasmtp_version>3.1.7</subethasmtp_version>
 		<slf4j_version>2.0.0-alpha1</slf4j_version>
@@ -42,11 +43,11 @@
 		</repository>
 	</distributionManagement>
 	<repositories>
-		<!-- <repository> <id>maven-restlet</id> <name>Public online Restlet repository</name> 
-			<url>http://maven.restlet.com</url> </repository> <repository> <id>maven-java-net</id> 
-			<name>Maven Java Net</name> <url>https://maven.java.net/content/repositories/releases/</url> 
-			<snapshots> <enabled>true</enabled> <updatePolicy>always</updatePolicy> </snapshots> 
-			</repository> <repository> <id>maven2-javanet</id> <name>Java.net</name> 
+		<!-- <repository> <id>maven-restlet</id> <name>Public online Restlet repository</name>
+			<url>http://maven.restlet.com</url> </repository> <repository> <id>maven-java-net</id>
+			<name>Maven Java Net</name> <url>https://maven.java.net/content/repositories/releases/</url>
+			<snapshots> <enabled>true</enabled> <updatePolicy>always</updatePolicy> </snapshots>
+			</repository> <repository> <id>maven2-javanet</id> <name>Java.net</name>
 			<url>http://download.java.net/maven/2/</url> </repository> -->
 		<repository>
 			<id>maven-org</id>
@@ -71,6 +72,7 @@
 					<configuration>
 						<source>1.8</source>
 						<target>1.8</target>
+						<encoding>Cp1252</encoding>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -137,12 +139,12 @@
 						</execution>
 					</executions>
 				</plugin>
-				<!-- This plug creates the executable jar for fixing systems. Run it 
-					using :clean compile assembly:single <plugin> <groupId>org.apache.maven.plugins</groupId> 
-					<artifactId>maven-assembly-plugin</artifactId> <executions> <execution> <goals> 
-					<goal>attached</goal> </goals> <phase>package</phase> <configuration> <descriptorRefs> 
-					<descriptorRef>jar-with-dependencies</descriptorRef> </descriptorRefs> <archive> 
-					<manifest> <mainClass>com.bluebox.Utils</mainClass> </manifest> </archive> 
+				<!-- This plug creates the executable jar for fixing systems. Run it
+					using :clean compile assembly:single <plugin> <groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId> <executions> <execution> <goals>
+					<goal>attached</goal> </goals> <phase>package</phase> <configuration> <descriptorRefs>
+					<descriptorRef>jar-with-dependencies</descriptorRef> </descriptorRefs> <archive>
+					<manifest> <mainClass>com.bluebox.Utils</mainClass> </manifest> </archive>
 					</configuration> </execution> </executions> </plugin> -->
 			</plugins>
 		</pluginManagement>
@@ -218,8 +220,8 @@
 			<artifactId>javax.mail</artifactId>
 			<version>${sun_javax_mail}</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-log4j12</artifactId> 
-			<version>${slf4j_version}</version> <type>jar</type> <scope>compile</scope> 
+		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-log4j12</artifactId>
+			<version>${slf4j_version}</version> <type>jar</type> <scope>compile</scope>
 			</dependency> -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
@@ -299,7 +301,7 @@
 			<version>${servlet_api_version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<!-- <dependency> <groupId>javax</groupId> <artifactId>javaee-web-api</artifactId> 
+		<!-- <dependency> <groupId>javax</groupId> <artifactId>javaee-web-api</artifactId>
 			<version>${javaee_version}</version> <scope>provided</scope> </dependency> -->
 		<dependency>
 			<groupId>commons-codec</groupId>
