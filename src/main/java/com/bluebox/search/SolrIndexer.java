@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.file.Path;
 import java.util.Date;
 
 import org.apache.solr.client.solrj.SolrQuery;
@@ -15,6 +16,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.core.CoreContainer;
+//import org.apache.solr.core.CoreContainer;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -38,8 +40,7 @@ public class SolrIndexer implements SearchIf {
 		System.setProperty("solr.solr.home", solrDir.getCanonicalPath());
 		writeSolrXml(solrDir);
 		writeCoreFiles(solrDir,CORE_NAME);
-		CoreContainer coreContainer;
-		coreContainer = new CoreContainer(solrDir.getPath());
+		CoreContainer coreContainer = CoreContainer.createAndLoad(Path.of(solrDir.getPath()));
 
 		coreContainer.load();
 		server = new EmbeddedSolrServer(coreContainer, CORE_NAME);
