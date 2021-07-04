@@ -5,13 +5,13 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.6.0</version>
+	<version>4.6.1</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
 
 	<properties>
 		<subethasmtp_version>3.1.7</subethasmtp_version>
-		<slf4j_version>2.0.0-alpha1</slf4j_version>
+		<slf4j_version>2.0.0-alpha2</slf4j_version>
 		<jsoup_version>1.13.1</jsoup_version>
 		<commons_io_version>2.10.0</commons_io_version>
 		<rome_version>1.15.0</rome_version>
@@ -24,7 +24,7 @@
 		<h2_database>1.4.200</h2_database>
 		<javax_mail>1.6.2</javax_mail>
 		<commons_codec>1.15</commons_codec>
-		<antisamy_version>1.6.3</antisamy_version>
+		<antisamy_version>1.6.4</antisamy_version>
 		<commons_config>1.10</commons_config>
 		<commons_lang>2.6</commons_lang>
 		<file_upload>1.4</file_upload>
