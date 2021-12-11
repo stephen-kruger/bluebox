@@ -1,55 +1,53 @@
 package com.bluebox.smtp.storage;
 
-import java.util.logging.Logger;
-
+import com.bluebox.TestUtils;
 import junit.framework.TestCase;
-
 import org.codehaus.jettison.json.JSONArray;
 import org.junit.Test;
 
-import com.bluebox.TestUtils;
+import java.util.logging.Logger;
 
 public class BasicStorageTest extends TestCase {
-	private static final Logger log = Logger.getAnonymousLogger();
-	private StorageIf si;
+    private static final Logger log = Logger.getAnonymousLogger();
+    private StorageIf si;
 
-	
-	@Override
-	protected void setUp() throws Exception {
-		super.setUp();
-		log.fine("Test setup");
-		si = StorageFactory.getInstance();
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        log.fine("Test setup");
+        si = StorageFactory.getInstance();
 //		si.start();
-	}
+    }
 
-	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		si.stop();
-	}
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        si.stop();
+    }
 
-	@Test
-	public void testPropsStorage() throws Exception {
-		si.setProperty("xxx", "yyy");
-		assertEquals("Unexpected value","yyy",si.getProperty("xxx","Not found"));
-		assertEquals("Unexpected default value","zzz",si.getProperty("aaa","zzz"));
-		
-		si.setLongProperty("number", 100);
-		assertEquals("Unexpected number value",100,si.getLongProperty("number",0));
-	}
-	
-	@Test
-	public void testErrorStorage() throws Exception {
-		si.logErrorClear();
-		assertEquals(0,si.logErrorCount());
-		si.logError("error title", "this is some content");
-		assertEquals(1,si.logErrorCount());
-		JSONArray ja = si.logErrorList(0, 10);
-		assertEquals(1,ja.length());
-		assertEquals("error title",ja.getJSONObject(0).get("title"));
-		assertEquals("this is some content",si.logErrorContent(ja.getJSONObject(0).get("id").toString()));
-	}
-	
+    @Test
+    public void testPropsStorage() throws Exception {
+        si.setProperty("xxx", "yyy");
+        assertEquals("Unexpected value", "yyy", si.getProperty("xxx", "Not found"));
+        assertEquals("Unexpected default value", "zzz", si.getProperty("aaa", "zzz"));
+
+        si.setLongProperty("number", 100);
+        assertEquals("Unexpected number value", 100, si.getLongProperty("number", 0));
+    }
+
+    @Test
+    public void testErrorStorage() throws Exception {
+        si.logErrorClear();
+        assertEquals(0, si.logErrorCount());
+        si.logError("error title", "this is some content");
+        assertEquals(1, si.logErrorCount());
+        JSONArray ja = si.logErrorList(0, 10);
+        assertEquals(1, ja.length());
+        assertEquals("error title", ja.getJSONObject(0).get("title"));
+        assertEquals("this is some content", si.logErrorContent(ja.getJSONObject(0).get("id").toString()));
+    }
+
 //	@Test
 //	public void testSpoolStorage() throws Exception {
 //		si.trimSpools(0);
@@ -60,11 +58,11 @@ public class BasicStorageTest extends TestCase {
 //		}
 //		assertEquals("Spool count should be capped at "+AbstractStorage.MAX_SPOOL_SIZE,AbstractStorage.MAX_SPOOL_SIZE,si.getSpoolCount());
 //	}
-	
-	public void testFrom() throws Exception {
-		BlueboxMessage message = TestUtils.addRandomDirect(si);
-		BlueboxMessage saved = si.retrieve(message.getIdentifier());
 
-		assertEquals("Message reported incorrect sender",message.getFrom().get(0),saved.getFrom().get(0));
-	}
+    public void testFrom() throws Exception {
+        BlueboxMessage message = TestUtils.addRandomDirect(si);
+        BlueboxMessage saved = si.retrieve(message.getIdentifier());
+
+        assertEquals("Message reported incorrect sender", message.getFrom().get(0), saved.getFrom().get(0));
+    }
 }

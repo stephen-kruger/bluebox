@@ -5,23 +5,24 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.6.1</version>
+	<version>4.7.0</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
 
 	<properties>
 		<subethasmtp_version>3.1.7</subethasmtp_version>
-		<slf4j_version>2.0.0-alpha2</slf4j_version>
-		<jsoup_version>1.13.1</jsoup_version>
-		<commons_io_version>2.10.0</commons_io_version>
-		<rome_version>1.15.0</rome_version>
-		<lucene_version>8.9.0</lucene_version>
-		<solr_version>8.9.0</solr_version>
-		<mongo_version>3.12.8</mongo_version>
+		<slf4j_version>1.7.32</slf4j_version>
+		<jsoup_version>1.14.3</jsoup_version>
+		<commons_io_version>2.11.0</commons_io_version>
+		<rome_version>1.16.0</rome_version>
+		<lucene_version>9.0.0</lucene_version>
+		<lucene_analyzers_version>8.11.0</lucene_analyzers_version>
+		<solr_version>8.11.0</solr_version>
+		<mongo_version>3.12.10</mongo_version>
 		<apache_wink>1.4</apache_wink>
-		<jetty_version>11.0.5</jetty_version>
+		<jetty_version>11.0.7</jetty_version>
 		<apache_httpclient>4.5.13</apache_httpclient>
-		<h2_database>1.4.200</h2_database>
+		<h2_database>2.0.202</h2_database>
 		<javax_mail>1.6.2</javax_mail>
 		<commons_codec>1.15</commons_codec>
 		<antisamy_version>1.6.4</antisamy_version>
@@ -34,7 +35,7 @@
 		<javaee_version>7.0</javaee_version>
 		<javax_ws_rs_api>2.1.1</javax_ws_rs_api>
 		<annotation_version>1.3.2</annotation_version>
-		<servlet_api_version>4.0.1</servlet_api_version>
+		<servlet_api_version>3.1.0</servlet_api_version>
 	</properties>
 	<distributionManagement>
 		<repository>
@@ -43,12 +44,6 @@
 		</repository>
 	</distributionManagement>
 	<repositories>
-		<!-- <repository> <id>maven-restlet</id> <name>Public online Restlet repository</name>
-			<url>http://maven.restlet.com</url> </repository> <repository> <id>maven-java-net</id>
-			<name>Maven Java Net</name> <url>https://maven.java.net/content/repositories/releases/</url>
-			<snapshots> <enabled>true</enabled> <updatePolicy>always</updatePolicy> </snapshots>
-			</repository> <repository> <id>maven2-javanet</id> <name>Java.net</name>
-			<url>http://download.java.net/maven/2/</url> </repository> -->
 		<repository>
 			<id>maven-org</id>
 			<name>Maven Repo</name>
@@ -189,7 +184,7 @@
 		<dependency>
 			<groupId>org.apache.lucene</groupId>
 			<artifactId>lucene-analyzers-common</artifactId>
-			<version>${lucene_version}</version>
+			<version>${lucene_analyzers_version}</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
@@ -220,16 +215,12 @@
 			<artifactId>javax.mail</artifactId>
 			<version>${sun_javax_mail}</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-log4j12</artifactId>
-			<version>${slf4j_version}</version> <type>jar</type> <scope>compile</scope>
-			</dependency> -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4j_version}</version>
-			<type>jar</type>
-			<scope>compile</scope>
 		</dependency>
+
 		<dependency>
 			<groupId>com.rometools</groupId>
 			<artifactId>rome</artifactId>
@@ -270,6 +261,7 @@
 			<groupId>commons-lang</groupId>
 			<artifactId>commons-lang</artifactId>
 			<version>${commons_lang}</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>

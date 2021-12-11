@@ -34,7 +34,7 @@ public class StrongTls {
     /**
      * The protocols that are enabled.
      */
-    public static final String[] ENABLED_PROTOCOLS = new String[] {
+    public static final String[] ENABLED_PROTOCOLS = new String[]{
 
             // Strong protocols
 
@@ -42,7 +42,7 @@ public class StrongTls {
             "TLSv1",
             "TLSv1.1",
             "SSLv2Hello",
-            
+
             // Weak protocols
 
 //            "SSLv2"
@@ -52,7 +52,7 @@ public class StrongTls {
     /**
      * The SSL cipher suites that are enabled.
      */
-    public static final String[] ENABLED_CIPHER_SUITES = new String[] {
+    public static final String[] ENABLED_CIPHER_SUITES = new String[]{
 
             // Cipher suites that are not listed at
             // http://java.sun.com/javase/6/docs/technotes/guides/security/StandardNames.html

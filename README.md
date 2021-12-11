@@ -9,9 +9,11 @@ Download the Bluebox war file from the [latest releases](https://github.com/step
 ## Installing in Websphere Liberty
 Download and install the latest Liberty profile from [here](https://developer.ibm.com/wasdev/downloads/download-latest-stable-websphere-liberty-runtime/)
 
-### Create a Liberty profile :
+Suggest using [WebSphere Liberty Web Profile 8 21.0.0.12](https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/downloads/wlp/21.0.0.12/wlp-webProfile8-21.0.0.12.zip)
+### Set up a Liberty profile for your bluebox server:
+Create a bluebox profile using the WLP server command
 ```
-<wlp_root>/wlp/bin/server create bluebox
+<wlp_root>/bin/server create bluebox
 ```
 
 Then navigate to the newly created profile (generally <wlp_root>/wlp/usr/servers/bluebox) and edit the server.xml.
@@ -22,11 +24,14 @@ An example is given here for reference :
 
     <!-- Enable features -->
     <featureManager>
-        <feature>jaxrs-2.0</feature>
+        <!--
+        <feature>jaxrs-2.1</feature>
         <feature>jaxws-2.2</feature>
         <feature>jsp-2.3</feature>
         <feature>servlet-3.1</feature>
         <feature>appSecurity-2.0</feature>
+        -->
+        <feature>webProfile-7.0</feature>
     </featureManager>
 
         <basicRegistry id="defaultRegistry">
@@ -57,9 +62,16 @@ An example is given here for reference :
 </server>
 ```
 
-Copy the Bluebox war file to the <wlp_root>/wlp/user/servers/bluebox/apps directory
+Copy the Bluebox war file to the <wlp_root>/user/servers/bluebox/apps directory
 
-You can then start the server by running the command <wlp_root>/wlp/bin/server start bluebox
+Install the required features using command  
+```
+<wlp_root>/bin/installUtility install bluebox
+```
+You can then start the server by running the command 
+```
+<wlp_root>/wlp/bin/server start bluebox
+```
 
 ## Database options
 On startup, if Bluebox detects a running instance of MongoDB, it will automatically set up and use that. Otherwise it will use an embedded H2 database which is a little less performant than MongoDB.

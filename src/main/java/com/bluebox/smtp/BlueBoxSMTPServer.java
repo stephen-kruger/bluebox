@@ -1,13 +1,12 @@
 package com.bluebox.smtp;
 
 
+import com.bluebox.Config;
+import com.bluebox.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.server.SMTPServer;
-
-import com.bluebox.Config;
-import com.bluebox.Utils;
 
 public class BlueBoxSMTPServer extends SMTPServer {
     private static final Logger log = LoggerFactory.getLogger(BlueBoxSMTPServer.class);
@@ -15,50 +14,50 @@ public class BlueBoxSMTPServer extends SMTPServer {
     //	private SSLContext sslContext;
 
     private BlueBoxSMTPServer(BlueboxMessageHandlerFactory mhf) {
-	super(mhf);
-	// set up TLS
-	//		try {
-	//			createSSLContext();
-	//		} 
-	//		catch (Throwable e) {
-	//			e.printStackTrace();
-	//		}
+        super(mhf);
+        // set up TLS
+        //		try {
+        //			createSSLContext();
+        //		}
+        //		catch (Throwable e) {
+        //			e.printStackTrace();
+        //		}
 
-	Config bbconfig = Config.getInstance();
-	setHostName(Utils.getHostName());
-	setPort(bbconfig.getInt(Config.BLUEBOX_PORT));
-	log.info("Starting SMTP server on {} and port {}",Utils.getHostName(),bbconfig.getInt(Config.BLUEBOX_PORT));
-	setMaxConnections(bbconfig.getInt(Config.BLUEBOX_MAXCONNECTIONS));
-	setHideTLS(true);
-	setRequireTLS(false);
-	setEnableTLS(false);
-	setSoftwareName("BlueBox V"+bbconfig.getString(Config.BLUEBOX_VERSION));
-	setConnectionTimeout(30000); // wait 10sec before abandoning connection
+        Config bbconfig = Config.getInstance();
+        setHostName(Utils.getHostName());
+        setPort(bbconfig.getInt(Config.BLUEBOX_PORT));
+        log.info("Starting SMTP server on {} and port {}", Utils.getHostName(), bbconfig.getInt(Config.BLUEBOX_PORT));
+        setMaxConnections(bbconfig.getInt(Config.BLUEBOX_MAXCONNECTIONS));
+        setHideTLS(true);
+        setRequireTLS(false);
+        setEnableTLS(false);
+        setSoftwareName("BlueBox V" + bbconfig.getString(Config.BLUEBOX_VERSION));
+        setConnectionTimeout(30000); // wait 10sec before abandoning connection
 
     }
 
     public BlueBoxSMTPServer(BlueboxMessageHandlerFactory mhf, AuthenticationHandlerFactory ahf) {
-	super(mhf, ahf);
+        super(mhf, ahf);
+    }
+
+    public static BlueBoxSMTPServer getInstance(BlueboxMessageHandlerFactory blueboxMessageHandlerFactory) {
+        if (instance == null) {
+            instance = new BlueBoxSMTPServer(blueboxMessageHandlerFactory);
+        }
+        return instance;
     }
 
     @Override
     public synchronized void start() {
-	super.start();
-	log.info("Started the SMTP server");
+        super.start();
+        log.info("Started the SMTP server");
     }
 
     @Override
     public synchronized void stop() {
-	super.stop();
-	log.info("Stopped the SMTP server (running={})",super.isRunning());
-	instance = null;
-    }
-
-    public static BlueBoxSMTPServer getInstance(BlueboxMessageHandlerFactory blueboxMessageHandlerFactory) {
-	if (instance==null) {
-	    instance = new BlueBoxSMTPServer(blueboxMessageHandlerFactory);
-	}
-	return instance;
+        super.stop();
+        log.info("Stopped the SMTP server (running={})", super.isRunning());
+        instance = null;
     }
 
     //	@Override

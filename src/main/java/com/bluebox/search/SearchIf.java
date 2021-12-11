@@ -1,38 +1,38 @@
 package com.bluebox.search;
 
-import java.io.Writer;
-
+import com.bluebox.smtp.storage.BlueboxMessage;
 import org.codehaus.jettison.json.JSONArray;
 
-import com.bluebox.smtp.storage.BlueboxMessage;
+import java.io.Writer;
 
 public interface SearchIf {
 
-	public void stop();
+    void stop();
 
-	public Object[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SortFields orderBy, boolean ascending) throws Exception;
+    Object[] search(String querystr, SearchUtils.SearchFields fields, int start, int count, SearchUtils.SortFields orderBy, boolean ascending) throws Exception;
 
-	public long searchInboxes(String search, Writer writer, int start,	int count, SearchUtils.SearchFields fields, SearchUtils.SortFields orderBy, boolean ascending) throws Exception;
+    long searchInboxes(String search, Writer writer, int start, int count, SearchUtils.SearchFields fields, SearchUtils.SortFields orderBy, boolean ascending) throws Exception;
 
-	public void indexMail(BlueboxMessage message, boolean commit) throws Exception;
-	/* 
-	 * Basically stall the commit unless a certain timeout has been reached, 
-	 * to prevent multiple, consecutive commits 
-	 */
-	public void commit(boolean force) throws Exception;
-	
-	public void deleteDoc(String uid) throws Exception;
+    void indexMail(BlueboxMessage message, boolean commit) throws Exception;
 
-	public void deleteDoc(String value, SearchUtils.SearchFields field) throws Exception;
+    /*
+     * Basically stall the commit unless a certain timeout has been reached,
+     * to prevent multiple, consecutive commits
+     */
+    void commit(boolean force) throws Exception;
 
-	public void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws Exception;
+    void deleteDoc(String uid) throws Exception;
 
-	public void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws Exception ;
+    void deleteDoc(String value, SearchUtils.SearchFields field) throws Exception;
 
-	public void deleteIndexes() throws Exception;
+    void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received) throws Exception;
 
-	public boolean containsUid(String uid);
-	
-	public JSONArray autoComplete(String hint, long start, long count);
+    void addDoc(String uid, String inbox, String from, String subject, String text, String html, String recipients, long size, long received, boolean commit) throws Exception;
+
+    void deleteIndexes() throws Exception;
+
+    boolean containsUid(String uid);
+
+    JSONArray autoComplete(String hint, long start, long count);
 
 }

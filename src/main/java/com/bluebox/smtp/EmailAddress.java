@@ -1,8 +1,8 @@
 /**
  * EmailAddress.java
- * <P>
+ * <p>
  * RFC2822 email address parsing and extraction, some header verification.
- * <P>
+ * <p>
  * Copyright (c) 2013 Boxbe, Inc., and Les Hazlewood. See license, below.
  *
  * @author Les Hazlewood, Casey Connor
@@ -26,11 +26,11 @@ package com.bluebox.smtp;
  * limitations under the License.
  */
 
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.util.ArrayList;
 import javax.mail.internet.InternetAddress;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * EmailAddress.java
@@ -128,8 +128,7 @@ import java.io.UnsupportedEncodingException;
  * @author Les Hazlewood, Casey Connor
  * @version 1.13
  */
-public class EmailAddress
-{
+public class EmailAddress {
     /**
      * This constant changes the behavior of the domain parsing. If true, the parser will
      * allow 2822 domains, which include single-level domains (e.g. bob@localhost) as well
@@ -255,6 +254,169 @@ public class EmailAddress
      * Deafult (compiled) setting of true.
      */
     public static final boolean ALLOW_PARENS_IN_LOCALPART = true;
+    // RFC 2822 2.2.2 Structured Header Field Bodies
+    private static final String crlf = "\\r\\n";
+    private static final String wsp = "[ \\t]"; //space or tab
+    private static final String fwsp = "(?:" + wsp + "*" + crlf + ")?" + wsp + "+";
+    //RFC 2822 3.2.1 Primitive tokens
+    private static final String dquote = "\\\"";
+    //ASCII Control characters excluding white space:
+    private static final String noWsCtl = "\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F";
+    //all ASCII characters except CR and LF:
+    private static final String asciiText = "[\\x01-\\x09\\x0B\\x0C\\x0E-\\x7F]";
+    // RFC 2822 3.2.2 Quoted characters:
+    //single backslash followed by a text char
+    private static final String quotedPair = "(?:\\\\" + asciiText + ")";
+    // rewritten to be shorter:
+    //private static final String ctext = "[" + noWsCtl + "\\x21-\\x27\\x2A-\\x5B\\x5D-\\x7E]";
+    private static final String ctext = "[" + noWsCtl + "\\!-\\'\\*-\\[\\]-\\~]";
+    private static final String ccontent = ctext + "|" + quotedPair; // + "|" + comment;
+    private static final String comment = "\\((?:(?:" + fwsp + ")?" + ccontent + ")*(?:" +
+            fwsp + ")?\\)";
+    private static final String cfws = "(?:(?:" + fwsp + ")?" + comment + ")*(?:(?:(?:" +
+            fwsp + ")?" + comment + ")|(?:" + fwsp + "))";
+    /**
+     * Java regex pattern for 2822 &quot;comment&quot; token; Not necessarily useful,
+     * but available in case.
+     */
+    public static final Pattern COMMENT_PATTERN = Pattern.compile(comment);
+
+    //////////////////////////////////////
+    // MY DRAGONS WILL EAT YOUR DRAGONS //
+    //////////////////////////////////////
+    private static final String atext = "[a-zA-Z0-9\\!\\#-\\'\\*\\+\\-\\/\\=\\?\\^-\\`\\{-\\~"
+            + (ALLOW_DOT_IN_ATEXT ? "\\." : "")
+            + (ALLOW_SQUARE_BRACKETS_IN_ATEXT ? "\\[\\]" : "") + "]";
+    private static final String atom = "(?:" + cfws + ")?" + atext + "+" + "(?:" + cfws + ")?";
+    // regular atext is same as atext but has no . or [ or ] allowed, no matter the class prefs, to prevent
+    // long recursions on e.g. "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t"
+    private static final String regularAtext = "[a-zA-Z0-9\\!\\#-\\'\\*\\+\\-\\/\\=\\?\\^-\\`\\{-\\~]";
+    private static final String dotAtomText = regularAtext + "+" + "(?:" + "\\." + regularAtext + "+)*";
+    //    private static final String dotAtom = "(?:" + cfws + ")?" + dotAtomText + "(?:" +
+//        cfws + ")?";
+    private static final String capDotAtomNoCFWS = "(?:" + cfws + ")?(" + dotAtomText +
+            ")(?:" + cfws + ")?";
+    private static final String capDotAtomTrailingCFWS = "(?:" + cfws + ")?(" + dotAtomText +
+            ")(" + cfws + ")?";
+    private static final String qtext = "[" + noWsCtl + "\\!\\#-\\[\\]-\\~]";
+
+    // RFC 2822 3.2.3 CFWS specification
+    // note: nesting should be permitted but is not by these rules given code limitations:
+    private static final String qcontent = "(?:" + qtext + "|" + quotedPair + ")";
+    private static final String quotedStringWOCFWS = dquote + "(?>(?:" +
+            fwsp + ")?" + qcontent + ")*(?:" + fwsp + ")?" + dquote;
+    private static final String quotedString = "(?:" + cfws + ")?" + quotedStringWOCFWS +
+            "(?:" + cfws + ")?";
+    //RFC 2822 3.2.6 Miscellaneous tokens
+    private static final String word = "(?:(?:" + atom + ")|(?:" + quotedString + "))";
+
+    //RFC 2822 3.2.4 Atom:
+    // by 2822: phrase = 1*word / obs-phrase
+    // implemented here as: phrase = word (FWS word)*
+    // so that aaaa can't be four words, which can cause tons of recursive backtracking
+    //private static final String phrase = "(?:" + word + "+?)"; //one or more words
+    private static final String phrase = word + "(?:(?:" + fwsp + ")" + word + ")*";
+    private static final String groupPrefix = phrase + ":";
+    private static final Pattern GROUP_PREFIX_PATTERN = Pattern.compile(groupPrefix);
+    private static final Pattern QUOTED_STRING_WO_CFWS_PATTERN =
+            Pattern.compile(quotedStringWOCFWS);
+    private static final String localPartqtext = "[" + noWsCtl + (ALLOW_PARENS_IN_LOCALPART ?
+            "\\!\\#-\\[\\]-\\~]" : "\\!\\#-\\'\\*-\\[\\]-\\~]");
+    private static final String localPartqcontent = "(?>" + localPartqtext + "|" +
+            quotedPair + ")";
+
+    //RFC 2822 3.2.5 Quoted strings:
+    //noWsCtl and the rest of ASCII except the doublequote and backslash characters:
+    private static final String localPartQuotedString = "(?:" + cfws + ")?(" + dquote +
+            "(?:(?:" + fwsp + ")?" + localPartqcontent + ")*(?:" + fwsp + ")?" + dquote +
+            ")(?:" + cfws + ")?";
+    private static final String localPart = "(" + capDotAtomNoCFWS + "|" +
+            localPartQuotedString + ")";
+    //RFC 1035 tokens for domain names:
+    private static final String letter = "[a-zA-Z]";
+    private static final String letDig = "[a-zA-Z0-9]";
+    private static final String letDigHyp = "[a-zA-Z0-9-]";
+    private static final String rfcLabel = letDig + "(?:" + letDigHyp + "{0,61}" +
+            letDig + ")?";
+    private static final String rfc1035DomainName = rfcLabel + "(?:\\." + rfcLabel + ")*\\." +
+            letter + "{2,6}";
+    //RFC 2822 3.4 Address specification
+    //domain text - non white space controls and the rest of ASCII chars not
+    // including [, ], or \:
+    // rewritten to save space:
+    //private static final String dtext = "[" + noWsCtl + "\\x21-\\x5A\\x5E-\\x7E]";
+    private static final String dtext = "[" + noWsCtl + "\\!-Z\\^-\\~]";
+    private static final String dcontent = dtext + "|" + quotedPair;
+    private static final String capDomainLiteralNoCFWS = "(?:" + cfws + ")?" + "(\\[" +
+            "(?:(?:" + fwsp + ")?(?:" + dcontent + ")+)*(?:" + fwsp + ")?\\])" + "(?:" + cfws +
+            ")?";
+    private static final String rfc2822Domain = "(?:" + capDotAtomNoCFWS + "|" +
+            capDomainLiteralNoCFWS + ")";
+    // Les chose to implement the more-strict 1035 instead of just relying on "dot-atom"
+    // as would be implied by 2822 without the domain-literal token. The issue is that 2822
+    // allows CFWS around the local part and the domain,
+    // strange though that may be (and you "SHOULD NOT" put it around the @). This version
+    // allows the cfws before and after.
+    // private static final String domain =
+    //    ALLOW_DOMAIN_LITERALS ? rfc2822Domain : rfc1035DomainName;
+    private static final String domain = ALLOW_DOMAIN_LITERALS ? rfc2822Domain : "(?:" +
+            cfws + ")?(" + rfc1035DomainName + ")(?:" + cfws + ")?";
+    // uniqueAddrSpec exists so we can have a duplicate tree that has a capturing group
+    // instead of a non-capturing group for the trailing CFWS after the domain token
+    // that we wouldn't want if it was inside
+    // an angleAddr. The matching should be otherwise identical.
+    private static final String addrSpec = localPart + "@" + domain;
+    private static final String angleAddr = "(?:" + cfws + ")?<" + addrSpec + ">(" +
+            cfws + ")?";
+    // uses a reluctant quantifier to skip ahead and make sure there's actually an
+    // address in there somewhere... hmmm, maybe regex in java doesn't optimize that
+    // case by skipping over it at the start by default? Doesn't seem to solve the
+    // issue of recursion on long strings like [A-Za-z], but issue was solved by
+    // changing phrase definition (see above):
+    private static final String nameAddr = "(" + phrase + ")??(" + angleAddr + ")";
+    private static final String returnPath = "(?:(?:" + cfws + ")?<((?:" + cfws + ")?|" +
+            addrSpec + ")>(?:" + cfws + ")?)";
+    private static final Pattern RETURN_PATH_PATTERN = Pattern.compile(returnPath);
+    /**
+     * Java regex pattern for 2822 &quot;addr-spec&quot; token; Not necessarily useful,
+     * but available in case.
+     */
+    public static final Pattern ADDR_SPEC_PATTERN = Pattern.compile(addrSpec);
+    private static final String capDomainLiteralTrailingCFWS = "(?:" + cfws + ")?" + "(\\[" +
+            "(?:(?:" + fwsp + ")?(?:" + dcontent + ")+)*(?:" + fwsp + ")?\\])" + "(" + cfws + ")?";
+    private static final String capCFWSRfc2822Domain = "(?:" + capDotAtomTrailingCFWS + "|" +
+            capDomainLiteralTrailingCFWS + ")";
+    private static final String capCFWSDomain =
+            ALLOW_DOMAIN_LITERALS ? capCFWSRfc2822Domain : "(?:" +
+                    cfws + ")?(" + rfc1035DomainName + ")(" + cfws + ")?";
+    private static final String uniqueAddrSpec = localPart + "@" + capCFWSDomain;
+    private static final String mailbox = (ALLOW_QUOTED_IDENTIFIERS ?
+            "(" + nameAddr + ")|" : "") + "(" +
+            uniqueAddrSpec + ")";
+    private static final String mailboxList = "(?:(?:" + mailbox + ")(?:,(?:" +
+            mailbox + "))*)";
+    private static final String groupPostfix = "(?:" + cfws + "|(?:" + mailboxList + ")"
+            + ")?;(?:" + cfws + ")?";
+    private static final String group = groupPrefix + groupPostfix;
+    private static final String address = "(?:(?:" + mailbox + ")|(?:" + group + "))";
+    /**
+     * Java regex pattern for 2822 &quot;address&quot; token; Not necessarily useful,
+     * but available in case.
+     */
+    public static final Pattern ADDRESS_PATTERN = Pattern.compile(address);
+    /**
+     * Java regex pattern for 2822 &quot;mailbox-list&quot; token; Not necessarily useful,
+     * but available in case.
+     */
+    public static final Pattern MAILBOX_LIST_PATTERN = Pattern.compile(mailboxList);
+    /**
+     * Java regex pattern for 2822 &quot;mailbox&quot; token; Not necessarily useful,
+     * but available in case.
+     */
+    public static final Pattern MAILBOX_PATTERN = Pattern.compile(mailbox);
+    // confused yet? Try this:
+    private static final Pattern ESCAPED_QUOTE_PATTERN = Pattern.compile("\\\\\"");
+    private static final Pattern ESCAPED_BSLASH_PATTERN = Pattern.compile("\\\\\\\\");
 
     /**
      * Checks to see if the specified string is a valid
@@ -273,8 +435,7 @@ public class EmailAddress
      * will return false for those)
      * @return true if the given email text is valid according to RFC 2822, false otherwise.
      */
-    public static boolean isValidMailbox(String email)
-    {
+    public static boolean isValidMailbox(String email) {
         return (email != null) && MAILBOX_PATTERN.matcher(email).matches();
     }
 
@@ -290,574 +451,9 @@ public class EmailAddress
      * you can also simply call getReturnPathAddress() to have that operation done for you.
      * <P>Note that &lt;&quot;&quot;&gt; is <b>not</b> a valid return-path.
      */
-    public static boolean isValidReturnPath(String email)
-    {
-        return(email != null) && RETURN_PATH_PATTERN.matcher(email).matches();
+    public static boolean isValidReturnPath(String email) {
+        return (email != null) && RETURN_PATH_PATTERN.matcher(email).matches();
     }
-
-    /**
-     * WARNING: You may want to use getReturnPathAddress() instead if you're
-     * looking for a clean version of the return path without CFWS, etc. See that
-     * documentation first!
-     * <P>
-     * Pull whatever's inside the angle brackets out, without alteration or cleaning.
-     * This is more secure than a simple substring() since paths like:
-     * <P><tt>&lt;(my &gt; path) &gt;</tt>
-     * <P>...are legal return-paths and may throw a simpler parser off. However
-     * this method will return <b>all</b> CFWS (comments, whitespace) that may be between
-     * the brackets as well. So the example above will return:
-     * <P><tt>(my &gt; path)_</tt> <br>(where the _ is the trailing space from the original
-     * string)
-     */
-    public static String getReturnPathBracketContents(String email)
-    {
-        if (email == null) return(null);
-        Matcher m = RETURN_PATH_PATTERN.matcher(email);
-
-        if (m.matches())
-            return(m.group(1));
-        else return(null);
-    }
-
-    /**
-     * Pull out the cleaned-up return path address. May return an empty string.
-     * Will require two parsings due to an inefficiency.
-     *
-     * @return null if there are any syntax issues or other weirdness, otherwise
-     * the valid, trimmed return path email address without CFWS, surrounding angle brackets,
-     * with quotes stripped where possible, etc. (may return an empty string).
-     */
-    public static String getReturnPathAddress(String email)
-    {
-        if (email == null) return(null);
-
-        // inefficient, but there is no parallel grammar tree to extract the return path
-        // accurately:
-
-        if (isValidReturnPath(email))
-        {
-            InternetAddress ia = getInternetAddress(email);
-            if (ia == null) return("");
-            else return(ia.getAddress());
-        }
-        else return(null);
-    }
-
-    /**
-     * Tells us if a header line is valid, i.e. checks for a 2822 mailbox-list (which
-     * could only have one address in it, or might have more.) Applicable to From or
-     * Resent-From headers <b>only</b>.
-     * <P>
-     * This method seems quick enough so far, but I'm not totally
-     * convinced it couldn't be slow given a complicated near-miss string. You may just
-     * want to call extractHeaderAddresses() instead, unless you must confirm that the
-     * format is perfect. I think that in 99.9999% of real-world cases this method will
-     * work fine.
-     * <P>
-     * @see #isValidAddressList(String)
-     */
-    public static boolean isValidMailboxList(String header_txt)
-    {
-        return(MAILBOX_LIST_PATTERN.matcher(header_txt).matches());
-    }
-
-    /**
-     * Tells us if a header line is valid, i.e. a 2822 address-list (which
-     * could only have one address in it, or might have more.) Applicable to To, Cc, Bcc,
-     * Reply-To, Resent-To, Resent-Cc, and Resent-Bcc headers <b>only</b>.
-     * <P>
-     * This method seems quick enough so far, but I'm not totally
-     * convinced it couldn't be slow given a complicated near-miss string. You may just
-     * want to call extractHeaderAddresses() instead, unless you must confirm that the
-     * format is perfect. I think that in 99.9999% of real-world cases this method will
-     * work fine and quickly enough. Let me know what your testing reveals.
-     * <P>
-     * @see #isValidMailboxList(String)
-     */
-    public static boolean isValidAddressList(String header_txt)
-    {
-        // creating the actual ADDRESS_LIST_PATTERN string proved too large for java, but
-        // forutnately we can use this alternative FSM to check. Since the address pattern
-        // is greedy, it will match all CFWS up to the comma which we can then require easily.
-
-        boolean valid = false;
-        Matcher m = ADDRESS_PATTERN.matcher(header_txt);
-        int max = header_txt.length();
-
-        while (m.lookingAt())
-        {
-            if (m.end() == max)
-            {
-                valid = true;
-                break;
-            }
-            else
-            {
-                valid = false;
-                if (header_txt.charAt(m.end()) == ',')
-                {
-                    m.region(m.end() + 1, max);
-                    continue;
-                }
-                else break;
-            }
-        }
-
-        return(valid);
-        // return(ADDRESS_LIST_PATTERN.matcher(header_txt).matches());
-    }
-
-    /**
-     * Given a 2822-valid single address string, give us an InternetAddress object holding
-     * that address, otherwise returns null. The email address that comes back from the
-     * resulting InternetAddress object's getAddress() call will have comments and unnecessary
-     * quotation marks or whitespace removed.
-     * <P>
-     * If your String is an email header, you should probably use
-     * extractHeaderAddresses instead, since most headers can have multiple addresses in them.
-     * (see that method for more info.) This method will indeed fail if you use it on a header
-     * line with more than one address.
-     * <P>
-     * Exception: You CAN and should use this for the Sender header, and probably you want
-     * to use it for the X-Original-To as well.
-     * <P>
-     * Another exception: You can use this for the Return-Path, but if you want to know that
-     * a Return-Path is valid and you want to extract
-     * it, you will have to call both this method and isValidReturnPath; this operation can
-     * be done for you by simply calling getReturnPathAddress() instead of this method. In
-     * terms of this method's application to the return-path, note that
-     * the common valid Return-Path value &lt;&gt; will return null. So will the illegitimate
-     * &quot;&quot; or legitimate
-     * empty-string, but other illegitimate Return-Paths like
-     * <P><tt>&quot;hi&quot; &lt;bob@smith.com&gt;</tt>
-     * <P>will return an address, so the moral is that
-     * you may want to check isValidReturnPath() first, if you care. This method is useful if
-     * you trust the return path and want to extract a clean address from it without CFWS
-     * (getReturnPathBracketContents() will return any CFWS),
-     * or if you want to determine if a validated return path actually contains an address in
-     * it and isn't just empty or full of CFWS. Except for empty return paths (those lacking an
-     * address) the Return-Path specification is a subset
-     * of valid 2822 addresses, so this method will work on all non-empty return-paths,
-     * failing only on the empty ones.
-     * <P>
-     * In general for this method, note: although this method does not use InternetAddress to
-     * parse/extract the
-     * information, it does ensure that InternetAddress can use the results (i.e. that
-     * there are no encoding issues), but note that an InternetAddress object can hold
-     * (and use) values for the address which it could not have parsed itself.
-     * Thus, it's possible that for InternetAddress addr, which came as the result of
-     * this method, the following may throw an exception <b>or</b> may silently fail:<BR>
-     * InternetAddress addr2 = InternetAddress.parse(addr.toString());
-     * <P>
-     * The InternetAddress objects returned by this method will not do any decoding of RFC-2047
-     * encoded personal names. See the documentation for this overall class (above) for more.
-     * <P>
-     * Again, all other uses of that addr object should work OK. It is recommended that if
-     * you are using this class that you never create an InternetAddress object using
-     * InternetAddress's own constructors or parsing methods; rather, retrieve them through
-     * this class. Perhaps the addr.clone() would work OK, though.
-     * <P>
-     * The personal name will include any and all phrase token(s) to the left of the address,
-     * if they exist, and the string will be trim()'ed, but note that InternetAddress, when
-     * generating the getPersonal() result or the toString() result, if
-     * it encounters any quotes or backslashes in the personal name String, will put the entire
-     * thing in a big quoted-escaped chunk.
-     * <P>
-     * This will do some smart unescaping to prevent that from happening unnecessarily;
-     * specifically, if there are unecessary quotes around a personal name, it will remove
-     * them. E.g.
-     * <P>
-     * "Bob" &lt;bob@hi.com&gt;
-     * <br>becomes:
-     * <BR>Bob &lt;bob@hi.com&gt;
-     * <P>
-     * (apologies to bob@hi.com for everything i've done to him)
-     */
-    public static InternetAddress getInternetAddress(String email)
-    {
-        if (email == null) return(null);
-
-        Matcher m = MAILBOX_PATTERN.matcher(email);
-
-        if (m.matches()) return(pullFromGroups(m));
-        else return(null);
-    }
-
-    /**
-     * See getInternetAddress; does the same thing but returns the constituent parts
-     * of the address in a three-element array (or null if the address is invalid).
-     * <P>
-     * This may be useful because even with cleaned-up address extracted with this class
-     * the parsing to achieve this is not trivial.
-     * <P>
-     * To actually use these values in an email, you should construct an InternetAddress
-     * object (or
-     * equivalent) which can handle the various quoting, adding of the angle brackets
-     * around the address, etc., necessary for presenting the whole address.
-     * <P>
-     * To construct the email address, you can safely use:
-     * <BR>result[1] + &quot;@&quot; + result[2]
-     * <P>
-     * @return a three-element array containing the personal name String, local part String,
-     * and the domain part String of the address, in that order, without the @; will return
-     * null if the address is invalid; if it is valid this will not
-     * return null but the personal name (at index 0) may be null
-     */
-    public static String[] getAddressParts(String email)
-    {
-        if (email == null) return (null);
-
-        Matcher m = MAILBOX_PATTERN.matcher(email);
-
-        if (m.matches()) return(getMatcherParts(m)); else return(null);
-    }
-
-    /**
-     * See getInternetAddress; does the same thing but returns the personal name that would
-     * have been returned from getInternetAddress() in String
-     * form.
-     * <P>
-     * The Strings returned by this method will not reflect any decoding of RFC-2047
-     * encoded personal names. See the documentation for this overall class (above) for more.
-     */
-    public static String getPersonalName(String email)
-    {
-        if (email == null) return (null);
-
-        Matcher m = MAILBOX_PATTERN.matcher(email);
-
-        if (m.matches()) return(getMatcherParts(m)[0]); else return(null);
-    }
-
-    /**
-     * See getInternetAddress; does the same thing but returns the local part that would
-     * have been returned from getInternetAddress() in String
-     * form (essentially, the part to the left of the @). This may be useful because
-     * a simple search/split on a &quot;@&quot; is not a safe way to do this, given
-     * escaped quoted strings, etc.
-     */
-    public static String getLocalPart(String email)
-    {
-        if (email == null) return (null);
-
-        Matcher m = MAILBOX_PATTERN.matcher(email);
-
-        if (m.matches()) return(getMatcherParts(m)[1]); else return(null);
-    }
-
-    /**
-     * See getInternetAddress; does the same thing but returns the domain part in string
-     * form (essentially, the part to the right of the @). This may be useful because
-     * a simple search/split on a &quot;@&quot; is not a safe way to do this, given
-     * escaped quoted strings, etc.
-     */
-    public static String getDomain(String email)
-    {
-        if (email == null) return (null);
-
-        Matcher m = MAILBOX_PATTERN.matcher(email);
-
-        if (m.matches()) return(getMatcherParts(m)[2]); else return(null);
-    }
-
-    /**
-     * Given the value of a header, like the From:, extract valid 2822 addresses from it
-     * and place them in an array. Returns an empty array if none found, will not return
-     * null. Note that you should pass in everything except, e.g. &quot;From: &quot;, in other
-     * words,
-     * the header value without the header name and &quot;: &quot; at the start.. The addresses
-     * that come back from the
-     * resulting InternetAddress objects' getAddress calls will have comments and unnecessary
-     * quotation marks or whitespace removed. If a bad address is encountered, parsing stops,
-     * and the good
-     * addresses found up until then (if any) are returned. This is kind of strict
-     * and could be improved, but that's the way it is for now. If you need to know
-     * if the header is totally valid (not just up to a certain address) then you can use
-     * isValidMailboxList() or isValidAddressList() or isValidMailbox(), depending on
-     * the header:
-     * <P>
-     * This method can handle group addresses, but it does not preseve the group name or
-     * the structure of any groups; rather it flattens them all into the same array.
-     * You can call this method on the From or any other header that uses the mailbox-list form
-     * (which doesn't use groups), or you can call it on the To, Cc, Bcc, or Reply-To or any
-     * other header which uses the address-list format which might have groups in there.
-     * This method doesn't enforce any group structure syntax either. If you care to test
-     * for 2822 validity of a list of addresses (including group format), use the appropriate
-     * method. This will dependably extract addresses from a valid list. If the list is
-     * invalid, it may extract them anyway, or it may fail somewhere along the line.
-     * <P>
-     * You should not use this method on the Return-Path header; instead use
-     * getInternetAddress() or getReturnPathAddress() (see that doc for info about
-     * Return-Path). However, you could use this on the Sender header if you didn't care
-     * to check it for validity, since single mailboxes are valid subsets of valid
-     * mailbox-lists and address-lists.
-     * <P>
-     * @param header_txt is text from whatever header (not including the header name and
-     * &quot;: &quot;. I don't
-     * think the String needs to be unfolded, but i haven't tested that.
-     * <P>
-     * see getInternetAddress() for more info: this extracts the same way
-     * <P>
-     * @return zero-length array if erorrs or none found, otherwise an array of length &gt; 0
-     * with the addresses as InternetAddresses with the personal name and emails set correctly
-     * (i.e. doesn't rely on InternetAddress parsing for extraction, but does require that
-     * the address be usable by InternetAddress, although re-parsing with InternetAddress may
-     * cause exceptions, see getInternetAddress()); will not return null.
-     */
-    public static InternetAddress[] extractHeaderAddresses(String header_txt)
-    {
-        // you may go insane from this code
-
-        if (header_txt == null || header_txt.equals("")) return(new InternetAddress[0]);
-
-// optimize: separate method or boolean to indicate if group should be worried about at all
-
-        Matcher m = MAILBOX_PATTERN.matcher(header_txt);
-        Matcher gp = GROUP_PREFIX_PATTERN.matcher(header_txt);
-
-        ArrayList <InternetAddress> result = new ArrayList <InternetAddress> (1);
-
-        int max = header_txt.length();
-        InternetAddress cur_addr;
-        boolean group_start = false;
-        boolean group_end = false;
-        int next_comma_index = -1;
-        int next_semicolon_index = -1;
-        int just_after_group_end = -1;
-
-        // skip past any group prefixes, gobble addresses as usual in a list but
-        // skip past the terminating semicolon
-        while (true)
-        {
-            if (group_end)
-            {
-                next_comma_index = header_txt.indexOf(',', just_after_group_end);
-
-                if (next_comma_index < 0) break;
-                if (next_comma_index >= max - 1) break;
-
-                gp.region(next_comma_index + 1, max);
-                m.region(next_comma_index + 1, max);
-
-                group_end = false;
-            }
-
-            if (header_txt.charAt(m.regionStart()) == ';')
-            {
-                group_start = false;
-
-                m.region(m.regionStart() + 1, max);
-                // could say >= max - 1 or even max - 3 or something, but just to be
-                // proper:
-                if (m.regionStart() >= max) break;
-                gp.region(m.regionStart(), max);
-
-                group_end = true;
-                just_after_group_end = m.regionStart();
-            }
-
-            if (m.lookingAt())
-            {
-                group_start = false;
-
-                // must test m.end() == max first with early exit
-                if (m.end() == max || header_txt.charAt(m.end()) == ',' ||
-                    (group_end = (header_txt.charAt(m.end()) == ';')))
-                {
-                    cur_addr = pullFromGroups(m);
-                    if (cur_addr != null) result.add(cur_addr);
-
-                    if (m.end() < max - 1)
-                    {
-                        if (!group_end)
-                        {
-                            // skip the comma
-                            gp.region(m.end() + 1, max);
-                            m.region(m.end() + 1, max);
-                        }
-                        else just_after_group_end = m.end() + 1;
-                    }
-                    else break;
-                }
-                else break;
-            }
-            else if (gp.lookingAt())
-            {
-                if (gp.end() < max)
-                {
-                    // the colon is included in the gp match, so nothing to skip
-                    m.region(gp.end(), max);
-                    gp.region(gp.end(), max);
-                    group_start = true;
-                }
-                else break;
-            }
-            else if (group_start)
-            {
-                next_semicolon_index = header_txt.indexOf(';', m.regionStart());
-                if (next_semicolon_index < 0) break;
-                else if (next_semicolon_index >= max - 1) break;
-
-                m.region(next_semicolon_index + 1, max);
-                gp.region(next_semicolon_index + 1, max);
-
-                group_start = false;
-                group_end = true;
-                just_after_group_end = m.regionStart();
-            }
-            else if (group_end) continue;
-            else break;
-        }
-
-        return(result.size() > 0 ? result.toArray(new InternetAddress[result.size()]) :
-               new InternetAddress[0]);
-    }
-
-                    //////////////////////////////////////
-                   // MY DRAGONS WILL EAT YOUR DRAGONS //
-                  //////////////////////////////////////
-
-    // RFC 2822 2.2.2 Structured Header Field Bodies
-    private static final String crlf = "\\r\\n";
-    private static final String wsp = "[ \\t]"; //space or tab
-    private static final String fwsp = "(?:" + wsp + "*" + crlf + ")?" + wsp + "+";
-
-    //RFC 2822 3.2.1 Primitive tokens
-    private static final String dquote = "\\\"";
-    //ASCII Control characters excluding white space:
-    private static final String noWsCtl = "\\x01-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F";
-    //all ASCII characters except CR and LF:
-    private static final String asciiText = "[\\x01-\\x09\\x0B\\x0C\\x0E-\\x7F]";
-
-    // RFC 2822 3.2.2 Quoted characters:
-    //single backslash followed by a text char
-    private static final String quotedPair = "(?:\\\\" + asciiText + ")";
-
-    // RFC 2822 3.2.3 CFWS specification
-    // note: nesting should be permitted but is not by these rules given code limitations:
-
-    // rewritten to be shorter:
-    //private static final String ctext = "[" + noWsCtl + "\\x21-\\x27\\x2A-\\x5B\\x5D-\\x7E]";
-    private static final String ctext = "[" + noWsCtl + "\\!-\\'\\*-\\[\\]-\\~]";
-    private static final String ccontent = ctext + "|" + quotedPair; // + "|" + comment;
-    private static final String comment = "\\((?:(?:" + fwsp + ")?" + ccontent + ")*(?:" +
-        fwsp + ")?\\)";
-    private static final String cfws = "(?:(?:" + fwsp + ")?" + comment + ")*(?:(?:(?:" +
-        fwsp +")?" + comment + ")|(?:" + fwsp + "))";
-
-    //RFC 2822 3.2.4 Atom:
-
-    private static final String atext = "[a-zA-Z0-9\\!\\#-\\'\\*\\+\\-\\/\\=\\?\\^-\\`\\{-\\~"
-        + (ALLOW_DOT_IN_ATEXT ? "\\." : "")
-        + (ALLOW_SQUARE_BRACKETS_IN_ATEXT ? "\\[\\]" : "") + "]";
-    // regular atext is same as atext but has no . or [ or ] allowed, no matter the class prefs, to prevent
-    // long recursions on e.g. "a.b.c.d.e.f.g.h.i.j.k.l.m.n.o.p.q.r.s.t"
-    private static final String regularAtext = "[a-zA-Z0-9\\!\\#-\\'\\*\\+\\-\\/\\=\\?\\^-\\`\\{-\\~]";
-
-    private static final String atom = "(?:" + cfws + ")?" + atext + "+" + "(?:" + cfws + ")?";
-    private static final String dotAtomText = regularAtext + "+" + "(?:" + "\\." + regularAtext + "+)*";
-//    private static final String dotAtom = "(?:" + cfws + ")?" + dotAtomText + "(?:" +
-//        cfws + ")?";
-    private static final String capDotAtomNoCFWS = "(?:" + cfws + ")?(" + dotAtomText +
-        ")(?:" + cfws + ")?";
-    private static final String capDotAtomTrailingCFWS = "(?:" + cfws + ")?(" + dotAtomText +
-        ")(" + cfws + ")?";
-
-    //RFC 2822 3.2.5 Quoted strings:
-    //noWsCtl and the rest of ASCII except the doublequote and backslash characters:
-
-    private static final String qtext = "[" + noWsCtl + "\\!\\#-\\[\\]-\\~]";
-    private static final String localPartqtext = "[" + noWsCtl + (ALLOW_PARENS_IN_LOCALPART ?
-                                     "\\!\\#-\\[\\]-\\~]" : "\\!\\#-\\'\\*-\\[\\]-\\~]");
-
-    private static final String qcontent = "(?:" + qtext + "|" + quotedPair + ")";
-    private static final String localPartqcontent = "(?>" + localPartqtext + "|" +
-        quotedPair + ")";
-    private static final String quotedStringWOCFWS = dquote + "(?>(?:" +
-        fwsp + ")?" + qcontent + ")*(?:" + fwsp + ")?" + dquote;
-    private static final String quotedString = "(?:" + cfws + ")?" + quotedStringWOCFWS +
-        "(?:" + cfws + ")?";
-    private static final String localPartQuotedString = "(?:" + cfws + ")?(" + dquote +
-        "(?:(?:" + fwsp + ")?" + localPartqcontent + ")*(?:" + fwsp + ")?" + dquote +
-        ")(?:" + cfws + ")?";
-
-    //RFC 2822 3.2.6 Miscellaneous tokens
-    private static final String word = "(?:(?:" + atom + ")|(?:" + quotedString + "))";
-    // by 2822: phrase = 1*word / obs-phrase
-    // implemented here as: phrase = word (FWS word)*
-    // so that aaaa can't be four words, which can cause tons of recursive backtracking
-    //private static final String phrase = "(?:" + word + "+?)"; //one or more words
-    private static final String phrase = word + "(?:(?:" + fwsp + ")" + word + ")*";
-
-    //RFC 1035 tokens for domain names:
-    private static final String letter = "[a-zA-Z]";
-    private static final String letDig = "[a-zA-Z0-9]";
-    private static final String letDigHyp = "[a-zA-Z0-9-]";
-    private static final String rfcLabel = letDig + "(?:" + letDigHyp + "{0,61}" +
-        letDig + ")?";
-    private static final String rfc1035DomainName = rfcLabel + "(?:\\." + rfcLabel + ")*\\." +
-        letter + "{2,6}";
-
-    //RFC 2822 3.4 Address specification
-    //domain text - non white space controls and the rest of ASCII chars not
-    // including [, ], or \:
-    // rewritten to save space:
-    //private static final String dtext = "[" + noWsCtl + "\\x21-\\x5A\\x5E-\\x7E]";
-    private static final String dtext = "[" + noWsCtl + "\\!-Z\\^-\\~]";
-
-    private static final String dcontent = dtext + "|" + quotedPair;
-    private static final String capDomainLiteralNoCFWS = "(?:" + cfws + ")?" + "(\\[" +
-        "(?:(?:" + fwsp + ")?(?:" + dcontent + ")+)*(?:" + fwsp + ")?\\])" + "(?:" + cfws +
-        ")?";
-    private static final String capDomainLiteralTrailingCFWS = "(?:" + cfws + ")?" + "(\\[" +
-        "(?:(?:" + fwsp + ")?(?:" + dcontent + ")+)*(?:" + fwsp + ")?\\])" + "(" + cfws + ")?";
-    private static final String rfc2822Domain = "(?:" + capDotAtomNoCFWS + "|" +
-        capDomainLiteralNoCFWS + ")";
-    private static final String capCFWSRfc2822Domain = "(?:" + capDotAtomTrailingCFWS + "|" +
-        capDomainLiteralTrailingCFWS + ")";
-
-    // Les chose to implement the more-strict 1035 instead of just relying on "dot-atom"
-    // as would be implied by 2822 without the domain-literal token. The issue is that 2822
-    // allows CFWS around the local part and the domain,
-    // strange though that may be (and you "SHOULD NOT" put it around the @). This version
-    // allows the cfws before and after.
-    // private static final String domain =
-    //    ALLOW_DOMAIN_LITERALS ? rfc2822Domain : rfc1035DomainName;
-    private static final String domain = ALLOW_DOMAIN_LITERALS ? rfc2822Domain : "(?:" +
-        cfws + ")?(" + rfc1035DomainName + ")(?:" + cfws + ")?";
-    private static final String capCFWSDomain =
-        ALLOW_DOMAIN_LITERALS ? capCFWSRfc2822Domain : "(?:" +
-        cfws + ")?(" + rfc1035DomainName + ")(" + cfws + ")?";
-    private static final String localPart = "(" + capDotAtomNoCFWS + "|" +
-        localPartQuotedString + ")";
-    // uniqueAddrSpec exists so we can have a duplicate tree that has a capturing group
-    // instead of a non-capturing group for the trailing CFWS after the domain token
-    // that we wouldn't want if it was inside
-    // an angleAddr. The matching should be otherwise identical.
-    private static final String addrSpec = localPart + "@" + domain;
-    private static final String uniqueAddrSpec = localPart + "@" + capCFWSDomain;
-    private static final String angleAddr = "(?:" + cfws + ")?<" + addrSpec + ">(" +
-        cfws + ")?";
-    // uses a reluctant quantifier to skip ahead and make sure there's actually an
-    // address in there somewhere... hmmm, maybe regex in java doesn't optimize that
-    // case by skipping over it at the start by default? Doesn't seem to solve the
-    // issue of recursion on long strings like [A-Za-z], but issue was solved by
-    // changing phrase definition (see above):
-    private static final String nameAddr = "(" + phrase + ")??(" + angleAddr + ")";
-    private static final String mailbox = (ALLOW_QUOTED_IDENTIFIERS ?
-                                           "(" + nameAddr + ")|" : "") + "(" +
-        uniqueAddrSpec + ")";
-
-    private static final String returnPath = "(?:(?:" + cfws + ")?<((?:" + cfws + ")?|" +
-        addrSpec + ")>(?:" + cfws + ")?)";
-
-    private static final String mailboxList = "(?:(?:" + mailbox + ")(?:,(?:" +
-        mailbox + "))*)";
-    private static final String groupPostfix = "(?:" + cfws + "|(?:" + mailboxList + ")"
-        + ")?;(?:" + cfws + ")?";
-    private static final String groupPrefix = phrase + ":";
-    private static final String group = groupPrefix + groupPostfix;
-    private static final String address = "(?:(?:" + mailbox + ")|(?:" + group + "))";
     // this string is too long, so must do it FSM style in isValidAddressList:
     // private static final String addressList = address + "(?:," + address + ")*";
 
@@ -935,40 +531,392 @@ public class EmailAddress
     //compile patterns for efficient re-use:
 
     /**
-     * Java regex pattern for 2822 &quot;mailbox&quot; token; Not necessarily useful,
-     * but available in case.
+     * WARNING: You may want to use getReturnPathAddress() instead if you're
+     * looking for a clean version of the return path without CFWS, etc. See that
+     * documentation first!
+     * <P>
+     * Pull whatever's inside the angle brackets out, without alteration or cleaning.
+     * This is more secure than a simple substring() since paths like:
+     * <P><tt>&lt;(my &gt; path) &gt;</tt>
+     * <P>...are legal return-paths and may throw a simpler parser off. However
+     * this method will return <b>all</b> CFWS (comments, whitespace) that may be between
+     * the brackets as well. So the example above will return:
+     * <P><tt>(my &gt; path)_</tt> <br>(where the _ is the trailing space from the original
+     * string)
      */
-    public static final Pattern MAILBOX_PATTERN = Pattern.compile(mailbox);
+    public static String getReturnPathBracketContents(String email) {
+        if (email == null) return (null);
+        Matcher m = RETURN_PATH_PATTERN.matcher(email);
+
+        if (m.matches())
+            return (m.group(1));
+        else return (null);
+    }
+
     /**
-     * Java regex pattern for 2822 &quot;addr-spec&quot; token; Not necessarily useful,
-     * but available in case.
+     * Pull out the cleaned-up return path address. May return an empty string.
+     * Will require two parsings due to an inefficiency.
+     *
+     * @return null if there are any syntax issues or other weirdness, otherwise
+     * the valid, trimmed return path email address without CFWS, surrounding angle brackets,
+     * with quotes stripped where possible, etc. (may return an empty string).
      */
-    public static final Pattern ADDR_SPEC_PATTERN = Pattern.compile(addrSpec);
+    public static String getReturnPathAddress(String email) {
+        if (email == null) return (null);
+
+        // inefficient, but there is no parallel grammar tree to extract the return path
+        // accurately:
+
+        if (isValidReturnPath(email)) {
+            InternetAddress ia = getInternetAddress(email);
+            if (ia == null) return ("");
+            else return (ia.getAddress());
+        } else return (null);
+    }
+
     /**
-     * Java regex pattern for 2822 &quot;mailbox-list&quot; token; Not necessarily useful,
-     * but available in case.
+     * Tells us if a header line is valid, i.e. checks for a 2822 mailbox-list (which
+     * could only have one address in it, or might have more.) Applicable to From or
+     * Resent-From headers <b>only</b>.
+     * <P>
+     * This method seems quick enough so far, but I'm not totally
+     * convinced it couldn't be slow given a complicated near-miss string. You may just
+     * want to call extractHeaderAddresses() instead, unless you must confirm that the
+     * format is perfect. I think that in 99.9999% of real-world cases this method will
+     * work fine.
+     * <P>
+     * @see #isValidAddressList(String)
      */
-    public static final Pattern MAILBOX_LIST_PATTERN = Pattern.compile(mailboxList);
+    public static boolean isValidMailboxList(String header_txt) {
+        return (MAILBOX_LIST_PATTERN.matcher(header_txt).matches());
+    }
     //    public static final Pattern ADDRESS_LIST_PATTERN = Pattern.compile(addressList);
-    /**
-     * Java regex pattern for 2822 &quot;address&quot; token; Not necessarily useful,
-     * but available in case.
-     */
-    public static final Pattern ADDRESS_PATTERN = Pattern.compile(address);
-    /**
-     * Java regex pattern for 2822 &quot;comment&quot; token; Not necessarily useful,
-     * but available in case.
-     */
-    public static final Pattern COMMENT_PATTERN = Pattern.compile(comment);
 
-    private static final Pattern QUOTED_STRING_WO_CFWS_PATTERN =
-        Pattern.compile(quotedStringWOCFWS);
-    private static final Pattern RETURN_PATH_PATTERN = Pattern.compile(returnPath);
-    private static final Pattern GROUP_PREFIX_PATTERN = Pattern.compile(groupPrefix);
+    /**
+     * Tells us if a header line is valid, i.e. a 2822 address-list (which
+     * could only have one address in it, or might have more.) Applicable to To, Cc, Bcc,
+     * Reply-To, Resent-To, Resent-Cc, and Resent-Bcc headers <b>only</b>.
+     * <P>
+     * This method seems quick enough so far, but I'm not totally
+     * convinced it couldn't be slow given a complicated near-miss string. You may just
+     * want to call extractHeaderAddresses() instead, unless you must confirm that the
+     * format is perfect. I think that in 99.9999% of real-world cases this method will
+     * work fine and quickly enough. Let me know what your testing reveals.
+     * <P>
+     * @see #isValidMailboxList(String)
+     */
+    public static boolean isValidAddressList(String header_txt) {
+        // creating the actual ADDRESS_LIST_PATTERN string proved too large for java, but
+        // forutnately we can use this alternative FSM to check. Since the address pattern
+        // is greedy, it will match all CFWS up to the comma which we can then require easily.
 
-    // confused yet? Try this:
-    private static final Pattern ESCAPED_QUOTE_PATTERN = Pattern.compile("\\\\\"");
-    private static final Pattern ESCAPED_BSLASH_PATTERN = Pattern.compile("\\\\\\\\");
+        boolean valid = false;
+        Matcher m = ADDRESS_PATTERN.matcher(header_txt);
+        int max = header_txt.length();
+
+        while (m.lookingAt()) {
+            if (m.end() == max) {
+                valid = true;
+                break;
+            } else {
+                valid = false;
+                if (header_txt.charAt(m.end()) == ',') {
+                    m.region(m.end() + 1, max);
+                    continue;
+                } else break;
+            }
+        }
+
+        return (valid);
+        // return(ADDRESS_LIST_PATTERN.matcher(header_txt).matches());
+    }
+
+    /**
+     * Given a 2822-valid single address string, give us an InternetAddress object holding
+     * that address, otherwise returns null. The email address that comes back from the
+     * resulting InternetAddress object's getAddress() call will have comments and unnecessary
+     * quotation marks or whitespace removed.
+     * <P>
+     * If your String is an email header, you should probably use
+     * extractHeaderAddresses instead, since most headers can have multiple addresses in them.
+     * (see that method for more info.) This method will indeed fail if you use it on a header
+     * line with more than one address.
+     * <P>
+     * Exception: You CAN and should use this for the Sender header, and probably you want
+     * to use it for the X-Original-To as well.
+     * <P>
+     * Another exception: You can use this for the Return-Path, but if you want to know that
+     * a Return-Path is valid and you want to extract
+     * it, you will have to call both this method and isValidReturnPath; this operation can
+     * be done for you by simply calling getReturnPathAddress() instead of this method. In
+     * terms of this method's application to the return-path, note that
+     * the common valid Return-Path value &lt;&gt; will return null. So will the illegitimate
+     * &quot;&quot; or legitimate
+     * empty-string, but other illegitimate Return-Paths like
+     * <P><tt>&quot;hi&quot; &lt;bob@smith.com&gt;</tt>
+     * <P>will return an address, so the moral is that
+     * you may want to check isValidReturnPath() first, if you care. This method is useful if
+     * you trust the return path and want to extract a clean address from it without CFWS
+     * (getReturnPathBracketContents() will return any CFWS),
+     * or if you want to determine if a validated return path actually contains an address in
+     * it and isn't just empty or full of CFWS. Except for empty return paths (those lacking an
+     * address) the Return-Path specification is a subset
+     * of valid 2822 addresses, so this method will work on all non-empty return-paths,
+     * failing only on the empty ones.
+     * <P>
+     * In general for this method, note: although this method does not use InternetAddress to
+     * parse/extract the
+     * information, it does ensure that InternetAddress can use the results (i.e. that
+     * there are no encoding issues), but note that an InternetAddress object can hold
+     * (and use) values for the address which it could not have parsed itself.
+     * Thus, it's possible that for InternetAddress addr, which came as the result of
+     * this method, the following may throw an exception <b>or</b> may silently fail:<BR>
+     * InternetAddress addr2 = InternetAddress.parse(addr.toString());
+     * <P>
+     * The InternetAddress objects returned by this method will not do any decoding of RFC-2047
+     * encoded personal names. See the documentation for this overall class (above) for more.
+     * <P>
+     * Again, all other uses of that addr object should work OK. It is recommended that if
+     * you are using this class that you never create an InternetAddress object using
+     * InternetAddress's own constructors or parsing methods; rather, retrieve them through
+     * this class. Perhaps the addr.clone() would work OK, though.
+     * <P>
+     * The personal name will include any and all phrase token(s) to the left of the address,
+     * if they exist, and the string will be trim()'ed, but note that InternetAddress, when
+     * generating the getPersonal() result or the toString() result, if
+     * it encounters any quotes or backslashes in the personal name String, will put the entire
+     * thing in a big quoted-escaped chunk.
+     * <P>
+     * This will do some smart unescaping to prevent that from happening unnecessarily;
+     * specifically, if there are unecessary quotes around a personal name, it will remove
+     * them. E.g.
+     * <P>
+     * "Bob" &lt;bob@hi.com&gt;
+     * <br>becomes:
+     * <BR>Bob &lt;bob@hi.com&gt;
+     * <P>
+     * (apologies to bob@hi.com for everything i've done to him)
+     */
+    public static InternetAddress getInternetAddress(String email) {
+        if (email == null) return (null);
+
+        Matcher m = MAILBOX_PATTERN.matcher(email);
+
+        if (m.matches()) return (pullFromGroups(m));
+        else return (null);
+    }
+
+    /**
+     * See getInternetAddress; does the same thing but returns the constituent parts
+     * of the address in a three-element array (or null if the address is invalid).
+     * <P>
+     * This may be useful because even with cleaned-up address extracted with this class
+     * the parsing to achieve this is not trivial.
+     * <P>
+     * To actually use these values in an email, you should construct an InternetAddress
+     * object (or
+     * equivalent) which can handle the various quoting, adding of the angle brackets
+     * around the address, etc., necessary for presenting the whole address.
+     * <P>
+     * To construct the email address, you can safely use:
+     * <BR>result[1] + &quot;@&quot; + result[2]
+     * <P>
+     * @return a three-element array containing the personal name String, local part String,
+     * and the domain part String of the address, in that order, without the @; will return
+     * null if the address is invalid; if it is valid this will not
+     * return null but the personal name (at index 0) may be null
+     */
+    public static String[] getAddressParts(String email) {
+        if (email == null) return (null);
+
+        Matcher m = MAILBOX_PATTERN.matcher(email);
+
+        if (m.matches()) return (getMatcherParts(m));
+        else return (null);
+    }
+
+    /**
+     * See getInternetAddress; does the same thing but returns the personal name that would
+     * have been returned from getInternetAddress() in String
+     * form.
+     * <P>
+     * The Strings returned by this method will not reflect any decoding of RFC-2047
+     * encoded personal names. See the documentation for this overall class (above) for more.
+     */
+    public static String getPersonalName(String email) {
+        if (email == null) return (null);
+
+        Matcher m = MAILBOX_PATTERN.matcher(email);
+
+        if (m.matches()) return (getMatcherParts(m)[0]);
+        else return (null);
+    }
+
+    /**
+     * See getInternetAddress; does the same thing but returns the local part that would
+     * have been returned from getInternetAddress() in String
+     * form (essentially, the part to the left of the @). This may be useful because
+     * a simple search/split on a &quot;@&quot; is not a safe way to do this, given
+     * escaped quoted strings, etc.
+     */
+    public static String getLocalPart(String email) {
+        if (email == null) return (null);
+
+        Matcher m = MAILBOX_PATTERN.matcher(email);
+
+        if (m.matches()) return (getMatcherParts(m)[1]);
+        else return (null);
+    }
+
+    /**
+     * See getInternetAddress; does the same thing but returns the domain part in string
+     * form (essentially, the part to the right of the @). This may be useful because
+     * a simple search/split on a &quot;@&quot; is not a safe way to do this, given
+     * escaped quoted strings, etc.
+     */
+    public static String getDomain(String email) {
+        if (email == null) return (null);
+
+        Matcher m = MAILBOX_PATTERN.matcher(email);
+
+        if (m.matches()) return (getMatcherParts(m)[2]);
+        else return (null);
+    }
+
+    /**
+     * Given the value of a header, like the From:, extract valid 2822 addresses from it
+     * and place them in an array. Returns an empty array if none found, will not return
+     * null. Note that you should pass in everything except, e.g. &quot;From: &quot;, in other
+     * words,
+     * the header value without the header name and &quot;: &quot; at the start.. The addresses
+     * that come back from the
+     * resulting InternetAddress objects' getAddress calls will have comments and unnecessary
+     * quotation marks or whitespace removed. If a bad address is encountered, parsing stops,
+     * and the good
+     * addresses found up until then (if any) are returned. This is kind of strict
+     * and could be improved, but that's the way it is for now. If you need to know
+     * if the header is totally valid (not just up to a certain address) then you can use
+     * isValidMailboxList() or isValidAddressList() or isValidMailbox(), depending on
+     * the header:
+     * <P>
+     * This method can handle group addresses, but it does not preseve the group name or
+     * the structure of any groups; rather it flattens them all into the same array.
+     * You can call this method on the From or any other header that uses the mailbox-list form
+     * (which doesn't use groups), or you can call it on the To, Cc, Bcc, or Reply-To or any
+     * other header which uses the address-list format which might have groups in there.
+     * This method doesn't enforce any group structure syntax either. If you care to test
+     * for 2822 validity of a list of addresses (including group format), use the appropriate
+     * method. This will dependably extract addresses from a valid list. If the list is
+     * invalid, it may extract them anyway, or it may fail somewhere along the line.
+     * <P>
+     * You should not use this method on the Return-Path header; instead use
+     * getInternetAddress() or getReturnPathAddress() (see that doc for info about
+     * Return-Path). However, you could use this on the Sender header if you didn't care
+     * to check it for validity, since single mailboxes are valid subsets of valid
+     * mailbox-lists and address-lists.
+     * <P>
+     * @param header_txt is text from whatever header (not including the header name and
+     * &quot;: &quot;. I don't
+     * think the String needs to be unfolded, but i haven't tested that.
+     * <P>
+     * see getInternetAddress() for more info: this extracts the same way
+     * <P>
+     * @return zero-length array if erorrs or none found, otherwise an array of length &gt; 0
+     * with the addresses as InternetAddresses with the personal name and emails set correctly
+     * (i.e. doesn't rely on InternetAddress parsing for extraction, but does require that
+     * the address be usable by InternetAddress, although re-parsing with InternetAddress may
+     * cause exceptions, see getInternetAddress()); will not return null.
+     */
+    public static InternetAddress[] extractHeaderAddresses(String header_txt) {
+        // you may go insane from this code
+
+        if (header_txt == null || header_txt.equals("")) return (new InternetAddress[0]);
+
+// optimize: separate method or boolean to indicate if group should be worried about at all
+
+        Matcher m = MAILBOX_PATTERN.matcher(header_txt);
+        Matcher gp = GROUP_PREFIX_PATTERN.matcher(header_txt);
+
+        ArrayList<InternetAddress> result = new ArrayList<InternetAddress>(1);
+
+        int max = header_txt.length();
+        InternetAddress cur_addr;
+        boolean group_start = false;
+        boolean group_end = false;
+        int next_comma_index = -1;
+        int next_semicolon_index = -1;
+        int just_after_group_end = -1;
+
+        // skip past any group prefixes, gobble addresses as usual in a list but
+        // skip past the terminating semicolon
+        while (true) {
+            if (group_end) {
+                next_comma_index = header_txt.indexOf(',', just_after_group_end);
+
+                if (next_comma_index < 0) break;
+                if (next_comma_index >= max - 1) break;
+
+                gp.region(next_comma_index + 1, max);
+                m.region(next_comma_index + 1, max);
+
+                group_end = false;
+            }
+
+            if (header_txt.charAt(m.regionStart()) == ';') {
+                group_start = false;
+
+                m.region(m.regionStart() + 1, max);
+                // could say >= max - 1 or even max - 3 or something, but just to be
+                // proper:
+                if (m.regionStart() >= max) break;
+                gp.region(m.regionStart(), max);
+
+                group_end = true;
+                just_after_group_end = m.regionStart();
+            }
+
+            if (m.lookingAt()) {
+                group_start = false;
+
+                // must test m.end() == max first with early exit
+                if (m.end() == max || header_txt.charAt(m.end()) == ',' ||
+                        (group_end = (header_txt.charAt(m.end()) == ';'))) {
+                    cur_addr = pullFromGroups(m);
+                    if (cur_addr != null) result.add(cur_addr);
+
+                    if (m.end() < max - 1) {
+                        if (!group_end) {
+                            // skip the comma
+                            gp.region(m.end() + 1, max);
+                            m.region(m.end() + 1, max);
+                        } else just_after_group_end = m.end() + 1;
+                    } else break;
+                } else break;
+            } else if (gp.lookingAt()) {
+                if (gp.end() < max) {
+                    // the colon is included in the gp match, so nothing to skip
+                    m.region(gp.end(), max);
+                    gp.region(gp.end(), max);
+                    group_start = true;
+                } else break;
+            } else if (group_start) {
+                next_semicolon_index = header_txt.indexOf(';', m.regionStart());
+                if (next_semicolon_index < 0) break;
+                else if (next_semicolon_index >= max - 1) break;
+
+                m.region(next_semicolon_index + 1, max);
+                gp.region(next_semicolon_index + 1, max);
+
+                group_start = false;
+                group_end = true;
+                just_after_group_end = m.regionStart();
+            } else if (group_end) continue;
+            else break;
+        }
+
+        return (result.size() > 0 ? result.toArray(new InternetAddress[result.size()]) :
+                new InternetAddress[0]);
+    }
 
     /**
      * Using knowledge of the group-ID numbers (see comments at top) pull the
@@ -989,19 +937,17 @@ public class EmailAddress
      * <P>
      * e.g. &quot;bob&quot;@example.com becomes bob@example.com
      */
-    private static InternetAddress pullFromGroups(Matcher m)
-    {
+    private static InternetAddress pullFromGroups(Matcher m) {
         InternetAddress current_ia = null;
         String[] parts = getMatcherParts(m);
 
-        if (parts[1] == null || parts[2] == null) return(null);
+        if (parts[1] == null || parts[2] == null) return (null);
 
         // if for some reason you want to require that the result be re-parsable by
         // InternetAddress, you
         // could uncomment the appropriate stuff below, but note that not all the utility
         // functions use pullFromGroups; some call getMatcherParts directly.
-        try
-        {
+        try {
             //current_ia = new InternetAddress(parts[0] + " <" + parts[1] + "@" +
             //                                 parts[2]+ ">", true);
             // so it parses it OK, but since javamail doesn't extract too well
@@ -1017,12 +963,11 @@ public class EmailAddress
         //System.out.println("ex: " + ae);
         //            current_ia = null;
         //        }
-        catch (UnsupportedEncodingException uee)
-        {
+        catch (UnsupportedEncodingException uee) {
             current_ia = null;
         }
 
-        return(current_ia);
+        return (current_ia);
     }
 
     /**
@@ -1030,8 +975,7 @@ public class EmailAddress
      *
      * @return will not return null
      */
-    private static String[] getMatcherParts(Matcher m)
-    {
+    private static String[] getMatcherParts(Matcher m) {
         String current_localpart = null;
         String current_domainpart = null;
         String local_part_da = null;
@@ -1042,14 +986,11 @@ public class EmailAddress
 
         // see the group-ID lists in the grammar comments
 
-        if (ALLOW_QUOTED_IDENTIFIERS)
-        {
-            if (ALLOW_DOMAIN_LITERALS)
-            {
+        if (ALLOW_QUOTED_IDENTIFIERS) {
+            if (ALLOW_DOMAIN_LITERALS) {
                 // yes quoted identifiers, yes domain literals
 
-                if (m.group(1) != null)
-                {
+                if (m.group(1) != null) {
                     // name-addr form
                     local_part_da = m.group(5);
                     if (local_part_da == null) local_part_qs = m.group(6);
@@ -1058,21 +999,18 @@ public class EmailAddress
                     if (domain_part_da == null) domain_part_dl = m.group(8);
 
                     current_localpart =
-                        (local_part_da == null ? local_part_qs : local_part_da);
+                            (local_part_da == null ? local_part_qs : local_part_da);
 
                     current_domainpart =
-                        (domain_part_da == null ? domain_part_dl : domain_part_da);
+                            (domain_part_da == null ? domain_part_dl : domain_part_da);
 
                     personal_string = m.group(2);
-                    if (personal_string == null && EXTRACT_CFWS_PERSONAL_NAMES)
-                    {
+                    if (personal_string == null && EXTRACT_CFWS_PERSONAL_NAMES) {
                         personal_string = m.group(9);
                         personal_string = removeAnyBounding('(', ')',
-                                                            getFirstComment(personal_string));
+                                getFirstComment(personal_string));
                     }
-                }
-                else if (m.group(10) != null)
-                {
+                } else if (m.group(10) != null) {
                     // addr-spec form
 
                     local_part_da = m.group(12);
@@ -1082,66 +1020,56 @@ public class EmailAddress
                     if (domain_part_da == null) domain_part_dl = m.group(15);
 
                     current_localpart =
-                        (local_part_da == null ? local_part_qs : local_part_da);
+                            (local_part_da == null ? local_part_qs : local_part_da);
 
                     current_domainpart =
-                        (domain_part_da == null ? domain_part_dl : domain_part_da);
+                            (domain_part_da == null ? domain_part_dl : domain_part_da);
 
-                    if (EXTRACT_CFWS_PERSONAL_NAMES)
-                    {
+                    if (EXTRACT_CFWS_PERSONAL_NAMES) {
                         personal_string = m.group(16);
                         personal_string = removeAnyBounding('(', ')',
-                                                            getFirstComment(personal_string));
+                                getFirstComment(personal_string));
                     }
                 }
-            }
-            else
-            {
+            } else {
                 // yes quoted identifiers, no domain literals
 
-                if (m.group(1) != null)
-                {
+                if (m.group(1) != null) {
                     // name-addr form
 
                     local_part_da = m.group(5);
                     if (local_part_da == null) local_part_qs = m.group(6);
 
                     current_localpart =
-                        (local_part_da == null ? local_part_qs : local_part_da);
+                            (local_part_da == null ? local_part_qs : local_part_da);
 
                     current_domainpart = m.group(7);
 
                     personal_string = m.group(2);
-                    if (personal_string == null && EXTRACT_CFWS_PERSONAL_NAMES)
-                    {
+                    if (personal_string == null && EXTRACT_CFWS_PERSONAL_NAMES) {
                         personal_string = m.group(8);
                         personal_string = removeAnyBounding('(', ')',
-                                                            getFirstComment(personal_string));
+                                getFirstComment(personal_string));
                     }
-                }
-                else if (m.group(9) != null)
-                {
+                } else if (m.group(9) != null) {
                     // addr-spec form
 
                     local_part_da = m.group(11);
                     if (local_part_da == null) local_part_qs = m.group(12);
 
                     current_localpart =
-                        (local_part_da == null ? local_part_qs : local_part_da);
+                            (local_part_da == null ? local_part_qs : local_part_da);
 
                     current_domainpart = m.group(13);
 
-                    if (EXTRACT_CFWS_PERSONAL_NAMES)
-                    {
+                    if (EXTRACT_CFWS_PERSONAL_NAMES) {
                         personal_string = m.group(14);
                         personal_string = removeAnyBounding('(', ')',
-                                                            getFirstComment(personal_string));
+                                getFirstComment(personal_string));
                     }
                 }
             }
-        }
-        else
-        {
+        } else {
             // no quoted identifiers, yes|no domain literals
 
             local_part_da = m.group(3);
@@ -1155,18 +1083,16 @@ public class EmailAddress
 
             current_domainpart = (domain_part_da == null ? domain_part_dl : domain_part_da);
 
-            if (EXTRACT_CFWS_PERSONAL_NAMES)
-            {
+            if (EXTRACT_CFWS_PERSONAL_NAMES) {
                 personal_string = m.group((ALLOW_DOMAIN_LITERALS ? 1 : 0) + 6);
                 personal_string = removeAnyBounding('(', ')',
-                                                    getFirstComment(personal_string));
+                        getFirstComment(personal_string));
             }
         }
 
         if (current_localpart != null) current_localpart = current_localpart.trim();
         if (current_domainpart != null) current_domainpart = current_domainpart.trim();
-        if (personal_string != null)
-        {
+        if (personal_string != null) {
             // trim even though calling cPS which trims, because the latter may return
             // the same thing back without trimming
             personal_string = personal_string.trim();
@@ -1176,12 +1102,12 @@ public class EmailAddress
         // remove any unecessary bounding quotes from the localpart:
 
         String test_addr = removeAnyBounding('"', '"', current_localpart) +
-            "@" + current_domainpart;
+                "@" + current_domainpart;
 
         if (ADDR_SPEC_PATTERN.matcher(test_addr).matches()) current_localpart =
-            removeAnyBounding('"', '"', current_localpart);
+                removeAnyBounding('"', '"', current_localpart);
 
-        return(new String[] { personal_string, current_localpart, current_domainpart });
+        return (new String[]{personal_string, current_localpart, current_domainpart});
     }
 
     /**
@@ -1195,15 +1121,14 @@ public class EmailAddress
      * find the CFWS personal name (see boolean option) then such a nested comment would
      * probably not be the one you were looking for?
      */
-    public static String getFirstComment(String text)
-    {
-        if (text == null) return(null); // important
+    public static String getFirstComment(String text) {
+        if (text == null) return (null); // important
 
         Matcher m = COMMENT_PATTERN.matcher(text);
 
-        if (! m.find()) return(null);
+        if (!m.find()) return (null);
 
-        return(m.group().trim()); // trim important
+        return (m.group().trim()); // trim important
     }
 
     /**
@@ -1218,34 +1143,32 @@ public class EmailAddress
      * result (if there are embedded escaped characters). If the string is anything else,
      * this just returns it unadulterated.
      */
-    private static String cleanupPersonalString(String text)
-    {
-        if (text == null) return(null);
+    private static String cleanupPersonalString(String text) {
+        if (text == null) return (null);
         text = text.trim();
 
         Matcher m = QUOTED_STRING_WO_CFWS_PATTERN.matcher(text);
 
-        if (! m.matches()) return(text);
+        if (!m.matches()) return (text);
 
         text = removeAnyBounding('"', '"', m.group());
 
         text = ESCAPED_BSLASH_PATTERN.matcher(text).replaceAll("\\\\");
         text = ESCAPED_QUOTE_PATTERN.matcher(text).replaceAll("\"");
 
-        return(text.trim());
+        return (text.trim());
     }
 
     /**
      * If the string starts and ends with s and e, remove them, otherwise return
      * the string as it was passed in.
      */
-    private static String removeAnyBounding(char s, char e, String str)
-    {
-        if (str == null || str.length() < 2) return(str);
+    private static String removeAnyBounding(char s, char e, String str) {
+        if (str == null || str.length() < 2) return (str);
 
         if (str.startsWith(String.valueOf(s)) && str.endsWith(String.valueOf(e)))
-            return(str.substring(1, str.length() - 1));
-        else return(str);
+            return (str.substring(1, str.length() - 1));
+        else return (str);
     }
 
 /* The current regex string for mailbox token, just for fun:
