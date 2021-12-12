@@ -177,7 +177,7 @@ public class Utils {
     }
 
     public static WorkerThread generate(final ServletContext session, final Inbox inbox, final int count) throws Exception {
-        WorkerThread wt = new WorkerThread(Inbox.GENERATE_WORKER) {
+        return new WorkerThread(Inbox.GENERATE_WORKER) {
 
             @Override
             public void run() {
@@ -227,7 +227,6 @@ public class Utils {
             }
 
         };
-        return wt;
     }
 
     public static void generateNoThread(final ServletContext session, final Inbox inbox, final int count) {
@@ -551,6 +550,7 @@ public class Utils {
                         list.add("");
                 } else {
                     list.add(URLDecoder.decode(token, StandardCharsets.UTF_8));
+//                    list.add(URLDecoder.decode(token));
                 }
             }
             return list.get(index);
@@ -759,7 +759,7 @@ public class Utils {
     /*
      * clean compile assembly:single will generate an executable jar with this entry point
      */
-    public static final void main(String[] args) {
+    public static void main(String[] args) {
         if (args.length < 2) {
             log.info("usage : java -jar bluebox-utils.jar age 3    - delete mail older than three days");
             log.info("        java -jar bluebox-utils.jar max 160  - trim size to 160K");
