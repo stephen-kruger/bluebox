@@ -24,11 +24,12 @@ public class ProgressServlet extends HttpServlet {
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        log.info("Into doPost");
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html");
         response.setHeader("Cache-Control", "no-cache");
-
         PrintWriter out = response.getWriter();
+        log.info("After>>>>"+out);
 
         HttpSession session = request.getSession(true);
         if (session == null) {

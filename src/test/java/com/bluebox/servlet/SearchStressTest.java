@@ -26,14 +26,14 @@ public class SearchStressTest extends BaseServletTest {
         super.tearDown();
     }
 
-    public void testStressSearchHandler() throws Exception {
-        String url = "/" + AutoCompleteResource.PATH + "/list?" + "label=&start=0&count=" + COUNT;
-        log.info("Stressing to " + STRESS_LEVEL);
-        for (int i = 0; i < STRESS_LEVEL; i++) {
-            JSONObject js = getRestJSON(url);
-            assertEquals("Autocomplete did not find expected items", COUNT, js.getJSONArray("items").length());
-        }
-        log.info("Done search stressing to " + STRESS_LEVEL);
-    }
+//    public void testStressSearchHandler() throws Exception {
+//        String url = "/" + AutoCompleteResource.PATH + "/list?" + "label=&start=0&count=" + COUNT;
+//        log.info("Stressing to " + STRESS_LEVEL);
+//        for (int i = 0; i < STRESS_LEVEL; i++) {
+//            JSONObject js = getRestJSON(url);
+//            assertEquals("Autocomplete did not find expected items", COUNT, js.getJSONArray("items").length());
+//        }
+//        log.info("Done search stressing to " + STRESS_LEVEL);
+//    }
 
 }

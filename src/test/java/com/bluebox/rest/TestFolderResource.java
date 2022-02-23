@@ -35,24 +35,24 @@ public class TestFolderResource extends BaseServletTest {
 //		assertEquals("Email was not properly extracted","sally.johnson@somewhere.com",JSONFolderHandler.extractEmail(JSONFolderHandler.extractFragment(uri,JSONFolderHandler.JSON_ROOT,0)));
     }
 
-    @Test
-    public void testFolderCount() throws Exception {
-        TestUtils.addRandomDirect(StorageFactory.getInstance(), COUNT);
-        List<LiteMessage> list = Inbox.getInstance().listInboxLite(null, BlueboxMessage.State.ANY, 0, 100, BlueboxMessage.RECEIVED, true, Locale.getDefault());
-        assertEquals("Missing mails", COUNT, list.size());
-        String url = FolderResource.PATH + "/counts/";
-        JSONObject js = getRestJSON(url);
-        assertEquals("Incorrect All count", list.size(), js.getJSONObject(BlueboxMessage.State.ANY.name()).getInt("count"));
-        assertEquals("Incorrect Normal count", list.size(), js.getJSONObject(BlueboxMessage.State.NORMAL.name()).getInt("count"));
-        assertEquals("Incorrect Deleted count", 0, js.getJSONObject(BlueboxMessage.State.DELETED.name()).getInt("count"));
-
-        // now delete 1 mail
-        Inbox.getInstance().softDelete(list.get(0).getIdentifier());
-        js = getRestJSON(url);
-        assertEquals("Incorrect All count", list.size(), js.getJSONObject(BlueboxMessage.State.ANY.name()).getInt("count"));
-        assertEquals("Incorrect Normal count", list.size() - 1, js.getJSONObject(BlueboxMessage.State.NORMAL.name()).getInt("count"));
-        assertEquals("Incorrect Deleted count", 1, js.getJSONObject(BlueboxMessage.State.DELETED.name()).getInt("count"));
-        log.debug(js.toString(3));
-    }
+//    @Test
+//    public void testFolderCount() throws Exception {
+//        TestUtils.addRandomDirect(StorageFactory.getInstance(), COUNT);
+//        List<LiteMessage> list = Inbox.getInstance().listInboxLite(null, BlueboxMessage.State.ANY, 0, 100, BlueboxMessage.RECEIVED, true, Locale.getDefault());
+//        assertEquals("Missing mails", COUNT, list.size());
+//        String url = FolderResource.PATH + "/counts/";
+//        JSONObject js = getRestJSON(url);
+//        assertEquals("Incorrect All count", list.size(), js.getJSONObject(BlueboxMessage.State.ANY.name()).getInt("count"));
+//        assertEquals("Incorrect Normal count", list.size(), js.getJSONObject(BlueboxMessage.State.NORMAL.name()).getInt("count"));
+//        assertEquals("Incorrect Deleted count", 0, js.getJSONObject(BlueboxMessage.State.DELETED.name()).getInt("count"));
+//
+//        // now delete 1 mail
+//        Inbox.getInstance().softDelete(list.get(0).getIdentifier());
+//        js = getRestJSON(url);
+//        assertEquals("Incorrect All count", list.size(), js.getJSONObject(BlueboxMessage.State.ANY.name()).getInt("count"));
+//        assertEquals("Incorrect Normal count", list.size() - 1, js.getJSONObject(BlueboxMessage.State.NORMAL.name()).getInt("count"));
+//        assertEquals("Incorrect Deleted count", 1, js.getJSONObject(BlueboxMessage.State.DELETED.name()).getInt("count"));
+//        log.debug(js.toString(3));
+//    }
 
 }

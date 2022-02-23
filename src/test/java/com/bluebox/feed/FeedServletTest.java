@@ -1,27 +1,58 @@
-package com.bluebox.servlet;
+package com.bluebox.feed;
 
+import com.bluebox.Config;
+import com.bluebox.FakeServletRequest;
 import com.bluebox.TestUtils;
+import com.bluebox.servlet.BaseServletTest;
+import com.bluebox.smtp.BlueBoxSMTPServer;
+import com.bluebox.smtp.BlueboxMessageHandlerFactory;
 import com.bluebox.smtp.Inbox;
 import com.bluebox.smtp.storage.StorageFactory;
 import com.rometools.rome.feed.synd.SyndEntry;
 import com.rometools.rome.feed.synd.SyndFeed;
+import com.rometools.rome.io.FeedException;
 import com.rometools.rome.io.SyndFeedInput;
+import jakarta.servlet.UnavailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
 
 public class FeedServletTest extends BaseServletTest {
     private static final Logger log = LoggerFactory.getLogger(FeedServletTest.class);
-
+    private Inbox inbox;
+    private BlueBoxSMTPServer smtpServer;
+    private BlueboxMessageHandlerFactory bbmhf;
 
     @Override
     public void setUp() throws Exception {
         super.setUp();
         TestUtils.addRandomDirect(StorageFactory.getInstance(), COUNT);
         TestUtils.waitFor(Inbox.getInstance(), COUNT);
+        // new
+        Config config = Config.getInstance();
+        config.setProperty(Config.BLUEBOX_PORT, 2500);
+        inbox = Inbox.getInstance();
+        smtpServer = BlueBoxSMTPServer.getInstance(bbmhf = new BlueboxMessageHandlerFactory(inbox));
+        smtpServer.start();
+        inbox.deleteAll();
+        // end new
+    }
+
+    public void testMockito() throws FeedException, IOException, UnavailableException {
+
+        FeedServlet fs = new FeedServlet();
+        FakeServletRequest r =  new FakeServletRequest();
+        r.setMethod("GET ");
+        r.setContextPath("/feed");
+        r.setAttribute("email","steve@here.com");
+        r.setParameter("email",new String[]{"steve@here.com"});
+        assertNotNull("Attribute not set", r.getAttribute("email"));
+        assertNotNull("Parameter not set", r.getParameter("email"));
+        fs.getFeed(inbox, r);
     }
 
     public void testFeed() throws Exception {

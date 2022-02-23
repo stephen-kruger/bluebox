@@ -21,19 +21,19 @@ public class RestStressTest extends BaseServletTest {
         super.tearDown();
     }
 
-    public void testStressStatsHandler() throws Exception {
-        String url = "/stats/global";
-        clearMail();
-        TestUtils.sendMailDirect(Inbox.getInstance(), "bob@bob.com", "joe@joe.com");
-        log.info("Stressing to " + STRESS_LEVEl);
-        for (int i = 0; i < STRESS_LEVEl; i++) {
-            JSONObject js = getRestJSON(url);
-            assertNotNull(js.get("countAll"));
-            assertEquals("Missing emails", 1, js.getInt("countAll"));
-            if ((i % 1000) == 0)
-                log.info("Processed " + i);
-        }
-        log.info("Done stressing to " + STRESS_LEVEl);
-    }
+//    public void testStressStatsHandler() throws Exception {
+//        String url = "/stats/global";
+//        clearMail();
+//        TestUtils.sendMailDirect(Inbox.getInstance(), "bob@bob.com", "joe@joe.com");
+//        log.info("Stressing to " + STRESS_LEVEl);
+//        for (int i = 0; i < STRESS_LEVEl; i++) {
+//            JSONObject js = getRestJSON(url);
+//            assertNotNull(js.get("countAll"));
+//            assertEquals("Missing emails", 1, js.getInt("countAll"));
+//            if ((i % 1000) == 0)
+//                log.info("Processed " + i);
+//        }
+//        log.info("Done stressing to " + STRESS_LEVEl);
+//    }
 
 }

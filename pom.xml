@@ -11,33 +11,32 @@
 
 	<properties>
 		<subethasmtp_version>3.1.7</subethasmtp_version>
-		<slf4j_version>1.7.32</slf4j_version>
+		<slf4j_version>2.0.0-alpha6</slf4j_version>
 		<jsoup_version>1.14.3</jsoup_version>
 		<commons_io_version>2.11.0</commons_io_version>
-		<rome_version>1.16.0</rome_version>
+		<rome_version>1.18.0</rome_version>
 		<lucene_version>9.0.0</lucene_version>
-		<lucene_analyzers_version>8.11.0</lucene_analyzers_version>
-		<solr_version>8.11.0</solr_version>
+		<lucene_analyzers_version>8.11.1</lucene_analyzers_version>
+		<solr_version>8.11.1</solr_version>
 		<mongo_version>3.12.10</mongo_version>
 		<apache_wink>1.4</apache_wink>
-		<jetty_version>11.0.7</jetty_version>
+		<jetty_version>11.0.8</jetty_version>
 		<apache_httpclient>4.5.13</apache_httpclient>
-		<h2_database>2.0.202</h2_database>
+		<h2_database>2.1.210</h2_database>
 		<javax_mail>1.6.2</javax_mail>
 		<commons_codec>1.15</commons_codec>
-		<antisamy_version>1.6.4</antisamy_version>
+		<antisamy_version>1.6.5</antisamy_version>
 		<commons_config>1.10</commons_config>
 		<commons_lang>2.6</commons_lang>
 		<file_upload>1.4</file_upload>
 		<junit_version>4.13.2</junit_version>
 		<codehaus_jettison>1.4.1</codehaus_jettison>
-		<!--
-		<sun_javax_mail>1.4.4</sun_javax_mail>
-		-->
+		<sun_javax_mail>1.6.2</sun_javax_mail>
 		<javaee_version>7.0</javaee_version>
 		<javax_ws_rs_api>2.1.1</javax_ws_rs_api>
 		<annotation_version>1.3.2</annotation_version>
-		<servlet_api_version>3.1.0</servlet_api_version>
+		<servlet_api_version>4.0.1</servlet_api_version><!-- 3.1.0 -->
+		<mockito>4.3.1</mockito>
 	</properties>
 	<distributionManagement>
 		<repository>
@@ -55,6 +54,11 @@
 			<id>maven-central</id>
 			<name>Maven Central</name>
 			<url>http://central.maven.org/maven2/</url>
+		</repository>
+		<repository>
+			<id>maven-central2</id>
+			<name>Maven Central 2</name>
+			<url>https://repo1.maven.org/maven2/</url>
 		</repository>
 	</repositories>
 
@@ -145,6 +149,16 @@
 					</configuration> </execution> </executions> </plugin> -->
 			</plugins>
 		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>11</source>
+					<target>11</target>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 	<dependencies>
 		<dependency>
@@ -208,6 +222,12 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>${sun_javax_mail}</version>
+		</dependency>
+		<!--
+		<dependency>
 			<groupId>javax.mail</groupId>
 			<artifactId>javax.mail-api</artifactId>
 			<version>${javax_mail}</version>
@@ -219,7 +239,6 @@
 			<version>1.4.7</version>
 			<scope>compile</scope>
 		</dependency>
-		<!--
 		<dependency>
 			<groupId>com.sun.mail</groupId>
 			<artifactId>javax.mail</artifactId>
@@ -231,7 +250,12 @@
 			<artifactId>slf4j-api</artifactId>
 			<version>${slf4j_version}</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-simple</artifactId>
+			<version>${slf4j_version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.rometools</groupId>
 			<artifactId>rome</artifactId>
@@ -311,6 +335,7 @@
 			<artifactId>commons-codec</artifactId>
 			<version>${commons_codec}</version>
 		</dependency>
+		<!--
 		<dependency>
 			<groupId>org.apache.wink</groupId>
 			<artifactId>wink-client</artifactId>
@@ -339,6 +364,13 @@
 			<groupId>org.apache.wink</groupId>
 			<artifactId>wink-component-test-support</artifactId>
 			<version>${apache_wink}</version>
+			<scope>test</scope>
+		</dependency>
+		-->
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<version>${mockito}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

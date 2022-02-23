@@ -59,7 +59,6 @@ public class FeedServlet extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
         try {
             SyndFeed feed = getFeed(null, req);
-
             String feedType = req.getParameter(FEED_TYPE);
             feedType = (feedType != null) ? feedType : _defaultFeedType;
             feed.setFeedType(feedType);

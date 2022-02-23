@@ -33,20 +33,20 @@ public class TestMessageResource extends BaseServletTest {
     }
 
 
-    public void testGetLinks() throws Exception {
-        List<LiteMessage> list = Inbox.getInstance().listInboxLite(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true, Locale.getDefault());
-        assertEquals("Missing mail", COUNT, list.size());
-        for (LiteMessage jo : list) {
-            String url = MessageResource.PATH + "/" + MessageResource.LINKS + "/" + jo.getIdentifier();
-            JSONObject js = getRestJSON(url);
-            JSONArray ja = js.getJSONArray(MessageResource.LINKS);
-            for (int i = 0; i < ja.length(); i++) {
-                assertNotNull("Link text not found", ja.getJSONObject(i).getString("text"));
-                assertNotNull("Link href not found", ja.getJSONObject(i).getString("href"));
-            }
-            log.info(js.toString(3));
-        }
-    }
+//    public void testGetLinks() throws Exception {
+//        List<LiteMessage> list = Inbox.getInstance().listInboxLite(null, BlueboxMessage.State.ANY, 0, 5, BlueboxMessage.RECEIVED, true, Locale.getDefault());
+//        assertEquals("Missing mail", COUNT, list.size());
+//        for (LiteMessage jo : list) {
+//            String url = MessageResource.PATH + "/" + MessageResource.LINKS + "/" + jo.getIdentifier();
+//            JSONObject js = getRestJSON(url);
+//            JSONArray ja = js.getJSONArray(MessageResource.LINKS);
+//            for (int i = 0; i < ja.length(); i++) {
+//                assertNotNull("Link text not found", ja.getJSONObject(i).getString("text"));
+//                assertNotNull("Link href not found", ja.getJSONObject(i).getString("href"));
+//            }
+//            log.info(js.toString(3));
+//        }
+//    }
 
     @Test
     public void testTextLinks() {
