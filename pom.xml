@@ -25,7 +25,7 @@
 		<h2_database>2.1.210</h2_database>
 		<javax_mail>1.6.2</javax_mail>
 		<commons_codec>1.15</commons_codec>
-		<antisamy_version>1.6.5</antisamy_version>
+		<antisamy_version>1.6.7</antisamy_version>
 		<commons_config>1.10</commons_config>
 		<commons_lang>2.6</commons_lang>
 		<file_upload>1.4</file_upload>
