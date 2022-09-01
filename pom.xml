@@ -12,7 +12,7 @@
 	<properties>
 		<subethasmtp_version>3.1.7</subethasmtp_version>
 		<slf4j_version>2.0.0-alpha6</slf4j_version>
-		<jsoup_version>1.14.3</jsoup_version>
+		<jsoup_version>1.15.3</jsoup_version>
 		<commons_io_version>2.11.0</commons_io_version>
 		<rome_version>1.18.0</rome_version>
 		<lucene_version>9.0.0</lucene_version>
