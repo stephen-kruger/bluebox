@@ -30,7 +30,7 @@
 		<commons_lang>2.6</commons_lang>
 		<file_upload>1.4</file_upload>
 		<junit_version>4.13.2</junit_version>
-		<codehaus_jettison>1.4.1</codehaus_jettison>
+		<codehaus_jettison>1.5.4</codehaus_jettison>
 		<sun_javax_mail>1.6.2</sun_javax_mail>
 		<javaee_version>7.0</javaee_version>
 		<javax_ws_rs_api>2.1.1</javax_ws_rs_api>
