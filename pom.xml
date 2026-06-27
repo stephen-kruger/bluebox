@@ -5,26 +5,27 @@
 	<groupId>com.bluebox</groupId>
 	<artifactId>bluebox</artifactId>
 	<packaging>war</packaging>
-	<version>4.7.1</version>
+	<version>4.8.0</version>
 	<name>bluebox</name>
 	<url>https://github.com/stephen-kruger/bluebox</url>
 
 	<properties>
+		<project.build.sourceEncoding>Cp1252</project.build.sourceEncoding>
 		<subethasmtp_version>3.1.7</subethasmtp_version>
-		<slf4j_version>2.0.0-alpha6</slf4j_version>
-		<jsoup_version>1.14.3</jsoup_version>
-		<commons_io_version>2.11.0</commons_io_version>
-		<rome_version>1.18.0</rome_version>
+		<slf4j_version>2.0.16</slf4j_version>
+		<jsoup_version>1.17.1</jsoup_version>
+		<commons_io_version>2.15.1</commons_io_version>
+		<rome_version>2.1.0</rome_version>
 		<lucene_version>9.0.0</lucene_version>
 		<lucene_analyzers_version>8.11.1</lucene_analyzers_version>
 		<solr_version>8.11.1</solr_version>
 		<mongo_version>3.12.10</mongo_version>
 		<apache_wink>1.4</apache_wink>
 		<jetty_version>11.0.8</jetty_version>
-		<apache_httpclient>4.5.13</apache_httpclient>
-		<h2_database>2.1.210</h2_database>
+		<apache_httpclient>4.5.14</apache_httpclient>
+		<h2_database>2.2.224</h2_database>
 		<javax_mail>1.6.2</javax_mail>
-		<commons_codec>1.15</commons_codec>
+		<commons_codec>1.17.0</commons_codec>
 		<antisamy_version>1.6.5</antisamy_version>
 		<commons_config>1.10</commons_config>
 		<commons_lang>2.6</commons_lang>
@@ -36,29 +37,19 @@
 		<javax_ws_rs_api>2.1.1</javax_ws_rs_api>
 		<annotation_version>1.3.2</annotation_version>
 		<servlet_api_version>4.0.1</servlet_api_version><!-- 3.1.0 -->
-		<mockito>4.3.1</mockito>
+		<mockito>5.12.0</mockito>
 	</properties>
 	<distributionManagement>
 		<repository>
 			<id>nexus-site</id>
-			<url>http://central_nexus/server</url>
+			<url>https://central_nexus/server</url>
 		</repository>
 	</distributionManagement>
 	<repositories>
 		<repository>
-			<id>maven-org</id>
-			<name>Maven Repo</name>
-			<url>http://repo1.maven.org/maven2/</url>
-		</repository>
-		<repository>
 			<id>maven-central</id>
 			<name>Maven Central</name>
-			<url>http://central.maven.org/maven2/</url>
-		</repository>
-		<repository>
-			<id>maven-central2</id>
-			<name>Maven Central 2</name>
-			<url>https://repo1.maven.org/maven2/</url>
+			<url>https://repo.maven.apache.org/maven2</url>
 		</repository>
 	</repositories>
 
@@ -69,10 +60,10 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.8.1</version>
+					<version>3.13.0</version>
 					<configuration>
-						<source>1.8</source>
-						<target>1.8</target>
+						<source>11</source>
+						<target>11</target>
 						<encoding>Cp1252</encoding>
 					</configuration>
 				</plugin>
@@ -92,9 +83,26 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-war-plugin</artifactId>
-					<version>3.2.3</version>
+					<version>3.4.0</version>
 					<configuration>
 						<failOnMissingWebXml>false</failOnMissingWebXml>
+						<nonFilteredFileExtensions>
+							<nonFilteredFileExtension>pfx</nonFilteredFileExtension>
+							<nonFilteredFileExtension>pdf</nonFilteredFileExtension>
+							<nonFilteredFileExtension>odp</nonFilteredFileExtension>
+							<nonFilteredFileExtension>odt</nonFilteredFileExtension>
+							<nonFilteredFileExtension>doc</nonFilteredFileExtension>
+							<nonFilteredFileExtension>docx</nonFilteredFileExtension>
+							<nonFilteredFileExtension>xls</nonFilteredFileExtension>
+							<nonFilteredFileExtension>xlsx</nonFilteredFileExtension>
+							<nonFilteredFileExtension>png</nonFilteredFileExtension>
+							<nonFilteredFileExtension>jpg</nonFilteredFileExtension>
+							<nonFilteredFileExtension>jpeg</nonFilteredFileExtension>
+							<nonFilteredFileExtension>gif</nonFilteredFileExtension>
+							<nonFilteredFileExtension>zip</nonFilteredFileExtension>
+							<nonFilteredFileExtension>jar</nonFilteredFileExtension>
+							<nonFilteredFileExtension>war</nonFilteredFileExtension>
+						</nonFilteredFileExtensions>
 						<webResources>
 							<resource>
 								<filtering>true</filtering>
@@ -106,6 +114,9 @@
 							<resource>
 								<filtering>true</filtering>
 								<directory>src/main/webapp</directory>
+								<excludes>
+									<exclude>data/**</exclude>
+								</excludes>
 								<includes>
 									<include>**/*</include>
 								</includes>
@@ -116,7 +127,10 @@
 				</plugin>
 				<plugin>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.3.1</version>
+					<configuration>
+						<encoding>Cp1252</encoding>
+					</configuration>
 					<executions>
 						<execution>
 							<id>copy-resource-one</id>
